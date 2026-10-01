@@ -24,6 +24,7 @@ export function pitch(note: string): { midi: number; frequency: number; name: st
 }
 
 export interface Sound {
+  waveformPoints?: import('./waveform').WavePoint[];
   harmonics: number[];
   polarity: number[];
   undertones: number[];
