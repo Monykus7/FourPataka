@@ -1,6 +1,6 @@
 # Wrinkled paper
 
-`wrinkled-paper.png` was generated with the built-in imagegen tool for FourPataka's paper studio design on 2026-09-30. The source is copied into this project so both browser and desktop builds can use it offline. It contains no external photo assets.
+`wrinkled-paper.png` was generated with the built-in imagegen tool on 2026-09-30. Following the quieter design revision, it is used only as a faint material layer inside dark panels (1.8–2.5% opacity), rather than a page background. The asset is bundled for offline browser and desktop use. It contains no external photo assets.
 
 Final generation prompt:
 

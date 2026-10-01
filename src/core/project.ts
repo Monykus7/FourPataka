@@ -30,7 +30,7 @@ export const STORAGE_KEY = 'fourpataka.project.v1';
 export const RECOVERY_KEY = 'fourpataka.project.recovery.v1';
 export const UNREADABLE_KEY = 'fourpataka.project.unreadable.v1';
 export const PREFERENCES_KEY = 'fourpataka.preferences.v1';
-export const EXAMPLE_SCORE = `// Two voices, one idea. Make it yours.\ntempo 120\ntime 4/4\n\ntrack melody using brightReed {\n  C5 quarter\n  chord:(Bb D F)5 8th\n  rest 8th\n  G5 half\n}\n\ntrack bass using softBass {\n  Bb2 half\n  F2 half\n}`;
+export const EXAMPLE_SCORE = `// Example score\ntempo 120\ntime 4/4\n\ntrack melody using brightReed {\n  C5 quarter\n  chord:(Bb D F)5 8th\n  rest 8th\n  G5 half\n}\n\ntrack bass using softBass {\n  Bb2 half\n  F2 half\n}`;
 export function createProject(): Project {
   const bright = mathematicalPreset('square');
   bright.harmonics = bright.harmonics.map((m, i) => (i === 0 ? 1 : m * 0.78));

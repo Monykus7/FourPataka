@@ -113,7 +113,7 @@ test('new preset, JSON export/import validation, and undoable import', async ({ 
 test('macros return to baseline; manual edits establish a new baseline', async ({ page }) => {
   await page
     .getByRole('button', {
-      name: 'Coefficient macros Shape a group, keep every bar visible',
+      name: 'Coefficient macros',
       exact: true,
     })
     .click();

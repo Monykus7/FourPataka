@@ -197,6 +197,6 @@ export const COMMANDS = [
   {
     name: 'comment',
     description: 'Ignored until the end of the line',
-    snippet: '// A little room to breathe',
+    snippet: '// Comment',
   },
 ];

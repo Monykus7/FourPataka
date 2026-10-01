@@ -400,9 +400,14 @@ export default function App() {
   const exportJson = async () => {
     if (window.fourpatakaDesktop?.saveProject) {
       try {
-        const result = await window.fourpatakaDesktop.saveProject(JSON.stringify(project, null, 2), project.name);
+        const result = await window.fourpatakaDesktop.saveProject(
+          JSON.stringify(project, null, 2),
+          project.name,
+        );
         if (!result.canceled) setToast(`Saved ${result.name}.`);
-      } catch (e) { setToast(`Save failed: ${(e as Error).message}`); }
+      } catch (e) {
+        setToast(`Save failed: ${(e as Error).message}`);
+      }
       return;
     }
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
@@ -416,15 +421,20 @@ export default function App() {
   };
   const acceptProject = (text: string) => {
     const imported = importProject(text);
-    stop(); resetMacros(imported.comparison[imported.comparison.active]);
-    change(() => imported); setSelectedTrack(imported.tracks[0]?.key ?? '');
-    setSelectedEvent(null); setToast('Project imported. Undo restores your previous session.');
+    stop();
+    resetMacros(imported.comparison[imported.comparison.active]);
+    change(() => imported);
+    setSelectedTrack(imported.tracks[0]?.key ?? '');
+    setSelectedEvent(null);
+    setToast('Project imported. Undo restores your previous session.');
   };
   const openNativeProject = async () => {
     try {
       const result = await window.fourpatakaDesktop!.openProject!();
       if (!result.canceled && result.text !== undefined) acceptProject(result.text);
-    } catch (e) { setToast(`Open failed: ${(e as Error).message}. Your session is unchanged.`); }
+    } catch (e) {
+      setToast(`Open failed: ${(e as Error).message}. Your session is unchanged.`);
+    }
   };
   const readFile = async (file?: File) => {
     if (!file) return;
@@ -500,20 +510,35 @@ export default function App() {
   const stale = playback === 'score' && running?.text !== project.scoreText;
   const highlightedLines = stale ? [] : activeEvents.map((e) => e.line);
   const menuActions = useRef<(action: string) => void>(() => {});
-  menuActions.current = action => {
+  menuActions.current = (action) => {
     if (action === 'open') void openNativeProject();
     else if (action === 'save') void exportJson();
     else if (action === 'undo' || action === 'redo') travel(action);
     else if (action === 'instrument' || action === 'compose' || action === 'learn') setView(action);
     else if (action === 'play') void playScore();
     else if (action === 'stop') stop();
-    else if (action === 'commands') { setView('compose'); setCommandsOpen(true); requestAnimationFrame(() => document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' })); }
-    else if (action === 'track') {
-      if (playback === 'score' || score.diagnostics.some(d => d.message !== 'Add a track to start composing.')) { setToast('Stop playback and fix score diagnostics before making a track.'); return; }
-      setView('compose'); setTrackMakerOpen(true);
+    else if (action === 'commands') {
+      setView('compose');
+      setCommandsOpen(true);
+      requestAnimationFrame(() =>
+        document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' }),
+      );
+    } else if (action === 'track') {
+      if (
+        playback === 'score' ||
+        score.diagnostics.some((d) => d.message !== 'Add a track to start composing.')
+      ) {
+        setToast('Stop playback and fix score diagnostics before making a track.');
+        return;
+      }
+      setView('compose');
+      setTrackMakerOpen(true);
     }
   };
-  useEffect(() => window.fourpatakaDesktop?.onMenuAction(action => menuActions.current(action)), []);
+  useEffect(
+    () => window.fourpatakaDesktop?.onMenuAction((action) => menuActions.current(action)),
+    [],
+  );
 
   return (
     <div className="app-shell">
@@ -570,7 +595,14 @@ export default function App() {
             <Redo2 size={17} />
           </button>
           <span className="divider" />
-          <button className="subtle-button" onClick={() => window.fourpatakaDesktop?.openProject ? void openNativeProject() : fileInput.current?.click()}>
+          <button
+            className="subtle-button"
+            onClick={() =>
+              window.fourpatakaDesktop?.openProject
+                ? void openNativeProject()
+                : fileInput.current?.click()
+            }
+          >
             <Upload size={15} />
             <span>{window.fourpatakaDesktop ? 'Open project' : 'Import'}</span>
           </button>
@@ -590,7 +622,7 @@ export default function App() {
 
       <div className="workspace">
         <aside className="sidebar">
-          <div className="sidebar-section-label">YOUR WORKSPACE</div>
+          <div className="sidebar-section-label">WORKSPACE</div>
           <nav aria-label="Studio views">
             {[
               {
@@ -900,7 +932,6 @@ export default function App() {
                   <section className="panel shaping-panel">
                     <div className="section-title">
                       <h3>Envelope & level</h3>
-                      <span className="small-label">ONE VOICE, ONE ENVELOPE</span>
                     </div>
                     <div className="envelope-controls">
                       <RangeControl
@@ -942,9 +973,6 @@ export default function App() {
                     >
                       {macrosOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                       <span>Coefficient macros</span>
-                      <span className="disclosure-detail">
-                        Shape a group, keep every bar visible
-                      </span>
                     </button>
                     {macrosOpen && (
                       <div className="macro-controls">
@@ -1113,7 +1141,6 @@ export default function App() {
                 <section className="panel editor-panel">
                   <div className="panel-header">
                     <div>
-                      <span className="context-label">SOURCE OF TRUTH</span>
                       <h2>
                         Score <span className="tag">.fourier</span>
                       </h2>
@@ -1199,7 +1226,6 @@ export default function App() {
                   <section className="panel timeline-panel">
                     <div className="panel-header">
                       <div>
-                        <span className="context-label">COMPILED EVENTS</span>
                         <h2>Timeline</h2>
                       </div>
                       <span className="tag">4/4</span>
@@ -1383,8 +1409,25 @@ export default function App() {
                 {commandsOpen && (
                   <>
                     <div className="command-destination">
-                      <label>Insert events into<select aria-label="Command insertion track" value={track?.key ?? ''} onChange={e => setSelectedTrack(e.target.value)}>{project.tracks.map(t => <option key={t.key} value={t.key}>{t.key}</option>)}</select></label>
-                      <span>{playback === 'score' ? 'Stop playback to insert commands.' : 'Click a card to insert. Events go to the selected track.'}</span>
+                      <label>
+                        Insert events into
+                        <select
+                          aria-label="Command insertion track"
+                          value={track?.key ?? ''}
+                          onChange={(e) => setSelectedTrack(e.target.value)}
+                        >
+                          {project.tracks.map((t) => (
+                            <option key={t.key} value={t.key}>
+                              {t.key}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <span>
+                        {playback === 'score'
+                          ? 'Stop playback to insert commands.'
+                          : 'Click a card to insert. Events go to the selected track.'}
+                      </span>
                     </div>
                     <div className="command-grid">
                       {COMMANDS.filter((c) =>
@@ -1397,13 +1440,28 @@ export default function App() {
                           key={c.name}
                           title={`Insert ${c.name}`}
                           aria-label={`Insert ${c.name} command`}
-                          disabled={playback === 'score' || score.diagnostics.some(d => d.message !== 'Add a track to start composing.')}
+                          disabled={
+                            playback === 'score' ||
+                            score.diagnostics.some(
+                              (d) => d.message !== 'Add a track to start composing.',
+                            )
+                          }
                           onClick={() => {
                             try {
-                              const text = insertCommand(project.scoreText, instruments.map(i => i.key), c.name, track?.key ?? '', preset.key);
-                              change(p => ({ ...p, scoreText: text }));
-                              setToast(`Inserted ${c.name}${['tempo','time','track'].includes(c.name) ? '' : ` into ${track?.key}`}.`);
-                            } catch (e) { setToast((e as Error).message); }
+                              const text = insertCommand(
+                                project.scoreText,
+                                instruments.map((i) => i.key),
+                                c.name,
+                                track?.key ?? '',
+                                preset.key,
+                              );
+                              change((p) => ({ ...p, scoreText: text }));
+                              setToast(
+                                `Inserted ${c.name}${['tempo', 'time', 'track'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
+                              );
+                            } catch (e) {
+                              setToast((e as Error).message);
+                            }
                           }}
                         >
                           <div>
@@ -1415,8 +1473,7 @@ export default function App() {
                       ))}
                     </div>
                     <div className="commands-footer">
-                      Durations: whole · half · quarter · 8th · 16th{' '}
-                      <span>Pedal commands arrive with stage 3.</span>
+                      Durations: whole · half · quarter · 8th · 16th
                     </div>
                   </>
                 )}
@@ -1431,14 +1488,14 @@ export default function App() {
                   x(t) = <span>Σ</span> aₕ sin(2πhf₀t)
                 </span>
                 <div>
-                  <h2>Complex sound, simple ingredients.</h2>
+                  <h2>Fourier source</h2>
                   <p>
                     Every harmonic is a sine wave. Its frequency decides where it sits; its
                     magnitude decides how much it contributes. Combine a handful and a new timbre
                     appears.
                   </p>
                   <button className="text-button" onClick={() => setView('instrument')}>
-                    Explore the harmonic mixer
+                    Open instrument
                     <ArrowRight size={15} />
                   </button>
                 </div>
