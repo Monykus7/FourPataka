@@ -1,88 +1,11 @@
-import { components, dbToGain, type Sound } from '../core/music';
+import type { Sound } from '../core/music';
+import { createVoice, holdParameter, type Voice } from './voice';
+export { createVoice } from './voice';
+import type { AuditionPhrase } from '../core/comparison';
 import type { CompiledScore } from '../core/parser';
 import type { TrackInstance } from '../core/project';
 
 export const VOICE_LIMIT = 32;
-export interface Voice {
-  envelope: GainNode;
-  oscillators: OscillatorNode[];
-  end: number;
-  dispose: () => void;
-}
-// Shared source factory, deliberately usable by OfflineAudioContext for later export.
-export function createVoice(
-  context: BaseAudioContext,
-  destination: AudioNode,
-  sound: Sound,
-  frequency: number,
-  start: number,
-  duration: number,
-  solo?: string,
-): Voice {
-  const envelope = context.createGain();
-  const trim = dbToGain(sound.trim);
-  const reached = trim * Math.min(1, duration / sound.attack);
-  envelope.gain.setValueAtTime(0, start);
-  envelope.gain.linearRampToValueAtTime(reached, start + Math.min(sound.attack, duration));
-  envelope.gain.setValueAtTime(reached, start + duration);
-  envelope.gain.linearRampToValueAtTime(0, start + duration + sound.release);
-  envelope.connect(destination);
-  const partials = components(sound, frequency, context.sampleRate).filter(
-    (p) => p.available && p.magnitude > 0 && (!solo || p.label === solo),
-  );
-  const oscillators: OscillatorNode[] = [];
-  const harmonics = partials.filter((p) => p.kind === 'harmonic');
-  if (harmonics.length) {
-    const real = new Float32Array(17);
-    const imag = new Float32Array(17);
-    harmonics.forEach((p) => {
-      imag[p.index + 1] = p.magnitude * p.polarity;
-    });
-    const oscillator = context.createOscillator();
-    oscillator.setPeriodicWave(
-      context.createPeriodicWave(real, imag, { disableNormalization: true }),
-    );
-    oscillator.frequency.value = frequency;
-    oscillator.connect(envelope);
-    oscillators.push(oscillator);
-  }
-  const subGains: GainNode[] = [];
-  partials
-    .filter((p) => p.kind === 'undertone')
-    .forEach((p) => {
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.frequency.value = p.frequency;
-      oscillator.type = 'sine';
-      gain.gain.value = p.magnitude;
-      oscillator.connect(gain);
-      gain.connect(envelope);
-      subGains.push(gain);
-      oscillators.push(oscillator);
-    });
-  const end = start + duration + sound.release;
-  let disposed = false;
-  const dispose = () => {
-    if (disposed) return;
-    disposed = true;
-    oscillators.forEach((o) => {
-      try {
-        o.stop();
-      } catch {
-        /* already stopped */
-      }
-      o.disconnect();
-    });
-    subGains.forEach((g) => g.disconnect());
-    envelope.disconnect();
-  };
-  oscillators.forEach((o) => {
-    o.start(start);
-    o.stop(end + 0.005);
-  });
-  return { envelope, oscillators, end, dispose };
-}
-
 interface Session {
   gate: GainNode;
   nodes: AudioNode[];
@@ -92,6 +15,9 @@ interface Session {
   duration: number;
   mode: 'score' | 'audition';
   cleanup: ReturnType<typeof setTimeout> | null;
+  auditionSound: Sound | null;
+  solo?: string;
+  phraseSeconds: number;
 }
 export class AudioEngine {
   context: AudioContext | null = null;
@@ -143,6 +69,8 @@ export class AudioEngine {
       start: context.currentTime + 0.05,
       duration,
       mode,
+      auditionSound: null,
+      phraseSeconds: 0,
     };
     this.session = session;
     return session;
@@ -166,7 +94,7 @@ export class AudioEngine {
     });
     if (session.voices.length >= VOICE_LIMIT) {
       const stolen = session.voices.shift()!;
-      stolen.envelope.gain.cancelAndHoldAtTime(now);
+      holdParameter(stolen.envelope.gain, now);
       stolen.envelope.gain.linearRampToValueAtTime(0, now + 0.01);
       setTimeout(stolen.dispose, 20);
     }
@@ -175,19 +103,61 @@ export class AudioEngine {
     );
   }
   async audition(sound: Sound, frequencies: number[], solo?: string) {
+    return this.auditionPhrase(
+      sound,
+      {
+        tempo: 60,
+        beats: 1.6,
+        events: [{ beat: 0, duration: 1.6, notes: [], frequencies: [...frequencies] }],
+      },
+      solo,
+    );
+  }
+  async auditionPhrase(sound: Sound, phrase: AuditionPhrase, solo?: string) {
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
     const snapshot = structuredClone(sound);
     const session = this.begin('audition', 1.6 + snapshot.release);
-    frequencies.forEach((frequency) =>
-      this.voice(session, session.gate, snapshot, frequency, session.start, 1.6, solo),
-    );
-    session.cleanup = setTimeout(
-      () => {
-        if (this.session === session) this.stop();
-      },
-      (session.duration + 0.07) * 1000,
+    session.auditionSound = snapshot;
+    session.solo = solo;
+    session.phraseSeconds = (phrase.beats * 60) / phrase.tempo;
+    session.duration = session.phraseSeconds + snapshot.release;
+    const frozen = structuredClone(phrase);
+    let cursor = 0;
+    const schedule = () => {
+      const horizon = this.context!.currentTime + 0.12;
+      while (
+        cursor < frozen.events.length &&
+        session.start + (frozen.events[cursor].beat * 60) / frozen.tempo < horizon
+      ) {
+        const event = frozen.events[cursor++];
+        event.frequencies.forEach((f) =>
+          this.voice(
+            session,
+            session.gate,
+            session.auditionSound!,
+            f,
+            session.start + (event.beat * 60) / frozen.tempo,
+            (event.duration * 60) / frozen.tempo,
+            session.solo,
+          ),
+        );
+      }
+      if (this.context!.currentTime >= session.start + session.duration) this.stop();
+    };
+    schedule();
+    session.timer = setInterval(schedule, 25);
+  }
+  updateAudition(sound: Sound, solo?: string) {
+    const session = this.session;
+    if (!session || session.mode !== 'audition') return;
+    session.auditionSound = structuredClone(sound);
+    session.solo = solo;
+    session.voices.forEach((v) => v.update(sound, solo));
+    session.duration = Math.max(
+      session.phraseSeconds + sound.release,
+      ...session.voices.map((v) => v.end - session.start),
     );
   }
   async play(score: CompiledScore, instances: TrackInstance[]) {
@@ -252,7 +222,7 @@ export class AudioEngine {
       if (session.timer) clearInterval(session.timer);
       if (session.cleanup) clearTimeout(session.cleanup);
       const now = this.context.currentTime;
-      session.gate.gain.cancelAndHoldAtTime(now);
+      holdParameter(session.gate.gain, now);
       session.gate.gain.linearRampToValueAtTime(0, now + 0.02);
       setTimeout(() => {
         session.voices.forEach((v) => v.dispose());

@@ -216,7 +216,8 @@ export function importProject(text: string): Project {
   validateSound(data.comparison.B);
   const material = data.comparisonMaterial ?? structuredClone(DEFAULT_MATERIAL);
   record(material);
-  if (!['note', 'chord', 'phrase'].includes(material.kind as string)) throw new Error('Invalid comparison material.');
+  if (!['note', 'chord', 'phrase'].includes(material.kind as string))
+    throw new Error('Invalid comparison material.');
   stringValue(material.note, 'comparison note');
   // Validate the pitch even when the saved material currently uses a phrase.
   pitch(material.note);
@@ -236,7 +237,13 @@ export function importProject(text: string): Project {
     scoreText: project.scoreText,
     mixGain: project.mixGain,
     editorPresetId: project.editorPresetId,
-    comparisonMaterial: { kind: material.kind as ComparisonMaterial['kind'], note: material.note, trackKey: material.trackKey, fromBeat: material.fromBeat, toBeat: material.toBeat as number | null },
+    comparisonMaterial: {
+      kind: material.kind as ComparisonMaterial['kind'],
+      note: material.note,
+      trackKey: material.trackKey,
+      fromBeat: material.fromBeat,
+      toBeat: material.toBeat as number | null,
+    },
     comparison: {
       active: project.comparison.active,
       A: structuredClone(project.comparison.A),

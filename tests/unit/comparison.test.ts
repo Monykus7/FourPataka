@@ -4,16 +4,29 @@ import { createProject, importProject } from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
 
 const project = createProject();
-const score = parseScore(project.scoreText, project.instruments.map(i => i.key));
+const score = parseScore(
+  project.scoreText,
+  project.instruments.map((i) => i.key),
+);
 describe('shared A/B musical material', () => {
   it('uses one track, preserves rests and chords, and rebases clipped boundaries', () => {
-    const phrase = comparisonPhrase(score, { ...DEFAULT_MATERIAL, kind: 'phrase', fromBeat: 0.5, toBeat: 3 });
+    const phrase = comparisonPhrase(score, {
+      ...DEFAULT_MATERIAL,
+      kind: 'phrase',
+      fromBeat: 0.5,
+      toBeat: 3,
+    });
     expect(phrase.tempo).toBe(120);
     expect(phrase.beats).toBe(2.5);
-    expect(phrase.events.map(e => [e.beat, e.duration])).toEqual([[0, 0.5], [0.5, 0.5], [1, 0.5], [1.5, 1]]);
+    expect(phrase.events.map((e) => [e.beat, e.duration])).toEqual([
+      [0, 0.5],
+      [0.5, 0.5],
+      [1, 0.5],
+      [1.5, 1],
+    ]);
     expect(phrase.events[1].notes).toEqual(['Bb5', 'D5', 'F5']);
     expect(phrase.events[2].notes).toEqual([]);
-    expect(phrase.events.some(e => e.notes.includes('Bb2'))).toBe(false);
+    expect(phrase.events.some((e) => e.notes.includes('Bb2'))).toBe(false);
   });
   it('preserves the whole phrase and makes independent event arrays', () => {
     const phrase = comparisonPhrase(score, { ...DEFAULT_MATERIAL, kind: 'phrase' });
@@ -24,12 +37,21 @@ describe('shared A/B musical material', () => {
   it('keeps note/chord audition usable with an unfinished score', () => {
     const invalid = parseScore('', []);
     expect(comparisonPhrase(invalid, DEFAULT_MATERIAL).events[0].notes).toEqual(['C4']);
-    expect(comparisonPhrase(invalid, { ...DEFAULT_MATERIAL, kind: 'chord' }).events[0].notes).toEqual(['Bb4', 'D5', 'F5']);
-    expect(() => comparisonPhrase(invalid, { ...DEFAULT_MATERIAL, kind: 'phrase' })).toThrow('diagnostics');
+    expect(
+      comparisonPhrase(invalid, { ...DEFAULT_MATERIAL, kind: 'chord' }).events[0].notes,
+    ).toEqual(['Bb4', 'D5', 'F5']);
+    expect(() => comparisonPhrase(invalid, { ...DEFAULT_MATERIAL, kind: 'phrase' })).toThrow(
+      'diagnostics',
+    );
   });
-  it.each([{ trackKey: 'missing' }, { fromBeat: 4 }, { fromBeat: -1 }, { fromBeat: 2, toBeat: 1 }])('rejects an unusable phrase range %j', overrides => {
-    expect(() => comparisonPhrase(score, { ...DEFAULT_MATERIAL, kind: 'phrase', ...overrides })).toThrow();
-  });
+  it.each([{ trackKey: 'missing' }, { fromBeat: 4 }, { fromBeat: -1 }, { fromBeat: 2, toBeat: 1 }])(
+    'rejects an unusable phrase range %j',
+    (overrides) => {
+      expect(() =>
+        comparisonPhrase(score, { ...DEFAULT_MATERIAL, kind: 'phrase', ...overrides }),
+      ).toThrow();
+    },
+  );
   it('migrates existing version 1 projects without changing their sounds', () => {
     const old = structuredClone(project) as any;
     delete old.comparisonMaterial;
@@ -38,10 +60,20 @@ describe('shared A/B musical material', () => {
     expect(restored.comparison).toEqual(project.comparison);
   });
   it('saves phrase selection outside snapshots and round trips it', () => {
-    const selected = { ...project, comparisonMaterial: { ...DEFAULT_MATERIAL, kind: 'phrase' as const, fromBeat: 1, toBeat: 3 } };
+    const selected = {
+      ...project,
+      comparisonMaterial: { ...DEFAULT_MATERIAL, kind: 'phrase' as const, fromBeat: 1, toBeat: 3 },
+    };
     expect(importProject(JSON.stringify(selected))).toEqual(selected);
   });
-  it.each([{ kind: 'other' }, { note: 'C9' }, { fromBeat: null }, { fromBeat: 2, toBeat: 1 }])('rejects invalid saved material %j', overrides => {
-    expect(() => importProject(JSON.stringify({ ...project, comparisonMaterial: { ...DEFAULT_MATERIAL, ...overrides } }))).toThrow();
-  });
+  it.each([{ kind: 'other' }, { note: 'C9' }, { fromBeat: null }, { fromBeat: 2, toBeat: 1 }])(
+    'rejects invalid saved material %j',
+    (overrides) => {
+      expect(() =>
+        importProject(
+          JSON.stringify({ ...project, comparisonMaterial: { ...DEFAULT_MATERIAL, ...overrides } }),
+        ),
+      ).toThrow();
+    },
+  );
 });
