@@ -1,3 +1,4 @@
+import { keepMatchingWavePoints } from './core/waveform';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownToLine,
@@ -243,7 +244,7 @@ export default function App() {
     setMacros({ ...NEUTRAL_MACROS });
   };
   const changeSound = (mutate: (s: Sound) => Sound, key = '', manual = true) => {
-    const next = mutate(sound);
+    const next = keepMatchingWavePoints(mutate(sound));
     if (manual) resetMacros(next);
     change((p) => ({ ...p, comparison: { ...p.comparison, [p.comparison.active]: next } }), key);
   };

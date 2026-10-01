@@ -140,6 +140,7 @@ function stringValue(value: unknown, label: string, max = 100): asserts value is
 }
 export function validateSound(value: unknown): asserts value is Sound {
   record(value);
+  if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints);
   for (const [name, size] of [
     ['harmonics', 16],
     ['undertones', 5],

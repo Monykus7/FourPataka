@@ -16,8 +16,9 @@ export function waveformCoefficients(halfCycle: readonly number[], count = 16) {
 
 export function soundFromWaveform(sound: Sound, halfCycle: readonly number[]): Sound {
   const coefficients = waveformCoefficients(halfCycle, sound.harmonics.length);
+  const { waveformPoints: _points, ...rest } = sound;
   return {
-    ...sound,
+    ...rest,
     harmonics: coefficients.map(Math.abs),
     polarity: coefficients.map((value) => (value < 0 ? -1 : 1)),
   };
@@ -103,4 +104,13 @@ export function resetWaveform(sound: Sound): Sound {
     harmonics: sound.harmonics.map((_, i) => (i === 0 ? 1 : 0)),
     polarity: sound.polarity.map(() => 1),
   };
+}
+
+export function keepMatchingWavePoints(sound: Sound): Sound {
+  if (!sound.waveformPoints) return sound;
+  const projected = waveformCoefficients(waveformFromPoints(sound.waveformPoints));
+  if (projected.every((v, i) => Math.abs(v - sound.harmonics[i] * sound.polarity[i]) < 1e-8))
+    return sound;
+  const { waveformPoints: _points, ...rest } = sound;
+  return rest;
 }
