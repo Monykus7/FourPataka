@@ -59,6 +59,8 @@ import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
 import TrackMaker from './components/TrackMaker';
 import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
+import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
+import ComparisonPanel from './components/ComparisonPanel';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
 type View = 'instrument' | 'compose' | 'learn';
@@ -161,7 +163,6 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(initial.warning);
   const [saveStatus, setSaveStatus] = useState('Saved locally');
   const [selectedPartial, setSelectedPartial] = useState('H1');
-  const [auditionPitch, setAuditionPitch] = useState('C4');
   const [solo, setSolo] = useState(false);
   const [undertonesOpen, setUndertonesOpen] = useState(false);
   const [macrosOpen, setMacrosOpen] = useState(false);
@@ -183,6 +184,7 @@ export default function App() {
   const fileInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const engine = useRef(new AudioEngine());
+  const auditionRequested = useRef(false);
   const editGroup = useRef({ key: '', time: 0 });
   const active = project.comparison.active;
   const sound = project.comparison[active];
@@ -198,11 +200,18 @@ export default function App() {
       ),
     [project.scoreText, instruments],
   );
-  const frequencies =
-    auditionPitch === 'chord'
-      ? ['Bb4', 'D5', 'F5'].map((n) => pitch(n).frequency)
-      : [pitch(auditionPitch).frequency];
-  const fundamental = frequencies[0];
+  const material = project.comparisonMaterial;
+  const auditionPitch = material.kind === 'note' ? material.note : material.kind;
+  const comparison = useMemo<{ phrase: AuditionPhrase | null; error: string | null }>(() => {
+    try {
+      return { phrase: comparisonPhrase(score, material), error: null };
+    } catch (e) {
+      return { phrase: null, error: (e as Error).message };
+    }
+  }, [score, material]);
+  const referenceNote =
+    comparison.phrase?.events.find((e) => e.notes.length)?.notes[0] ?? material.note;
+  const fundamental = pitch(referenceNote).frequency;
   const partial = components(sound, fundamental, sampleRate).find(
     (c) => c.label === selectedPartial,
   )!;
@@ -297,6 +306,7 @@ export default function App() {
   }, [toast]);
   useEffect(() => {
     engine.current.onEnded = () => {
+      auditionRequested.current = false;
       setPlayback(null);
       setElapsed(0);
       setPeak(0);
@@ -314,24 +324,17 @@ export default function App() {
     };
   }, []);
   useEffect(() => {
-    if (engine.current.mode !== 'audition') return;
-    const timer = setTimeout(() => {
-      void engine.current
-        .audition(sound, frequencies, solo ? selectedPartial : undefined)
-        .catch((e) => setToast(`Audio could not start: ${e.message}`));
-    }, 90);
-    return () => clearTimeout(timer);
-  }, [sound, auditionPitch, solo, selectedPartial]);
-  useEffect(() => {
     if (newPreset) dialog.current?.showModal();
     else dialog.current?.close();
   }, [newPreset]);
 
   const stop = () => {
+    auditionRequested.current = false;
     engine.current.stop();
     setRunning(null);
   };
   const playScore = async () => {
+    auditionRequested.current = false;
     if (score.diagnostics.length) {
       setToast('Fix the score diagnostics before playing.');
       setView('compose');
@@ -346,16 +349,42 @@ export default function App() {
     }
   };
   const audition = async (next = sound) => {
+    if (!comparison.phrase) {
+      auditionRequested.current = false;
+      engine.current.stop();
+      setToast(comparison.error);
+      return;
+    }
+    auditionRequested.current = true;
     try {
-      await engine.current.audition(next, frequencies, solo ? selectedPartial : undefined);
+      await engine.current.auditionPhrase(
+        next,
+        comparison.phrase,
+        solo ? selectedPartial : undefined,
+      );
       setPlayback(engine.current.mode);
       setRunning(null);
     } catch (e) {
+      auditionRequested.current = false;
       setToast(`Audio could not start: ${(e as Error).message}`);
     }
   };
   const actionRef = useRef({ stop, playScore, audition });
   actionRef.current = { stop, playScore, audition };
+  const previousAudition = useRef({ active, material, presetId: preset.id });
+  useEffect(() => {
+    const previous = previousAudition.current;
+    previousAudition.current = { active, material, presetId: preset.id };
+    if (engine.current.mode !== 'audition' && !auditionRequested.current) return;
+    if (
+      engine.current.mode !== 'audition' ||
+      previous.active !== active ||
+      previous.material !== material ||
+      previous.presetId !== preset.id
+    ) {
+      void actionRef.current.audition();
+    } else engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
+  }, [active, material, preset.id, sound, solo, selectedPartial]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -395,7 +424,14 @@ export default function App() {
     if (side === active) return;
     resetMacros(project.comparison[side]);
     change((p) => ({ ...p, comparison: { ...p.comparison, active: side } }));
-    if (playback === 'audition') void audition(project.comparison[side]);
+  };
+  const copyAB = (from: 'A' | 'B', to: 'A' | 'B') => {
+    change((p) => ({
+      ...p,
+      comparison: { ...p.comparison, [to]: structuredClone(p.comparison[from]) },
+    }));
+    if (to === active) resetMacros(project.comparison[from]);
+    setToast(`Copied ${from} to ${to}.`);
   };
   const exportJson = async () => {
     if (window.fourpatakaDesktop?.saveProject) {
@@ -705,7 +741,7 @@ export default function App() {
             </h1>
             <span className="page-metadata">
               {view === 'instrument'
-                ? `${auditionPitch === 'chord' ? 'Bb4 · D5 · F5' : auditionPitch} · ${fundamental.toFixed(2)} Hz · ${sampleRate / 1000} kHz`
+                ? `${referenceNote} · ${fundamental.toFixed(2)} Hz${material.kind === 'phrase' ? ' · phrase reference' : ''} · ${sampleRate / 1000} kHz`
                 : view === 'compose'
                   ? `${score.tracks.length} tracks · ${score.tempo} BPM · ${score.seconds.toFixed(2)} s`
                   : 'Source model · Fourier coefficients'}
@@ -920,6 +956,17 @@ export default function App() {
                 </div>
               </section>
 
+              <ComparisonPanel
+                material={material}
+                score={score}
+                phrase={comparison.phrase}
+                error={comparison.error}
+                active={active}
+                elapsed={playback === 'audition' ? elapsed : 0}
+                onChange={(next) => change((p) => ({ ...p, comparisonMaterial: next }))}
+                onCopy={copyAB}
+                onReplay={() => void audition()}
+              />
               <div className="instrument-lower">
                 <div className="lower-main">
                   <SourceGraphs
@@ -1077,11 +1124,21 @@ export default function App() {
                       className={`secondary-button full-width ${solo ? 'solo-active' : ''}`}
                       onClick={() => {
                         setSolo(!solo);
-                        if (playback !== 'audition')
+                        if (playback !== 'audition' && comparison.phrase) {
+                          auditionRequested.current = true;
                           void engine.current
-                            .audition(sound, frequencies, !solo ? selectedPartial : undefined)
-                            .catch((e) => setToast(e.message));
+                            .auditionPhrase(
+                              sound,
+                              comparison.phrase,
+                              !solo ? selectedPartial : undefined,
+                            )
+                            .catch((e) => {
+                              auditionRequested.current = false;
+                              setToast(e.message);
+                            });
+                        }
                       }}
+                      disabled={!solo && !!comparison.error}
                     >
                       <Headphones size={14} />
                       {solo ? 'Solo on · return to instrument' : `Solo ${partial.label}`}
@@ -1574,9 +1631,7 @@ export default function App() {
               <section className="panel analysis-panel">
                 <div className="section-title">
                   <h3>Your source, measured</h3>
-                  <span className="tag">
-                    STEADY MODEL · {auditionPitch === 'chord' ? 'Bb4' : auditionPitch}
-                  </span>
+                  <span className="tag">STEADY MODEL · {referenceNote}</span>
                 </div>
                 {metrics.power ? (
                   <div className="analysis-metrics">
@@ -1659,14 +1714,20 @@ export default function App() {
           </button>
           <div className="transport-time">
             <strong>
-              {playback === 'score'
+              {playback
                 ? `${Math.floor(elapsed / 60)
                     .toString()
                     .padStart(2, '0')}:${Math.floor(elapsed % 60)
                     .toString()
                     .padStart(2, '0')}`
                 : '00:00'}
-              <span>{playback === 'score' ? 'PLAYING' : 'READY'}</span>
+              <span>
+                {playback === 'score'
+                  ? 'PLAYING'
+                  : playback === 'audition'
+                    ? `COMPARE ${active}`
+                    : 'READY'}
+              </span>
             </strong>
             <span>
               {score.tempo} <small>BPM</small>
@@ -1679,19 +1740,52 @@ export default function App() {
           <select
             aria-label="Audition pitch"
             value={auditionPitch}
-            onChange={(e) => setAuditionPitch(e.target.value)}
+            onChange={(e) =>
+              change((p) => ({
+                ...p,
+                comparisonMaterial: {
+                  ...p.comparisonMaterial,
+                  kind:
+                    e.target.value === 'phrase'
+                      ? 'phrase'
+                      : e.target.value === 'chord'
+                        ? 'chord'
+                        : 'note',
+                  note: ['phrase', 'chord'].includes(e.target.value)
+                    ? p.comparisonMaterial.note
+                    : e.target.value,
+                },
+              }))
+            }
           >
-            {['C2', 'C3', 'C4', 'A4', 'C5', 'C6', 'C7', 'C8', 'chord'].map((note) => (
+            {Array.from(
+              new Set([
+                'C2',
+                'C3',
+                'C4',
+                'A4',
+                'C5',
+                'C6',
+                'C7',
+                'C8',
+                material.note,
+                'chord',
+                'phrase',
+              ]),
+            ).map((note) => (
               <option key={note} value={note}>
-                {note === 'chord'
-                  ? 'Bb4 · D5 · F5'
-                  : `${note} · ${pitch(note).frequency.toFixed(1)} Hz`}
+                {note === 'phrase'
+                  ? `Phrase · ${material.trackKey}`
+                  : note === 'chord'
+                    ? 'Bb4 · D5 · F5'
+                    : `${note} · ${pitch(note).frequency.toFixed(1)} Hz`}
               </option>
             ))}
           </select>
           <button
             className={`audition-button ${playback === 'audition' ? 'playing' : ''}`}
             onClick={() => void audition()}
+            disabled={!!comparison.error}
           >
             <Headphones size={15} />
             <span>{solo ? `Solo ${selectedPartial}` : 'Listen'}</span>
@@ -1714,18 +1808,12 @@ export default function App() {
           </div>
           <button
             className="icon-button copy-ab"
-            title={`Copy ${active} to ${active === 'A' ? 'B' : 'A'}`}
-            aria-label={`Copy ${active} to ${active === 'A' ? 'B' : 'A'}`}
-            onClick={() => {
-              const other = active === 'A' ? 'B' : 'A';
-              change((p) => ({
-                ...p,
-                comparison: { ...p.comparison, [other]: structuredClone(sound) },
-              }));
-              setToast(`Copied ${active} to ${other}. The snapshots stay independent.`);
-            }}
+            title="Replay comparison"
+            aria-label="Replay comparison"
+            disabled={!!comparison.error}
+            onClick={() => void audition()}
           >
-            <ArrowLeftRight size={15} />
+            <RotateCcw size={15} />
           </button>
         </div>
         <div className="monitor-transport">

@@ -1,4 +1,70 @@
 /* Subtle material, flat controls, and the original dark studio palette. */
+.comparison-panel {
+  padding: 18px 21px;
+  margin: 18px 0;
+}
+.comparison-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px;
+  margin-top: 15px;
+}
+.comparison-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.comparison-controls select,
+.comparison-controls input {
+  height: 33px;
+  font-size: 11px;
+  padding: 6px 9px;
+}
+.comparison-controls input {
+  width: 105px;
+}
+.comparison-controls button {
+  height: 33px;
+}
+.comparison-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font: 11px var(--font-mono);
+  margin: 15px 0 10px;
+}
+.comparison-summary > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.comparison-panel progress {
+  display: block;
+  width: 100%;
+  height: 3px;
+  margin: 0 0 12px;
+  border: 0;
+  accent-color: var(--accent);
+}
+.comparison-panel progress::-webkit-progress-bar {
+  background: var(--border);
+  border-radius: 2px;
+}
+.comparison-panel progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 2px;
+}
+.spectrum [role='button'] {
+  cursor: pointer;
+}
+.spectrum [role='button']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+}
 .command-destination {
   display: flex;
   align-items: center;

@@ -1,5 +1,96 @@
 import { expect, test } from '@playwright/test';
 
+test('A/B shares a saved phrase, replays on switching, and keeps live edits at the same position', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page
+    .getByRole('combobox', { name: 'Comparison material', exact: true })
+    .selectOption('phrase');
+  await page.getByRole('combobox', { name: 'Comparison phrase track' }).selectOption('bass');
+  await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('2');
+  await page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }).fill('4');
+  await expect(page.locator('.comparison-summary')).toContainText(
+    'bass · 2 beats · 120 BPM · 2 events',
+  );
+  await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
+  await page.getByRole('button', { name: 'B', exact: true }).click();
+  await page.getByRole('spinbutton', { name: 'H1 exact magnitude' }).fill('0.35');
+  await page.getByRole('button', { name: 'Compare / replay', exact: true }).click();
+  const progress = page.getByRole('progressbar', { name: 'Comparison phrase progress' });
+  await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeGreaterThan(0.3);
+  const before = Number(await progress.getAttribute('value'));
+  await page.getByRole('spinbutton', { name: 'H1 exact magnitude' }).fill('0.5');
+  await expect
+    .poll(async () => Number(await progress.getAttribute('value')))
+    .toBeGreaterThan(before);
+  await page.getByRole('button', { name: 'A', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).toHaveValue('1');
+  await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeLessThan(0.2);
+  await expect(page.getByRole('spinbutton', { name: 'Comparison phrase start beat' })).toHaveValue(
+    '2',
+  );
+  await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await expect(page.getByRole('button', { name: 'Listen', exact: true })).not.toHaveClass(
+    /playing/,
+  );
+  await page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }).fill('');
+  await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('1');
+  await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Comparison material' })).toHaveValue('phrase');
+  await expect(page.getByRole('combobox', { name: 'Comparison phrase track' })).toHaveValue('bass');
+  await expect(
+    page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }),
+  ).toHaveValue('');
+  const project = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
+  );
+  expect(project.comparison.B.harmonics[0]).toBe(0.5);
+  expect(project.tracks[1].sound.harmonics[0]).toBe(1);
+  await page.screenshot({ path: '.test-results/comparison-desktop.png', fullPage: true });
+});
+
+test('microscope links keyboard spectrum selection, zero components, contribution, and solo', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const select = page.getByRole('button', { name: 'Select H3 in spectrum' });
+  await select.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.inspector-symbol')).toContainText('H3');
+  await expect(select).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.partial-contribution')).toHaveAttribute(
+    'aria-label',
+    'H3 waveform contribution',
+  );
+  await page.getByRole('button', { name: 'Solo H3', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Solo on · return to instrument' })).toBeVisible();
+  await page.getByRole('button', { name: 'H2', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Select H2 in spectrum' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(page.locator('.inspector-symbol')).toContainText('H2');
+  await expect(page.locator('.partial-contribution')).toHaveAttribute(
+    'aria-label',
+    'H2 waveform contribution',
+  );
+  await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill('track broken using missing {\n C4 quarter\n}');
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Comparison material' }).selectOption('phrase');
+  await expect(page.getByRole('button', { name: 'Compare / replay' })).toBeDisabled();
+  // Returning from solo remains available even if the selected phrase becomes invalid.
+  await page.getByRole('button', { name: 'Solo on · return to instrument' }).click();
+  await expect(page.locator('.partial-inspector').getByRole('button', { name: 'Solo H2', exact: true })).toBeDisabled();
+  await page.getByRole('combobox', { name: 'Comparison material' }).selectOption('note');
+  await expect(page.getByRole('button', { name: 'Compare / replay' })).toBeEnabled();
+});
+
 test('live voice edits crossfade in phase without retriggering the envelope', async ({ page }) => {
   await page.goto('/');
   const proof = await page.evaluate(async () => {

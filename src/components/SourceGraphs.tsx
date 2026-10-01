@@ -13,6 +13,12 @@ export default function SourceGraphs({
   onSelect: (label: string) => void;
 }) {
   const wave = sourceSamples(sound, frequency, sampleRate);
+  const contributionSound = {
+    ...sound,
+    harmonics: sound.harmonics.map((value, i) => (selected === `H${i + 1}` ? value : 0)),
+    undertones: sound.undertones.map((value, i) => (selected === `f₀/${i + 2}` ? value : 0)),
+  };
+  const contribution = sourceSamples(contributionSound, frequency, sampleRate);
   const width = 600;
   const height = 140;
   const scale = Math.max(1, ...wave.values.map(Math.abs));
@@ -22,7 +28,15 @@ export default function SourceGraphs({
         `${index === 0 ? 'M' : 'L'}${((index * width) / (wave.values.length - 1)).toFixed(2)},${(height / 2 - (value / scale) * 56).toFixed(2)}`,
     )
     .join(' ');
-  const partials = components(sound, frequency, sampleRate).filter((p) => p.magnitude > 0);
+  const contributionPath = contribution.values
+    .map(
+      (value, index) =>
+        `${index === 0 ? 'M' : 'L'}${((index * width) / (contribution.values.length - 1)).toFixed(2)},${(height / 2 - (value / scale) * 56).toFixed(2)}`,
+    )
+    .join(' ');
+  const partials = components(sound, frequency, sampleRate).filter(
+    (p) => p.magnitude > 0 || p.label === selected,
+  );
   const maxFrequency = Math.max(frequency * 16, 1000);
   return (
     <div className="source-graphs">
@@ -51,9 +65,19 @@ export default function SourceGraphs({
           ))}
           <path d={`${path} L600,140 L0,140 Z`} fill="url(#wave-fill)" />
           <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2" />
+          <path
+            d={contributionPath}
+            className="partial-contribution"
+            role="img"
+            aria-label={`${selected} waveform contribution`}
+            fill="none"
+            stroke="var(--text-muted)"
+            strokeWidth="1.5"
+            strokeDasharray="5 4"
+          />
         </svg>
         <div className="graph-axis">
-          <span>0 ms</span>
+          <span>{selected} · dashed</span>
           <span>
             ±{scale.toFixed(1)} amplitude scale · trim {sound.trim} dB
           </span>
@@ -68,7 +92,7 @@ export default function SourceGraphs({
         <svg
           className="wave-graph spectrum"
           viewBox={`0 0 ${width} ${height}`}
-          role="img"
+          role="group"
           aria-label="Source coefficients plotted at their actual frequencies, before trim"
         >
           {[28, 70, 112].map((y) => (
@@ -77,7 +101,20 @@ export default function SourceGraphs({
           {partials.map((p) => {
             const x = 8 + (p.frequency / maxFrequency) * 580;
             return (
-              <g key={p.label} onClick={() => onSelect(p.label)}>
+              <g
+                key={p.label}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${p.label} in spectrum`}
+                aria-pressed={selected === p.label}
+                onClick={() => onSelect(p.label)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSelect(p.label);
+                  }
+                }}
+              >
                 <title>
                   {p.label}: {p.frequency.toFixed(2)} Hz, magnitude {p.magnitude.toFixed(3)}
                   {!p.available ? ' (above Nyquist; excluded from playback)' : ''}
