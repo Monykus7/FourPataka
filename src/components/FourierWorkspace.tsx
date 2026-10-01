@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode, type PointerEvent } from 'react';
 import { clamp, type Sound } from '../core/music';
 import {
+  keepMatchingWavePoints,
   harmonicShape,
   resetWaveform,
   soundFromPoints,
@@ -33,7 +34,7 @@ export default function FourierWorkspace({
     points?: WavePoint[];
   } | null>(null);
   const points =
-    sound.waveformPoints ??
+    keepMatchingWavePoints(sound).waveformPoints ??
     Array.from({ length: 7 }, (_, i) => ({
       x: i / 6,
       y: i === 0 || i === 6 ? 0 : harmonicShape(sound, i / 12),

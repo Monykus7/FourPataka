@@ -691,3 +691,19 @@
 .wave-legend span:nth-child(3) {
   color: var(--tertiary);
 }
+
+.harmonic-column:nth-child(even) .bar-fill {
+  background: var(--secondary);
+}
+.harmonic-column:nth-child(even) .bar-handle {
+  border-color: var(--secondary);
+}
+.harmonic-column:has(sup) .bar-fill {
+  background: var(--tertiary);
+}
+.harmonic-column:has(sup) .bar-handle {
+  border-color: var(--tertiary);
+}
+.harmonic-label sup {
+  color: var(--tertiary);
+}

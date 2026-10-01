@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { mathematicalPreset } from '../../src/core/music';
 import {
+  keepMatchingWavePoints,
   harmonicShape,
   soundFromWaveform,
   waveformCoefficients,
@@ -75,4 +76,19 @@ it('saves independent point geometry and resets only the harmonic bank', () => {
   expect(reset.trim).toBe(source.trim);
   expect(reset.attack).toBe(source.attack);
   expect(reset.waveformPoints).toBeUndefined();
+});
+
+it('harmonic edits discard stale geometry while level and envelope edits keep it', () => {
+  const sound = soundFromPoints(mathematicalPreset('sine'), [
+    { x: 0, y: 0 },
+    { x: 0.5, y: 1 },
+    { x: 1, y: 0 },
+  ]);
+  expect(keepMatchingWavePoints({ ...sound, trim: -18 }).waveformPoints).toEqual(
+    sound.waveformPoints,
+  );
+  const next = { ...sound, harmonics: sound.harmonics.map(() => 0) };
+  expect(keepMatchingWavePoints(next).waveformPoints).toBeUndefined();
+  const drawn = soundFromWaveform(sound, Array(257).fill(0));
+  expect(drawn.waveformPoints).toBeUndefined();
 });

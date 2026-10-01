@@ -48,7 +48,7 @@ export function validateWavePoints(points: unknown): asserts points is WavePoint
       point.x < 0 ||
       point.x > 1 ||
       Math.abs(point.y) > 16 ||
-      (i > 0 && point.x - points[i - 1].x < 0.005)
+      (i > 0 && point.x - points[i - 1].x < 0.005 - 1e-10)
     )
       throw new Error('Invalid waveform point position or amplitude.');
   });

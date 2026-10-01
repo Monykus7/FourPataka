@@ -98,3 +98,20 @@ describe('independent project state', () => {
     expect(original.comparison.A.harmonics[0]).toBe(1);
   });
 });
+
+it('round-trips point geometry and rejects malformed optional editor data', () => {
+  const p = createProject();
+  p.comparison.A.waveformPoints = [
+    { x: 0, y: 0 },
+    { x: 0.5, y: 1 },
+    { x: 1, y: 0 },
+  ];
+  expect(importProject(JSON.stringify(p)).comparison.A.waveformPoints).toEqual(
+    p.comparison.A.waveformPoints,
+  );
+  p.comparison.A.waveformPoints[1].y = NaN;
+  expect(() => importProject(JSON.stringify(p))).toThrow();
+  p.comparison.A.waveformPoints[1].y = 1;
+  p.comparison.A.waveformPoints[1].x = 0;
+  expect(() => importProject(JSON.stringify(p))).toThrow();
+});
