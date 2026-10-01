@@ -707,3 +707,112 @@
 .harmonic-label sup {
   color: var(--tertiary);
 }
+
+.pedalboard {
+  margin-top: 20px;
+  padding: 20px;
+}
+.pedal-toolbar,
+.pedal-presets {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0;
+}
+.pedal-toolbar label,
+.pedal-presets label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.pedal-presets input {
+  min-width: 0;
+  padding: 8px;
+}
+.pedal-chain {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 14px;
+}
+.pedal-module {
+  border: 1px solid var(--border);
+  border-top: 3px solid var(--secondary);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 0;
+  background: var(--surface-1);
+}
+.pedal-module.overdrive {
+  border-top-color: var(--tertiary);
+}
+.pedal-module.bypassed {
+  border-top-color: var(--text-muted);
+}
+.pedal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.pedal-header strong {
+  cursor: grab;
+}
+.pedal-header label {
+  font-size: 12px;
+}
+.pedal-parameters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.pedal-parameters .range-title {
+  text-transform: capitalize;
+}
+.pedal-parameters .numeric-value input {
+  width: 55px;
+}
+.pedal-module.overdrive input[type='range'] {
+  accent-color: var(--tertiary);
+}
+.pedal-module.compressor input[type='range'] {
+  accent-color: var(--secondary);
+}
+.pedal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.pedal-pending {
+  color: var(--secondary);
+  font-size: 12px;
+}
+.processed-graphs {
+  margin: 20px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.processed-graphs svg {
+  width: 100%;
+  display: block;
+}
+.track-chain-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .pedal-parameters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pedal-toolbar select,
+  .pedal-presets select {
+    max-width: 180px;
+  }
+}

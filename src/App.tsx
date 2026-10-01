@@ -59,6 +59,9 @@ import {
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
 import FourierWorkspace from './components/FourierWorkspace';
+import Pedalboard from './components/Pedalboard';
+import ChainBypass from './components/ChainBypass';
+import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
 import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
@@ -171,6 +174,7 @@ export default function App() {
   const [macrosOpen, setMacrosOpen] = useState(false);
   const [macros, setMacros] = useState<Macros>(NEUTRAL_MACROS);
   const [selectedTrack, setSelectedTrack] = useState(project.tracks[0]?.key ?? '');
+  const [pedalDestination, setPedalDestination] = useState('audition');
   const [selectedEvent, setSelectedEvent] = useState<ScoreEvent | null>(null);
   const [playback, setPlayback] = useState<'score' | 'audition' | null>(null);
   const [running, setRunning] = useState<{ text: string; score: CompiledScore } | null>(null);
@@ -346,7 +350,7 @@ export default function App() {
       return;
     }
     try {
-      await engine.current.play(score, project.tracks);
+      await engine.current.play(score, project.tracks, project.processing);
       setPlayback(engine.current.mode);
       if (engine.current.mode) setRunning({ text: project.scoreText, score });
     } catch (e) {
@@ -366,6 +370,7 @@ export default function App() {
         next,
         comparison.phrase,
         solo ? selectedPartial : undefined,
+        project.processing.audition[active],
       );
       setPlayback(engine.current.mode);
       setRunning(null);
@@ -388,8 +393,15 @@ export default function App() {
       previous.presetId !== preset.id
     ) {
       void actionRef.current.audition();
-    } else engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
-  }, [active, material, preset.id, sound, solo, selectedPartial]);
+    } else {
+      engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
+      engine.current.updateProcessing(project.processing, active);
+    }
+  }, [active, material, preset.id, sound, solo, selectedPartial, project.processing]);
+  useEffect(() => {
+    if (engine.current.mode === 'score')
+      engine.current.updateProcessing(project.processing, active);
+  }, [project.processing, active]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -434,6 +446,10 @@ export default function App() {
     change((p) => ({
       ...p,
       comparison: { ...p.comparison, [to]: structuredClone(p.comparison[from]) },
+      processing: {
+        ...p.processing,
+        audition: { ...p.processing.audition, [to]: structuredClone(p.processing.audition[from]) },
+      },
     }));
     if (to === active) resetMacros(project.comparison[from]);
     setToast(`Copied ${from} to ${to}.`);
@@ -969,6 +985,27 @@ export default function App() {
                 </div>
               </section>
 
+              <Pedalboard
+                processing={project.processing}
+                trackKeys={project.tracks.map((t) => t.key)}
+                active={active}
+                destination={pedalDestination}
+                onDestination={setPedalDestination}
+                onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
+                pending={engine.current.processingPending(project.processing, active)}
+                onReplay={() => void audition()}
+              />
+              <ProcessedGraphs
+                analyser={engine.current.outputAnalyser(pedalDestination)}
+                sampleRate={sampleRate}
+                label={
+                  pedalDestination === 'audition'
+                    ? `audition ${active}, before mix gain`
+                    : pedalDestination === 'master'
+                      ? 'master, before mix gain'
+                      : `${pedalDestination}, before track level`
+                }
+              />
               <ComparisonPanel
                 material={material}
                 score={score}
@@ -1144,6 +1181,7 @@ export default function App() {
                               sound,
                               comparison.phrase,
                               !solo ? selectedPartial : undefined,
+                              project.processing.audition[active],
                             )
                             .catch((e) => {
                               auditionRequested.current = false;
@@ -1355,6 +1393,17 @@ export default function App() {
                       <h3>Independent track sounds</h3>
                       <Layers3 size={15} />
                     </div>
+                    <ChainBypass
+                      name="master"
+                      chain={project.processing.master}
+                      onChange={(chain) =>
+                        change((p) => ({ ...p, processing: { ...p.processing, master: chain } }))
+                      }
+                      onEdit={() => {
+                        setPedalDestination('master');
+                        setView('instrument');
+                      }}
+                    />
                     {project.tracks.map((t) => {
                       const library = instruments.find((i) => i.id === t.presetId)!;
                       const custom = JSON.stringify(t.sound) !== JSON.stringify(library.sound);
@@ -1395,6 +1444,15 @@ export default function App() {
                                   ...p.comparison,
                                   [p.comparison.active]: structuredClone(t.sound),
                                 },
+                                processing: {
+                                  ...p.processing,
+                                  audition: {
+                                    ...p.processing.audition,
+                                    [p.comparison.active]: structuredClone(
+                                      p.processing.tracks[t.key],
+                                    ),
+                                  },
+                                },
                               }));
                               setSelectedTrack(t.key);
                               setView('instrument');
@@ -1403,6 +1461,23 @@ export default function App() {
                             Load copy into editor
                             <ArrowRight size={12} />
                           </button>
+                          <ChainBypass
+                            name={`track ${t.key}`}
+                            chain={project.processing.tracks[t.key]}
+                            onChange={(chain) =>
+                              change((p) => ({
+                                ...p,
+                                processing: {
+                                  ...p.processing,
+                                  tracks: { ...p.processing.tracks, [t.key]: chain },
+                                },
+                              }))
+                            }
+                            onEdit={() => {
+                              setPedalDestination(`track:${t.key}`);
+                              setView('instrument');
+                            }}
+                          />
                           {t.appliedVersion < library.version && (
                             <span className="footnote">
                               Library v{library.version} available · this copy keeps v
