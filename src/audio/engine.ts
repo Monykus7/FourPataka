@@ -4,6 +4,14 @@ export { createVoice } from './voice';
 import type { AuditionPhrase } from '../core/comparison';
 import type { CompiledScore } from '../core/parser';
 import type { TrackInstance } from '../core/project';
+import { emptyChain, chainMusicalSettings, type Chain, type Processing } from '../core/pedals';
+import {
+  createChain,
+  chainLatency,
+  measureOversamplingLatency,
+  measureCompressorLatency,
+  type ChainGraph,
+} from './effects';
 
 export const VOICE_LIMIT = 32;
 interface Session {
@@ -18,6 +26,10 @@ interface Session {
   auditionSound: Sound | null;
   solo?: string;
   phraseSeconds: number;
+  chains: Map<string, ChainGraph>;
+  chainSettings: Map<string, string>;
+  latency: number;
+  processingTail: number;
 }
 export class AudioEngine {
   context: AudioContext | null = null;
@@ -29,6 +41,9 @@ export class AudioEngine {
   onEnded: (() => void) | null = null;
   monitorValue = 0.35;
   mixValue = 0.8;
+  private preparation: Promise<void> | null = null;
+  private oversamplingLatency = 0;
+  private compressorLatency = 0.006;
 
   async ready() {
     if (!this.context) {
@@ -43,7 +58,15 @@ export class AudioEngine {
       this.mix.connect(this.analyser);
       this.analyser.connect(this.monitor);
       this.monitor.connect(this.context.destination);
+      this.preparation = Promise.all([
+        measureOversamplingLatency(this.context.sampleRate),
+        measureCompressorLatency(this.context.sampleRate),
+      ]).then(([overdrive, compressor]) => {
+        this.oversamplingLatency = overdrive;
+        this.compressorLatency = compressor;
+      });
     }
+    await this.preparation;
     await this.context.resume();
     return this.context;
   }
@@ -71,6 +94,10 @@ export class AudioEngine {
       mode,
       auditionSound: null,
       phraseSeconds: 0,
+      chains: new Map(),
+      chainSettings: new Map(),
+      latency: 0,
+      processingTail: 0,
     };
     this.session = session;
     return session;
@@ -113,16 +140,32 @@ export class AudioEngine {
       solo,
     );
   }
-  async auditionPhrase(sound: Sound, phrase: AuditionPhrase, solo?: string) {
+  async auditionPhrase(
+    sound: Sound,
+    phrase: AuditionPhrase,
+    solo?: string,
+    chain: Chain = emptyChain(),
+  ) {
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
     const snapshot = structuredClone(sound);
     const session = this.begin('audition', 1.6 + snapshot.release);
     session.auditionSound = snapshot;
+    const processing = createChain(
+      this.context!,
+      structuredClone(chain),
+      this.oversamplingLatency,
+      this.compressorLatency,
+    );
+    processing.output.connect(session.gate);
+    session.chains.set('audition', processing);
+    session.chainSettings.set('audition', chainMusicalSettings(chain));
+    session.latency = processing.latency;
+    session.processingTail = processing.tail;
     session.solo = solo;
     session.phraseSeconds = (phrase.beats * 60) / phrase.tempo;
-    session.duration = session.phraseSeconds + snapshot.release;
+    session.duration = session.phraseSeconds + snapshot.release + session.processingTail;
     const frozen = structuredClone(phrase);
     let cursor = 0;
     const schedule = () => {
@@ -135,7 +178,7 @@ export class AudioEngine {
         event.frequencies.forEach((f) =>
           this.voice(
             session,
-            session.gate,
+            processing.input,
             session.auditionSound!,
             f,
             session.start + (event.beat * 60) / frozen.tempo,
@@ -156,25 +199,63 @@ export class AudioEngine {
     session.solo = solo;
     session.voices.forEach((v) => v.update(sound, solo));
     session.duration = Math.max(
-      session.phraseSeconds + sound.release,
-      ...session.voices.map((v) => v.end - session.start),
+      session.phraseSeconds + sound.release + session.processingTail,
+      ...session.voices.map((v) => v.end - session.start + session.processingTail),
     );
   }
-  async play(score: CompiledScore, instances: TrackInstance[]) {
+  async play(score: CompiledScore, instances: TrackInstance[], processing?: Processing) {
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
     const tracks = structuredClone(instances);
     const maxRelease = Math.max(0, ...tracks.map((t) => t.sound.release));
     const session = this.begin('score', score.seconds + maxRelease);
+    const settings = structuredClone(processing);
+    const master = createChain(
+      this.context!,
+      settings?.master ?? emptyChain(),
+      this.oversamplingLatency,
+      this.compressorLatency,
+    );
+    master.output.connect(session.gate);
+    session.chains.set('master', master);
+    session.chainSettings.set('master', chainMusicalSettings(settings?.master ?? emptyChain()));
+    const maxLatency = Math.max(
+      0,
+      ...tracks.map((t) =>
+        chainLatency(
+          settings?.tracks[t.key] ?? emptyChain(),
+          this.oversamplingLatency,
+          this.compressorLatency,
+        ),
+      ),
+    );
+    session.latency = maxLatency + master.latency;
+    session.processingTail = master.tail;
     const buses = new Map<string, GainNode>();
     tracks.forEach((t) => {
       const bus = this.context!.createGain();
       bus.gain.value = t.level;
-      bus.connect(session.gate);
-      session.nodes.push(bus);
-      buses.set(t.key, bus);
+      const chain = settings?.tracks[t.key] ?? emptyChain();
+      const graph = createChain(
+        this.context!,
+        chain,
+        this.oversamplingLatency,
+        this.compressorLatency,
+      );
+      const align = this.context!.createDelay(1);
+      align.delayTime.value = maxLatency - graph.latency;
+      session.processingTail = Math.max(
+        session.processingTail,
+        master.tail + graph.tail + align.delayTime.value,
+      );
+      graph.output.connect(bus).connect(align).connect(master.input);
+      session.chains.set('track:' + t.key, graph);
+      session.chainSettings.set('track:' + t.key, chainMusicalSettings(chain));
+      session.nodes.push(bus, align);
+      buses.set(t.key, graph.input);
     });
+    session.duration += session.processingTail;
     const queue = [...score.events].sort((a, b) => a.beat - b.beat);
     let cursor = 0;
     const schedule = () => {
@@ -213,6 +294,49 @@ export class AudioEngine {
   get sampleRate() {
     return this.context?.sampleRate ?? 48000;
   }
+  updateProcessing(processing: Processing, side: 'A' | 'B') {
+    const session = this.session;
+    if (!session) return;
+    if (session.mode === 'audition') {
+      const chain = processing.audition[side];
+      session.chains.get('audition')?.update(chain);
+      // Topology changes stay queued; parameter changes on existing pedals are live.
+      session.chainSettings.set(
+        'audition',
+        chainMusicalSettings({
+          ...chain,
+          pedals: chain.pedals.filter((p) =>
+            session.chains.get('audition')!.topology.split('|').includes(`${p.id}:${p.kind}`),
+          ),
+        }),
+      );
+    } else
+      session.chains.forEach((graph, key) => {
+        graph.update(
+          key === 'master' ? processing.master : (processing.tracks[key.slice(6)] ?? emptyChain()),
+          true,
+        );
+      });
+  }
+  processingPending(processing: Processing, side: 'A' | 'B') {
+    const session = this.session;
+    if (!session) return false;
+    return [...session.chains].some(([key, graph]) => {
+      const chain =
+        key === 'audition'
+          ? processing.audition[side]
+          : key === 'master'
+            ? processing.master
+            : (processing.tracks[key.slice(6)] ?? emptyChain());
+      return (
+        graph.topology !== chain.pedals.map((p) => `${p.id}:${p.kind}`).join('|') ||
+        (session.mode === 'score' && session.chainSettings.get(key) !== chainMusicalSettings(chain))
+      );
+    });
+  }
+  outputAnalyser(destination: string) {
+    return this.session?.chains.get(destination)?.analyser ?? null;
+  }
   stop(notify = true) {
     // Invalidate pending resume requests only for explicit Stop, not begin().
     if (notify) this.revision++;
@@ -227,6 +351,7 @@ export class AudioEngine {
       setTimeout(() => {
         session.voices.forEach((v) => v.dispose());
         session.nodes.forEach((n) => n.disconnect());
+        session.chains.forEach((chain) => chain.dispose());
         session.gate.disconnect();
       }, 35);
     }
