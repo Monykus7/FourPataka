@@ -22,12 +22,27 @@
   "build": {
     "appId": "com.fourpataka.studio",
     "productName": "FourPataka",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "desktop/**/*", "package.json", "!node_modules/**/*"],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "desktop/**/*",
+      "package.json",
+      "!node_modules/**/*"
+    ],
     "npmRebuild": false,
+    "electronDist": "node_modules/electron/dist",
     "asar": true,
     "win": {
-      "target": [{ "target": "portable", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "signAndEditExecutable": false,
       "artifactName": "FourPataka-${version}-win-${arch}.${ext}"
     }
