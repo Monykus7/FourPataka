@@ -58,7 +58,7 @@ import {
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
 import TrackMaker from './components/TrackMaker';
-import { appendTrack, nextTrackKey } from './core/scoreTools';
+import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
 type View = 'instrument' | 'compose' | 'learn';
@@ -1354,6 +1354,10 @@ export default function App() {
                 </div>
                 {commandsOpen && (
                   <>
+                    <div className="command-destination">
+                      <label>Insert events into<select aria-label="Command insertion track" value={track?.key ?? ''} onChange={e => setSelectedTrack(e.target.value)}>{project.tracks.map(t => <option key={t.key} value={t.key}>{t.key}</option>)}</select></label>
+                      <span>{playback === 'score' ? 'Stop playback to insert commands.' : 'Click a card to insert. Events go to the selected track.'}</span>
+                    </div>
                     <div className="command-grid">
                       {COMMANDS.filter((c) =>
                         `${c.name} ${c.description}`
@@ -1363,19 +1367,20 @@ export default function App() {
                         <button
                           className="command-item"
                           key={c.name}
-                          title="Copy snippet"
+                          title={`Insert ${c.name}`}
+                          aria-label={`Insert ${c.name} command`}
+                          disabled={playback === 'score' || score.diagnostics.some(d => d.message !== 'Add a track to start composing.')}
                           onClick={() => {
-                            void navigator.clipboard
-                              .writeText(c.snippet)
-                              .then(() => setToast(`Copied ${c.name} snippet.`))
-                              .catch(() =>
-                                setToast('Clipboard unavailable. Select the snippet text to copy.'),
-                              );
+                            try {
+                              const text = insertCommand(project.scoreText, instruments.map(i => i.key), c.name, track?.key ?? '', preset.key);
+                              change(p => ({ ...p, scoreText: text }));
+                              setToast(`Inserted ${c.name}${['tempo','time','track'].includes(c.name) ? '' : ` into ${track?.key}`}.`);
+                            } catch (e) { setToast((e as Error).message); }
                           }}
                         >
                           <div>
                             <code>{c.snippet}</code>
-                            <Copy size={13} />
+                            <Plus size={13} />
                           </div>
                           <p>{c.description}</p>
                         </button>
