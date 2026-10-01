@@ -16,6 +16,7 @@ export interface Project {
 }
 export const STORAGE_KEY = 'fourpataka.project.v1';
 export const RECOVERY_KEY = 'fourpataka.project.recovery.v1';
+export const UNREADABLE_KEY = 'fourpataka.project.unreadable.v1';
 export const PREFERENCES_KEY = 'fourpataka.preferences.v1';
 export const EXAMPLE_SCORE = `// Two voices, one idea. Make it yours.\ntempo 120\ntime 4/4\n\ntrack melody using brightReed {\n  C5 quarter\n  chord:(Bb D F)5 8th\n  rest 8th\n  G5 half\n}\n\ntrack bass using softBass {\n  Bb2 half\n  F2 half\n}`;
 export function createProject(): Project {
@@ -80,7 +81,7 @@ export function importProject(text: string): Project {
   record(data);
   if (data.schemaVersion !== 1) throw new Error(`Unsupported project version ${String(data.schemaVersion)}. This studio supports version 1.`);
   stringValue(data.id, 'project ID'); stringValue(data.name, 'project name');
-  stringValue(data.scoreText, 'score text', 200_000);
+  if (typeof data.scoreText !== 'string' || data.scoreText.length > 200_000) throw new Error('Invalid score text (maximum 200,000 characters).');
   numeric(data.mixGain, 0, 1, 'mix gain');
   if (!Array.isArray(data.instruments) || !data.instruments.length || data.instruments.length > 128) throw new Error('Expected 1–128 instrument presets.');
   const ids = new Set<string>(); const keys = new Set<string>();
@@ -116,6 +117,7 @@ export function loadProject(): { project: Project; warning: string | null } {
     if (!stored) return { project: createProject(), warning: null };
     try { return { project: importProject(stored), warning: null }; }
     catch {
+      localStorage.setItem(UNREADABLE_KEY, stored);
       const backup = localStorage.getItem(RECOVERY_KEY);
       if (backup) return { project: importProject(backup), warning: 'Recovered the previous local save. The latest save could not be read.' };
       return { project: createProject(), warning: 'The local save could not be read. A fresh example is open; the unreadable save was kept in storage.' };

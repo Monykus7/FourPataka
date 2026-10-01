@@ -6,6 +6,11 @@ import { mathematicalPreset } from '../../src/core/music';
 const reparse = (project: ReturnType<typeof createProject>) => reconcileTracks(project, parseScore(project.scoreText, project.instruments.map(p => p.key)));
 describe('independent project state', () => {
   it('round-trips the editable project through JSON', () => { const p = createProject(); expect(importProject(JSON.stringify(p))).toEqual(p); });
+  it('preserves an empty, unfinished score through save and import', () => {
+    const p = createProject(); p.scoreText = '';
+    const restored = importProject(JSON.stringify(p));
+    expect(restored.scoreText).toBe(''); expect(restored.instruments).toEqual(p.instruments); expect(restored.tracks).toEqual(p.tracks);
+  });
   it('library saves leave existing tracks and snapshots unchanged', () => {
     const p = createProject(); const before = structuredClone(p.tracks[0].sound);
     p.instruments.find(i => i.id === p.tracks[0].presetId)!.sound.harmonics[0] = .1;
