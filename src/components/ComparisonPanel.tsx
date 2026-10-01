@@ -9,6 +9,9 @@ export default function ComparisonPanel({
   error,
   active,
   elapsed,
+  playingScore,
+  scoreTrack,
+  onScoreTrack,
   onChange,
   onCopy,
   onReplay,
@@ -19,6 +22,9 @@ export default function ComparisonPanel({
   error: string | null;
   active: 'A' | 'B';
   elapsed: number;
+  playingScore: boolean;
+  scoreTrack: string;
+  onScoreTrack: (key: string) => void;
   onChange: (next: ComparisonMaterial) => void;
   onCopy: (from: 'A' | 'B', to: 'A' | 'B') => void;
   onReplay: () => void;
@@ -29,6 +35,23 @@ export default function ComparisonPanel({
         <h3>Comparison</h3>
         <span className="tag">SNAPSHOT {active}</span>
       </div>
+      {playingScore && (
+        <label className="score-comparison-target">
+          Live comparison track
+          <select
+            aria-label="Live comparison track"
+            value={scoreTrack}
+            onChange={(e) => onScoreTrack(e.target.value)}
+          >
+            {score.tracks.map((track) => (
+              <option key={track.key} value={track.key}>
+                {track.key}
+              </option>
+            ))}
+          </select>
+          <span>Switch A/B to hear this track with the selected waveform.</span>
+        </label>
+      )}
       <div className="comparison-controls">
         <label>
           Material
@@ -156,8 +179,9 @@ export default function ComparisonPanel({
         value={phrase ? Math.min(elapsed, (phrase.beats * 60) / phrase.tempo) : 0}
       />
       <p className="footnote">
-        A/B replays the same material from its start. Phrase edits apply on replay. Beat boundaries
-        are numbered from 1; an empty end uses the track end.
+        A/B switches sound at the current position. During score playback it changes only the
+        selected comparison track; saved track sounds stay unchanged. Replay starts from the
+        beginning. Beat boundaries are numbered from 1; an empty end uses the track end.
       </p>
     </section>
   );

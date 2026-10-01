@@ -386,22 +386,28 @@ export default function App() {
     const previous = previousAudition.current;
     previousAudition.current = { active, material, presetId: preset.id };
     if (engine.current.mode !== 'audition' && !auditionRequested.current) return;
-    if (
-      engine.current.mode !== 'audition' ||
-      previous.active !== active ||
-      previous.material !== material ||
-      previous.presetId !== preset.id
-    ) {
+    if (engine.current.mode !== 'audition' || previous.material !== material) {
       void actionRef.current.audition();
     } else {
-      engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
-      engine.current.updateProcessing(project.processing, active);
+      if (previous.active !== active)
+        engine.current.switchAudition(
+          sound,
+          project.processing.audition[active],
+          solo ? selectedPartial : undefined,
+        );
+      else {
+        engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
+        engine.current.updateProcessing(project.processing, active);
+      }
     }
   }, [active, material, preset.id, sound, solo, selectedPartial, project.processing]);
   useEffect(() => {
-    if (engine.current.mode === 'score')
+    if (engine.current.mode === 'score') {
       engine.current.updateProcessing(project.processing, active);
-  }, [project.processing, active]);
+      if (engine.current.comparisonTrack)
+        engine.current.updateScoreComparison(sound, selectedTrack);
+    }
+  }, [project.processing, active, sound, selectedTrack]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -438,6 +444,8 @@ export default function App() {
     }));
   };
   const selectAB = (side: 'A' | 'B') => {
+    if (engine.current.mode === 'score')
+      engine.current.updateScoreComparison(project.comparison[side], selectedTrack);
     if (side === active) return;
     resetMacros(project.comparison[side]);
     change((p) => ({ ...p, comparison: { ...p.comparison, active: side } }));
@@ -1013,6 +1021,9 @@ export default function App() {
                 error={comparison.error}
                 active={active}
                 elapsed={playback === 'audition' ? elapsed : 0}
+                playingScore={playback === 'score'}
+                scoreTrack={selectedTrack}
+                onScoreTrack={setSelectedTrack}
                 onChange={(next) => change((p) => ({ ...p, comparisonMaterial: next }))}
                 onCopy={copyAB}
                 onReplay={() => void audition()}
@@ -1949,7 +1960,11 @@ export default function App() {
       </div>
       {playback === 'score' && view !== 'compose' && (
         <div className="playback-note">
-          {stale ? 'Playing previous version.' : 'Instrument changes are saved for the next Play.'}
+          {stale
+            ? 'Playing previous version.'
+            : engine.current.comparisonTrack
+              ? `Live A/B on ${engine.current.comparisonTrack}.`
+              : 'Switch A/B to compare on the selected track.'}
           <button onClick={() => setView('compose')}>
             View score
             <ArrowRight size={12} />
