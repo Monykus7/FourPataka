@@ -576,12 +576,6 @@ export default function App() {
                 icon: FileMusic,
                 detail: 'Turn sound into music',
               },
-              {
-                id: 'learn' as const,
-                name: 'Learn',
-                icon: BookOpen,
-                detail: 'Follow your curiosity',
-              },
             ].map((item) => (
               <button
                 key={item.id}
@@ -598,6 +592,14 @@ export default function App() {
               </button>
             ))}
           </nav>
+          <button
+            className={`learn-link ${view === 'learn' ? 'active' : ''}`}
+            onClick={() => setView('learn')}
+            aria-current={view === 'learn' ? 'page' : undefined}
+            aria-label="Learn"
+          >
+            <BookOpen size={14} /> Learn <span>a little sound science</span>
+          </button>
           <div className="library-title">
             <span className="sidebar-section-label">INSTRUMENT LIBRARY</span>
             <button
