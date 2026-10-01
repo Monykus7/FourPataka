@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.4.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.5.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -102,11 +102,11 @@ Local saves belong to the current browser/origin and can be removed by clearing 
 
 See [BUILD_PLAN.md](BUILD_PLAN.md) for the authoritative roadmap and [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for verification and milestone checkpoints.
 
-
 ## Interactive Fourier workspace
 
 In Instrument, use **Harmonics** or **Waveform** to choose the large editor. The other representation stays visible in a smaller preview. Harmonic controls retain their exact magnitudes and polarity controls in the partial inspector.
 
-Draw across the left half of the waveform to reshape the harmonic bank. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H16; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the dashed curve is the drawn target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
+Choose **Dots** (default) or **Draw** in the waveform editor. Click in the left half to add a dot, drag an existing dot, or use its position/amplitude fields. Arrow keys adjust the focused dot and Delete removes it; the Remove dot button also works. Fixed zero endpoints plus up to 30 editable dots define a smooth, shape-preserving cubic curve. The curve passes through its anchors without overshooting their amplitudes. Draw mode retains freehand strokes. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H16; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the coral dashed curve is the target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
 
-Drawing updates the current A/B sound and live audition. Each stroke is one undo operation, even when drawing slowly. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.
+Both editing tools update the current A/B sound and live audition. Each stroke or dot drag is one undo operation, even when moving slowly. **Reset waveform to sine** restores H1 = 1 and H2–H16 = 0, and resets polarity, while keeping trim, envelope, and undertones. The reset can be undone. Dot geometry travels with saved sounds and projects, A/B copies, and undo/redo. Harmonic or macro edits discard a stale dot layout and seed fresh anchors from the edited sound; level/envelope edits retain it. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.
+

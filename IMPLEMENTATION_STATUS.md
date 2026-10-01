@@ -93,3 +93,14 @@ Stage 4/5 completion still needs the full pedal-aware command reference, source-
 The waveform editor intentionally fits the existing 16 signed sine coefficients. Users draw a half-cycle; odd reflection supplies the second half. It excludes arbitrary phase/cosine terms, DC offset, undertones, trim, envelope, and Nyquist filtering from the editable curve. The playback engine still applies these existing source/output rules separately. Source waveform and spectrum microscope views remain available below.
 
 Validation: 69 unit tests, 19 browser tests, and 2 packaged desktop tests; production build and formatting checks pass. Browser coverage verifies drawing changes coefficients, one-stroke undo/redo, A/B isolation, autosave/reload, switching, and narrow-screen layout. Desktop coverage also draws a waveform before exercising audio and native project dialogs. Packaged output: `release/FourPataka-0.4.0-win-x64.exe`.
+
+### Point waveform editor and reset (v0.5.0)
+
+1. Shape-preserving cubic interpolation for 3–32 half-cycle anchors, optional saved point geometry, and harmonic-only sine reset.
+2. Default Dots mode with click-to-add, draggable anchors, exact position/amplitude inputs, keyboard arrows/Delete, removal, plus the existing Draw tool. Coral target, pink dots, and signed/alternating harmonic accents extend the original palette.
+3. Browser and numeric regression proofs for interpolation, grouped drags, reset/undo, A/B, refresh, narrow layouts, geometry import validation, and stale-geometry cleanup after harmonic edits.
+4. Usage documentation and v0.5.0 portable desktop packaging and verification.
+
+The point curve is sampled, then projected onto the first sixteen signed sine harmonics. This is a finite sine-series approximation, rather than a polynomial transform of degree sixteen. Half-cycle zero endpoints and odd reflection still match the current synthesis model. Geometry is an optional Sound field within project schema version 1; older files remain valid. Reset preserves undertones, attack/release, and trim. Editable target curves and coefficients remain separate so truncation/limiting differences are visible.
+
+Validation: 73 unit tests, 20 browser tests, and 2 packaged desktop tests pass, with production build and formatting checks. Windows output: `release/FourPataka-0.5.0-win-x64.exe`.
