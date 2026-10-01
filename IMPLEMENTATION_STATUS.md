@@ -35,8 +35,8 @@ Both A/B sides replay the same note/chord from the beginning, with a fresh sourc
 
 ## Verification
 
-- `npm test`: 42 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, and undo.
-- `npm run test:browser`: 8 tests pass in desktop Chrome across numeric audio rendering and the main UI workflows.
+- `npm test`: 43 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, and undo.
+- `npm run test:browser`: 9 tests pass in desktop Chrome across numeric audio rendering and the main UI workflows, including empty-score persistence and corrupt-save recovery.
 - `npm run build`: TypeScript and production bundle pass. The score editor is loaded as a separate chunk.
 - Screenshot inspection: instrument and Compose at 1440 px, instrument at 390 px. At narrow widths the mixer scrolls within its panel without causing page overflow.
 - Keyboard smoke check: harmonic range arrows; undo; visible focus; dialog controls. Broader screen-reader and real touch-device checks remain pending.
