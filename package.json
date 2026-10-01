@@ -1,6 +1,9 @@
 {
   "name": "fourpataka",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Fourier instrument and composition studio",
+  "author": "Monykus7",
+  "main": "desktop/main.cjs",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +12,25 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "test:browser": "playwright test",
-    "format": "prettier --write src tests *.ts *.json",
-    "format:check": "prettier --check src tests *.ts *.json"
+    "format": "prettier --write src tests desktop scripts *.ts *.json",
+    "format:check": "prettier --check src tests desktop scripts *.ts *.json",
+    "desktop:dev": "node scripts/desktop-dev.mjs",
+    "desktop:start": "electron .",
+    "desktop:package": "npm run build && electron-builder --win portable --x64 --publish never",
+    "test:desktop": "npm run build && playwright test --config playwright.desktop.config.ts"
+  },
+  "build": {
+    "appId": "com.fourpataka.studio",
+    "productName": "FourPataka",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "desktop/**/*", "package.json", "!node_modules/**/*"],
+    "npmRebuild": false,
+    "asar": true,
+    "win": {
+      "target": [{ "target": "portable", "arch": ["x64"] }],
+      "signAndEditExecutable": false,
+      "artifactName": "FourPataka-${version}-win-${arch}.${ext}"
+    }
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
