@@ -523,6 +523,8 @@ Gate: loading an experiment is undoable; metric units/reference/window are visib
 
 Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 
+Music IDE follow-up requested after the main features: chord-symbol macros such as `chord:Cmaj13#11`, with their expanded notes shown on hover and keyboard focus. Implement the voicing/octave policy, supported symbol grammar, expansion diagnostics, and equivalent explicit-note playback together. Prioritize comparison and pedal routing first.
+
 For repeat and other expansions, retain source mappings from generated events to useful score locations. Add features according to how clearly they connect sound, Fourier structure, and composition.
 
 ## 13. Implementation organization and verification

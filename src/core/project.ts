@@ -1,5 +1,6 @@
-import { mathematicalPreset, SCORE_KEY, type Sound } from './music';
+import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
+import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
 
 export interface InstrumentPreset {
   id: string;
@@ -24,6 +25,7 @@ export interface Project {
   tracks: TrackInstance[];
   editorPresetId: string;
   comparison: { active: 'A' | 'B'; A: Sound; B: Sound };
+  comparisonMaterial: ComparisonMaterial;
   mixGain: number;
 }
 export const STORAGE_KEY = 'fourpataka.project.v1';
@@ -57,6 +59,7 @@ export function createProject(): Project {
     tracks: [],
     editorPresetId: 'bright-reed',
     comparison: { active: 'A', A: structuredClone(bright), B: mathematicalPreset('sine') },
+    comparisonMaterial: structuredClone(DEFAULT_MATERIAL),
     mixGain: 0.8,
   };
   return reconcileTracks(
@@ -211,6 +214,19 @@ export function importProject(text: string): Project {
     throw new Error('Invalid comparison selection.');
   validateSound(data.comparison.A);
   validateSound(data.comparison.B);
+  const material = data.comparisonMaterial ?? structuredClone(DEFAULT_MATERIAL);
+  record(material);
+  if (!['note', 'chord', 'phrase'].includes(material.kind as string)) throw new Error('Invalid comparison material.');
+  stringValue(material.note, 'comparison note');
+  // Validate the pitch even when the saved material currently uses a phrase.
+  pitch(material.note);
+  stringValue(material.trackKey, 'comparison track');
+  if (!SCORE_KEY.test(material.trackKey)) throw new Error('Invalid comparison track key.');
+  numeric(material.fromBeat, 0, 1_000_000, 'phrase start');
+  if (material.toBeat !== null) {
+    numeric(material.toBeat, 0, 1_000_000, 'phrase end');
+    if (material.toBeat <= material.fromBeat) throw new Error('Phrase end must follow its start.');
+  }
   // Rebuild a whitelisted object: imported runtime/UI/unknown fields are never trusted.
   const project = data as unknown as Project;
   const clean: Project = {
@@ -220,6 +236,7 @@ export function importProject(text: string): Project {
     scoreText: project.scoreText,
     mixGain: project.mixGain,
     editorPresetId: project.editorPresetId,
+    comparisonMaterial: { kind: material.kind as ComparisonMaterial['kind'], note: material.note, trackKey: material.trackKey, fromBeat: material.fromBeat, toBeat: material.toBeat as number | null },
     comparison: {
       active: project.comparison.active,
       A: structuredClone(project.comparison.A),
