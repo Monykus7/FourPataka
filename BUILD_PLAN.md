@@ -1,13 +1,13 @@
 # FourPataka — Fourier Music Studio build plan
 
 Updated: 2026-09-30  
-Status: implementation started. The playable audio/project foundation and selected instrument tools are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
+Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
 
 ## 1. Product and learning goal
 
-Build a browser studio where someone shapes an instrument with Fourier harmonics and optional undertones, processes it through a visible pedalboard, and composes with readable note and chord commands. Mathematical changes should be easy to hear and inspect.
+Build a personal studio, available in the browser and as a desktop application, for shaping instruments with Fourier harmonics and optional undertones, processing them through a visible pedalboard, and composing with readable note and chord commands. Mathematical changes should be easy to hear and inspect.
 
 The central loop is:
 
@@ -30,6 +30,9 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Tracks retain independent instrument and pedal settings. Saving a library preset does not overwrite those settings.
 - Provide **Apply** and **Apply to all using this preset**. The latter updates every associated track instance and, for pedal presets, an associated master instance. Show the affected destinations and make the operation undoable.
 - Stop quickly fades all sound, including effect tails. Delay bypass adds no new echoes but lets existing echoes finish.
+- Instrument and Compose are the primary views; Learn is a smaller secondary link.
+- Use concise functional information for personal use, without promotional taglines. Keep the original dark color scheme, minimal shadows, and restrained material detail rather than a full paper background.
+- Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format.
 
 Other defaults in this document are proposed implementation choices. They should be tuned in the audio proof without changing these confirmed behaviors.
 

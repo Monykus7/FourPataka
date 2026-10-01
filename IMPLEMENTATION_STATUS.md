@@ -33,10 +33,35 @@ The browser workflow creates a sound, saves it, applies it to a score, plays it,
 
 Both A/B sides replay the same note/chord from the beginning, with a fresh source path. Phrase-based A/B and pedal snapshots remain ahead. Macros are calculated from a captured baseline; reset recovers it, and manual coefficient edits capture a fresh baseline. Experiment loading is undoable.
 
+### Navigation and visual design follow-up
+
+1. Bundled local fonts and generated material asset.
+2. Two primary views with a smaller secondary Learn link.
+3. Visual styling followed by the requested return to the original dark palette, flat panels, and very faint panel texture.
+4. Browser navigation, mobile overflow, and screenshot verification. Later copy cleanup removes slogans and roadmap labels from the interface.
+
+### Composition tools follow-up
+
+1. Parser closing-brace source spans and score-tool helpers with unit verification.
+2. Visual note/chord/rest track maker with validated preview and whole-operation undo.
+3. Command-reference insertion with selected-track targeting and nonduplicating global directives.
+4. Browser validation, undo/redo, insertion, and playback guard checks.
+
+### Desktop application foundation
+
+1. Electron shell, local asset protocol, sandboxed renderer, and narrow preload bridge.
+2. Native JSON project dialogs and application menus/shortcuts.
+3. Development runner and portable Windows x64 packaging.
+4. Automated startup, audio, menu, native project, and isolation checks, with run documentation.
+
+The portable Windows executable is generated under `release/` and ignored by Git. Desktop and browser autosaves are separate; JSON carries projects between them. The desktop release is a personal prototype, with no updater or code signing yet.
+
 ## Verification
 
-- `npm test`: 43 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, and undo.
-- `npm run test:browser`: 9 tests pass in desktop Chrome across numeric audio rendering and the main UI workflows, including empty-score persistence and corrupt-save recovery.
+- `npm test`: 54 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, undo, and source-preserving score tools.
+- `npm run test:browser`: 12 tests pass in desktop Chrome across numeric audio rendering and the main UI workflows, including empty-score persistence, corrupt-save recovery, track making, command insertion, and navigation/layout.
+- `npm run test:desktop`: 2 tests pass for local asset startup, renderer isolation, audio, menu tools, native JSON round trip, cancellation, and oversized save rejection, including a run against `release/win-unpacked/FourPataka.exe`. Tests use hidden windows and disposable project storage; visual checks use browser screenshots because hidden Electron window screenshots proved unreliable. Windows sandbox execution required running these checks outside the agent sandbox; the application renderer itself remains sandboxed.
+- `npm run desktop:package`: creates `release/FourPataka-0.2.0-win-x64.exe` successfully, with bundled assets and no server dependency.
 - `npm run build`: TypeScript and production bundle pass. The score editor is loaded as a separate chunk.
 - Screenshot inspection: instrument and Compose at 1440 px, instrument at 390 px. At narrow widths the mixer scrolls within its panel without causing page overflow.
 - Keyboard smoke check: harmonic range arrows; undo; visible focus; dialog controls. Broader screen-reader and real touch-device checks remain pending.

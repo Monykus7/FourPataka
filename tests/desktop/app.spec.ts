@@ -44,7 +44,7 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
     page.getByRole('dialog').getByRole('heading', { name: 'Make a track' }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Close track maker' }).click();
-  await page.screenshot({ path: '.test-results/desktop/studio.png', fullPage: true });
+  await expect(page.getByRole('dialog')).not.toBeVisible();
   const prohibited = await page.evaluate(async () => {
     try {
       return (await fetch('fourpataka://elsewhere/index.html')).status;

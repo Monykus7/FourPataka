@@ -1,6 +1,6 @@
 # FourPataka
 
-A local-first Fourier music studio. Shape a timbre with sixteen harmonics, audition a note or chord, and write a phrase in readable notation. Built with React, TypeScript, Vite, CodeMirror 6, and Web Audio. No account or backend is required.
+Personal Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
 ## Run locally
 
@@ -16,11 +16,35 @@ Open http://127.0.0.1:5173. Sound starts only after **Listen**, **Solo**, or **P
 ```sh
 npm test                # Pitch, parser, independent presets, import validation, history
 npm run test:browser    # Chromium audio proofs and studio workflows
+npm run test:desktop    # Electron startup, audio, menus, and native project dialogs
 npm run build          # TypeScript checks and production bundle
 npm run preview        # Serve the production build
 ```
 
 Browser tests use a locally installed Google Chrome. Change `channel` in `playwright.config.ts` to `msedge` to run against installed Edge. Screenshots and failure traces are generated in `.test-results/` and are not committed.
+
+## Windows application
+
+The portable build is `release/FourPataka-0.2.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. Build outputs are ignored by Git.
+
+```sh
+npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
+npm run build
+npm run desktop:start     # Desktop window using the local production build
+npm run desktop:package   # Build a portable Windows x64 executable in release/
+```
+
+The desktop app has native **Open project** and **Save project** dialogs. Its File, Edit, View, and Playback menus provide project controls, undo/redo, command reference, and the track maker. Shortcuts: Ctrl+O open, Ctrl+S save as, Ctrl+1 Instrument, Ctrl+2 Compose, Ctrl+K command reference, Ctrl+Shift+T track maker. The renderer is sandboxed and has no Node access.
+
+Desktop autosave is independent of the browser's local save. To move an existing browser project, export JSON in the browser and open that file in the app. Both use the same versioned project format. The desktop session persists in Electron's user-data directory; the portable executable does not carry project data inside itself.
+
+The desktop checks can also target the unpacked production executable by setting `FOURPATAKA_TEST_EXECUTABLE` to its absolute path before running `npm run test:desktop`.
+
+## Compose tools
+
+**Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.
+
+Instrument and Compose are the two primary views. Learn is a smaller secondary link. The interface keeps the original dark palette and orange accents, flat panels, concise headings, and a faint material texture inside panels.
 
 ## The first playable slice
 
@@ -30,7 +54,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 - Independent A/B instrument snapshots. A/B changes replay the same selected note/chord from its beginning. Copying either side is a deep copy.
 - Baseline-based coefficient macros with neutral/reset behavior and preserved polarity.
 - Named instrument library with Save, Save as new, Apply, and scoped Apply to all. Apply updates the source assignment and the track's copied sound in one undo step.
-- CodeMirror score editor, diagnostics, toggleable autocomplete, searchable command reference, parallel tracks, event timeline, and source playback highlights.
+- CodeMirror score editor, diagnostics, toggleable autocomplete, searchable command insertion, visual track maker, parallel tracks, event timeline, and source playback highlights.
 - Stable playback revisions. Score edits while playing show **Playing previous version** and suspend stale line highlights.
 - Versioned local autosave with previous-save recovery, JSON import/export, grouped undo/redo, keyboard controls, and narrow-screen layouts.
 - Four editable experiments and clearly labeled steady-source descriptors.
