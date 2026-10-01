@@ -1,7 +1,7 @@
-# Fourier Music Studio — build plan
+# FourPataka — Fourier Music Studio build plan
 
 Updated: 2026-09-30  
-Status: planning document. Implementation has not started.
+Status: implementation started. The playable audio/project foundation and selected instrument tools are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
 
