@@ -1,3 +1,4 @@
+import { defaultProcessing, importProcessing, emptyChain, type Processing } from './pedals';
 import { validateWavePoints } from './waveform';
 import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
@@ -18,6 +19,7 @@ export interface TrackInstance {
   level: number;
 }
 export interface Project {
+  processing: Processing;
   schemaVersion: 1;
   id: string;
   name: string;
@@ -52,6 +54,7 @@ export function createProject(): Project {
     { id: 'soft-bass', key: 'softBass', label: 'Soft bass', version: 1, sound: bass },
   ];
   const project: Project = {
+    processing: defaultProcessing(),
     schemaVersion: 1,
     id: crypto.randomUUID(),
     name: 'Untitled session',
@@ -87,7 +90,21 @@ export function reconcileTracks(project: Project, score: CompiledScore): Project
           level: 0.75,
         };
   });
-  return { ...project, tracks };
+  return {
+    ...project,
+    tracks,
+    processing: {
+      ...project.processing,
+      tracks: Object.fromEntries(
+        tracks.map((t) => [
+          t.key,
+          Object.hasOwn(project.processing.tracks, t.key)
+            ? project.processing.tracks[t.key]
+            : emptyChain(),
+        ]),
+      ),
+    },
+  };
 }
 
 export function applyPreset(
@@ -233,6 +250,7 @@ export function importProject(text: string): Project {
   // Rebuild a whitelisted object: imported runtime/UI/unknown fields are never trusted.
   const project = data as unknown as Project;
   const clean: Project = {
+    processing: importProcessing(data.processing),
     schemaVersion: 1,
     id: project.id,
     name: project.name,
