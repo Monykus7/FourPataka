@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.6.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.7.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -116,12 +116,18 @@ Both editing tools update the current A/B sound and live audition. Each stroke o
 
 The Instrument view includes a pedalboard with an explicit **Editing destination**: Audition A/B, a named track, or Master. Add compressor/overdrive modules, set their numeric controls or sliders, bypass a pedal or the chain, and drag module titles to reorder (Move left/right are keyboard alternatives). A chain currently supports up to eight pedals.
 
-**Load chain preset** creates an independent copy. **Save chain preset** updates its library template while applied instances retain their values. **Save chain as new** creates a named template. Apply the current chain to a track or master, or use **Apply chain to all associated** to update exactly the listed destinations. All musical edits and applications are undoable. A/B copies include the audition chain, and switching sides starts with a fresh graph.
+**Load chain preset** creates an independent copy. **Save chain preset** updates its library template while applied instances retain their values. **Save chain as new** creates a named template. Apply the current chain to a track or master, or use **Apply chain to all associated** to update exactly the listed destinations. All musical edits and applications are undoable. A/B copies include the audition chain; switching sides keeps the clock running and crossfades a warmed, aligned graph when its topology differs. Score comparison changes the source sound through the selected track's existing chain.
 
-Audition hears only its selected sound/chain. Score Play routes each track through its independent chain, then track level, master chain, mix gain, and monitor. Compose exposes whole-chain and per-pedal bypass switches for tracks/master. Pedal parameters are smoothed live during audition. Score parameters stay frozen until the next Play, while bypass remains live. Changes to order, added/removed modules, or loaded presets are queued until Play/replay; the pending label identifies this.
+Audition hears only its selected sound/chain. Score Play routes each track through its independent chain, then track level, master chain, mix gain, and monitor. Compose exposes whole-chain and per-pedal bypass switches for tracks/master. Pedal parameters are smoothed live during audition. Score parameters stay frozen until the next Play, while bypass remains live. Changes to order, added/removed modules, or loaded presets are queued until Play/replay; the pending label identifies this. Explicit A/B switching during audition activates that side's complete chain at the current position. An eight-pedal latency budget keeps both audition paths aligned (typically about 48 ms before device latency).
 
 Compressor uses the native Web Audio processor with a 30 dB knee, measured look-ahead alignment, makeup/output control, and a linear dry/wet blend. Its 1:1 setting uses an aligned identity path to avoid native startup attenuation. Overdrive uses `tanh(drive × input)`, a low-pass tone filter, output trim, and 4× oversampling. The dry/bypass branch uses matching resampling filters. Runtime impulse probes calibrate compressor and oversampling latency at the active sample rate; score tracks are padded to match the slowest chain. A short filter-tail budget follows note release. Stop fades the whole session and disconnects voices/effects before a fresh start. See the [Web Audio processing specification](https://www.w3.org/TR/webaudio-1.0/#dynamicscompressornode-processing).
 
 **After pedals** displays the selected live path before its track level or mix gain, with a waveform and FFT spectrum. The original source graphs still describe the instrument. These views require active Listen/Play.
 
 Personal build workflow: make at least four focused commits per milestone, push each completed checkpoint using the configured identity, and launch the verified portable application after every completed x.x.0 release.
+
+## Themes
+
+Choose **Theme** below Learn: Original, Blue / pink, Green / orange, Violet / coral, or Earth / sage. The three Happy Hues presets use [palette 12](https://www.happyhues.co/palettes/12), [palette 10](https://www.happyhues.co/palettes/10), and [palette 6](https://www.happyhues.co/palettes/6), adapted to studio surfaces and controls. Earth / sage includes the supplied `#9A7F62`, `#5F6E73`, `#697E60`, `#D6D2C4`, and `#B7A99A` colors. Secondary and tertiary accents appear in harmonics, waveform dots/targets, pedals, processed spectra, timeline events, and score syntax. Text uses adjusted shades where needed for contrast while accents and swatches retain the palette colors.
+
+Themes are bundled for offline desktop use and saved as a local preference alongside monitor volume and autocomplete. Theme changes do not change projects, enter musical undo history, or restart playback. JSON project imports keep your theme preference.

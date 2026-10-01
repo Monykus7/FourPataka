@@ -125,3 +125,16 @@ Validation: 76 unit tests, 25 browser checks (24 in the full run, followed by th
 4. Updated behavior contract and usage documentation.
 
 All eight comparison browser checks pass. A/B switching now keeps the current position; explicit replay restarts it. This supersedes the restart behavior recorded in earlier milestone entries. Score text and saved track instances remain frozen during playback; only an explicitly selected comparison track receives a temporary sound override.
+
+### Theme presets and release verification (v0.7.0)
+
+1. Bundled Happy Hues 12 (blue/pink/dark), 10 (green/orange), and 6 (violet/coral), plus the supplied Earth / sage palette and original theme.
+2. Saved local theme selector, five-color swatches, palette-aware score editor, graphs, pedal accents, transport, and mobile controls.
+3. Contrast checks and browser/native proofs for theme persistence, unchanged undo history, continued audio, and exact custom colors.
+4. Usage/source documentation and verified Windows v0.7.0 packaging.
+
+Themes use tertiary colors for waveform dots, processed spectra, overdrive accents, harmonic highlights, timeline events, and score durations. Text shades adapt to maintain 4.5:1 contrast on each studio surface. Original remains the default; preferences are separate from projects and survive imports without affecting musical undo.
+
+Validation: 78 unit tests, 30 browser tests, and 2 packaged desktop tests pass. Production build and formatting pass. Output: `release/FourPataka-0.7.0-win-x64.exe`. This release has four continuous-comparison checkpoints and four theme/release checkpoints, pushed using the configured Monykus7 identity. The verified portable application is launched after the release checkpoint.
+
+The main feature roadmap remains at stage 3 in progress: EQ, delay, delay-tail policies, and score chain directives are still next. These comparison and theme improvements do not complete those remaining gates.
