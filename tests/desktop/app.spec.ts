@@ -37,6 +37,18 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
   await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await page
+    .getByRole('combobox', { name: 'Comparison material', exact: true })
+    .selectOption('phrase');
+  await page.getByRole('combobox', { name: 'Comparison phrase track' }).selectOption('bass');
+  await page.getByRole('button', { name: 'Compare / replay', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
+  await page.getByRole('button', { name: 'B', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'B', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Stop all sound' }).click();
   await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'track'),
   );

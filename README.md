@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.2.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.3.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -46,12 +46,22 @@ The desktop checks can also target the unpacked production executable by setting
 
 Instrument and Compose are the two primary views. Learn is a smaller secondary link. The interface keeps the original dark palette and orange accents, flat panels, concise headings, and a faint material texture inside panels.
 
+## Compare sounds
+
+In Instrument, the Comparison panel selects a note, Bb major chord, or a phrase from one score track. Phrase beat boundaries are numbered from 1: start 2 / end 4 means the two beats between those boundaries; an empty end uses the track end. Chords and rests remain intact, and notes crossing either boundary are clipped to that range.
+
+**Compare / replay** and the transport replay button start the selected A/B sound from the beginning. Switching A/B while auditioning fades the previous path and starts fresh with the same musical material. Other track sounds do not enter the comparison. Material selection is saved outside the independent A/B snapshots. Both copy directions are available and undoable.
+
+Coefficient, polarity, trim, undertone, and solo changes respond during audition without restarting the musical clock or envelope. Harmonic waveform replacements use phase-aligned 20 ms crossfades; numeric audio proofs cover the edit boundary and rapid consecutive edits. Score playback still freezes sound settings until the next Play. Score text edits during a phrase audition take effect on replay.
+
+The source graphs use the first sounding note in the selected material as a labeled reference. Selecting a partial links its bar, spectrum mark, dashed waveform contribution, inspector, and solo. Spectrum marks support Enter/Space as well as clicking. A zero or unavailable partial contributes a flat line.
+
 ## The first playable slice
 
 - H1–H16 with exact values, signed triangle coefficients, source waveform/spectrum, and a linked partial inspector.
 - Five optional undertones, disabled independently of their saved magnitudes; partial solo bypasses the full source mix.
 - Explicit output trim, shared attack/release envelope, Nyquist exclusion, chord audition, 32-voice cap, and a fading Stop.
-- Independent A/B instrument snapshots. A/B changes replay the same selected note/chord from its beginning. Copying either side is a deep copy.
+- Independent A/B instrument snapshots with shared note/chord/phrase replay. Copying either side is a deep copy.
 - Baseline-based coefficient macros with neutral/reset behavior and preserved polarity.
 - Named instrument library with Save, Save as new, Apply, and scoped Apply to all. Apply updates the source assignment and the track's copied sound in one undo step.
 - CodeMirror score editor, diagnostics, toggleable autocomplete, searchable command insertion, visual track maker, parallel tracks, event timeline, and source playback highlights.
@@ -84,9 +94,9 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 ## Current boundary
 
-This is the audio/project foundation and a first set of instrument tools, not the completed initial release. Pedal processing, pedal preset libraries, master routing, effect tails, processed signal views, phrase-based A/B, WAV export, and the full measurement panel are still ahead. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score.
+This is the audio/project foundation and instrument comparison workflow, not the completed initial release. Pedal processing, pedal preset libraries, master routing, effect tails, processed signal views, pedal-chain A/B snapshots, WAV export, and the full measurement panel are still ahead. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
-Live timbre edits during audition currently crossfade into a fresh audition; they restart the note. Score playback freezes its sounds until the next Play. The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
+The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 
 Local saves belong to the current browser/origin and can be removed by clearing browser data. JSON is the portable, editable project format. Preferences such as autocomplete and monitor volume are stored separately and are not replaced by import.
 

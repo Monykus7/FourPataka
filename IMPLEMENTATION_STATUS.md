@@ -31,7 +31,7 @@ The browser workflow creates a sound, saves it, applies it to a score, plays it,
 3. Responsive palette, accessible inputs/switches, numeric/keyboard controls, and reduced motion.
 4. Browser workflow verification, screenshot review, and implementation/run documentation.
 
-Both A/B sides replay the same note/chord from the beginning, with a fresh source path. Phrase-based A/B and pedal snapshots remain ahead. Macros are calculated from a captured baseline; reset recovers it, and manual coefficient edits capture a fresh baseline. Experiment loading is undoable.
+Both A/B sides replay the same note/chord/selected score phrase from the beginning, with a fresh source path. Pedal snapshots follow the pedalboard implementation. Macros are calculated from a captured baseline; reset recovers it, and manual coefficient edits capture a fresh baseline. Experiment loading is undoable.
 
 ### Navigation and visual design follow-up
 
@@ -56,18 +56,29 @@ Both A/B sides replay the same note/chord from the beginning, with a fresh sourc
 
 The portable Windows executable is generated under `release/` and ignored by Git. Desktop and browser autosaves are separate; JSON carries projects between them. The desktop release is a personal prototype, with no updater or code signing yet.
 
+### Phrase comparison and linked instrument tools (stage 2 completion)
+
+1. Shared musical-material model, phrase clipping/isolation, persistence, and old-project migration.
+2. Frozen phrase scheduling and phase-aligned live voice updates, with rendered-audio proofs.
+3. Connected note/chord/phrase controls, both copy directions, replay/progress, and keyboard-accessible spectrum links with waveform contributions.
+4. Rapid-edit/undertone/solo proofs, complete regression checks, Windows v0.3.0 packaging, and usage documentation.
+
+A/B switching replays from the start; editing a coefficient keeps the running envelope and musical clock. Phrase selection is independent of both sound snapshots. Graphs display the first sounding note as a labeled reference, rather than pretending to show all simultaneous pitches. Score playback and phrase musical material remain frozen until replay.
+
 ## Verification
 
-- `npm test`: 54 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, undo, and source-preserving score tools.
-- `npm run test:browser`: 12 tests pass in desktop Chrome across numeric audio rendering and the main UI workflows, including empty-score persistence, corrupt-save recovery, track making, command insertion, and navigation/layout.
-- `npm run test:desktop`: 2 tests pass for local asset startup, renderer isolation, audio, menu tools, native JSON round trip, cancellation, and oversized save rejection, including a run against `release/win-unpacked/FourPataka.exe`. Tests use hidden windows and disposable project storage; visual checks use browser screenshots because hidden Electron window screenshots proved unreliable. Windows sandbox execution required running these checks outside the agent sandbox; the application renderer itself remains sandboxed.
-- `npm run desktop:package`: creates `release/FourPataka-0.2.0-win-x64.exe` successfully, with bundled assets and no server dependency.
+- `npm test`: 67 tests pass across pitch/coefficient math, notation grammar, independent copies, import validation, undo, source-preserving score tools, phrase clipping/isolation, and backward-compatible comparison material.
+- `npm run test:browser`: all 18 tests pass. These cover phrase replay, persistence, live-edit clock continuity, keyboard microscope links, phase-aligned edit boundaries, rapid overlapping crossfades, and live undertone/solo changes alongside the earlier audio/studio workflows.
+- `npm run test:desktop`: 2 tests pass against the packaged v0.3.0 executable at `release/win-unpacked/FourPataka.exe`, covering local asset startup, renderer isolation, note/phrase audio, A/B selection, menu tools, native JSON round trip, cancellation, and oversized save rejection. Tests use hidden windows and disposable project storage; visual checks use browser screenshots because hidden Electron window screenshots proved unreliable. Windows sandbox execution required running these checks outside the agent sandbox; the application renderer itself remains sandboxed.
+- `npm run desktop:package`: creates `release/FourPataka-0.3.0-win-x64.exe` with bundled assets and no server dependency. ZIP compression keeps personal build iterations shorter.
 - `npm run build`: TypeScript and production bundle pass. The score editor is loaded as a separate chunk.
 - Screenshot inspection: instrument and Compose at 1440 px, instrument at 390 px. At narrow widths the mixer scrolls within its panel without causing page overflow.
 - Keyboard smoke check: harmonic range arrows; undo; visible focus; dialog controls. Broader screen-reader and real touch-device checks remain pending.
 
 ## Next roadmap work
 
-Finish stage 2's full comparison/linked microscope behavior, then implement stage 3's effect factories and independent per-track/master routing. In particular, preserve the plan's compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Add processing before enabling `through` or master directives.
+Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Next implement stage 3's effect factories and independent per-track/master routing, then extend A/B snapshots with pedal-chain settings. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Add processing before enabling `through` or master directives.
+
+Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
 Stage 4/5 completion still needs the full pedal-aware command reference, source-aware tempo controls, deeper accessibility work, save recovery UX, and browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.

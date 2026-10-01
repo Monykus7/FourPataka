@@ -61,6 +61,7 @@ import TrackMaker from './components/TrackMaker';
 import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
+import { version } from '../package.json';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
 type View = 'instrument' | 'compose' | 'learn';
@@ -730,7 +731,7 @@ export default function App() {
             ))}
           </div>
           <div className="sidebar-bottom">
-            <span className="version-label">FourPataka · v0.2</span>
+            <span className="version-label">FourPataka · v{version}</span>
           </div>
         </aside>
 

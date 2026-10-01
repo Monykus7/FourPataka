@@ -1,6 +1,6 @@
 {
   "name": "fourpataka",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fourier instrument and composition studio",
   "author": "Monykus7",
   "main": "desktop/main.cjs",
@@ -34,6 +34,9 @@
     "npmRebuild": false,
     "electronDist": "node_modules/electron/dist",
     "asar": true,
+    "portable": {
+      "useZip": true
+    },
     "win": {
       "target": [
         {
