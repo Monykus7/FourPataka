@@ -82,3 +82,14 @@ Stage 2's phrase comparison and linked source microscope behavior now pass the a
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
 Stage 4/5 completion still needs the full pedal-aware command reference, source-aware tempo controls, deeper accessibility work, save recovery UX, and browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
+
+### Interactive Fourier workspace (v0.4.0)
+
+1. Sampled half-cycle Fourier projection with signed-coefficient recovery and numeric unit proofs.
+2. Switchable waveform/harmonics workspace, drawn-target overlay, and reconstructed source curve.
+3. Live A/B integration, compact reciprocal previews, independent saved sound copies, and grouped stroke history.
+4. Browser and packaged Windows regression checks, usage documentation, and v0.4.0 portable build.
+
+The waveform editor intentionally fits the existing 16 signed sine coefficients. Users draw a half-cycle; odd reflection supplies the second half. It excludes arbitrary phase/cosine terms, DC offset, undertones, trim, envelope, and Nyquist filtering from the editable curve. The playback engine still applies these existing source/output rules separately. Source waveform and spectrum microscope views remain available below.
+
+Validation: 69 unit tests, 19 browser tests, and 2 packaged desktop tests; production build and formatting checks pass. Browser coverage verifies drawing changes coefficients, one-stroke undo/redo, A/B isolation, autosave/reload, switching, and narrow-screen layout. Desktop coverage also draws a waveform before exercising audio and native project dialogs. Packaged output: `release/FourPataka-0.4.0-win-x64.exe`.

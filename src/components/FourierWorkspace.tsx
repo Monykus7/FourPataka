@@ -13,6 +13,8 @@ export default function FourierWorkspace({
 }) {
   const [mode, setMode] = useState<'harmonics' | 'waveform'>('harmonics');
   const [target, setTarget] = useState<number[] | null>(null);
+  const targetSignature = useRef('');
+  const signature = (s: Sound) => JSON.stringify([s.harmonics, s.polarity]);
   const stroke = useRef<{
     samples: number[];
     index: number;
@@ -51,9 +53,11 @@ export default function FourierWorkspace({
     active.index = index;
     active.value = value;
     setTarget([...active.samples]);
-    onChange(soundFromWaveform(active.base, active.samples), active.group);
+    const next = soundFromWaveform(active.base, active.samples);
+    targetSignature.current = signature(next);
+    onChange(next, active.group);
   }
-  const targetPath = target
+  const targetPath = (signature(sound) === targetSignature.current ? target : null)
     ?.map((value, i) => `${i ? 'L' : 'M'}${(i * 300) / 256},${120 - (value * 100) / scale}`)
     .join(' ');
   return (
@@ -133,6 +137,8 @@ export default function FourierWorkspace({
             style={{ touchAction: mode === 'waveform' ? 'none' : 'auto' }}
             onPointerDown={(e) => {
               if (mode !== 'waveform' || e.button !== 0) return;
+              const hit = e.currentTarget.getBoundingClientRect();
+              if (e.clientX > hit.left + hit.width / 2) return;
               e.currentTarget.setPointerCapture(e.pointerId);
               const samples = Array.from({ length: 257 }, (_, i) => harmonicShape(sound, i / 512));
               const rect = e.currentTarget.getBoundingClientRect();

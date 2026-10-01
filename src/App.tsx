@@ -224,7 +224,9 @@ export default function App() {
   const change = useCallback((mutate: (p: Project) => Project, groupKey = '') => {
     const time = Date.now();
     const grouped =
-      !!groupKey && editGroup.current.key === groupKey && time - editGroup.current.time < 900;
+      !!groupKey &&
+      editGroup.current.key === groupKey &&
+      (groupKey.startsWith('waveform:') || time - editGroup.current.time < 900);
     editGroup.current = { key: groupKey, time };
     setHistory((h) => {
       const updated = mutate(h.present);

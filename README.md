@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.3.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.4.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -101,3 +101,12 @@ The voice cap is a provisional conservative limit, not a mobile performance guar
 Local saves belong to the current browser/origin and can be removed by clearing browser data. JSON is the portable, editable project format. Preferences such as autocomplete and monitor volume are stored separately and are not replaced by import.
 
 See [BUILD_PLAN.md](BUILD_PLAN.md) for the authoritative roadmap and [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) for verification and milestone checkpoints.
+
+
+## Interactive Fourier workspace
+
+In Instrument, use **Harmonics** or **Waveform** to choose the large editor. The other representation stays visible in a smaller preview. Harmonic controls retain their exact magnitudes and polarity controls in the partial inspector.
+
+Draw across the left half of the waveform to reshape the harmonic bank. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H16; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the dashed curve is the drawn target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
+
+Drawing updates the current A/B sound and live audition. Each stroke is one undo operation, even when drawing slowly. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.

@@ -34,6 +34,23 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   expect(preferences.contextIsolation).toBe(true);
   expect(preferences.sandbox).toBe(true);
   expect(preferences.nodeIntegration).toBe(false);
+  const originalH1 = await page
+    .getByRole('spinbutton', { name: 'H1 exact magnitude' })
+    .inputValue();
+  await page.getByRole('button', { name: 'Waveform', exact: true }).click();
+  await expect(
+    page.getByRole('img', { name: 'Signed harmonic coefficients preview' }),
+  ).toBeVisible();
+  const wave = page.getByRole('img', { name: 'Editable harmonic source waveform' });
+  const box = (await wave.boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.1, box.y + box.height * 0.5);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.4, box.y + box.height * 0.5, { steps: 10 });
+  await page.mouse.up();
+  await page.getByRole('button', { name: 'Harmonics', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).not.toHaveValue(
+    originalH1,
+  );
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
   await page.getByRole('button', { name: 'Stop all sound' }).click();
