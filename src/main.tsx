@@ -6,6 +6,7 @@ import '@fontsource/dm-sans/latin-600.css';
 import '@fontsource/fraunces/latin-600.css';
 import '@fontsource/caveat/latin-600.css';
 import './styles.css';
+import './paper.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

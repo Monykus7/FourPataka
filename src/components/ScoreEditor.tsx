@@ -47,30 +47,30 @@ const scoreLanguage = StreamLanguage.define({
 });
 const theme = EditorView.theme(
   {
-    '&': { height: '100%', background: 'transparent', color: '#fffffe', fontSize: '14px' },
+    '&': { height: '100%', background: 'transparent', color: '#30283e', fontSize: '14px' },
     '.cm-scroller': { fontFamily: 'var(--font-mono)', lineHeight: '1.9', overflow: 'auto' },
     '.cm-content': { padding: '20px 0' },
     '.cm-gutters': {
       background: 'transparent',
-      color: '#7d7d96',
+      color: '#8a7889',
       border: 'none',
       paddingRight: '12px',
     },
-    '.cm-activeLineGutter, .cm-activeLine': { background: '#ffffff05' },
-    '.cm-cursor': { borderLeftColor: '#ff8906' },
-    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { background: '#ff890625' },
-    '.cm-tooltip': { background: '#1f1d2b', color: '#fffffe', border: '1px solid #3b374d' },
-    '.cm-tooltip-autocomplete ul li[aria-selected]': { background: '#ff8906', color: '#0f0e17' },
-    '.playing-line': { background: '#ff890618', boxShadow: 'inset 3px 0 #ff8906' },
+    '.cm-activeLineGutter, .cm-activeLine': { background: '#8b6c9b09' },
+    '.cm-cursor': { borderLeftColor: '#994626' },
+    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { background: '#ceb7de70' },
+    '.cm-tooltip': { background: '#fff5e3', color: '#30283e', border: '1px solid #baa78c' },
+    '.cm-tooltip-autocomplete ul li[aria-selected]': { background: '#e2c28b', color: '#30283e' },
+    '.playing-line': { background: '#eac17333', boxShadow: 'inset 3px 0 #b86a34' },
   },
-  { dark: true },
+  { dark: false },
 );
 const colors = HighlightStyle.define([
-  { tag: tags.keyword, color: '#ffb35c' },
-  { tag: tags.typeName, color: '#c2a8fa' },
-  { tag: tags.atom, color: '#ffd4ac' },
-  { tag: tags.number, color: '#b3d5b1' },
-  { tag: tags.comment, color: '#9191a9', fontStyle: 'italic' },
+  { tag: tags.keyword, color: '#9c4229' },
+  { tag: tags.typeName, color: '#775091' },
+  { tag: tags.atom, color: '#825729' },
+  { tag: tags.number, color: '#476d54' },
+  { tag: tags.comment, color: '#7d6e77', fontStyle: 'italic' },
 ]);
 
 interface Props {
