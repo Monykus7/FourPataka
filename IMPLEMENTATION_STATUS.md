@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Next implement stage 3's effect factories and independent per-track/master routing, then extend A/B snapshots with pedal-chain settings. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Add processing before enabling `through` or master directives.
+Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 now has compressor/overdrive, independent track/master routing and pedal-aware A/B snapshots. Next add EQ/delay and chain-aware score directives before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
@@ -104,3 +104,15 @@ Validation: 69 unit tests, 19 browser tests, and 2 packaged desktop tests; produ
 The point curve is sampled, then projected onto the first sixteen signed sine harmonics. This is a finite sine-series approximation, rather than a polynomial transform of degree sixteen. Half-cycle zero endpoints and odd reflection still match the current synthesis model. Geometry is an optional Sound field within project schema version 1; older files remain valid. Reset preserves undertones, attack/release, and trim. Editable target curves and coefficients remain separate so truncation/limiting differences are visible.
 
 Validation: 73 unit tests, 20 browser tests, and 2 packaged desktop tests pass, with production build and formatting checks. Windows output: `release/FourPataka-0.5.0-win-x64.exe`.
+
+### First pedalboard slice (v0.6.0, roadmap stage 3 in progress)
+
+1. Independent processing state for A/B audition, per-track and master instances; chain library and backward-compatible project migration.
+2. Compressor/overdrive factories with runtime impulse latency calibration, identity-ratio path, matched oversampling dry/wet branches, smooth parameters/bypass, track compensation, and Stop disposal.
+3. Ordered visible pedal modules with drag/keyboard reorder, numeric sliders, presets, Apply/Apply associated destinations, Compose bypass controls, A/B chain copies, and live processed signal views.
+4. Browser/native regression proofs, usage notes, Windows v0.6.0 packaging, and automatic application launch after the verified release.
+
+This completes the first two-effect feature slice, not all of stage 3. EQ, delay/feedback and delay-specific feed/tail bypass, score `through`/master chain directives, and the full tail gate remain next. Chord-symbol macros remain queued after core pedal work. Track/master graphs are independent; settings are copied without sharing processor state. Score parameters are frozen while bypass stays live. Order/preset/topology edits are pending until replay. Runtime latency calibration covers the native compressor and overdrive oversampling at the current sample rate. The audio proof checks 48/44.1 kHz compressor unity, linear dry/wet blend, overdrive bypass peaks above 1, isolated graphs, hard Stop, opposite-source cancellation through compensated track paths, frozen score parameters, and live bypass. Native testing covers pedal loading/audio/processed waveform as well as waveform editing and native project dialogs.
+
+Validation: 76 unit tests, 25 browser checks (24 in the full run, followed by the corrected standalone two-track timing fixture), 2 packaged desktop checks, production build and formatting checks pass. Output: `release/FourPataka-0.6.0-win-x64.exe`. The portable app launches after release verification and checkpoint push, per the user's continuing instruction.
+

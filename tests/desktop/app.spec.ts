@@ -58,8 +58,18 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).not.toHaveValue(
     originalH1,
   );
+  const pedalboard = page.getByRole('region', { name: 'Pedalboard', exact: true });
+  await pedalboard
+    .getByRole('combobox', { name: 'Pedal preset', exact: true })
+    .selectOption('warm-drive');
+  await pedalboard.getByRole('button', { name: 'Load chain preset', exact: true }).click();
+  await expect(
+    pedalboard.getByRole('spinbutton', { name: 'overdrive 1 drive exact value' }),
+  ).toHaveValue('6');
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
+  await expect(page.getByRole('img', { name: 'After pedals waveform', exact: true })).toBeVisible();
+  await pedalboard.getByRole('checkbox', { name: 'Bypass overdrive 1', exact: true }).check();
   await page.getByRole('button', { name: 'Stop all sound' }).click();
   await page
     .getByRole('combobox', { name: 'Comparison material', exact: true })

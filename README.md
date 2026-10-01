@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.5.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.6.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -94,7 +94,7 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 ## Current boundary
 
-This is the audio/project foundation and instrument comparison workflow, not the completed initial release. Pedal processing, pedal preset libraries, master routing, effect tails, processed signal views, pedal-chain A/B snapshots, WAV export, and the full measurement panel are still ahead. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and first pedalboard slice are implemented: compressor, overdrive, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work includes EQ, delay and its echo-tail policy, and score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 
@@ -110,3 +110,18 @@ Choose **Dots** (default) or **Draw** in the waveform editor. Click in the left 
 
 Both editing tools update the current A/B sound and live audition. Each stroke or dot drag is one undo operation, even when moving slowly. **Reset waveform to sine** restores H1 = 1 and H2–H16 = 0, and resets polarity, while keeping trim, envelope, and undertones. The reset can be undone. Dot geometry travels with saved sounds and projects, A/B copies, and undo/redo. Harmonic or macro edits discard a stale dot layout and seed fresh anchors from the edited sound; level/envelope edits retain it. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.
 
+
+
+## Pedalboard
+
+The Instrument view includes a pedalboard with an explicit **Editing destination**: Audition A/B, a named track, or Master. Add compressor/overdrive modules, set their numeric controls or sliders, bypass a pedal or the chain, and drag module titles to reorder (Move left/right are keyboard alternatives). A chain currently supports up to eight pedals.
+
+**Load chain preset** creates an independent copy. **Save chain preset** updates its library template while applied instances retain their values. **Save chain as new** creates a named template. Apply the current chain to a track or master, or use **Apply chain to all associated** to update exactly the listed destinations. All musical edits and applications are undoable. A/B copies include the audition chain, and switching sides starts with a fresh graph.
+
+Audition hears only its selected sound/chain. Score Play routes each track through its independent chain, then track level, master chain, mix gain, and monitor. Compose exposes whole-chain and per-pedal bypass switches for tracks/master. Pedal parameters are smoothed live during audition. Score parameters stay frozen until the next Play, while bypass remains live. Changes to order, added/removed modules, or loaded presets are queued until Play/replay; the pending label identifies this.
+
+Compressor uses the native Web Audio processor with a 30 dB knee, measured look-ahead alignment, makeup/output control, and a linear dry/wet blend. Its 1:1 setting uses an aligned identity path to avoid native startup attenuation. Overdrive uses `tanh(drive × input)`, a low-pass tone filter, output trim, and 4× oversampling. The dry/bypass branch uses matching resampling filters. Runtime impulse probes calibrate compressor and oversampling latency at the active sample rate; score tracks are padded to match the slowest chain. A short filter-tail budget follows note release. Stop fades the whole session and disconnects voices/effects before a fresh start. See the [Web Audio processing specification](https://www.w3.org/TR/webaudio-1.0/#dynamicscompressornode-processing).
+
+**After pedals** displays the selected live path before its track level or mix gain, with a waveform and FFT spectrum. The original source graphs still describe the instrument. These views require active Listen/Play.
+
+Personal build workflow: make at least four focused commits per milestone, push each completed checkpoint using the configured identity, and launch the verified portable application after every completed x.x.0 release.
