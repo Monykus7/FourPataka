@@ -22,6 +22,7 @@ export interface ScoreTrack {
   instrumentKey: string;
   instrumentFrom: number;
   instrumentTo: number;
+  bodyTo: number;
   events: ScoreEvent[];
   beats: number;
 }
@@ -61,6 +62,7 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
     if (!line) return;
     if (line === '}') {
       if (!current) error('Unexpected closing brace.');
+      else current.bodyTo = from;
       current = null;
       return;
     }
@@ -96,6 +98,7 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
           instrumentKey,
           instrumentFrom: from + prefix.length,
           instrumentTo: from + prefix.length + instrumentKey.length,
+          bodyTo: to,
           events: [],
           beats: 0,
         };
