@@ -1,5 +1,95 @@
 import { expect, test } from '@playwright/test';
 
+test('rapid edits preserve common-component gain throughout unfinished crossfades', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const error = await page.evaluate(async () => {
+    const voicePath = '/src/audio/voice.ts',
+      musicPath = '/src/core/music.ts';
+    const { createVoice } = await import(voicePath);
+    const { mathematicalPreset } = await import(musicPath);
+    const render = async (polarity: number) => {
+      const context = new OfflineAudioContext(1, 24000, 48000);
+      const sound = mathematicalPreset('sine');
+      const voice = createVoice(context, context.destination, sound, 437, 0, 0.4);
+      const first = context.suspend(0.2),
+        second = context.suspend(0.21);
+      const rendering = context.startRendering();
+      await first;
+      const next = structuredClone(sound);
+      next.harmonics[2] = 0.25;
+      next.polarity[2] = polarity;
+      voice.update(next);
+      await context.resume();
+      await second;
+      next.harmonics[2] = 0.5;
+      voice.update(next);
+      await context.resume();
+      return (await rendering).getChannelData(0);
+    };
+    const positive = await render(1),
+      negative = await render(-1);
+    // Opposite added harmonics cancel, leaving the shared fundamental. It must
+    // retain its gain and phase during both overlapping transitions.
+    let error = 0;
+    for (let i = 9600; i < 14400; i++) {
+      const expected = 10 ** (-12 / 20) * Math.sin((2 * Math.PI * 437 * i) / 48000);
+      error = Math.max(error, Math.abs((positive[i] + negative[i]) / 2 - expected));
+    }
+    return error;
+  });
+  expect(error).toBeLessThan(0.001);
+});
+
+test('live undertone and solo changes add/remove source paths without restarting a voice', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const voicePath = '/src/audio/voice.ts',
+      musicPath = '/src/core/music.ts';
+    const { createVoice } = await import(voicePath);
+    const { mathematicalPreset } = await import(musicPath);
+    const context = new OfflineAudioContext(1, 48000, 48000);
+    const sound = mathematicalPreset('sine');
+    sound.release = 0.05;
+    const voice = createVoice(context, context.destination, sound, 480, 0, 0.7);
+    const first = context.suspend(0.12),
+      second = context.suspend(0.32);
+    const rendering = context.startRendering();
+    await first;
+    const next = structuredClone(sound);
+    next.undertonesEnabled = true;
+    next.undertones[0] = 0.5;
+    voice.update(next, 'f₀/2');
+    await context.resume();
+    await second;
+    next.undertonesEnabled = false;
+    voice.update(next);
+    await context.resume();
+    const samples = (await rendering).getChannelData(0);
+    const coefficient = (f: number, start: number) => {
+      let total = 0;
+      for (let i = start; i < start + 4800; i++)
+        total += samples[i] * Math.sin((2 * Math.PI * f * i) / 48000);
+      return (total * 2) / 4800;
+    };
+    return {
+      sub: coefficient(240, 9600),
+      soloFundamental: coefficient(480, 9600),
+      restored: coefficient(480, 19200),
+      disabled: coefficient(240, 19200),
+      tail: Math.max(...Array.from(samples.slice(37000), Math.abs)),
+    };
+  });
+  expect(proof.sub).toBeCloseTo(0.5 * 10 ** (-12 / 20), 4);
+  expect(Math.abs(proof.soloFundamental)).toBeLessThan(0.0001);
+  expect(proof.restored).toBeCloseTo(10 ** (-12 / 20), 4);
+  expect(Math.abs(proof.disabled)).toBeLessThan(0.0001);
+  expect(proof.tail).toBe(0);
+});
+
 test('A/B shares a saved phrase, replays on switching, and keeps live edits at the same position', async ({
   page,
 }) => {
@@ -10,6 +100,10 @@ test('A/B shares a saved phrase, replays on switching, and keeps live edits at t
   await page.getByRole('combobox', { name: 'Comparison phrase track' }).selectOption('bass');
   await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('2');
   await page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }).fill('4');
+  await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('1000003');
+  await expect(page.getByRole('spinbutton', { name: 'Comparison phrase start beat' })).toHaveValue(
+    '2',
+  );
   await expect(page.locator('.comparison-summary')).toContainText(
     'bass · 2 beats · 120 BPM · 2 events',
   );
@@ -86,7 +180,9 @@ test('microscope links keyboard spectrum selection, zero components, contributio
   await expect(page.getByRole('button', { name: 'Compare / replay' })).toBeDisabled();
   // Returning from solo remains available even if the selected phrase becomes invalid.
   await page.getByRole('button', { name: 'Solo on · return to instrument' }).click();
-  await expect(page.locator('.partial-inspector').getByRole('button', { name: 'Solo H2', exact: true })).toBeDisabled();
+  await expect(
+    page.locator('.partial-inspector').getByRole('button', { name: 'Solo H2', exact: true }),
+  ).toBeDisabled();
   await page.getByRole('combobox', { name: 'Comparison material' }).selectOption('note');
   await expect(page.getByRole('button', { name: 'Compare / replay' })).toBeEnabled();
 });

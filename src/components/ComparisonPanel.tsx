@@ -87,6 +87,7 @@ export default function ComparisonPanel({
                 aria-label="Comparison phrase start beat"
                 type="number"
                 min="1"
+                max="1000001"
                 step="0.25"
                 value={material.fromBeat + 1}
                 onChange={(e) => {
@@ -95,6 +96,7 @@ export default function ComparisonPanel({
                     e.target.value &&
                     Number.isFinite(beat) &&
                     beat >= 0 &&
+                    beat <= 1_000_000 &&
                     beat < (material.toBeat ?? Infinity)
                   )
                     onChange({ ...material, fromBeat: beat });
@@ -107,12 +109,16 @@ export default function ComparisonPanel({
                 aria-label="Comparison phrase end boundary"
                 type="number"
                 min={material.fromBeat + 1.25}
+                max="1000001"
                 step="0.25"
                 placeholder="Track end"
                 value={material.toBeat === null ? '' : material.toBeat + 1}
                 onChange={(e) => {
                   const beat = e.target.value === '' ? null : Number(e.target.value) - 1;
-                  if (beat === null || (Number.isFinite(beat) && beat > material.fromBeat))
+                  if (
+                    beat === null ||
+                    (Number.isFinite(beat) && beat <= 1_000_000 && beat > material.fromBeat)
+                  )
                     onChange({ ...material, toBeat: beat });
                 }}
               />

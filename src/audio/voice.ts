@@ -44,6 +44,7 @@ export function createVoice(
   let disposed = false;
   const oscillators: OscillatorNode[] = [];
   const sources = new Set<Source>();
+  const harmonicSources = new Set<Source>();
   const subs = new Map<number, Source>();
   let harmonic: Source | null = null;
   let harmonicKey = '';
@@ -77,6 +78,7 @@ export function createVoice(
       oscillator.disconnect();
       gain.disconnect();
       sources.delete(item);
+      harmonicSources.delete(item);
       const index = oscillators.indexOf(oscillator);
       if (index >= 0) oscillators.splice(index, 1);
     };
@@ -95,16 +97,19 @@ export function createVoice(
       .forEach((p) => (coefficients[p.index + 1] = p.magnitude * p.polarity));
     const key = coefficients.join(',');
     if (key !== harmonicKey) {
-      if (harmonic) {
-        harmonic.retired = true;
-        holdParameter(harmonic.gain.gain, at);
-        harmonic.gain.gain.linearRampToValueAtTime(0, at + TRANSITION);
-        harmonic.oscillator.stop(Math.min(end + 0.005, at + TRANSITION + 0.005));
-      }
+      // Retarget unfinished crossfades too, preserving the total gain of shared
+      // components when another edit arrives before the previous fade finishes.
+      harmonicSources.forEach((previous) => {
+        previous.retired = true;
+        holdParameter(previous.gain.gain, at);
+        previous.gain.gain.linearRampToValueAtTime(0, at + TRANSITION);
+        previous.oscillator.stop(Math.min(end + 0.005, at + TRANSITION + 0.005));
+      });
       harmonic = coefficients.some((v) => v !== 0)
         ? source(frequency, coefficients, at, initial ? 1 : 0)
         : null;
       if (harmonic && !initial) harmonic.gain.gain.linearRampToValueAtTime(1, at + TRANSITION);
+      if (harmonic) harmonicSources.add(harmonic);
       harmonicKey = key;
     }
     next.undertones.forEach((_m, index) => {
@@ -162,6 +167,7 @@ export function createVoice(
         s.gain.disconnect();
       });
       sources.clear();
+      harmonicSources.clear();
       subs.clear();
       oscillators.length = 0;
       envelope.disconnect();
