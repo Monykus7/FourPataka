@@ -397,7 +397,14 @@ export default function App() {
     change((p) => ({ ...p, comparison: { ...p.comparison, active: side } }));
     if (playback === 'audition') void audition(project.comparison[side]);
   };
-  const exportJson = () => {
+  const exportJson = async () => {
+    if (window.fourpatakaDesktop?.saveProject) {
+      try {
+        const result = await window.fourpatakaDesktop.saveProject(JSON.stringify(project, null, 2), project.name);
+        if (!result.canceled) setToast(`Saved ${result.name}.`);
+      } catch (e) { setToast(`Save failed: ${(e as Error).message}`); }
+      return;
+    }
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
@@ -407,17 +414,23 @@ export default function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     setToast('Project exported, including presets, track copies, and A/B sounds.');
   };
+  const acceptProject = (text: string) => {
+    const imported = importProject(text);
+    stop(); resetMacros(imported.comparison[imported.comparison.active]);
+    change(() => imported); setSelectedTrack(imported.tracks[0]?.key ?? '');
+    setSelectedEvent(null); setToast('Project imported. Undo restores your previous session.');
+  };
+  const openNativeProject = async () => {
+    try {
+      const result = await window.fourpatakaDesktop!.openProject!();
+      if (!result.canceled && result.text !== undefined) acceptProject(result.text);
+    } catch (e) { setToast(`Open failed: ${(e as Error).message}. Your session is unchanged.`); }
+  };
   const readFile = async (file?: File) => {
     if (!file) return;
     try {
       if (file.size > 2_000_000) throw new Error('Project file is too large (maximum 2 MB).');
-      const imported = importProject(await file.text());
-      stop();
-      resetMacros(imported.comparison[imported.comparison.active]);
-      change(() => imported);
-      setSelectedTrack(imported.tracks[0]?.key ?? '');
-      setSelectedEvent(null);
-      setToast('Project imported. Undo restores your previous session.');
+      acceptProject(await file.text());
     } catch (e) {
       setToast(`Import failed: ${(e as Error).message}. Your session is unchanged.`);
     }
@@ -486,6 +499,21 @@ export default function App() {
       : [];
   const stale = playback === 'score' && running?.text !== project.scoreText;
   const highlightedLines = stale ? [] : activeEvents.map((e) => e.line);
+  const menuActions = useRef<(action: string) => void>(() => {});
+  menuActions.current = action => {
+    if (action === 'open') void openNativeProject();
+    else if (action === 'save') void exportJson();
+    else if (action === 'undo' || action === 'redo') travel(action);
+    else if (action === 'instrument' || action === 'compose' || action === 'learn') setView(action);
+    else if (action === 'play') void playScore();
+    else if (action === 'stop') stop();
+    else if (action === 'commands') { setView('compose'); setCommandsOpen(true); requestAnimationFrame(() => document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' })); }
+    else if (action === 'track') {
+      if (playback === 'score' || score.diagnostics.some(d => d.message !== 'Add a track to start composing.')) { setToast('Stop playback and fix score diagnostics before making a track.'); return; }
+      setView('compose'); setTrackMakerOpen(true);
+    }
+  };
+  useEffect(() => window.fourpatakaDesktop?.onMenuAction(action => menuActions.current(action)), []);
 
   return (
     <div className="app-shell">
@@ -542,13 +570,13 @@ export default function App() {
             <Redo2 size={17} />
           </button>
           <span className="divider" />
-          <button className="subtle-button" onClick={() => fileInput.current?.click()}>
+          <button className="subtle-button" onClick={() => window.fourpatakaDesktop?.openProject ? void openNativeProject() : fileInput.current?.click()}>
             <Upload size={15} />
-            <span>Import</span>
+            <span>{window.fourpatakaDesktop ? 'Open project' : 'Import'}</span>
           </button>
           <button className="subtle-button" onClick={exportJson}>
             <ArrowDownToLine size={15} />
-            <span>Export JSON</span>
+            <span>{window.fourpatakaDesktop ? 'Save project' : 'Export JSON'}</span>
           </button>
           <input
             type="file"
