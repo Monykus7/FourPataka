@@ -53,8 +53,8 @@ export default function SourceGraphs({
         >
           <defs>
             <linearGradient id="wave-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop stopColor="#ff8906" stopOpacity=".15" />
-              <stop offset="1" stopColor="#ff8906" stopOpacity="0" />
+              <stop stopColor="var(--accent)" stopOpacity=".15" />
+              <stop offset="1" stopColor="var(--accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
           {[28, 70, 112].map((y) => (
@@ -64,7 +64,7 @@ export default function SourceGraphs({
             <line key={x} x1={x} x2={x} y1="0" y2={height} className="graph-grid" />
           ))}
           <path d={`${path} L600,140 L0,140 Z`} fill="url(#wave-fill)" />
-          <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2" />
+          <path d={path} fill="none" stroke="var(--accent-ink)" strokeWidth="2" />
           <path
             d={contributionPath}
             className="partial-contribution"

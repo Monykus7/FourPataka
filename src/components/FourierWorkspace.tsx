@@ -285,7 +285,7 @@ export default function FourierWorkspace({
                 d={targetPath}
                 className="wave-target"
                 fill="none"
-                stroke="var(--secondary)"
+                stroke="var(--secondary-ink)"
                 strokeDasharray="4 4"
                 strokeWidth="1.5"
               />
@@ -293,7 +293,7 @@ export default function FourierWorkspace({
             <path
               d={path}
               fill="none"
-              stroke="var(--accent)"
+              stroke="var(--accent-ink)"
               strokeWidth="2"
               style={{ pointerEvents: 'none' }}
             />

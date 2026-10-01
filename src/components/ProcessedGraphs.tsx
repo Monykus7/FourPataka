@@ -50,7 +50,7 @@ export default function ProcessedGraphs({
           <div>
             <svg viewBox="0 0 600 140" role="img" aria-label="After pedals waveform">
               <line x1="0" x2="600" y1="70" y2="70" className="graph-grid" />
-              <path d={wavePath} fill="none" stroke="var(--secondary)" strokeWidth="2" />
+              <path d={wavePath} fill="none" stroke="var(--secondary-ink)" strokeWidth="2" />
             </svg>
             <p className="footnote">
               ±2 amplitude display · {((data.wave.length / sampleRate) * 1000).toFixed(1)} ms
@@ -58,7 +58,7 @@ export default function ProcessedGraphs({
           </div>
           <div>
             <svg viewBox="0 0 600 140" role="img" aria-label="After pedals spectrum">
-              <path d={spectrumPath} fill="none" stroke="var(--tertiary)" strokeWidth="2" />
+              <path d={spectrumPath} fill="none" stroke="var(--tertiary-ink)" strokeWidth="2" />
             </svg>
             <p className="footnote">−100…0 dBFS · 0…{(sampleRate / 2000).toFixed(1)} kHz</p>
           </div>

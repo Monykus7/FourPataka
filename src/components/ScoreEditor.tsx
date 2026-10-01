@@ -47,30 +47,44 @@ const scoreLanguage = StreamLanguage.define({
 });
 const theme = EditorView.theme(
   {
-    '&': { height: '100%', background: 'transparent', color: '#fffffe', fontSize: '14px' },
+    '&': { height: '100%', background: 'transparent', color: 'var(--text)', fontSize: '14px' },
     '.cm-scroller': { fontFamily: 'var(--font-mono)', lineHeight: '1.9', overflow: 'auto' },
     '.cm-content': { padding: '20px 0' },
     '.cm-gutters': {
       background: 'transparent',
-      color: '#8d89a1',
+      color: 'var(--text-muted)',
       border: 'none',
       paddingRight: '12px',
     },
-    '.cm-activeLineGutter, .cm-activeLine': { background: '#ffffff05' },
-    '.cm-cursor': { borderLeftColor: '#ff8906' },
-    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': { background: '#ff890625' },
-    '.cm-tooltip': { background: '#1f1d2b', color: '#fffffe', border: '1px solid #3b374d' },
-    '.cm-tooltip-autocomplete ul li[aria-selected]': { background: '#ff8906', color: '#0f0e17' },
-    '.playing-line': { background: '#ff890618', boxShadow: 'inset 3px 0 #ff8906' },
+    '.cm-activeLineGutter, .cm-activeLine': {
+      background: 'color-mix(in srgb, var(--text) 3%, transparent)',
+    },
+    '.cm-cursor': { borderLeftColor: 'var(--accent)' },
+    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground': {
+      background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+    },
+    '.cm-tooltip': {
+      background: 'var(--surface-2)',
+      color: 'var(--text)',
+      border: '1px solid var(--border)',
+    },
+    '.cm-tooltip-autocomplete ul li[aria-selected]': {
+      background: 'var(--accent)',
+      color: 'var(--accent-text)',
+    },
+    '.playing-line': {
+      background: 'color-mix(in srgb, var(--tertiary) 12%, transparent)',
+      boxShadow: 'inset 3px 0 var(--accent)',
+    },
   },
   { dark: true },
 );
 const colors = HighlightStyle.define([
-  { tag: tags.keyword, color: '#ffb35c' },
-  { tag: tags.typeName, color: '#c2a8fa' },
-  { tag: tags.atom, color: '#ffd4ac' },
-  { tag: tags.number, color: '#b3d5b1' },
-  { tag: tags.comment, color: '#9191a9', fontStyle: 'italic' },
+  { tag: tags.keyword, color: 'var(--accent-ink)' },
+  { tag: tags.typeName, color: 'var(--tertiary-ink)' },
+  { tag: tags.atom, color: 'var(--secondary-ink)' },
+  { tag: tags.number, color: 'var(--text)' },
+  { tag: tags.comment, color: 'var(--text-muted)', fontStyle: 'italic' },
 ]);
 
 interface Props {

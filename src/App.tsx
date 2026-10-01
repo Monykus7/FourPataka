@@ -1,5 +1,14 @@
 import { keepMatchingWavePoints } from './core/waveform';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ArrowDownToLine,
   ArrowLeftRight,
@@ -67,6 +76,7 @@ import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
+import { applyTheme, resolveTheme, THEMES } from './core/themes';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
 type View = 'instrument' | 'compose' | 'learn';
@@ -75,13 +85,14 @@ function readPreferences() {
     const saved = JSON.parse(localStorage.getItem(PREFERENCES_KEY) ?? '{}');
     return {
       autocomplete: saved.autocomplete !== false,
+      theme: resolveTheme(saved.theme).id,
       monitor:
         typeof saved.monitor === 'number' && Number.isFinite(saved.monitor)
           ? clamp(saved.monitor, 0, 1)
           : 0.35,
     };
   } catch {
-    return { autocomplete: true, monitor: 0.35 };
+    return { autocomplete: true, monitor: 0.35, theme: 'original' };
   }
 }
 function MiniWave({ kind }: { kind: string }) {
@@ -305,6 +316,7 @@ export default function App() {
     }
     engine.current.setMonitor(preferences.monitor);
   }, [preferences]);
+  useLayoutEffect(() => applyTheme(preferences.theme), [preferences.theme]);
   useEffect(() => {
     engine.current.setMix(project.mixGain);
   }, [project.mixGain]);
@@ -721,6 +733,33 @@ export default function App() {
           >
             <BookOpen size={14} /> Learn
           </button>
+          <label className="theme-picker">
+            Theme
+            <select
+              aria-label="Theme preset"
+              value={preferences.theme}
+              onChange={(e) => setPreferences((p) => ({ ...p, theme: e.target.value }))}
+            >
+              {THEMES.map((theme) => (
+                <option key={theme.id} value={theme.id}>
+                  {theme.label}
+                </option>
+              ))}
+            </select>
+            <span className="theme-swatches" aria-label="Theme colors">
+              {(
+                resolveTheme(preferences.theme).swatches ?? [
+                  resolveTheme(preferences.theme).background,
+                  resolveTheme(preferences.theme).muted,
+                  resolveTheme(preferences.theme).accent,
+                  resolveTheme(preferences.theme).secondary,
+                  resolveTheme(preferences.theme).tertiary,
+                ]
+              ).map((color, index) => (
+                <span key={index} title={color} style={{ background: color }} />
+              ))}
+            </span>
+          </label>
           <div className="library-title">
             <span className="sidebar-section-label">INSTRUMENT LIBRARY</span>
             <button
