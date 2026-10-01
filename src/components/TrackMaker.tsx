@@ -64,7 +64,6 @@ export default function TrackMaker({
       >
         <div className="panel-header">
           <div>
-            <span className="context-label">A NEW VOICE FOR YOUR IDEA</span>
             <h2>Make a track</h2>
           </div>
           <button
@@ -76,7 +75,6 @@ export default function TrackMaker({
             <X size={18} />
           </button>
         </div>
-        <p className="hand-note">Start with a few notes. The score writes itself.</p>
         <div className="maker-identity">
           <label>
             Track name
@@ -105,7 +103,7 @@ export default function TrackMaker({
           </label>
         </div>
         <div className="maker-phrase-heading">
-          <h3>Build your phrase</h3>
+          <h3>Events</h3>
           <span>
             {preview.beats} beats · {rows.length} events
           </span>
@@ -129,7 +127,7 @@ export default function TrackMaker({
                 <option value="rest">Rest</option>
               </select>
               {row.kind === 'rest' ? (
-                <span className="rest-placeholder">a little breathing room</span>
+                <span className="rest-placeholder">Rest</span>
               ) : (
                 <input
                   aria-label={`Event ${index + 1} pitches`}
@@ -175,7 +173,7 @@ export default function TrackMaker({
           </button>
         </div>
         <div className="maker-preview">
-          <span className="small-label">YOUR SCORE WILL GET</span>
+          <span className="small-label">SCORE PREVIEW</span>
           <pre>{text}</pre>
         </div>
         {(error || preview.diagnostics.length > 0) && (

@@ -11,7 +11,7 @@ const savedProject = async (page: import('@playwright/test').Page) => {
 test('instrument UI, independent A/B snapshots, audition, and undo', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await expect(page.getByRole('heading', { name: 'A little math. A lot of music.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Instrument' })).toBeVisible();
   await expect(page.getByRole('slider', { name: /^H\d+ magnitude$/ })).toHaveCount(16);
   await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
   await page.getByRole('button', { name: 'B', exact: true }).click();
@@ -49,7 +49,7 @@ test('preset Apply updates notation; library Save keeps the track copy; refresh 
   await expect(
     page.getByRole('spinbutton', { name: 'H1 exact magnitude', exact: true }),
   ).toHaveValue('0.42');
-  await page.getByRole('button', { name: 'Compose Turn sound into music', exact: true }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
     'melody using triangle',
   );
@@ -58,7 +58,7 @@ test('preset Apply updates notation; library Save keeps the track copy; refresh 
 test('CodeMirror diagnostics, stable playback revision, and global score undo', async ({
   page,
 }) => {
-  await page.getByRole('button', { name: 'Compose Turn sound into music', exact: true }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   await expect(editor).toBeVisible();
   await page.getByRole('button', { name: 'Play score', exact: true }).click();

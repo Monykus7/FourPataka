@@ -4,7 +4,7 @@ test('empty score survives refresh and a corrupt save recovers without losing it
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Compose Turn sound into music', exact: true }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await page.getByRole('textbox', { name: 'Score editor' }).fill('');
   await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
   const empty = await page.evaluate(() =>

@@ -1,6 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Activity,
   ArrowDownToLine,
   ArrowLeftRight,
   ArrowRight,
@@ -505,7 +504,6 @@ export default function App() {
           </span>
           <span>
             Four<span className="brand-light">Pataka</span>
-            <small>FOURIER MUSIC STUDIO</small>
           </span>
         </a>
         <div className="project-identity">
@@ -571,13 +569,11 @@ export default function App() {
                 id: 'instrument' as const,
                 name: 'Instrument',
                 icon: SlidersHorizontal,
-                detail: 'Shape your sound',
               },
               {
                 id: 'compose' as const,
                 name: 'Compose',
                 icon: FileMusic,
-                detail: 'Turn sound into music',
               },
             ].map((item) => (
               <button
@@ -587,10 +583,7 @@ export default function App() {
                 aria-current={view === item.id ? 'page' : undefined}
               >
                 <item.icon size={18} />
-                <span>
-                  {item.name}
-                  <small>{item.detail}</small>
-                </span>
+                <span>{item.name}</span>
                 {view === item.id && <span className="nav-dot" />}
               </button>
             ))}
@@ -601,7 +594,7 @@ export default function App() {
             aria-current={view === 'learn' ? 'page' : undefined}
             aria-label="Learn"
           >
-            <BookOpen size={14} /> Learn <span>a little sound science</span>
+            <BookOpen size={14} /> Learn
           </button>
           <div className="library-title">
             <span className="sidebar-section-label">INSTRUMENT LIBRARY</span>
@@ -641,48 +634,22 @@ export default function App() {
             ))}
           </div>
           <div className="sidebar-bottom">
-            <div className="local-badge">
-              <span className="status-dot" />
-              LOCAL-FIRST STUDIO
-            </div>
-            <p>
-              Your sounds stay in this browser.
-              <br />
-              Export a session to take it with you.
-            </p>
-            <span className="version-label">v0.1 · PLAYABLE FOUNDATION</span>
+            <span className="version-label">FourPataka · v0.2</span>
           </div>
         </aside>
 
         <main className="main-content">
           <div className="page-heading">
-            <div>
-              <div className="eyebrow accent">
-                {view === 'instrument'
-                  ? '01 / SOUND DESIGN'
-                  : view === 'compose'
-                    ? '02 / COMPOSITION'
-                    : '03 / EXPLORATION'}
-              </div>
-              <h1>
-                {view === 'instrument'
-                  ? 'A little math. A lot of music.'
-                  : view === 'compose'
-                    ? 'Give your sound a story.'
-                    : 'Hear the idea.'}
-              </h1>
-              <p>
-                {view === 'instrument'
-                  ? 'Build a timbre, one harmonic at a time.'
-                  : view === 'compose'
-                    ? 'Readable notes. Independent voices. One shared pulse.'
-                    : 'Small experiments in the relationship between shape and sound.'}
-              </p>
-            </div>
-            <div className="heading-badge">
-              <Activity size={15} />
-              <span>FOURIER SYNTHESIS</span>
-            </div>
+            <h1>
+              {view === 'instrument' ? 'Instrument' : view === 'compose' ? 'Compose' : 'Learn'}
+            </h1>
+            <span className="page-metadata">
+              {view === 'instrument'
+                ? `${auditionPitch === 'chord' ? 'Bb4 · D5 · F5' : auditionPitch} · ${fundamental.toFixed(2)} Hz · ${sampleRate / 1000} kHz`
+                : view === 'compose'
+                  ? `${score.tracks.length} tracks · ${score.tempo} BPM · ${score.seconds.toFixed(2)} s`
+                  : 'Source model · Fourier coefficients'}
+            </span>
           </div>
 
           {view === 'instrument' && (
@@ -818,7 +785,7 @@ export default function App() {
                 <div className="mixer-bottom">
                   <span>
                     <span className="orange-dot" />
-                    H1 is your fundamental. H2–H16 add the character.
+                    H1 = f₀ · H2–H16 = 2f₀–16f₀
                   </span>
                   <button
                     className="text-button"
@@ -1065,7 +1032,7 @@ export default function App() {
                     </button>
                   </section>
                   <section className="apply-card">
-                    <div className="eyebrow">BRING IT INTO YOUR SCORE</div>
+                    <div className="eyebrow">APPLY SOUND</div>
                     <label className="track-select-label">
                       Destination
                       <select
@@ -1569,11 +1536,10 @@ export default function App() {
           <footer className="workspace-footer">
             <span>
               <span className="status-dot" />
-              All synthesis happens on your device
+              {project.instruments.length} instrument presets
             </span>
             <span>
-              {sampleRate / 1000} kHz · {32} voice cap <span className="footer-separator">/</span>{' '}
-              MADE OF SINE WAVES
+              {sampleRate / 1000} kHz · {32} voice cap
             </span>
           </footer>
         </main>
