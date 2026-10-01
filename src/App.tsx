@@ -58,6 +58,8 @@ import {
 } from './core/project';
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
+import TrackMaker from './components/TrackMaker';
+import { appendTrack, nextTrackKey } from './core/scoreTools';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
 type View = 'instrument' | 'compose' | 'learn';
@@ -173,6 +175,7 @@ export default function App() {
   const [peak, setPeak] = useState(0);
   const [sampleRate, setSampleRate] = useState(48000);
   const [newPreset, setNewPreset] = useState(false);
+  const [trackMakerOpen, setTrackMakerOpen] = useState(false);
   const [presetLabel, setPresetLabel] = useState('');
   const [presetKey, setPresetKey] = useState('');
   const [modalError, setModalError] = useState('');
@@ -1121,6 +1124,19 @@ export default function App() {
                       </h2>
                     </div>
                     <div className="editor-options">
+                      <button
+                        className="primary-button"
+                        disabled={
+                          playback === 'score' ||
+                          score.diagnostics.some(
+                            (d) => d.message !== 'Add a track to start composing.',
+                          )
+                        }
+                        onClick={() => setTrackMakerOpen(true)}
+                      >
+                        <Plus size={14} />
+                        Make a track
+                      </button>
                       <label>
                         Autocomplete
                         <button
@@ -1775,6 +1791,32 @@ export default function App() {
           </button>
         </form>
       </dialog>
+      {trackMakerOpen && (
+        <TrackMaker
+          initialKey={nextTrackKey(
+            project.scoreText,
+            instruments.map((i) => i.key),
+          )}
+          instruments={instruments}
+          instrumentKey={preset.key}
+          onClose={() => setTrackMakerOpen(false)}
+          onCreate={(key, instrument, events) => {
+            const text = appendTrack(
+              project.scoreText,
+              instruments.map((i) => i.key),
+              key,
+              instrument,
+              events,
+            );
+            change((p) => ({ ...p, scoreText: text }));
+            setSelectedTrack(key);
+            setTrackMakerOpen(false);
+            setToast(
+              `Added ${key}. Its notes and instrument assignment are in the score; Undo removes the whole track.`,
+            );
+          }}
+        />
+      )}
     </div>
   );
 }
