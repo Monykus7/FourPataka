@@ -4,3 +4,5 @@ dist/
 *.tsbuildinfo
 .test-results/
 .npm-cache/
+.electron-cache/
+release/
