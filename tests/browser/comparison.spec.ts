@@ -90,7 +90,7 @@ test('live undertone and solo changes add/remove source paths without restarting
   expect(proof.tail).toBe(0);
 });
 
-test('A/B shares a saved phrase, replays on switching, and keeps live edits at the same position', async ({
+test('A/B shares a saved phrase and switches sound without restarting its position', async ({
   page,
 }) => {
   await page.goto('/');
@@ -118,8 +118,13 @@ test('A/B shares a saved phrase, replays on switching, and keeps live edits at t
   await expect
     .poll(async () => Number(await progress.getAttribute('value')))
     .toBeGreaterThan(before);
+  const beforeSwitch = Number(await progress.getAttribute('value'));
   await page.getByRole('button', { name: 'A', exact: true }).click();
   await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).toHaveValue('1');
+  await expect
+    .poll(async () => Number(await progress.getAttribute('value')))
+    .toBeGreaterThan(beforeSwitch);
+  await page.getByRole('button', { name: 'Replay comparison', exact: true }).click();
   await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeLessThan(0.2);
   await expect(page.getByRole('spinbutton', { name: 'Comparison phrase start beat' })).toHaveValue(
     '2',
@@ -261,7 +266,7 @@ test('phrase auditions freeze musical material and live edits keep the clock run
     const before = engine.progress;
     const updated = structuredClone(sound);
     updated.harmonics[0] = 0.3;
-    engine.updateAudition(updated);
+    engine.switchAudition(updated, { pedals: [], bypassed: false });
     const after = engine.progress;
     await untilProgress(1.2);
     const data = new Float32Array(2048);
@@ -297,4 +302,126 @@ test('phrase auditions freeze musical material and live edits keep the clock run
   expect(proof.unwanted).toBeLessThan(proof.high * 0.15);
   expect(proof.replayStart).toBeLessThan(0.06);
   expect(proof.modeAfterStop).toBeNull();
+});
+
+test('rapid A/B pedal changes preserve the audio clock and leave no silent gaps', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const enginePath = '/src/audio/engine.ts',
+      musicPath = '/src/core/music.ts',
+      pedalsPath = '/src/core/pedals.ts';
+    const { AudioEngine } = await import(enginePath);
+    const { mathematicalPreset } = await import(musicPath);
+    const { makePedal, emptyChain } = await import(pedalsPath);
+    const engine = new AudioEngine();
+    engine.setMonitor(0);
+    const sound = mathematicalPreset('sine');
+    sound.attack = 0.005;
+    const chain = { pedals: [makePedal('compressor')], bypassed: true };
+    await engine.auditionPhrase(sound, {
+      tempo: 60,
+      beats: 4,
+      events: [{ beat: 0, duration: 4, notes: ['A4'], frequencies: [440] }],
+    });
+    await new Promise((r) => setTimeout(r, 350));
+    const baseline = engine.measure().rms,
+      before = engine.progress;
+    let minimum = baseline;
+    for (let i = 0; i < 12; i++) {
+      engine.switchAudition(sound, i % 2 ? emptyChain() : chain);
+      await new Promise((r) => setTimeout(r, 12));
+      minimum = Math.min(minimum, engine.measure().rms);
+    }
+    await new Promise((r) => setTimeout(r, 160));
+    const after = engine.progress;
+    const quiet = structuredClone(sound);
+    quiet.harmonics[0] = 0.25;
+    engine.switchAudition(quiet, chain);
+    await new Promise((r) => setTimeout(r, 180));
+    const changed = engine.measure().rms;
+    engine.stop();
+    await new Promise((r) => setTimeout(r, 150));
+    const data = new Float32Array(2048);
+    engine.analyser.getFloatTimeDomainData(data);
+    const tail = Math.max(...data.map(Math.abs));
+    await engine.context.close();
+    return { baseline, minimum, before, after, changed, tail };
+  });
+  expect(proof.after).toBeGreaterThan(proof.before + 0.2);
+  expect(proof.minimum).toBeGreaterThan(proof.baseline * 0.85);
+  expect(proof.changed / proof.baseline).toBeCloseTo(0.25, 1);
+  expect(proof.tail).toBeLessThan(0.00001);
+});
+
+test('score A/B updates one running track and future notes, restoring the previous target', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const enginePath = '/src/audio/engine.ts',
+      projectPath = '/src/core/project.ts',
+      parserPath = '/src/core/parser.ts';
+    const { AudioEngine } = await import(enginePath);
+    const { createProject, reconcileTracks } = await import(projectPath);
+    const { parseScore } = await import(parserPath);
+    const project = createProject();
+    project.scoreText =
+      'tempo 60\ntrack first using sine {\n A4 quarter\n A5 whole\n}\ntrack second using sine {\n D4 whole\n rest whole\n}';
+    const score = parseScore(
+      project.scoreText,
+      project.instruments.map((i: { key: string }) => i.key),
+    );
+    const tracks = reconcileTracks(project, score).tracks;
+    const saved = JSON.stringify(tracks);
+    const engine = new AudioEngine();
+    engine.setMonitor(0);
+    await engine.play(score, tracks);
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    await wait(350);
+    const rms = (key: string) => {
+      const data = new Float32Array(2048);
+      engine.outputAnalyser('track:' + key).getFloatTimeDomainData(data);
+      return Math.sqrt(data.reduce((sum, n) => sum + n * n, 0) / data.length);
+    };
+    const first = rms('first'),
+      second = rms('second'),
+      before = engine.progress;
+    const quiet = structuredClone(tracks[0].sound);
+    quiet.harmonics[0] = 0.25;
+    engine.updateScoreComparison(quiet, 'first');
+    await wait(120);
+    const reduced = rms('first'),
+      unchanged = rms('second'),
+      after = engine.progress;
+    await wait(850);
+    const future = rms('first');
+    engine.updateScoreComparison(quiet, 'second');
+    await wait(120);
+    const restored = rms('first'),
+      retargeted = rms('second');
+    engine.stop();
+    await wait(80);
+    await engine.context.close();
+    return {
+      first,
+      second,
+      before,
+      after,
+      reduced,
+      unchanged,
+      future,
+      restored,
+      retargeted,
+      savedUnchanged: saved === JSON.stringify(tracks),
+    };
+  });
+  expect(proof.after).toBeGreaterThan(proof.before);
+  expect(proof.reduced / proof.first).toBeCloseTo(0.25, 1);
+  expect(proof.unchanged / proof.second).toBeCloseTo(1, 1);
+  expect(proof.future / proof.first).toBeCloseTo(0.25, 1);
+  expect(proof.restored / proof.first).toBeCloseTo(1, 1);
+  expect(proof.retargeted / proof.second).toBeCloseTo(0.25, 1);
+  expect(proof.savedUnchanged).toBe(true);
 });
