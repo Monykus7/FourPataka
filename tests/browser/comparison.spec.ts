@@ -425,3 +425,38 @@ test('score A/B updates one running track and future notes, restoring the previo
   expect(proof.retargeted / proof.second).toBeCloseTo(0.25, 1);
   expect(proof.savedUnchanged).toBe(true);
 });
+
+test('score comparison controls keep the playhead moving without changing saved track sounds', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill(
+      'tempo 60\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
+    );
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
+  await page.getByRole('button', { name: 'B', exact: true }).click();
+  await page.getByRole('spinbutton', { name: 'H1 exact magnitude' }).fill('0.25');
+  await page.getByRole('button', { name: 'A', exact: true }).click();
+  await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
+  const saved = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks,
+  );
+  await page.getByRole('button', { name: 'Play score', exact: true }).click();
+  await expect(page.locator('.transport-time')).toContainText('00:01');
+  await page.getByRole('combobox', { name: 'Live comparison track' }).selectOption('melody');
+  await page.getByRole('button', { name: 'B', exact: true }).click();
+  await expect(page.locator('.playback-note')).toContainText('Live A/B on melody');
+  await expect(page.locator('.transport-time')).not.toContainText('00:00');
+  await page.getByRole('combobox', { name: 'Live comparison track' }).selectOption('bass');
+  await expect(page.locator('.playback-note')).toContainText('Live A/B on bass');
+  await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await expect(page.getByText('Saved locally', { exact: true })).toBeVisible();
+  const after = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks,
+  );
+  expect(after).toEqual(saved);
+});

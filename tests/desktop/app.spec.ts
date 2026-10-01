@@ -77,12 +77,22 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   await page.getByRole('combobox', { name: 'Comparison phrase track' }).selectOption('bass');
   await page.getByRole('button', { name: 'Compare / replay', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
+  const progress = page.getByRole('progressbar', { name: 'Comparison phrase progress' });
+  await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeGreaterThan(0.2);
+  const beforeSwitch = Number(await progress.getAttribute('value'));
   await page.getByRole('button', { name: 'B', exact: true }).click();
   await expect(page.getByRole('button', { name: 'B', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
+  await expect
+    .poll(async () => Number(await progress.getAttribute('value')))
+    .toBeGreaterThan(beforeSwitch);
+  await page.getByRole('combobox', { name: 'Theme preset' }).selectOption('earth');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'earth');
   await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Theme preset' })).toHaveValue('earth');
   await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'track'),
   );
