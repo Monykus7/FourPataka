@@ -26,7 +26,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Normal harmonics have priority. Undertones live in a collapsed, optional section and are enabled by a separate switch. Instrument presets save their values and enable state.
 - Pedal chains are available per track and on the master mix.
 - The score editor has a searchable command reference and toggleable autocomplete.
-- A/B compares the selected instrument and its selected pedal chain. Switching A/B replays the same note or phrase from its start.
+- A/B compares the selected instrument and its selected pedal chain at the current playback position. Explicit replay starts the note or phrase again.
 - Tracks retain independent instrument and pedal settings. Saving a library preset does not overwrite those settings.
 - Provide **Apply** and **Apply to all using this preset**. The latter updates every associated track instance and, for pedal presets, an associated master instance. Show the affected destinations and make the operation undoable.
 - Stop quickly fades all sound, including effect tails. Delay bypass adds no new echoes but lets existing echoes finish.
@@ -170,7 +170,7 @@ A and B are independent value snapshots of the selected instrument, selected ped
 
 Keep the audition note/chord or selected score phrase outside these sound snapshots. That musical material remains the same for both comparisons.
 
-Switching A/B fades the current audition, resets its processing state, and replays from the phrase start. This gives each side the same onset and avoids carrying one side's delay history into the other. Comparison runs in an audition path for the selected sound; other tracks do not enter that comparison.
+Switching A/B keeps the musical clock and current voice envelopes running. Waveforms crossfade in phase, and different audition chains warm up and crossfade through aligned paths. Explicit replay starts from the phrase beginning with fresh processing state. During score playback, an explicit comparison-track selector targets a temporary A/B sound override, preserving other tracks and saved sound copies. Changing targets restores the previous track; Stop and the next Play clear the override.
 
 Master processing is held outside this selected-sound A/B setup. The master Pedalboard can separately audition the full mix, but whole-project A/B is deferred.
 
@@ -487,7 +487,7 @@ Gate: create a timbre, save it, write a phrase, and play it without developer to
 
 Add A/B replay, deep-copy snapshots, the linked partial inspector, solo, full optional undertone bank, macro baseline/reset behavior, and musical undo/redo.
 
-Gate: editing B leaves A unchanged; both replay the same phrase from the same starting state; neutral/reset macros recover their baseline; manual edits establish a new baseline without an audible jump.
+Gate: editing B leaves A unchanged; A/B switches preserve the phrase position and explicit replay restarts it; score comparison changes only its selected track; neutral/reset macros recover their baseline; manual edits establish a new baseline without an audible jump.
 
 ### Stage 3 — visible pedalboard and routing
 

@@ -116,3 +116,12 @@ This completes the first two-effect feature slice, not all of stage 3. EQ, delay
 
 Validation: 76 unit tests, 25 browser checks (24 in the full run, followed by the corrected standalone two-track timing fixture), 2 packaged desktop checks, production build and formatting checks pass. Output: `release/FourPataka-0.6.0-win-x64.exe`. The portable app launches after release verification and checkpoint push, per the user's continuing instruction.
 
+
+### Continuous comparison follow-up (v0.7.0)
+
+1. Stable audition source bus and aligned, warmed A/B chain crossfades.
+2. Live comparison-track selector, temporary score sound overrides, and continuous A/B UI.
+3. Browser audio proofs for rapid switching, future notes, selected-track isolation, target restoration, and Stop cleanup.
+4. Updated behavior contract and usage documentation.
+
+All eight comparison browser checks pass. A/B switching now keeps the current position; explicit replay restarts it. This supersedes the restart behavior recorded in earlier milestone entries. Score text and saved track instances remain frozen during playback; only an explicitly selected comparison track receives a temporary sound override.
