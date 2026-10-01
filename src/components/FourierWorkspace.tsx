@@ -19,11 +19,11 @@ export default function FourierWorkspace({
     value: number;
     base: Sound;
     group: string;
+    scale: number;
   } | null>(null);
-  const scale = Math.max(
-    1,
-    ...Array.from({ length: 513 }, (_, i) => Math.abs(harmonicShape(sound, i / 512))),
-  );
+  const scale =
+    stroke.current?.scale ??
+    Math.max(1, ...Array.from({ length: 513 }, (_, i) => Math.abs(harmonicShape(sound, i / 512))));
   const path = Array.from(
     { length: 513 },
     (_, i) =>
@@ -78,7 +78,48 @@ export default function FourierWorkspace({
         </button>
       </div>
       <div className="fourier-views">
-        <div className="fourier-harmonics">{children}</div>
+        <div className="fourier-harmonics">
+          <div hidden={mode === 'waveform'}>{children}</div>
+          {mode === 'waveform' && (
+            <div className="graph-card">
+              <div className="graph-heading">
+                <span>Harmonics preview</span>
+              </div>
+              <svg
+                viewBox="0 0 240 150"
+                role="img"
+                aria-label="Signed harmonic coefficients preview"
+              >
+                <line x1="0" x2="240" y1="75" y2="75" className="graph-grid" />
+                {sound.harmonics.map((value, i) => (
+                  <g key={i}>
+                    <title>
+                      H{i + 1}: {(value * sound.polarity[i]).toFixed(3)}
+                    </title>
+                    <line
+                      x1={8 + i * 15}
+                      x2={8 + i * 15}
+                      y1="75"
+                      y2={75 - value * sound.polarity[i] * 65}
+                      stroke="var(--accent)"
+                      strokeWidth="6"
+                    />
+                  </g>
+                ))}
+              </svg>
+              <p className="footnote">H1–H16 · signed coefficients ±1</p>
+              <button
+                className="text-button"
+                onClick={() => {
+                  setMode('harmonics');
+                  setTarget(null);
+                }}
+              >
+                Edit harmonics
+              </button>
+            </div>
+          )}
+        </div>
         <div className="fourier-waveform graph-card">
           <div className="graph-heading">
             <span>{mode === 'waveform' ? 'Draw source waveform' : 'Waveform preview'}</span>
@@ -104,6 +145,7 @@ export default function FourierWorkspace({
                 value: samples[index],
                 base: structuredClone(sound),
                 group: `waveform:${Date.now()}`,
+                scale,
               };
               draw(e);
             }}

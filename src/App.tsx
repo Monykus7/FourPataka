@@ -57,6 +57,7 @@ import {
 } from './core/project';
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
+import FourierWorkspace from './components/FourierWorkspace';
 import TrackMaker from './components/TrackMaker';
 import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
@@ -788,113 +789,121 @@ export default function App() {
                     </button>
                   </div>
                 </div>
-                <div className="harmonics-heading">
-                  <div>
-                    <h3>
-                      Harmonic mixer <span>16 partials</span>
-                    </h3>
-                    <p>Each bar adds a sine wave at a multiple of your note.</p>
+                <FourierWorkspace
+                  sound={sound}
+                  onChange={(next, group) => changeSound(() => next, group)}
+                >
+                  <div className="harmonics-heading">
+                    <div>
+                      <h3>
+                        Harmonic mixer <span>16 partials</span>
+                      </h3>
+                      <p>Each bar adds a sine wave at a multiple of your note.</p>
+                    </div>
+                    <span className="small-label">MAGNITUDE 0—1</span>
                   </div>
-                  <span className="small-label">MAGNITUDE 0—1</span>
-                </div>
-                <div className="harmonic-mixer">
-                  <div className="mixer-axis">
-                    <span>1.0</span>
-                    <span>0.5</span>
-                    <span>0.0</span>
-                  </div>
-                  <div className="harmonic-bars">
-                    {sound.harmonics.map((magnitude, i) => {
-                      const component = components(sound, fundamental, sampleRate)[i];
-                      const selected = selectedPartial === component.label;
-                      return (
-                        <div
-                          key={i}
-                          className={`harmonic-column ${selected ? 'selected' : ''} ${!component.available ? 'unavailable' : ''}`}
-                        >
-                          <input
-                            className="harmonic-number"
-                            aria-label={`H${i + 1} exact magnitude`}
-                            type="number"
-                            min="0"
-                            max="1"
-                            step=".01"
-                            value={Number(magnitude.toFixed(3))}
-                            onFocus={() => setSelectedPartial(component.label)}
-                            onChange={(e) => {
-                              if (e.target.value !== '')
-                                changeSound(
-                                  (s) => ({
-                                    ...s,
-                                    harmonics: s.harmonics.map((v, index) =>
-                                      index === i ? clamp(Number(e.target.value), 0, 1) : v,
-                                    ),
-                                  }),
-                                  `harmonic:${i}`,
-                                );
-                            }}
-                          />
-                          <div className="bar-track">
-                            <div className="bar-fill" style={{ height: `${magnitude * 100}%` }} />
-                            <div className="bar-handle" style={{ bottom: `${magnitude * 100}%` }} />
+                  <div className="harmonic-mixer">
+                    <div className="mixer-axis">
+                      <span>1.0</span>
+                      <span>0.5</span>
+                      <span>0.0</span>
+                    </div>
+                    <div className="harmonic-bars">
+                      {sound.harmonics.map((magnitude, i) => {
+                        const component = components(sound, fundamental, sampleRate)[i];
+                        const selected = selectedPartial === component.label;
+                        return (
+                          <div
+                            key={i}
+                            className={`harmonic-column ${selected ? 'selected' : ''} ${!component.available ? 'unavailable' : ''}`}
+                          >
                             <input
-                              type="range"
-                              className="vertical-range"
-                              aria-label={`H${i + 1} magnitude`}
+                              className="harmonic-number"
+                              aria-label={`H${i + 1} exact magnitude`}
+                              type="number"
                               min="0"
                               max="1"
                               step=".01"
-                              value={magnitude}
+                              value={Number(magnitude.toFixed(3))}
                               onFocus={() => setSelectedPartial(component.label)}
-                              onPointerDown={() => setSelectedPartial(component.label)}
-                              onChange={(e) =>
-                                changeSound(
-                                  (s) => ({
-                                    ...s,
-                                    harmonics: s.harmonics.map((v, index) =>
-                                      index === i ? Number(e.target.value) : v,
-                                    ),
-                                  }),
-                                  `harmonic:${i}`,
-                                )
-                              }
+                              onChange={(e) => {
+                                if (e.target.value !== '')
+                                  changeSound(
+                                    (s) => ({
+                                      ...s,
+                                      harmonics: s.harmonics.map((v, index) =>
+                                        index === i ? clamp(Number(e.target.value), 0, 1) : v,
+                                      ),
+                                    }),
+                                    `harmonic:${i}`,
+                                  );
+                              }}
                             />
+                            <div className="bar-track">
+                              <div className="bar-fill" style={{ height: `${magnitude * 100}%` }} />
+                              <div
+                                className="bar-handle"
+                                style={{ bottom: `${magnitude * 100}%` }}
+                              />
+                              <input
+                                type="range"
+                                className="vertical-range"
+                                aria-label={`H${i + 1} magnitude`}
+                                min="0"
+                                max="1"
+                                step=".01"
+                                value={magnitude}
+                                onFocus={() => setSelectedPartial(component.label)}
+                                onPointerDown={() => setSelectedPartial(component.label)}
+                                onChange={(e) =>
+                                  changeSound(
+                                    (s) => ({
+                                      ...s,
+                                      harmonics: s.harmonics.map((v, index) =>
+                                        index === i ? Number(e.target.value) : v,
+                                      ),
+                                    }),
+                                    `harmonic:${i}`,
+                                  )
+                                }
+                              />
+                            </div>
+                            <button
+                              className="harmonic-label"
+                              onClick={() => setSelectedPartial(component.label)}
+                              aria-pressed={selected}
+                            >
+                              H{i + 1}
+                              {sound.polarity[i] === -1 && <sup>−</sup>}
+                            </button>
+                            <span className="partial-frequency">
+                              {component.frequency >= 1000
+                                ? `${(component.frequency / 1000).toFixed(1)}k`
+                                : Math.round(component.frequency)}
+                              <small>Hz</small>
+                            </span>
                           </div>
-                          <button
-                            className="harmonic-label"
-                            onClick={() => setSelectedPartial(component.label)}
-                            aria-pressed={selected}
-                          >
-                            H{i + 1}
-                            {sound.polarity[i] === -1 && <sup>−</sup>}
-                          </button>
-                          <span className="partial-frequency">
-                            {component.frequency >= 1000
-                              ? `${(component.frequency / 1000).toFixed(1)}k`
-                              : Math.round(component.frequency)}
-                            <small>Hz</small>
-                          </span>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-                <div className="mixer-bottom">
-                  <span>
-                    <span className="orange-dot" />
-                    H1 = f₀ · H2–H16 = 2f₀–16f₀
-                  </span>
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      changeSound(() => mathematicalPreset('sine'));
-                      setToast('Reset to a pure sine. Undo brings back your sound.');
-                    }}
-                  >
-                    <RotateCcw size={13} />
-                    Reset to sine
-                  </button>
-                </div>
+                  <div className="mixer-bottom">
+                    <span>
+                      <span className="orange-dot" />
+                      H1 = f₀ · H2–H16 = 2f₀–16f₀
+                    </span>
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        changeSound(() => mathematicalPreset('sine'));
+                        setToast('Reset to a pure sine. Undo brings back your sound.');
+                      }}
+                    >
+                      <RotateCcw size={13} />
+                      Reset to sine
+                    </button>
+                  </div>
+                </FourierWorkspace>
                 <div className="undertone-section">
                   <div className="disclosure-row">
                     <button
