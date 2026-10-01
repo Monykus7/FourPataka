@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
-    "test:browser": "playwright test"
+    "test:browser": "playwright test",
+    "format": "prettier --write src tests *.ts *.json",
+    "format:check": "prettier --check src tests *.ts *.json"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.3",
@@ -27,6 +29,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.9.9",
     "typescript": "^7.0.2",
     "vite": "^8.3.1",
     "vitest": "^5.0.3"
