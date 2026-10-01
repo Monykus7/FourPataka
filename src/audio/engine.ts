@@ -14,6 +14,13 @@ import {
 } from './effects';
 
 export const VOICE_LIMIT = 32;
+interface AuditionBranch {
+  graph: ChainGraph;
+  align: DelayNode;
+  gain: GainNode;
+  dispose: () => void;
+  retireTimer: ReturnType<typeof setTimeout> | null;
+}
 interface Session {
   gate: GainNode;
   nodes: AudioNode[];
@@ -30,6 +37,13 @@ interface Session {
   chainSettings: Map<string, string>;
   latency: number;
   processingTail: number;
+  auditionInput: GainNode | null;
+  auditionBranches: Set<AuditionBranch>;
+  disposers: Set<() => void>;
+  scoreSounds: Map<string, Sound>;
+  originalSounds: Map<string, Sound>;
+  voiceTracks: WeakMap<Voice, string>;
+  comparisonTrack: string | null;
 }
 export class AudioEngine {
   context: AudioContext | null = null;
@@ -98,6 +112,13 @@ export class AudioEngine {
       chainSettings: new Map(),
       latency: 0,
       processingTail: 0,
+      auditionInput: null,
+      auditionBranches: new Set(),
+      disposers: new Set(),
+      scoreSounds: new Map(),
+      originalSounds: new Map(),
+      voiceTracks: new WeakMap(),
+      comparisonTrack: null,
     };
     this.session = session;
     return session;
@@ -110,6 +131,7 @@ export class AudioEngine {
     start: number,
     duration: number,
     solo?: string,
+    trackKey?: string,
   ) {
     const now = this.context!.currentTime;
     session.voices = session.voices.filter((v) => {
@@ -125,9 +147,66 @@ export class AudioEngine {
       stolen.envelope.gain.linearRampToValueAtTime(0, now + 0.01);
       setTimeout(stolen.dispose, 20);
     }
-    session.voices.push(
-      createVoice(this.context!, destination, sound, frequency, start, duration, solo),
+    const voice = createVoice(this.context!, destination, sound, frequency, start, duration, solo);
+    session.voices.push(voice);
+    if (trackKey) session.voiceTracks.set(voice, trackKey);
+  }
+  private auditionChain(session: Session, chain: Chain, fade = false) {
+    const context = this.context!;
+    const graph = createChain(
+      context,
+      structuredClone(chain),
+      this.oversamplingLatency,
+      this.compressorLatency,
     );
+    // A fixed eight-pedal latency budget keeps differently ordered A/B paths aligned.
+    const latency = 8 * Math.max(this.compressorLatency, this.oversamplingLatency);
+    const align = context.createDelay(1),
+      gain = context.createGain();
+    align.delayTime.value = Math.max(0, latency - graph.latency);
+    gain.gain.value = fade ? 0 : 1;
+    session.auditionInput!.connect(graph.input);
+    graph.output.connect(align).connect(gain).connect(session.gate);
+    let retired = false;
+    let branch: AuditionBranch;
+    const dispose = () => {
+      if (retired) return;
+      retired = true;
+      if (branch.retireTimer) clearTimeout(branch.retireTimer);
+      try {
+        session.auditionInput!.disconnect(graph.input);
+      } catch {
+        /* already disconnected */
+      }
+      graph.dispose();
+      align.disconnect();
+      gain.disconnect();
+      session.disposers.delete(dispose);
+      session.auditionBranches.delete(branch);
+    };
+    const previous = [...session.auditionBranches];
+    branch = { graph, align, gain, dispose, retireTimer: null };
+    session.disposers.add(dispose);
+    session.auditionBranches.add(branch);
+    session.chains.set('audition', graph);
+    session.latency = latency;
+    session.processingTail = graph.tail + align.delayTime.value;
+    if (fade) {
+      const now = context.currentTime;
+      // Warm a replacement path before fading; otherwise its latency padding
+      // would leave a silence gap. Retarget all unfinished transitions too.
+      const at = now + latency + 0.02;
+      previous.forEach((old) => {
+        if (old.retireTimer) clearTimeout(old.retireTimer);
+        holdParameter(old.gain.gain, now);
+        old.gain.gain.setValueAtTime(old.gain.gain.value, at);
+        old.gain.gain.linearRampToValueAtTime(0, at + 0.02);
+        old.retireTimer = setTimeout(old.dispose, (at - now) * 1000 + 35);
+      });
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.setValueAtTime(0, at);
+      gain.gain.linearRampToValueAtTime(1, at + 0.02);
+    }
   }
   async audition(sound: Sound, frequencies: number[], solo?: string) {
     return this.auditionPhrase(
@@ -152,17 +231,10 @@ export class AudioEngine {
     const snapshot = structuredClone(sound);
     const session = this.begin('audition', 1.6 + snapshot.release);
     session.auditionSound = snapshot;
-    const processing = createChain(
-      this.context!,
-      structuredClone(chain),
-      this.oversamplingLatency,
-      this.compressorLatency,
-    );
-    processing.output.connect(session.gate);
-    session.chains.set('audition', processing);
+    session.auditionInput = this.context!.createGain();
+    session.nodes.push(session.auditionInput);
+    this.auditionChain(session, chain);
     session.chainSettings.set('audition', chainMusicalSettings(chain));
-    session.latency = processing.latency;
-    session.processingTail = processing.tail;
     session.solo = solo;
     session.phraseSeconds = (phrase.beats * 60) / phrase.tempo;
     session.duration = session.phraseSeconds + snapshot.release + session.processingTail;
@@ -178,7 +250,7 @@ export class AudioEngine {
         event.frequencies.forEach((f) =>
           this.voice(
             session,
-            processing.input,
+            session.auditionInput!,
             session.auditionSound!,
             f,
             session.start + (event.beat * 60) / frozen.tempo,
@@ -203,6 +275,38 @@ export class AudioEngine {
       ...session.voices.map((v) => v.end - session.start + session.processingTail),
     );
   }
+  switchAudition(sound: Sound, chain: Chain, solo?: string) {
+    const session = this.session;
+    if (!session || session.mode !== 'audition') return;
+    const topology = chain.pedals.map((p) => `${p.id}:${p.kind}`).join('|');
+    if (session.chains.get('audition')!.topology !== topology)
+      this.auditionChain(session, chain, true);
+    else session.chains.get('audition')!.update(chain);
+    session.chainSettings.set('audition', chainMusicalSettings(chain));
+    this.updateAudition(sound, solo);
+  }
+  updateScoreComparison(sound: Sound, trackKey: string) {
+    const session = this.session;
+    if (!session || session.mode !== 'score' || !session.originalSounds.has(trackKey)) return;
+    const update = (key: string, next: Sound) => {
+      session.scoreSounds.set(key, structuredClone(next));
+      session.voices.forEach((voice) => {
+        if (session.voiceTracks.get(voice) === key) voice.update(next);
+      });
+    };
+    if (session.comparisonTrack && session.comparisonTrack !== trackKey)
+      update(session.comparisonTrack, session.originalSounds.get(session.comparisonTrack)!);
+    session.comparisonTrack = trackKey;
+    update(trackKey, sound);
+    session.duration = Math.max(
+      session.duration,
+      session.phraseSeconds + sound.release + session.processingTail,
+      ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
+    );
+  }
+  get comparisonTrack() {
+    return this.session?.comparisonTrack ?? null;
+  }
   async play(score: CompiledScore, instances: TrackInstance[], processing?: Processing) {
     const revision = ++this.revision;
     await this.ready();
@@ -210,6 +314,7 @@ export class AudioEngine {
     const tracks = structuredClone(instances);
     const maxRelease = Math.max(0, ...tracks.map((t) => t.sound.release));
     const session = this.begin('score', score.seconds + maxRelease);
+    session.phraseSeconds = score.seconds;
     const settings = structuredClone(processing);
     const master = createChain(
       this.context!,
@@ -234,6 +339,8 @@ export class AudioEngine {
     session.processingTail = master.tail;
     const buses = new Map<string, GainNode>();
     tracks.forEach((t) => {
+      session.originalSounds.set(t.key, structuredClone(t.sound));
+      session.scoreSounds.set(t.key, structuredClone(t.sound));
       const bus = this.context!.createGain();
       bus.gain.value = t.level;
       const chain = settings?.tracks[t.key] ?? emptyChain();
@@ -271,10 +378,12 @@ export class AudioEngine {
           this.voice(
             session,
             buses.get(event.track)!,
-            track.sound,
+            session.scoreSounds.get(event.track)!,
             f,
             session.start + (event.beat * 60) / score.tempo,
             (event.duration * 60) / score.tempo,
+            undefined,
+            event.track,
           ),
         );
       }
@@ -352,6 +461,7 @@ export class AudioEngine {
         session.voices.forEach((v) => v.dispose());
         session.nodes.forEach((n) => n.disconnect());
         session.chains.forEach((chain) => chain.dispose());
+        session.disposers.forEach((dispose) => dispose());
         session.gate.disconnect();
       }, 35);
     }
