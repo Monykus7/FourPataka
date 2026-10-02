@@ -20,6 +20,59 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('native score chain assignments preserve independent copies through file save and reload', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal chain for melody', exact: true })
+    .selectOption('warmDrive');
+  await page
+    .getByRole('combobox', { name: 'Pedal chain for master', exact: true })
+    .selectOption('cleanGlue');
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
+    'master through cleanGlue',
+  );
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination' })
+    .selectOption('track:melody');
+  await page
+    .getByRole('spinbutton', { name: 'overdrive 1 drive exact value', exact: true })
+    .fill('11');
+  const savePath = resolve('.test-results', 'desktop', 'chain-assignments.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved chain-assignments.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toContain('track melody using brightReed through warmDrive');
+  expect(saved.processing.tracks.melody).toMatchObject({
+    assignmentKey: 'warmDrive',
+    presetId: 'warm-drive',
+    pedals: [{ params: { drive: 11 } }],
+  });
+  expect(saved.processing.master.assignmentKey).toBe('cleanGlue');
+  expect(
+    saved.processing.library.find((p: any) => p.key === 'warmDrive').chain.pedals[0].params.drive,
+  ).toBe(6);
+  await page.reload();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await expect(
+    page.getByRole('combobox', { name: 'Pedal chain for melody', exact: true }),
+  ).toHaveValue('warmDrive');
+  await page.screenshot({ path: '.test-results/desktop/score-chains.png', fullPage: true });
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination' })
+    .selectOption('track:melody');
+  await expect(
+    page.getByRole('spinbutton', { name: 'overdrive 1 drive exact value', exact: true }),
+  ).toHaveValue('11');
+});
+
 test('packaged delay drags, dials, native saving and tail-aware bypass work together', async () => {
   const page = await app.firstWindow();
   // Hidden test windows throttle renderer timers; this proof needs the same
