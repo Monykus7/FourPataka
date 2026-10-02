@@ -21,7 +21,7 @@ test.afterEach(async () => {
 });
 
 test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
-  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.12.0');
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.12.1');
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await placePedal(page, 'eq');
