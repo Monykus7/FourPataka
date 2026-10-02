@@ -44,6 +44,8 @@ The desktop checks can also target the unpacked production executable by setting
 
 ## Compose tools
 
+The enlarged score editor and command reference sit side by side. The editor fills the panel down to its status bar. Timeline and independent track sounds sit below; narrow screens stack score, reference, timeline and tracks in that order. Search and command insertion remain next to the editor on desktop.
+
 **Tempo / Time signature** edit score directives, preserving comments and whitespace, in one undo step. Select a common meter or edit **Beats per bar** and **Beat unit** for a custom meter. **Instrument** selectors assign a fresh independent preset copy to a track while keeping its level and pedals. Timing and assignments require stopped score playback and valid text; the first track can be created in an empty score.
 
 **Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It shows phrase length in the project meter, supports event reordering with up/down buttons, and validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.

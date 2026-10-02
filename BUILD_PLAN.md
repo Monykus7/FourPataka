@@ -441,9 +441,9 @@ Show both current order and any pending order change. Keep dry/wet and tail stat
 
 ### Compose
 
-Use an editor-focused split, initially around 60/40 for score and timeline/inspection. Show event highlights in both representations, command help near the editor, and compact track/master chain assignments.
+Use an editor-focused split, around 60/40 for score and command reference. The editor fills its panel down to the status bar; do not leave unused panel space underneath a fixed-height editor. Below that row, show timeline and independent track/master controls side by side. Event inspection belongs with this lower overview. The v0.14.1 layout implements this arrangement and enlarges the desktop editing area.
 
-At narrower widths, stack the editor and timeline, make the inspector a drawer, and wrap pedal modules into an explicitly ordered list. Do not shrink sixteen labels and multiple knobs into unreadable controls.
+At narrower widths, stack score, command reference, timeline and track controls in that reading order. Keep timeline/board scrolling local and controls readable. A drawer inspector remains planned; the implemented event inspector stays in the lower overview. Do not shrink sixteen labels and multiple knobs into unreadable controls.
 
 ### Components and interaction
 
