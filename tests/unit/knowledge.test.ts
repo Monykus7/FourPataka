@@ -3,7 +3,60 @@ import { extractCode, extractDocument } from '../../scripts/knowledge/extract.mj
 import { connectCode, validateFeatures } from '../../scripts/knowledge/graph.mjs';
 import { neighborhood, personalizedPageRank } from '../../scripts/knowledge/rank.mjs';
 import { addSummaries } from '../../scripts/knowledge/summaries.mjs';
+import { packContext, tokenCount } from '../../scripts/knowledge/context.mjs';
+import { cosine, lexicalSeeds } from '../../scripts/knowledge/semantic.mjs';
 describe('project knowledge extraction', () => {
+  it('enforces the whole-context token budget with Unicode, citations and oversized queries', () => {
+    const graph = {
+      nodes: [
+        {
+          id: 'a',
+          name: 'Waveform',
+          path: 'src/wave.ts',
+          line: 4,
+          kind: 'symbol',
+          signature: 'draw(phase: number)',
+          summary: 'Σ sine 🎵 '.repeat(300),
+        },
+        {
+          id: 'b',
+          name: 'Sound',
+          path: 'docs/sound.md',
+          line: 1,
+          kind: 'feature',
+          summary: 'Fourier source.',
+        },
+      ],
+    };
+    for (const budget of [64, 128, 512]) {
+      const context = packContext(
+        graph,
+        new Map([
+          ['a', 0.8],
+          ['b', 0.2],
+        ]),
+        [{ id: 'a', score: 1 }],
+        'Edit the sine wave',
+        budget,
+      );
+      expect(tokenCount(context.text)).toBe(context.tokenCount);
+      expect(context.tokenCount).toBeLessThanOrEqual(budget);
+    }
+    expect(() => packContext(graph, new Map(), [], 'x '.repeat(200), 64)).toThrow('exceed');
+  });
+  it('labels lexical seed retrieval separately and compares semantic vectors by cosine', () => {
+    const graph = {
+      nodes: [
+        { id: 'wave', name: 'waveformCoefficients', summary: 'sine projection' },
+        { id: 'file', name: 'Project save', summary: 'JSON persistence' },
+      ],
+    };
+    expect(lexicalSeeds(graph, 'waveform projection')[0].id).toBe('wave');
+    expect(cosine([1, 0], [2, 0])).toBe(1);
+    expect(cosine([1, 0], [0, 1])).toBe(0);
+    expect(cosine([0, 0], [0, 1])).toBe(0);
+    expect(() => cosine([1], [1, 0])).toThrow('dimensions');
+  });
   it('keeps disconnected code out of a personalized neighborhood and conserves rank mass', () => {
     const graph = {
       nodes: ['a', 'b', 'c'].map((id) => ({ id })),
