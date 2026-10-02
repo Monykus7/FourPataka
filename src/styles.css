@@ -1338,6 +1338,8 @@ dd {
 .score-editor {
   /* The editor owns any extra row height; never leave it below the status bar. */
   flex: 1;
+  /* Long documents scroll inside CodeMirror instead of sizing the grid row. */
+  contain: size;
   height: 520px;
   min-height: 520px;
 }
