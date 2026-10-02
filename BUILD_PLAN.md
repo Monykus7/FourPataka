@@ -211,9 +211,9 @@ Save the resulting coefficients as the sound definition. Macro baseline/control 
 
 ### Visible pedalboard
 
-Use flat pedal modules with names, numeric values, knobs, and clear bypass switches. Show signal direction and order. Drag to reorder, with Move left/Move right keyboard alternatives.
+Use compact pedal modules with names, small knobs and clear bypass switches. Exact values and sliders belong to the selected-pedal inspector. Show cable direction and signal-path order independently of visual placement.
 
-The next physical board replaces direct Add buttons and the tall serial rack. Select pedals or patch cables from an equipment menu, place small pedals on a four-column/two-row snap grid with Velcro strips, drag handles to reposition, and patch output jacks to input jacks using the mouse. Keep small dials on each pedal and exact controls in a selected-pedal inspector. Placement does not determine effect order; explicit cables do. Initially support one serial path with no splits or feedback loops. Incomplete output connections produce silence unless the whole board is bypassed. Old chains retain their order as prewired boards. Store placement/cables in project and preset copies; visual movement stays live without a replay requirement. Keep the board surface and inspector modular for the planned wider frontend overhaul.
+The physical board replaces direct Add buttons and the tall serial rack. Select pedals or patch cables from an equipment menu, place small pedals on a four-column/two-row snap grid with Velcro strips, drag handles to reposition, and patch output jacks to input jacks using the mouse. Keep small dials on each pedal and exact controls in a selected-pedal inspector. Placement does not determine effect order; explicit cables do. Initially support one serial path with no splits or feedback loops. Incomplete output connections produce silence unless the whole board is bypassed. Old chains retain their order as prewired boards. Store placement/cables in project and preset copies; visual movement stays live without a replay requirement. Keep the board surface and inspector modular for the planned wider frontend overhaul.
 
 Save whole-chain presets containing effect order, knob values, and individual pedal states. In Compose, show the assigned chain and a compact bypass control for every track and for the master.
 
@@ -431,7 +431,7 @@ Support exact numeric input and keyboard adjustment. Clearly identify whether ed
 
 ### Pedalboard
 
-Give Pedalboard its own primary workspace. Use flat pedal modules with connected input/output jacks and visible patch cables following the actual serial effect order. Include knob indicators, parameter names, numeric values, sliders, status lights, and keyboard-accessible bypass footswitches. Keep preset Save, Save as new, Apply, and Apply to all actions in the editing context. Long desktop chains scroll locally; narrow screens use a vertical cable-connected list.
+Give Pedalboard its own primary workspace. Equipment-menu placement and compact pedals occupy a four-column/two-row Velcro grid. Mouse/keyboard jack patching defines the serial audio path; visual movement keeps the processing order. Use small dials and bypass switches on pedals, with exact values/sliders in the selected inspector. Keep preset Save, Save as new, Apply, and Apply to all in the editing context. Narrow screens scroll the grid within its own panel.
 
 Show both current order and any pending order change. Keep dry/wet and tail state understandable without requiring hover.
 

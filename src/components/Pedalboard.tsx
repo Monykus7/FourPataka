@@ -138,8 +138,7 @@ export default function Pedalboard({
       </div>
       {pending && (
         <p className="pedal-pending" role="status">
-          Processing edits pending · next Play / replay applies order, additions and score
-          parameters.
+          Processing edits pending · next Play / replay applies cable routing and score parameters.
         </p>
       )}
       <div className="board-workspace">

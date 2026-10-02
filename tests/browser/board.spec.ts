@@ -1,6 +1,53 @@
 import { expect, test } from '@playwright/test';
 import { patchBoard, placePedal } from '../helpers/board';
 
+test('saved board presets and A/B/master copies keep their own placements and cables', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await placePedal(page, 'eq');
+  const handle = page.getByRole('button', { name: 'Move eq 1 on board', exact: true });
+  await handle.focus();
+  await handle.press('ArrowRight');
+  await handle.press('ArrowRight');
+  await page.getByRole('textbox', { name: 'New chain preset name' }).fill('Placed EQ');
+  await page.getByRole('button', { name: 'Save chain as new', exact: true }).click();
+  await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
+  await page.getByRole('button', { name: 'Apply chain to destination', exact: true }).click();
+  await handle.focus();
+  await handle.press('ArrowDown');
+  await page.getByRole('button', { name: 'Save chain preset', exact: true }).click();
+  await expect
+    .poll(async () => {
+      const p = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
+      );
+      if (!p?.processing?.library?.some((preset: any) => preset.label === 'Placed EQ')) return null;
+      const boards = [
+        p.processing.audition.A,
+        p.processing.audition.B,
+        p.processing.master,
+        p.processing.library.find((preset: any) => preset.label === 'Placed EQ').chain,
+      ];
+      return boards.map((chain: any) => ({
+        position: chain.board?.positions[chain.pedals[0].id],
+        cables: chain.board?.cables.length,
+      }));
+    })
+    .toEqual([
+      { position: { column: 2, row: 1 }, cables: 2 },
+      { position: { column: 2, row: 0 }, cables: 2 },
+      { position: { column: 2, row: 0 }, cables: 2 },
+      { position: { column: 2, row: 1 }, cables: 2 },
+    ]);
+  await page.getByRole('combobox', { name: 'Pedal editing destination' }).selectOption('master');
+  await expect(page.locator('.compact-pedal.eq')).toHaveCSS('top', '32px');
+  await page.getByRole('button', { name: 'Load chain preset', exact: true }).click();
+  await expect(page.locator('.compact-pedal.eq')).toHaveCSS('top', '268px');
+  await expect(page.locator('.board-route-status')).toHaveText('1 in signal path');
+});
+
 test('collision and Escape cancel movement while the connected cables follow the preview', async ({
   page,
 }) => {
