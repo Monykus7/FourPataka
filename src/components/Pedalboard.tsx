@@ -6,6 +6,7 @@ import {
   applyAssociated,
   emptyChain,
   PEDAL_CONTROLS,
+  nextChainKey,
   type ChainInstance,
   type Processing,
 } from '../core/pedals';
@@ -244,6 +245,10 @@ export default function Pedalboard({
                 ...processing.library,
                 {
                   id,
+                  key: nextChainKey(
+                    label,
+                    processing.library.map((p) => p.key),
+                  ),
                   label: label.trim(),
                   chain: {
                     pedals: structuredClone(chain.pedals),

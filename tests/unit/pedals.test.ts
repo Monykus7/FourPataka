@@ -7,8 +7,35 @@ import {
   emptyChain,
   importProcessing,
   makePedal,
+  nextChainKey,
 } from '../../src/core/pedals';
 import { createProject, importProject } from '../../src/core/project';
+it('migrates readable unique chain keys without replacing explicit references or saved boards', () => {
+  const p = defaultProcessing();
+  const legacy: any = structuredClone(p);
+  legacy.library.forEach((preset: any) => {
+    delete preset.key;
+  });
+  expect(importProcessing(legacy).library.map((preset) => preset.key)).toEqual([
+    'clean',
+    'cleanGlue',
+    'warmDrive',
+  ]);
+  legacy.library[1].label = 'Clean';
+  legacy.library[2].key = 'clean';
+  expect(importProcessing(legacy).library.map((preset) => preset.key)).toEqual([
+    'clean2',
+    'clean3',
+    'clean',
+  ]);
+  expect(nextChainKey('123 / Echo', ['chain123Echo'])).toBe('chain123Echo2');
+  expect(nextChainKey('♪', [])).toBe('chain');
+  for (const key of ['bad-key', '', '2bad', 'clean']) {
+    const invalid = structuredClone(p);
+    invalid.library[1].key = key;
+    expect(() => importProcessing(invalid)).toThrow('score keys');
+  }
+});
 it('bounds delay feedback, estimates finite echo decay and imports independent copies', () => {
   const project = createProject();
   const delay = makePedal('delay');

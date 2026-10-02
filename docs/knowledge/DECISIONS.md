@@ -12,6 +12,10 @@ Impulse proofs found a 128-frame cycle-breaker offset on Chromium repeats at 44.
 
 Evidence: `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/browser/delay.spec.ts`, `tests/desktop/app.spec.ts`.
 
+## Score chain keys (v0.14.0 in progress)
+
+Pedal templates have stable score keys distinct from their internal IDs and display labels. Built-ins use clean, cleanGlue and warmDrive. Schema-v1 projects without keys migrate deterministically from labels, suffixing collisions and reserving explicit keys first. Invalid or duplicate explicit keys reject import. Independent instances may retain the last reconciled assignmentKey: this distinguishes removing a source directive from a legacy score that never had one. Parser, source-edit helpers and reconciliation follow this settings checkpoint.
+
 ## Phase and musical clock
 
 <!-- features: synthesis, comparison -->
