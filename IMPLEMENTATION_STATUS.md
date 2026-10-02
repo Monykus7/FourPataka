@@ -77,6 +77,8 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
+Compose layout follow-up is implemented for v0.14.1 and undergoing portable/native verification: command reference now sits beside the score; timeline and independent track/master controls sit below. The editor fills its panel through the status bar and has a larger desktop minimum. Fourteen affected browser workflows pass; desktop/tablet/390 px geometry and screenshots confirm reading order, bounded editor scrolling and no page overflow. This layout correction does not advance a music-feature roadmap gate.
+
 The physical pedalboard implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Delay is implemented in the v0.13.0 work below; the surrounding frontend overhaul remains separate work.
 
 Stage 2's phrase comparison and linked source microscope behavior pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 now has compressor/overdrive/EQ/delay, independent track/master routing, pedal-aware A/B snapshots and chain-aware score directives in v0.14.0. Automated routing/copy/tail behavior is covered. Next, close the remaining stage 4/5 command-reference, keyboard/accessibility, recovery and end-to-end demonstration gates before WAV export. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Chord-symbol macros and the wider frontend overhaul remain later work.

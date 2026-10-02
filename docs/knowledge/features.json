@@ -85,7 +85,7 @@
       "id": "composition",
       "parent": "project",
       "title": "Composition studio",
-      "summary": "Line-oriented score text is authoritative. Parallel tracks start together; the compiled timeline and transport use the frozen playing revision. Text edits take effect on replay.",
+      "summary": "Line-oriented score text is authoritative. The enlarged score editor fills its panel beside command reference. Timeline, independent track/master controls and event inspection sit below; narrow screens stack in DOM reading order. Parallel tracks start together; compiled timeline and transport retain the frozen playing revision. Text edits take effect on replay.",
       "paths": ["src/App.tsx"]
     },
     {

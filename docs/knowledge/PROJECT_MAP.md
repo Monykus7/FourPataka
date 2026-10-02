@@ -57,7 +57,7 @@ Key definitions: [EffectGraph](../../src/audio/effects.ts#L12), [measureOversamp
 
 ### Composition studio
 
-Line-oriented score text is authoritative. Parallel tracks start together; the compiled timeline and transport use the frozen playing revision. Text edits take effect on replay.
+Line-oriented score text is authoritative. The enlarged score editor fills its panel beside command reference. Timeline, independent track/master controls and event inspection sit below; narrow screens stack in DOM reading order. Parallel tracks start together; compiled timeline and transport retain the frozen playing revision. Text edits take effect on replay.
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 

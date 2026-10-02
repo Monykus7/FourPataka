@@ -40,6 +40,14 @@ Score text owns tempo, meter, events, instrument assignments and pedal-template 
 
 Evidence: `src/core/parser.ts`, `src/core/scoreTools.ts`, `src/core/meter.ts`, `src/App.tsx`, `tests/browser/meter.spec.ts`.
 
+## Compose working layout (v0.14.1)
+
+<!-- features: composition, notation, appearance -->
+
+Score and command reference share the top desktop row; timeline, independent track/master controls and selected-event inspection form the lower overview. DOM order follows that arrangement so keyboard and narrow-screen reading order remain score, reference, timeline, tracks and event inspector. Two-column reference cards and wrapping selectors fit the narrower help panel. The score panel is a flex column: its editor absorbs extra row height and the status bar stays at the bottom, removing the unused box below the former fixed editor. Desktop editor minimum grows from 430 to 520 pixels; narrow screens retain bounded editor scrolling. The lower panels use their own content height rather than stretching an empty timeline. Search, insertion, assignments, history, source authority and playback revisions keep their existing behavior.
+
+Evidence: `src/App.tsx`, `src/styles.css`, `src/components/ScoreEditor.tsx`, `tests/browser/composition.spec.ts`, `tests/browser/meter.spec.ts`, `tests/browser/score-chains.spec.ts`.
+
 ## Independent instances and live processing
 
 <!-- features: storage, pedals, comparison -->
