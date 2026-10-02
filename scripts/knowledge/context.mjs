@@ -10,11 +10,14 @@ export function packContext(graph, rank, seeds, task, budget = 2048, mode = 'sem
   if (tokenCount(text) > budget)
     throw new Error('Task and context header exceed the token budget.');
   const seedIds = new Set(seeds.map((s) => s.id));
+  const seedScores = new Map(seeds.map((s) => [s.id, s.score]));
   const candidates = graph.nodes
     .filter((node) => rank.has(node.id))
     .sort((a, b) => {
       const concept = (node) => (node.kind === 'feature' && seedIds.has(node.id) ? 1 : 0);
       if (concept(a) !== concept(b)) return concept(b) - concept(a);
+      if (concept(a) && seedScores.get(a.id) !== seedScores.get(b.id))
+        return seedScores.get(b.id) - seedScores.get(a.id);
       const boost = (node) => (seedIds.has(node.id) ? 1.3 : 1);
       return rank.get(b.id) * boost(b) - rank.get(a.id) * boost(a) || a.id.localeCompare(b.id);
     });
@@ -30,7 +33,7 @@ export function packContext(graph, rank, seeds, task, budget = 2048, mode = 'sem
     const body =
       node.kind === 'symbol'
         ? `${node.signature}\n${node.summary ?? ''}`
-        : `${node.summary ?? ''}${evidence ? `\nEvidence: ${evidence}` : ''}`;
+        : `${node.conciseSummary ?? node.summary ?? ''}${evidence ? `\nEvidence: ${evidence}` : ''}`;
     // Count the complete candidate output: BPE boundaries can change across joins.
     const variants = [body, body.slice(0, 400), node.signature ?? body.slice(0, 120)];
     const fit = variants.find((variant) => tokenCount(text + heading + variant + '\n') <= budget);

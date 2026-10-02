@@ -17,7 +17,13 @@
     "desktop:dev": "node scripts/desktop-dev.mjs",
     "desktop:start": "electron .",
     "desktop:package": "npm run build && electron-builder --win portable --x64 --publish never",
-    "test:desktop": "npm run build && playwright test --config playwright.desktop.config.ts"
+    "test:desktop": "npm run build && playwright test --config playwright.desktop.config.ts",
+    "knowledge:build": "node scripts/knowledge/cli.mjs build",
+    "knowledge:check": "node scripts/knowledge/cli.mjs check",
+    "knowledge:embed": "node scripts/knowledge/cli.mjs embed",
+    "knowledge:query": "node scripts/knowledge/cli.mjs query",
+    "knowledge:watch": "node scripts/knowledge/watch.mjs",
+    "knowledge:verify": "node scripts/knowledge/verify.mjs"
   },
   "build": {
     "appId": "com.fourpataka.studio",

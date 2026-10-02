@@ -35,8 +35,12 @@ async function extractor(root, download) {
     pipes.set(
       key,
       (async () => {
-        const { pipeline } = await import('@huggingface/transformers');
-        return pipeline('feature-extraction', MODEL.id, {
+        const { pipeline, env } = await import('@huggingface/transformers');
+        env.allowRemoteModels = download;
+        const localModel = path.join(root, CACHE, 'models', ...MODEL.id.split('/'), MODEL.revision);
+        // An explicit local path also prevents tokenizer metadata probes from
+        // contacting the Hub when the runtime ignores local_files_only there.
+        return pipeline('feature-extraction', download ? MODEL.id : localModel, {
           revision: MODEL.revision,
           dtype: MODEL.dtype,
           device: 'cpu',

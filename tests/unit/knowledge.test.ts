@@ -5,7 +5,18 @@ import { neighborhood, personalizedPageRank } from '../../scripts/knowledge/rank
 import { addSummaries } from '../../scripts/knowledge/summaries.mjs';
 import { packContext, tokenCount } from '../../scripts/knowledge/context.mjs';
 import { cosine, lexicalSeeds } from '../../scripts/knowledge/semantic.mjs';
+import { shouldRebuild } from '../../scripts/knowledge/watch.mjs';
 describe('project knowledge extraction', () => {
+  it('watches working sources while ignoring its own outputs and private caches', () => {
+    expect(shouldRebuild('src\\audio\\voice.ts')).toBe(true);
+    expect(shouldRebuild('BUILD_PLAN.md')).toBe(true);
+    expect(shouldRebuild('tsconfig.json')).toBe(true);
+    expect(shouldRebuild('docs/knowledge/features.json')).toBe(true);
+    expect(shouldRebuild('docs/knowledge/PROJECT_MAP.md')).toBe(false);
+    expect(shouldRebuild('.knowledge-cache/graph.json')).toBe(false);
+    expect(shouldRebuild('node_modules/module/file.js')).toBe(false);
+    expect(shouldRebuild('.git/config')).toBe(false);
+  });
   it('enforces the whole-context token budget with Unicode, citations and oversized queries', () => {
     const graph = {
       nodes: [

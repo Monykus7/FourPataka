@@ -139,3 +139,7 @@ Personal build workflow: aim for eight focused commits per milestone, push each 
 Choose **Theme** below Learn: Original, Blue / pink, Green / orange, Violet / coral, or Earth / sage. The three Happy Hues presets use [palette 12](https://www.happyhues.co/palettes/12), [palette 10](https://www.happyhues.co/palettes/10), and [palette 6](https://www.happyhues.co/palettes/6), adapted to studio surfaces and controls. Earth / sage includes the supplied `#9A7F62`, `#5F6E73`, `#697E60`, `#D6D2C4`, and `#B7A99A` colors. Secondary and tertiary accents appear in harmonics, waveform dots/targets, pedals, processed spectra, timeline events, and score syntax. Text uses adjusted shades where needed for contrast while accents and swatches retain the palette colors.
 
 Themes are bundled for offline desktop use and saved as a local preference alongside monitor volume and autocomplete. Theme changes do not change projects, enter musical undo history, or restart playback. JSON project imports keep your theme preference.
+
+## Project knowledge
+
+[Project map](docs/knowledge/PROJECT_MAP.md) links code symbols, behavioral decisions and roadmap features. [Usage](docs/knowledge/USAGE.md) describes local semantic retrieval, personalized PageRank and fixed context token budgets. Run `npm run knowledge:build` and `npm run knowledge:check` after changes; update feature summaries and decisions alongside implementation. `npm run knowledge:watch` can refresh derived documentation during a working session.

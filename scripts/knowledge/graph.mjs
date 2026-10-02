@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { codeFile, extractCode, extractDocument, hash } from './extract.mjs';
 
 export const GRAPH_VERSION = 1;
@@ -240,7 +241,7 @@ export async function buildGraph(root) {
     features,
     parseErrors: files.filter((file) => records[file].parseErrors),
   };
-  const temporary = path.join(cacheDir, 'graph.tmp.json');
+  const temporary = path.join(cacheDir, `graph.${randomUUID()}.tmp.json`);
   await fs.writeFile(temporary, JSON.stringify(graph));
   await fs.rename(temporary, path.join(cacheDir, 'graph.json'));
   return graph;

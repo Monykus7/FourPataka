@@ -20,7 +20,7 @@ export function addSummaries(graph) {
     const members = parent.members.map((id) => byId.get(id));
     const paths = [...new Set(members.map((n) => n.path))].sort();
     const summary = `${feature.summary}${children.length ? ` Subfeatures: ${children.map((f) => `${f.title}: ${f.summary}`).join(' ')}` : ''}`;
-    const enriched = { ...parent, summary, evidence: paths };
+    const enriched = { ...parent, summary, conciseSummary: feature.summary, evidence: paths };
     nodes[nodes.findIndex((n) => n.id === parent.id)] = enriched;
     const remaining = new Set(
       members.filter((n) => n.kind === 'file' && codeFile(n.path)).map((n) => n.id),
