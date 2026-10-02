@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-Current priority from the user's frontend direction: a smaller physical grid pedalboard with menu-picked pedals/cables, mouse placement and patching, Velcro strips and a selected-pedal inspector. The persistent placement/routing model is implemented; surface, audio routing and regression work are in progress. This precedes delay work and does not imply a complete redesign of the surrounding studio.
+The physical pedalboard now implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Release packaging and the complete regression checks are in progress. Delay follows this board update; the surrounding frontend overhaul remains separate work.
 
 Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive/EQ, independent track/master routing and pedal-aware A/B snapshots. Delay is next, followed by chain-aware score directives before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
 
