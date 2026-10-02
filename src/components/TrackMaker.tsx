@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Music2, Plus, Trash2, X } from 'lucide-react';
 import { DURATIONS } from '../core/music';
 import { parseScore } from '../core/parser';
+import { measureLength, measurePosition, meterLabel, type TimeSignature } from '../core/meter';
 import type { InstrumentPreset } from '../core/project';
 
 type Row = { id: number; kind: 'note' | 'chord' | 'rest'; notes: string; duration: string };
@@ -11,12 +12,14 @@ export default function TrackMaker({
   initialKey,
   instruments,
   instrumentKey,
+  meter,
   onCreate,
   onClose,
 }: {
   initialKey: string;
   instruments: InstrumentPreset[];
   instrumentKey: string;
+  meter: TimeSignature;
   onCreate: (key: string, instrument: string, events: string[]) => void;
   onClose: () => void;
 }) {
@@ -32,11 +35,17 @@ export default function TrackMaker({
   const [error, setError] = useState('');
   const text = `track ${key} using ${instrument} {\n${rows.map((row) => `  ${expression(row)}`).join('\n')}\n}`;
   const preview = parseScore(
-    text,
+    `time ${meterLabel(meter)}\n${text}`,
     instruments.map((i) => i.key),
   );
   const update = (id: number, patch: Partial<Row>) =>
     setRows((before) => before.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+  const move = (index: number, direction: number) =>
+    setRows((before) => {
+      const next = [...before];
+      [next[index], next[index + direction]] = [next[index + direction], next[index]];
+      return next;
+    });
   useEffect(() => {
     dialog.current?.showModal();
   }, []);
@@ -105,13 +114,29 @@ export default function TrackMaker({
         <div className="maker-phrase-heading">
           <h3>Events</h3>
           <span>
-            {preview.beats} beats · {rows.length} events
+            {(preview.beats / measureLength(meter)).toFixed(2)} bars in {meterLabel(meter)} ·{' '}
+            {preview.beats} quarter beats
           </span>
         </div>
         <div className="maker-rows">
           {rows.map((row, index) => (
             <div className="maker-row" key={row.id}>
-              <span className="maker-row-number">{index + 1}</span>
+              <span
+                className="maker-row-number"
+                title={`Bar ${
+                  measurePosition(
+                    rows.slice(0, index).reduce((sum, r) => sum + DURATIONS[r.duration], 0),
+                    meter,
+                  ).bar
+                } · beat ${
+                  measurePosition(
+                    rows.slice(0, index).reduce((sum, r) => sum + DURATIONS[r.duration], 0),
+                    meter,
+                  ).beat
+                }`}
+              >
+                {index + 1}
+              </span>
               <select
                 aria-label={`Event ${index + 1} kind`}
                 value={row.kind}
@@ -147,14 +172,34 @@ export default function TrackMaker({
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
-                className="icon-button"
-                aria-label={`Remove event ${index + 1}`}
-                onClick={() => setRows((before) => before.filter((r) => r.id !== row.id))}
-              >
-                <Trash2 size={15} />
-              </button>
+              <div className="maker-row-actions">
+                <button
+                  type="button"
+                  className="icon-button"
+                  disabled={index === 0}
+                  aria-label={`Move event ${index + 1} up`}
+                  onClick={() => move(index, -1)}
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  disabled={index === rows.length - 1}
+                  aria-label={`Move event ${index + 1} down`}
+                  onClick={() => move(index, 1)}
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label={`Remove event ${index + 1}`}
+                  onClick={() => setRows((before) => before.filter((r) => r.id !== row.id))}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             </div>
           ))}
         </div>

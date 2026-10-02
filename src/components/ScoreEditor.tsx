@@ -7,6 +7,7 @@ import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/
 import { setDiagnostics } from '@codemirror/lint';
 import { tags } from '@lezer/highlight';
 import { COMMANDS, type Diagnostic } from '../core/parser';
+import { COMMON_METERS } from '../core/meter';
 
 const activeLines = StateEffect.define<number[]>();
 const playbackField = StateField.define<DecorationSet>({
@@ -118,6 +119,20 @@ export default function ScoreEditor({
       override: autocomplete
         ? [
             (context) => {
+              const line = context.state.doc.lineAt(context.pos);
+              const meter = /^\s*time\s+([\d/]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (meter)
+                return {
+                  from: context.pos - meter[1].length,
+                  options: COMMON_METERS.map((label) => ({
+                    label,
+                    type: 'constant',
+                    detail: 'Project time signature',
+                  })),
+                  validFor: /[\d/]*/,
+                };
               const word = context.matchBefore(/[A-Za-z0-9_]+/);
               if (!word && !context.explicit) return null;
               return {

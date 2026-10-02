@@ -390,7 +390,7 @@
 }
 .maker-row {
   display: grid;
-  grid-template-columns: 20px 85px minmax(0, 1fr) 90px 25px;
+  grid-template-columns: 20px 85px minmax(0, 1fr) 90px 100px;
   gap: 8px;
   align-items: center;
 }
@@ -536,7 +536,7 @@
     padding: 16px;
   }
   .maker-row {
-    grid-template-columns: 13px 65px minmax(0, 1fr) 73px 20px;
+    grid-template-columns: 13px 65px minmax(0, 1fr) 73px;
     gap: 5px;
   }
   .maker-row input,

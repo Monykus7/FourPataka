@@ -1697,7 +1697,8 @@ export default function App() {
                       ))}
                     </div>
                     <div className="commands-footer">
-                      Durations: whole · half · quarter · 8th · 16th
+                      Durations: whole · half · quarter · 8th · 16th. Tempo counts quarter notes;
+                      meter counts its beat unit.
                     </div>
                   </>
                 )}
@@ -2109,6 +2110,7 @@ export default function App() {
       </dialog>
       {trackMakerOpen && (
         <TrackMaker
+          meter={score.meter}
           initialKey={nextTrackKey(
             project.scoreText,
             instruments.map((i) => i.key),

@@ -2427,3 +2427,23 @@ dd {
   border: 1px solid var(--border);
   border-radius: 4px;
 }
+
+.maker-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.maker-row-actions .icon-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+.maker-row-actions :disabled {
+  opacity: 0.3;
+}
+@media (max-width: 600px) {
+  .maker-row-actions {
+    grid-column: 2 / -1;
+    justify-content: flex-end;
+  }
+}
