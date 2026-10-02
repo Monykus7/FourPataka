@@ -23,6 +23,9 @@ export interface ScoreTrack {
   instrumentKey: string;
   instrumentFrom: number;
   instrumentTo: number;
+  chainKey: string | null;
+  chainFrom?: number;
+  chainTo?: number;
   bodyTo: number;
   events: ScoreEvent[];
   beats: number;
@@ -31,6 +34,7 @@ export interface CompiledScore {
   tempo: number;
   meter: TimeSignature;
   directives: Partial<Record<'tempo' | 'time', { from: number; to: number }>>;
+  master: { key: string; from: number; to: number; commandFrom: number; commandTo: number } | null;
   tracks: ScoreTrack[];
   events: ScoreEvent[];
   diagnostics: Diagnostic[];
@@ -40,11 +44,16 @@ export interface CompiledScore {
 
 // Line-oriented lexer: retain offsets before stripping comments and whitespace.
 // Application semantics live here; editor tokens never decide what plays.
-export function parseScore(text: string, instrumentKeys: string[]): CompiledScore {
+export function parseScore(
+  text: string,
+  instrumentKeys: string[],
+  chainKeys: string[] = [],
+): CompiledScore {
   const result: CompiledScore = {
     tempo: 120,
     meter: { ...DEFAULT_METER },
     directives: {},
+    master: null,
     tracks: [],
     events: [],
     diagnostics: [],
@@ -62,8 +71,13 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
     const from = offset + (line ? withoutComment.indexOf(line) : 0);
     const to = from + line.length;
     offset += raw.length + 1;
-    const error = (message: string) =>
-      result.diagnostics.push({ from, to: Math.max(from + 1, to), line: index + 1, message });
+    const error = (message: string, start = from, end = to) =>
+      result.diagnostics.push({
+        from: start,
+        to: Math.max(start + 1, end),
+        line: index + 1,
+        message,
+      });
     if (!line) return;
     if (line === '}') {
       if (!current) error('Unexpected closing brace.');
@@ -72,6 +86,21 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
       return;
     }
     if (!current) {
+      const master = /^master\s+through\s+(\S+)$/.exec(line);
+      if (master) {
+        const key = master[1],
+          keyFrom = to - key.length;
+        if (globals.has('master')) error('Duplicate master directive.');
+        globals.add('master');
+        if (!chainKeys.includes(key))
+          error(
+            `Unknown pedal chain “${key}”. Save a chain with this score key first.`,
+            keyFrom,
+            to,
+          );
+        result.master = { key, from: keyFrom, to, commandFrom: from, commandTo: to };
+        return;
+      }
       const directive = /^(tempo|time)\s+(\S+)$/.exec(line);
       if (directive) {
         const [, command, value] = directive;
@@ -103,14 +132,23 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
         if (tracks.size > 128) error('A project may contain at most 128 tracks.');
         if (!instrumentKeys.includes(instrumentKey))
           error(`Unknown instrument “${instrumentKey}”. Save a preset with this score key first.`);
-        if (chain)
-          error('Pedal chains are planned for stage 3; remove “through” to play this score.');
         const prefix = /^track\s+\S+\s+using\s+/.exec(line)![0];
+        const instrumentTo = from + prefix.length + instrumentKey.length;
+        const chainPrefix = chain ? /^\s+through\s+/.exec(line.slice(instrumentTo - from))![0] : '';
+        const chainFrom = instrumentTo + chainPrefix.length;
+        if (chain && !chainKeys.includes(chain))
+          error(
+            `Unknown pedal chain “${chain}”. Save a chain with this score key first.`,
+            chainFrom,
+            chainFrom + chain.length,
+          );
         current = {
           key,
           instrumentKey,
           instrumentFrom: from + prefix.length,
-          instrumentTo: from + prefix.length + instrumentKey.length,
+          instrumentTo,
+          chainKey: chain ?? null,
+          ...(chain ? { chainFrom, chainTo: chainFrom + chain.length } : {}),
           bodyTo: to,
           events: [],
           beats: 0,
@@ -118,9 +156,11 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
         result.tracks.push(current);
         return;
       }
-      if (/^master\b/.test(line))
-        error('Master pedals are planned for stage 3; remove this directive to play.');
-      else error('Expected tempo, time, or track <key> using <instrumentKey> { on its own line.');
+      if (/^master\b/.test(line)) error('Use master through <pedalKey> outside track blocks.');
+      else
+        error(
+          'Expected tempo, time, master through <pedalKey>, or track <key> using <instrumentKey> [through <pedalKey>] { on its own line.',
+        );
       return;
     }
     const event = /^(.*?)\s+(whole|half|quarter|8th|16th)$/.exec(line);
