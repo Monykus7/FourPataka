@@ -1,4 +1,5 @@
 import { DURATIONS, SCORE_KEY, pitch } from './music';
+import { DEFAULT_METER, parseMeter, type TimeSignature } from './meter';
 
 export interface Diagnostic {
   from: number;
@@ -28,6 +29,8 @@ export interface ScoreTrack {
 }
 export interface CompiledScore {
   tempo: number;
+  meter: TimeSignature;
+  directives: Partial<Record<'tempo' | 'time', { from: number; to: number }>>;
   tracks: ScoreTrack[];
   events: ScoreEvent[];
   diagnostics: Diagnostic[];
@@ -40,6 +43,8 @@ export interface CompiledScore {
 export function parseScore(text: string, instrumentKeys: string[]): CompiledScore {
   const result: CompiledScore = {
     tempo: 120,
+    meter: { ...DEFAULT_METER },
+    directives: {},
     tracks: [],
     events: [],
     diagnostics: [],
@@ -72,12 +77,20 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
         const [, command, value] = directive;
         if (globals.has(command)) error(`Duplicate ${command} directive.`);
         globals.add(command);
+        const valueFrom = from + line.length - value.length;
+        result.directives[command as 'tempo' | 'time'] = { from: valueFrom, to };
         if (command === 'tempo') {
           const bpm = Number(value);
           if (!Number.isFinite(bpm) || bpm < 20 || bpm > 300)
             error('Tempo must be between 20 and 300 BPM.');
           else result.tempo = bpm;
-        } else if (value !== '4/4') error('Only time 4/4 is supported in this release.');
+        } else {
+          try {
+            result.meter = parseMeter(value);
+          } catch (e) {
+            error((e as Error).message);
+          }
+        }
         return;
       }
       const header = /^track\s+(\S+)\s+using\s+(\S+)(?:\s+through\s+(\S+))?\s*\{$/.exec(line);
@@ -176,7 +189,7 @@ export function parseScore(text: string, instrumentKeys: string[]): CompiledScor
 
 export const COMMANDS = [
   { name: 'tempo', description: 'Quarter-note beats per minute · 20–300', snippet: 'tempo 120' },
-  { name: 'time', description: 'Measure grid · currently 4/4', snippet: 'time 4/4' },
+  { name: 'time', description: 'Project meter · 1–32 over 1, 2, 4, 8, or 16', snippet: 'time 4/4' },
   {
     name: 'track',
     description: 'Independent sound; all tracks start together',
