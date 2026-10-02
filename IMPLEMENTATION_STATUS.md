@@ -1,10 +1,10 @@
 # FourPataka implementation status
 
-Updated: 2026-09-30. First playable foundation implemented in this folder.
+Updated: 2026-10-01. Latest release: v0.9.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
-Each implementation milestone has at least four focused version-control commits. Commits use the configured Monykus7 identity and are pushed to `https://github.com/Monykus7/FourPataka.git` as checkpoints are completed.
+New implementation milestones aim for eight focused version-control commits, per the latest request. Earlier milestones used a minimum of four. Commits use the configured Monykus7 identity and are pushed to `https://github.com/Monykus7/FourPataka.git` as checkpoints are completed.
 
 ### Audio foundation (roadmap stage 0)
 
@@ -81,7 +81,7 @@ Stage 2's phrase comparison and linked source microscope behavior now pass the a
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
-Stage 4/5 completion still needs the full pedal-aware command reference, source-aware tempo controls, deeper accessibility work, save recovery UX, and browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
+Stage 4/5 completion still needs the full pedal-aware command reference, deeper accessibility work, save recovery UX, and browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
 
 ### Interactive Fourier workspace (v0.4.0)
 
@@ -151,3 +151,20 @@ The dedicated view preserves the existing independent audition A/B, track and ma
 This UI milestone does not complete roadmap stage 3: EQ, delay/tail behavior and score chain directives remain next.
 
 Validation for v0.8.0: 78 unit tests, all 32 browser tests, and 2 packaged desktop tests pass. The initial browser run exposed short-playback fixture assumptions and one overall UI timeout; longer phrases, audio readiness polling and a bounded 60-second browser test timeout resolve these without changing musical playback behavior. Desktop tests use a bounded 90-second timeout and verify the Pedalboard menu, connected cable view, processed audio, continuous A/B, saved themes and native project dialogs. Production build, formatting, and desktop packaging pass. Output: `release/FourPataka-0.8.0-win-x64.exe`. Four focused checkpoints are pushed using the configured Monykus7 identity, and the verified portable app is launched after the release checkpoint.
+
+### Composition timing and source controls (v0.9.0)
+
+1. Project meter model, parser diagnostics, and quarter-note timing proofs.
+2. Exact source spans and validated tempo/time directive edits retaining whitespace/comments.
+3. Meter-aware timeline bars/pulses, partial measures and bounded grid density.
+4. Common/custom time-signature and tempo controls, combined undo, frozen transport timing.
+5. Per-track instrument assignments preserving independent copies, mix levels and pedal chains.
+6. Track maker meter preview, button-based event reordering, time-signature completion and reference values.
+7. Browser/native regression coverage for timing, source authority, undo/reload, invalid meter, frozen playback and narrow layouts.
+8. Documentation, v0.9.0 release metadata, portable packaging verification and application launch.
+
+Meters are global per project: numerator 1–32, denominator 1/2/4/8/16. Tempo and all scheduled event durations remain quarter-note units. Old scores retain default 4/4 without project-schema migration. Notes crossing bars and incomplete final bars remain valid. UI timing changes are one source-authoritative undo step; invalid scores and score playback guard timing and assignment controls. Event inspection reads the current compiled revision, including the frozen playing revision.
+
+This advances stage 4 composition tools. Stage 3 still needs EQ, delay/tail policies and chain-aware score directives; the pedal-aware command catalog depends on those. Chord-symbol macros and WAV export remain later work.
+
+Validation for v0.9.0: 100 unit tests, all 36 browser tests, and 3 packaged desktop tests pass. TypeScript/production build and formatting pass. Browser checks cover custom 11/16, 6/8 bar positions, source comments, timing undo/redo, persistence, instrument assignments, invalid meter guards, frozen playback timing, meter completion/preferences and mobile event reordering. Desktop checks target the freshly packaged Windows executable and cover the new Compose controls alongside audio, menu actions, renderer isolation and native project file operations. Desktop and 390 px browser layouts were visually checked. Output: `release/FourPataka-0.9.0-win-x64.exe`. Eight focused commits are pushed under Monykus7; the verified portable application is launched after the release checkpoint.

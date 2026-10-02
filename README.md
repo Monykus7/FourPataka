@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.8.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.9.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -42,7 +42,9 @@ The desktop checks can also target the unpacked production executable by setting
 
 ## Compose tools
 
-**Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.
+**Tempo / Time signature** edit score directives, preserving comments and whitespace, in one undo step. Select a common meter or edit **Beats per bar** and **Beat unit** for a custom meter. **Instrument** selectors assign a fresh independent preset copy to a track while keeping its level and pedals. Timing and assignments require stopped score playback and valid text; the first track can be created in an empty score.
+
+**Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It shows phrase length in the project meter, supports event reordering with up/down buttons, and validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.
 
 Instrument, Pedalboard, and Compose are the three primary views. Learn is a smaller secondary link. The interface keeps flat panels, concise headings, and a faint material texture inside panels, with five selectable themes.
 
@@ -92,6 +94,8 @@ track bass using softBass {
 
 Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scientific notation (C4 is middle C, A4 is 440 Hz), with octaves 0–8. `(Bb D F)5` uses octave 5 for all three notes; use `(Bb4 D5 F5)` for explicit voicing. One event per line. `//` starts a comment.
 
+`time <numerator>/<denominator>` sets one meter for the whole project: 1–32 beats per bar, with a beat unit of 1, 2, 4, 8, or 16. Omitted meter defaults to 4/4 for existing projects. Common choices include 3/4, 5/4, 6/8, 7/8 and 12/8. Tempo always counts quarter notes; 6/8 has six eighth-note beats per bar (three quarter notes). Changing meter changes guides and bar/beat positions without changing note durations. Partial final bars and notes crossing bar lines are valid. The timeline and transport retain the running tempo and meter until Stop/replay when score text is edited. Long timelines thin their grid labels to keep rendering bounded.
+
 ## Current boundary
 
 The instrument/comparison foundation and first pedalboard slice are implemented: compressor, overdrive, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work includes EQ, delay and its echo-tail policy, and score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
@@ -126,7 +130,7 @@ Compressor uses the native Web Audio processor with a 30 dB knee, measured look-
 
 **After pedals** displays the selected live path before its track level or mix gain, with a waveform and FFT spectrum. The original source graphs still describe the instrument. These views require active Listen/Play.
 
-Personal build workflow: make at least four focused commits per milestone, push each completed checkpoint using the configured identity, and launch the verified portable application after every completed x.x.0 release.
+Personal build workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured identity, and launch the verified portable application after every completed x.x.0 release.
 
 ## Themes
 

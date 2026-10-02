@@ -289,7 +289,7 @@ Both tracks contain four quarter-note beats. Tracks begin together; events withi
 ### Complete initial command catalog
 
 - `tempo <bpm>` — quarter-note beats per minute. Default 120 if omitted; accept 20…300 BPM.
-- `time 4/4` — measure grid. Default 4/4; other meters receive an unsupported-meter diagnostic in the initial release.
+- `time <numerator>/<denominator>` — project measure grid, default 4/4. Accept 1–32 beats over 1, 2, 4, 8, or 16. Tempo and event durations remain in quarter-note units; a 6/8 bar spans three quarter beats. Meter changes within a track are unsupported.
 - `master through <pedalKey>` — optional master chain assignment.
 - `track <trackKey> using <instrumentKey> [through <pedalKey>] { … }` — a named sequential track, optionally with a pedal chain.
 - `C5 quarter` — note name, optional sharp/flat, required octave, and duration.
@@ -332,7 +332,7 @@ Play compiles a stable snapshot of valid score text and the currently applied so
 
 Edits during playback affect the next Play. If the text revision changes, show **Playing previous version** and suspend source-line playback decorations until replay; the compiled timeline continues to show the running revision. Never highlight unrelated lines using stale offsets.
 
-Tempo and assignment controls in the UI perform narrow parser-aware edits to the relevant source directive. Do not maintain a second independent tempo value. Disable those source-editing controls while the score is invalid or currently playing.
+Tempo, time-signature, and assignment controls in the UI perform narrow parser-aware edits to the relevant source directive. Do not maintain a second independent tempo value. Disable those source-editing controls while the score is invalid or currently playing.
 
 ## 9. Visual feedback, analysis, and experiments
 
@@ -552,3 +552,5 @@ Use focused verification for meaningful risks:
 - Keyboard operation, readable layout, and the chosen palette's contrast.
 
 The first implementation work remains the audio proof. After its gate passes, proceed through this single roadmap.
+
+Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
