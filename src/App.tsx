@@ -1,3 +1,5 @@
+import CompositionSettings from './components/CompositionSettings';
+import { measurePosition, meterLabel } from './core/meter';
 import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
 import {
@@ -74,7 +76,7 @@ import Pedalboard from './components/Pedalboard';
 import ChainBypass from './components/ChainBypass';
 import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
-import { appendTrack, insertCommand, nextTrackKey } from './core/scoreTools';
+import { appendTrack, insertCommand, nextTrackKey, setScoreDirective } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
@@ -1366,6 +1368,27 @@ export default function App() {
                       </label>
                     </div>
                   </div>
+                  <CompositionSettings
+                    tempo={score.tempo}
+                    meter={score.meter}
+                    disabled={
+                      playback === 'score' ||
+                      score.diagnostics.some((d) => d.message !== 'Add a track to start composing.')
+                    }
+                    onApply={(tempo, meter) => {
+                      try {
+                        const keys = instruments.map((i) => i.key);
+                        let text = project.scoreText;
+                        if (Number(tempo) !== score.tempo)
+                          text = setScoreDirective(text, keys, 'tempo', tempo);
+                        if (meter !== meterLabel(score.meter))
+                          text = setScoreDirective(text, keys, 'time', meter);
+                        change((p) => ({ ...p, scoreText: text }));
+                      } catch (e) {
+                        setToast((e as Error).message);
+                      }
+                    }}
+                  />
                   <Suspense fallback={<div className="editor-loading">Opening score editor…</div>}>
                     <ScoreEditor
                       value={project.scoreText}
@@ -1545,11 +1568,14 @@ export default function App() {
                       <dl>
                         <div>
                           <dt>Start</dt>
-                          <dd>Beat {selectedEvent.beat + 1}</dd>
+                          <dd>
+                            Bar {measurePosition(selectedEvent.beat, timelineScore.meter).bar} ·
+                            beat {measurePosition(selectedEvent.beat, timelineScore.meter).beat}
+                          </dd>
                         </div>
                         <div>
                           <dt>Duration</dt>
-                          <dd>{selectedEvent.duration} beats</dd>
+                          <dd>{selectedEvent.duration} quarter beats</dd>
                         </div>
                         <div>
                           <dt>Frequencies</dt>
@@ -1852,8 +1878,9 @@ export default function App() {
               </span>
             </strong>
             <span>
-              {score.tempo} <small>BPM</small>
-              <span className="footer-separator">/</span>4/4
+              {timelineScore.tempo} <small>BPM</small>
+              <span className="footer-separator">/</span>
+              {meterLabel(timelineScore.meter)}
             </span>
           </div>
         </div>
