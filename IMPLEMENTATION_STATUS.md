@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.12.1. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.13.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -243,10 +243,10 @@ The user reported equipment dragging failing. The open menu covered the first sl
 
 Validation: all 119 unit checks, 21 focused browser checks (board, EQ and pedalboard), and all six packaged desktop checks pass. The native equipment gesture targets the first slot and patches its audio path with the mouse. TypeScript/production build, formatting, portable packaging and knowledge-map freshness pass. The full browser suite was verified for v0.12.0; this patch reran the affected workflows. Output: `release/FourPataka-0.12.1-win-x64.exe`. The separate local Earth palette edit remains outside the patch commits.
 
-### Delay and echo-tail lifecycle (v0.13.0, release verification in progress)
+### Delay and echo-tail lifecycle (v0.13.0)
 
 Delay joins Equipment placement, compact rotary dials, exact/sliders inspection, patch cables, preset saving and independent A/B/track/master copies. Controls: time 20–2000 ms, feedback 0–95%, output −24…+12 dB, mix 0–100%. Defaults: 300 ms / 30% / 0 dB / 35%. Echo time adds no track compensation latency. Separate first-echo and compensated feedback paths maintain repeated timing in Chromium at 44.1/48 kHz, including the shortest time and highest feedback.
 
 Pedal and whole-chain bypass close only the new delay feed, pass new notes dry and retain stored echoes. Loop activity and a one-interval hold drive Tail active indicators on the board, pedal and inspector. Playback includes the finite -60 dB echo allowance after release; live audition edits extend that allowance without truncating older echoes. Score parameters/topology remain frozen until replay; bypass stays live. Stop fades output in 20 ms and disposes all feedback buffers after the fade. Replaying begins fresh. Tempo sync remains planned.
 
-Validation so far: all 120 unit checks and all 70 browser checks pass, including eight delay proofs for echo cadence, feedback/mix, isolated buffers, both bypass modes, frozen score settings, live cleanup budgets, Stop/replay, independent saved copies, first-slot dragging, mobile controls and undo. The new native delay workflow passes against the production build, including drag placement, patching, dials, native file save/reload and whole-chain tail status. Desktop and 390 px screenshots were reviewed. The v0.13.0 portable build and complete packaged desktop suite are the remaining release checks. Chain score directives follow this release; chord macros, WAV export and the wider frontend overhaul remain planned.
+Validation: all 120 unit checks, all 70 browser checks and all seven packaged desktop checks pass. Eight delay browser proofs cover echo cadence, feedback/mix, isolated buffers, both bypass modes, frozen score settings, live cleanup budgets, Stop/replay, independent saved copies, mobile controls and undo; board coverage includes first-slot delay dragging. The native delay workflow covers drag placement, patching, dials, native file save/reload and whole-chain tail status. Its long 95% feedback tail remains observable through native automation delays; hidden test windows disable renderer background throttling for this timing-sensitive proof. The complete packaged suite also verifies EQ, rotary gestures, Compose, isolated local assets, audio and native dialogs. Desktop and 390 px screenshots were reviewed. TypeScript/production build, formatting, Windows portable packaging and knowledge-map freshness pass. Semantic retrieval returns the delay behavior and source citations within its 1,024-token budget. Output: `release/FourPataka-0.13.0-win-x64.exe`. Eight focused checkpoints use Monykus7 and are pushed to the primary master branch. Chain score directives follow this release; chord macros, WAV export and the wider frontend overhaul remain planned.
