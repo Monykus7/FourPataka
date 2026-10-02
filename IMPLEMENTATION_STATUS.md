@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.12.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.12.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -237,6 +237,8 @@ The board is a serial patching surface with up to eight pedals. Equipment select
 Validation for v0.12.0: all 119 unit checks and all 56 browser checks pass. All six packaged desktop checks are verified against the new Windows executable: four passed in the complete run, and the two native mouse checks passed after centering their coordinate targets above the fixed transport in Windows' constrained work-area viewport. Native coverage includes actual equipment drag/drop and captured cable patching, precise rotary control, EQ reset, saved positions/cables, local renderer isolation, native dialogs, audio, comparison and composition. TypeScript/production build, formatting and portable packaging pass. Desktop and 390 px layouts were visually reviewed. Local semantic retrieval returns the updated board concept and source citations within its 1,024-token budget; map freshness passes. The separate local Earth palette edit is preserved outside these commits; the current working palette passes unit contrast checks. Output: `release/FourPataka-0.12.0-win-x64.exe`. Eight focused commits use Monykus7 and are pushed to the primary master branch. Delay and its tail/bypass policy follow, then chain score directives; chord-symbol macros, WAV export and the broader frontend overhaul remain planned.
 
 
-### Equipment drag placement correction (v0.12.1 verification in progress)
+### Equipment drag placement correction (v0.12.1)
 
-The user reported equipment dragging failing. The open menu covered the first slot and intercepted its drop. The earlier native proof targeted the second slot and missed this overlap. The menu now stops painting and hit testing after the next animation frame, retaining the native drag source until completion. Delaying the hide allows Chromium to capture a valid drag image. Drop, cancellation, Escape and unmount clear any pending frame and temporary tool state. Real mouse gestures cover each pedal kind in the first slot, canceled drags and occupied-slot rejection followed by a valid drag. Browser board/EQ checks and packaged verification are being completed before releasing the patch.
+The user reported equipment dragging failing. The open menu covered the first slot and intercepted its drop. The earlier native proof targeted the second slot and missed this overlap. The menu now stops painting and hit testing after the next animation frame, retaining the native drag source until completion. Delaying the hide allows Chromium to capture a valid drag image. Drop, cancellation, Escape and unmount clear any pending frame and temporary tool state. Real mouse gestures cover each pedal kind in the first slot, canceled drags and occupied-slot rejection followed by a valid drag.
+
+Validation: all 119 unit checks, 21 focused browser checks (board, EQ and pedalboard), and all six packaged desktop checks pass. The native equipment gesture targets the first slot and patches its audio path with the mouse. TypeScript/production build, formatting, portable packaging and knowledge-map freshness pass. The full browser suite was verified for v0.12.0; this patch reran the affected workflows. Output: `release/FourPataka-0.12.1-win-x64.exe`. The separate local Earth palette edit remains outside the patch commits.
