@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/browser',
-  outputDir: '.test-results',
+  // Browser cleanup must not remove profiles used by simultaneous native tests.
+  outputDir: '.test-results/browser',
   fullyParallel: false,
   workers: 1,
   timeout: 60000,

@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.13.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.14.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -250,3 +250,20 @@ Delay joins Equipment placement, compact rotary dials, exact/sliders inspection,
 Pedal and whole-chain bypass close only the new delay feed, pass new notes dry and retain stored echoes. Loop activity and a one-interval hold drive Tail active indicators on the board, pedal and inspector. Playback includes the finite -60 dB echo allowance after release; live audition edits extend that allowance without truncating older echoes. Score parameters/topology remain frozen until replay; bypass stays live. Stop fades output in 20 ms and disposes all feedback buffers after the fade. Replaying begins fresh. Tempo sync remains planned.
 
 Validation: all 120 unit checks, all 70 browser checks and all seven packaged desktop checks pass. Eight delay browser proofs cover echo cadence, feedback/mix, isolated buffers, both bypass modes, frozen score settings, live cleanup budgets, Stop/replay, independent saved copies, mobile controls and undo; board coverage includes first-slot delay dragging. The native delay workflow covers drag placement, patching, dials, native file save/reload and whole-chain tail status. Its long 95% feedback tail remains observable through native automation delays; hidden test windows disable renderer background throttling for this timing-sensitive proof. The complete packaged suite also verifies EQ, rotary gestures, Compose, isolated local assets, audio and native dialogs. Desktop and 390 px screenshots were reviewed. TypeScript/production build, formatting, Windows portable packaging and knowledge-map freshness pass. Semantic retrieval returns the delay behavior and source citations within its 1,024-token budget. Output: `release/FourPataka-0.13.0-win-x64.exe`. Eight focused checkpoints use Monykus7 and are pushed to the primary master branch. Chain score directives follow this release; chord macros, WAV export and the wider frontend overhaul remain planned.
+
+### Score chain assignments (v0.14.0)
+
+1. Stable pedal score keys and deterministic schema-v1 legacy migration.
+2. Parser track `through` and global `master through` directives, diagnostics and exact key spans.
+3. Source reconciliation that deep-copies changed assignments and preserves unchanged independent settings.
+4. Narrow source edits for track/master assignments, insertion and Track Maker.
+5. Compose selectors, separate new-preset score keys and contextual pedal-key autocomplete.
+6. Browser/native persistence, undo, command, diagnostic and numeric audio routing proofs.
+7. v0.14.0 metadata, current roadmap and maintained feature documentation.
+8. Reapplication ownership fix: copied sandbox source markers never replace the destination's reconciliation history.
+9. Final verification record and isolated browser/native test output directories.
+
+`track <name> using <instrumentKey> through <pedalKey>` and one global `master through <pedalKey>` apply saved chain templates. Built-in keys: clean, cleanGlue and warmDrive. New templates expose a unique score key. Unknown keys and duplicate/misplaced directives diagnose visibly and block Play without destroying existing settings. Compose selectors, Track Maker and reference cards update source while preserving comments and note bodies. Valid assignment changes load independent copies; unchanged reparsing and library saving retain edited knobs, bypass, positions and cables. Removing a previously applied directive clears its chain; legacy unassigned boards survive. Pedalboard application synchronizes changed preset associations while preserving exact sandbox settings. Reapplying the same preset keeps destination-owned source history. Score text remains editable during playback; the frozen revision keeps its clock/routing until replay. Runtime latency, bypass and tail policies remain unchanged.
+
+Validation: all 127 unit checks and all 76 browser checks pass. All eight packaged desktop workflows are verified: six passed in the full run, and EQ/native-dialog checks passed in a focused rerun after isolating browser output cleanup from native profiles. The final rebuilt package additionally passes the native score-chain save/reload workflow. Earlier shared-output cleanup interrupted active native profiles; browser traces now use `.test-results/browser` and cannot remove `.test-results/desktop`. A restricted Windows development-Electron launch failed its install-folder ACL check; native verification uses the normal Windows process environment, with renderer sandboxing retained. Visual Studio is not required and is kept out of the verification workflow. TypeScript/production build, formatting and portable packaging pass. Desktop and 390 px chain layouts were visually reviewed. Local semantic retrieval returns current chain/copy behavior and source citations within 1,008/1,024 tokens; knowledge build/freshness checks pass. Output: `release/FourPataka-0.14.0-win-x64.exe`. Nine focused checkpoints use Monykus7 and are pushed to primary master. Stage 3's automated functional coverage is complete; broader stage 4/5 reference, accessibility, recovery and demonstration gates, physical listening and real-device/browser checks remain. WAV export follows those gates; chord-symbol macros and the frontend overhaul remain later work.
+
