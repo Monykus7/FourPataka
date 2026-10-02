@@ -213,6 +213,8 @@ Save the resulting coefficients as the sound definition. Macro baseline/control 
 
 Use flat pedal modules with names, numeric values, knobs, and clear bypass switches. Show signal direction and order. Drag to reorder, with Move left/Move right keyboard alternatives.
 
+The next physical board replaces direct Add buttons and the tall serial rack. Select pedals or patch cables from an equipment menu, place small pedals on a four-column/two-row snap grid with Velcro strips, drag handles to reposition, and patch output jacks to input jacks using the mouse. Keep small dials on each pedal and exact controls in a selected-pedal inspector. Placement does not determine effect order; explicit cables do. Initially support one serial path with no splits or feedback loops. Incomplete output connections produce silence unless the whole board is bypassed. Old chains retain their order as prewired boards. Store placement/cables in project and preset copies; visual movement stays live without a replay requirement. Keep the board surface and inspector modular for the planned wider frontend overhaul.
+
 Save whole-chain presets containing effect order, knob values, and individual pedal states. In Compose, show the assigned chain and a compact bypass control for every track and for the master.
 
 A header must identify the editing destination: library preset, a particular track's independent instance, or master instance. Avoid an ambiguous editor that silently changes a different destination.
