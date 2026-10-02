@@ -1423,7 +1423,7 @@ export default function App() {
                     <span>
                       {stale
                         ? 'Playing previous version · replay to hear edits'
-                        : `${score.tracks.length} tracks · ${score.beats} beats · ${score.seconds.toFixed(2)} s`}
+                        : `${score.tracks.length} tracks · ${score.beats} quarter beats · ${score.seconds.toFixed(2)} s`}
                     </span>
                   </div>
                   {score.diagnostics.length > 0 && (

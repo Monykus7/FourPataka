@@ -19,6 +19,24 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('packaged Compose applies timing and instruments to source with undo', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  await page.getByRole('combobox', { name: 'Time signature preset' }).selectOption('7/8');
+  await page.getByRole('spinbutton', { name: 'Composition tempo' }).fill('96');
+  await page.getByRole('button', { name: 'Apply timing' }).click();
+  await expect(editor).toContainText('time 7/8');
+  await expect(editor).toContainText('tempo 96');
+  await expect(page.locator('.timeline-panel .tag')).toHaveText('7/8');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(editor).toContainText('time 4/4');
+  await expect(editor).toContainText('tempo 120');
+  await page.getByRole('combobox', { name: 'Instrument for melody' }).selectOption('sine');
+  await expect(editor).toContainText('melody using sine');
+  await expect(editor).toContainText('bass using softBass');
+});
+
 test('desktop loads local assets, isolates the renderer, plays audio, and opens tools from its menu', async () => {
   const page = await app.firstWindow();
   await expect(page.getByRole('heading', { name: 'Instrument', exact: true })).toBeVisible();

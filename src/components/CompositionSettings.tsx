@@ -63,7 +63,9 @@ export default function CompositionSettings({
             {COMMON_METERS.map((m) => (
               <option key={m}>{m}</option>
             ))}
-            <option value="custom">Custom</option>
+            <option value="custom" disabled>
+              Custom
+            </option>
           </select>
         </label>
         <label>
