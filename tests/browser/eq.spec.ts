@@ -1,5 +1,134 @@
 import { expect, test } from '@playwright/test';
 
+test('EQ respects frozen score parameters, aligned tracks, live bypass and hard Stop', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const enginePath = '/src/audio/engine.ts',
+      projectPath = '/src/core/project.ts',
+      pedalsPath = '/src/core/pedals.ts',
+      parserPath = '/src/core/parser.ts',
+      musicPath = '/src/core/music.ts';
+    const { AudioEngine } = await import(enginePath),
+      { createProject } = await import(projectPath),
+      { makePedal } = await import(pedalsPath),
+      { parseScore } = await import(parserPath),
+      { mathematicalPreset } = await import(musicPath);
+    const project = createProject();
+    const score = parseScore(
+      'tempo 60\ntrack melody using brightReed {\n A4 whole\n A4 whole\n}\ntrack bass using softBass {\n A4 whole\n A4 whole\n}',
+      project.instruments.map((p: any) => p.key),
+    );
+    project.tracks.forEach((t: any, i: number) => {
+      t.sound = mathematicalPreset('sine');
+      t.sound.polarity[0] = i ? -1 : 1;
+      t.level = 1;
+    });
+    const compressor = makePedal('compressor');
+    compressor.params.ratio = 1;
+    compressor.params.mix = 50;
+    const eq = makePedal('eq');
+    project.processing.tracks.melody.pedals = [eq];
+    project.processing.tracks.bass.pedals = [compressor];
+    const engine = new AudioEngine();
+    engine.setMonitor(0);
+    engine.setMix(1);
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    await engine.play(score, project.tracks, project.processing);
+    await delay(350);
+    const aligned = engine.measure().peak;
+    eq.params.mid = -12;
+    eq.params.frequency = 440;
+    engine.updateProcessing(project.processing, 'A');
+    await delay(200);
+    const frozen = engine.measure().peak,
+      pending = engine.processingPending(project.processing, 'A');
+    engine.stop();
+    await delay(100);
+    await engine.play(score, project.tracks, project.processing);
+    await delay(350);
+    const changed = engine.measure().peak;
+    eq.bypassed = true;
+    engine.updateProcessing(project.processing, 'A');
+    await delay(250);
+    const bypass = engine.measure().peak;
+    engine.stop();
+    await delay(150);
+    const silence = engine.measure().peak;
+    await engine.context!.close();
+    return { aligned, frozen, pending, changed, bypass, silence };
+  });
+  expect(proof.aligned).toBeLessThan(0.0001);
+  expect(proof.frozen).toBeLessThan(0.0001);
+  expect(proof.pending).toBe(true);
+  expect(proof.changed).toBeGreaterThan(0.05);
+  expect(proof.bypass).toBeLessThan(0.0001);
+  expect(proof.silence).toBeLessThan(0.00001);
+});
+
+test('EQ audition edits and A/B replacement retain progress and clean state on replay', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const enginePath = '/src/audio/engine.ts',
+      pedalsPath = '/src/core/pedals.ts',
+      musicPath = '/src/core/music.ts';
+    const { AudioEngine } = await import(enginePath),
+      { makePedal, defaultProcessing } = await import(pedalsPath),
+      { mathematicalPreset } = await import(musicPath);
+    const engine = new AudioEngine();
+    engine.setMonitor(0);
+    engine.setMix(1);
+    const processing = defaultProcessing();
+    const pedal = makePedal('eq');
+    pedal.params.frequency = 440;
+    processing.audition.A.pedals = [pedal];
+    processing.audition.B = structuredClone(processing.audition.A);
+    processing.audition.B.pedals[0].id = crypto.randomUUID();
+    processing.audition.B.pedals[0].params.mid = 12;
+    const sound = mathematicalPreset('sine');
+    const phrase = {
+      tempo: 60,
+      beats: 16,
+      events: [{ beat: 0, duration: 16, notes: ['A4'], frequencies: [440] }],
+    };
+    const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    await engine.auditionPhrase(sound, phrase, undefined, processing.audition.A);
+    await delay(350);
+    const baseline = engine.measure().peak,
+      before = engine.progress;
+    pedal.params.mid = -12;
+    engine.updateProcessing(processing, 'A');
+    await delay(250);
+    const cut = engine.measure().peak,
+      afterEdit = engine.progress;
+    engine.switchAudition(sound, processing.audition.B);
+    await delay(250);
+    const boost = engine.measure().peak,
+      afterSwitch = engine.progress;
+    engine.stop();
+    await delay(150);
+    const silence = engine.measure().peak;
+    sound.harmonics.fill(0);
+    await engine.auditionPhrase(sound, phrase, undefined, processing.audition.A);
+    await delay(250);
+    const restart = engine.measure().peak;
+    engine.stop();
+    await delay(70);
+    await engine.context!.close();
+    return { baseline, cut, boost, before, afterEdit, afterSwitch, silence, restart };
+  });
+  expect(proof.baseline).toBeGreaterThan(0.05);
+  expect(proof.cut).toBeLessThan(proof.baseline * 0.4);
+  expect(proof.boost).toBeGreaterThan(proof.baseline * 3);
+  expect(proof.afterEdit).toBeGreaterThan(proof.before);
+  expect(proof.afterSwitch).toBeGreaterThan(proof.afterEdit);
+  expect(proof.silence).toBeLessThan(0.00001);
+  expect(proof.restart).toBeLessThan(0.00001);
+});
+
 test('EQ presets retain independent A/B, track and master copies through saving and reload', async ({
   page,
 }) => {
