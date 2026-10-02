@@ -188,6 +188,7 @@
   font: 11px var(--font-mono);
 }
 .delay-note {
+  margin: 14px 0;
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.6;
