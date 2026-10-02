@@ -50,7 +50,7 @@ describe('score compilation', () => {
         .diagnostics[0].message,
     ).toContain('Duplicate');
   });
-  it('refuses unsupported processing rather than silently ignoring it', () => {
+  it('diagnoses unknown pedal keys rather than silently ignoring them', () => {
     expect(
       parseScore(
         'master through cleanGlue\ntrack x using brightReed through warmDrive {\nC4 quarter\n}',

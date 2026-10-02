@@ -12,9 +12,17 @@ Impulse proofs found a 128-frame cycle-breaker offset on Chromium repeats at 44.
 
 Evidence: `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/browser/delay.spec.ts`, `tests/desktop/app.spec.ts`.
 
-## Score chain keys (v0.14.0 in progress)
+## Score chain assignments (v0.14.0)
 
-Pedal templates have stable score keys distinct from their internal IDs and display labels. Built-ins use clean, cleanGlue and warmDrive. Schema-v1 projects without keys migrate deterministically from labels, suffixing collisions and reserving explicit keys first. Invalid or duplicate explicit keys reject import. Independent instances may retain the last reconciled assignmentKey: this distinguishes removing a source directive from a legacy score that never had one. Parser, source-edit helpers and reconciliation follow this settings checkpoint.
+<!-- features: pedals, notation, tracks, storage -->
+
+Pedal templates have stable score keys distinct from their internal IDs and display labels. Built-ins use clean, cleanGlue and warmDrive. Schema-v1 projects without keys migrate deterministically from labels, suffixing collisions and reserving explicit keys first. Invalid or duplicate explicit keys reject import. Keys start with a letter, contain letters/digits/underscores and have at most 100 characters; new preset saving exposes this key separately from its label.
+
+Score headers accept track <name> using <instrumentKey> through <pedalKey>; one global master through <pedalKey> assigns the mix chain. Unknown keys, duplicate master directives and misplaced commands diagnose visibly; invalid source preserves current independent copies and cannot play. Changing a valid assignment loads a deep copy of the selected template. Each instance retains its last reconciled assignmentKey, so unchanged text and library saving preserve local knobs, bypass, positions and cables. Removing a previously applied directive clears its chain; legacy scores that never had a directive preserve their manually configured boards. Undo restores source and processing together.
+
+Compose selectors, Track Maker and command cards edit only parser spans; comments, note bodies and line endings survive. Pedalboard Load/Save as new/Apply update a destination's source assignment when its preset association changes and retain the exact applied sandbox copy. Merely saving a template does not reapply it. Compose selectors guard invalid or playing scores; typing remains available, with the existing frozen playback revision and pending routing until replay. Pedal-key autocomplete reads the local library and respects its preference switch. Runtime latency, independent processor state, live bypass and phase/clock policies remain the audio engine's responsibility.
+
+Evidence: `src/core/parser.ts`, `src/core/project.ts`, `src/core/scoreTools.ts`, `src/core/pedals.ts`, `src/components/ChainAssignment.tsx`, `tests/browser/score-chains.spec.ts`, `tests/desktop/app.spec.ts`.
 
 ## Phase and musical clock
 
