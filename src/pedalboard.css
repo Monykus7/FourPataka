@@ -178,6 +178,20 @@
   --pedal-ink: var(--accent-ink);
   border-top-color: color-mix(in srgb, var(--pedal-color) 40%, var(--border));
 }
+.pedal-module.delay {
+  --pedal-color: var(--secondary);
+  --pedal-ink: var(--secondary-ink);
+  border-top-color: color-mix(in srgb, var(--pedal-color) 40%, var(--border));
+}
+.delay-tail-status {
+  color: var(--tertiary-ink);
+  font: 11px var(--font-mono);
+}
+.delay-note {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
 .eq-shape {
   margin: 14px 0 0;
   font: 9px var(--font-mono);

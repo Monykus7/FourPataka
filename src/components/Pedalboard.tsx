@@ -21,6 +21,7 @@ export default function Pedalboard({
   playing,
   onCopy,
   onReplay,
+  activeTails,
 }: {
   processing: Processing;
   trackKeys: string[];
@@ -32,6 +33,7 @@ export default function Pedalboard({
   playing: boolean;
   onCopy: (from: 'A' | 'B', to: 'A' | 'B') => void;
   onReplay: () => void;
+  activeTails: string[];
 }) {
   const [presetId, setPresetId] = useState('clean');
   const [label, setLabel] = useState('');
@@ -135,6 +137,11 @@ export default function Pedalboard({
           />
           Bypass chain
         </label>
+        {!!activeTails.length && (
+          <span className="delay-tail-status" role="status">
+            Echo tails active
+          </span>
+        )}
       </div>
       {pending && (
         <p className="pedal-pending" role="status">
@@ -149,11 +156,13 @@ export default function Pedalboard({
           onSelect={setSelection}
           onChange={edit}
           onParameter={parameter}
+          activeTails={activeTails}
         />
         <PedalControls
           pedal={selected}
           index={chain.pedals.findIndex((p) => p.id === selected?.id)}
           onChange={parameter}
+          tailActive={!!selected && activeTails.includes(selected.id)}
           onReplace={(pedal) =>
             edit({ ...chain, pedals: chain.pedals.map((p) => (p.id === pedal.id ? pedal : p)) })
           }

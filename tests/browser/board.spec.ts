@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { beginEquipmentDrag, dragEquipment, patchBoard, placePedal } from '../helpers/board';
 
-for (const kind of ['compressor', 'overdrive', 'eq'] as const)
+for (const kind of ['compressor', 'overdrive', 'eq', 'delay'] as const)
   test(`${kind} equipment drags reach the first slot beneath the open menu`, async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();

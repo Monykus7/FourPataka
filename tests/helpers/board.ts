@@ -1,5 +1,10 @@
 import { expect, type Page } from '@playwright/test';
-const equipmentNames = { compressor: 'Compressor', overdrive: 'Overdrive', eq: 'Three-band EQ' };
+const equipmentNames = {
+  compressor: 'Compressor',
+  overdrive: 'Overdrive',
+  eq: 'Three-band EQ',
+  delay: 'Delay',
+};
 
 export async function beginEquipmentDrag(page: Page, kind: keyof typeof equipmentNames) {
   await page.getByRole('button', { name: 'Equipment', exact: true }).click();
@@ -36,7 +41,7 @@ export async function dragEquipment(
   await page.mouse.up();
 }
 
-export async function placePedal(page: Page, kind: 'compressor' | 'overdrive' | 'eq', wire = true) {
+export async function placePedal(page: Page, kind: keyof typeof equipmentNames, wire = true) {
   const count = await page.locator('.compact-pedal').count();
   await page.getByRole('button', { name: 'Equipment', exact: true }).click();
   await page.getByRole('menuitem', { name: equipmentNames[kind], exact: true }).click();
@@ -50,7 +55,7 @@ export async function patchBoard(page: Page, order?: number[]) {
     .locator('.compact-pedal')
     .evaluateAll((els) =>
       els.map((el) =>
-        ['compressor', 'overdrive', 'eq'].find((kind) => el.classList.contains(kind))!,
+        ['compressor', 'overdrive', 'eq', 'delay'].find((kind) => el.classList.contains(kind))!,
       ),
     );
   const path = order ?? kinds.map((_, i) => i);
