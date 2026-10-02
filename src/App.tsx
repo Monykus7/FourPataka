@@ -1307,7 +1307,9 @@ export default function App() {
                 onDestination={setPedalDestination}
                 onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
                 pending={engine.current.processingPending(project.processing, active)}
-                onReplay={() => void audition()}
+                playing={pedalPath === 'audition' ? playback === 'audition' : playback === 'score'}
+                onCopy={copyAB}
+                onReplay={() => (pedalPath === 'audition' ? void audition() : void playScore())}
               />
               <ProcessedGraphs
                 analyser={engine.current.outputAnalyser(pedalPath)}

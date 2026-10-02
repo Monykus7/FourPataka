@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
+import { ArrowRight, Layers3, Power, Waves } from 'lucide-react';
+import SignalCable from './SignalCable';
 import {
   applyAssociated,
   emptyChain,
@@ -17,6 +19,8 @@ export default function Pedalboard({
   onDestination,
   onChange,
   pending,
+  playing,
+  onCopy,
   onReplay,
 }: {
   processing: Processing;
@@ -26,6 +30,8 @@ export default function Pedalboard({
   onDestination: (destination: string) => void;
   onChange: (processing: Processing, group?: string) => void;
   pending: boolean;
+  playing: boolean;
+  onCopy: (from: 'A' | 'B', to: 'A' | 'B') => void;
   onReplay: () => void;
 }) {
   const [presetId, setPresetId] = useState('clean');
@@ -74,12 +80,35 @@ export default function Pedalboard({
   const chosen = processing.library.find((p) => p.id === presetId) ?? processing.library[0];
   const applyTarget =
     target.startsWith('track:') && !trackKeys.includes(target.slice(6)) ? 'master' : target;
+  const pedalName = (index: number) =>
+    `${chain.pedals[index].kind === 'compressor' ? 'Compressor' : 'Overdrive'} ${index + 1}`;
+  const source =
+    dest === 'master'
+      ? 'Track mix'
+      : dest === 'audition'
+        ? `Instrument ${active}`
+        : `${dest.slice(6)} instrument`;
+  const output = dest.startsWith('track:') ? 'Track level' : 'Project mix';
   return (
-    <section className="panel pedalboard" aria-label="Pedalboard">
+    <section
+      className={`panel pedalboard ${playing ? 'signal-live' : ''} ${chain.bypassed ? 'chain-bypassed' : ''}`}
+      aria-label="Pedalboard"
+    >
       <div className="section-title">
-        <h3>Pedalboard</h3>
+        <h3>Signal path</h3>
         <span className="tag">{name}</span>
       </div>
+      {dest === 'audition' && (
+        <div className="pedal-snapshots">
+          <span>Audition {active}</span>
+          <button className="text-button" onClick={() => onCopy('A', 'B')}>
+            Copy A to B
+          </button>
+          <button className="text-button" onClick={() => onCopy('B', 'A')}>
+            Copy B to A
+          </button>
+        </div>
+      )}
       <div className="pedal-toolbar">
         <label>
           Editing destination{' '}
@@ -127,133 +156,206 @@ export default function Pedalboard({
           parameters.
         </p>
       )}
-      <div className="pedal-chain" role="list" aria-label={`${name} signal chain`}>
-        {!chain.pedals.length && (
-          <p className="footnote">Clean path · add a pedal or load a chain preset.</p>
-        )}
-        {chain.pedals.map((pedal, i) => (
-          <article
-            className={`pedal-module ${pedal.kind} ${pedal.bypassed ? 'bypassed' : ''}`}
-            role="listitem"
-            key={pedal.id}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const from = chain.pedals.findIndex((p) => p.id === dragging);
-              if (from >= 0) move(from, i);
-              setDragging(null);
-            }}
-          >
-            <div className="pedal-header">
-              <strong
-                draggable
-                onDragStart={() => setDragging(pedal.id)}
-                onDragEnd={() => setDragging(null)}
+      <div className="signal-path-status">
+        <span className={`signal-status-dot ${playing ? 'live' : ''}`} />
+        {playing ? 'Playing' : 'Ready'}
+        <ArrowRight size={13} />
+        {chain.bypassed
+          ? 'Chain bypassed · signal passes through'
+          : chain.pedals.length
+            ? `${chain.pedals.length} pedals in series`
+            : 'Clean path'}
+        <span>{pending ? 'Edited connections · replay to hear' : 'Input → output'}</span>
+      </div>
+      <div
+        className="pedal-rack-scroll"
+        tabIndex={0}
+        role="region"
+        aria-label="Cable-connected pedal rack"
+      >
+        <div className="pedal-chain" role="list" aria-label={`${name} signal chain`}>
+          <div className="signal-terminal" role="listitem" aria-label={`Signal input: ${source}`}>
+            <span className="terminal-direction">INPUT</span>
+            {dest === 'master' ? <Layers3 size={25} /> : <Waves size={25} />}
+            <strong>{source}</strong>
+            <span className="signal-jack output-jack" aria-hidden="true" />
+            <small>{dest === 'master' ? 'All tracks' : 'Source waveform'}</small>
+          </div>
+          <SignalCable from={source} to={chain.pedals.length ? pedalName(0) : output} />
+          {chain.pedals.map((pedal, i) => (
+            <Fragment key={pedal.id}>
+              <article
+                className={`pedal-module ${pedal.kind} ${pedal.bypassed ? 'bypassed' : ''}`}
+                role="listitem"
+                key={pedal.id}
+                data-pedal-id={pedal.id}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const from = chain.pedals.findIndex((p) => p.id === dragging);
+                  if (from >= 0) move(from, i);
+                  setDragging(null);
+                }}
               >
-                {i + 1} → {pedal.kind === 'compressor' ? 'Compressor' : 'Overdrive'}
-              </strong>
-              <label>
-                <input
-                  type="checkbox"
-                  aria-label={`Bypass ${pedal.kind} ${i + 1}`}
-                  checked={pedal.bypassed}
-                  onChange={(e) =>
-                    edit({
-                      ...chain,
-                      pedals: chain.pedals.map((p) =>
-                        p.id === pedal.id ? { ...p, bypassed: e.target.checked } : p,
-                      ),
-                    })
-                  }
-                />
-                Bypass
-              </label>
-            </div>
-            <div className="pedal-parameters">
-              {Object.entries(PEDAL_CONTROLS[pedal.kind]).map(([key, [min, max, step, unit]]) => {
-                const update = (value: number) =>
-                  edit(
-                    {
-                      ...chain,
-                      pedals: chain.pedals.map((p) =>
-                        p.id === pedal.id
-                          ? {
-                              ...p,
-                              params: { ...p.params, [key]: Math.min(max, Math.max(min, value)) },
-                            }
-                          : p,
-                      ),
+                <span className="pedal-order">
+                  {String(i + 1).padStart(2, '0')} ·{' '}
+                  {pedal.kind === 'compressor' ? 'DYNAMICS' : 'DRIVE'}
+                </span>
+                <span className="signal-jack input-jack" aria-hidden="true" />
+                <span className="signal-jack output-jack" aria-hidden="true" />
+                <span className="jack-label jack-in">IN</span>
+                <span className="jack-label jack-out">OUT</span>
+                <div className="pedal-header">
+                  <strong
+                    draggable
+                    onDragStart={() => setDragging(pedal.id)}
+                    onDragEnd={() => setDragging(null)}
+                  >
+                    {pedal.kind === 'compressor' ? 'Compressor' : 'Overdrive'}
+                  </strong>
+                  <span
+                    className={`pedal-led ${pedal.bypassed || chain.bypassed ? '' : 'engaged'}`}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="pedal-parameters">
+                  {Object.entries(PEDAL_CONTROLS[pedal.kind]).map(
+                    ([key, [min, max, step, unit]]) => {
+                      const update = (value: number) =>
+                        edit(
+                          {
+                            ...chain,
+                            pedals: chain.pedals.map((p) =>
+                              p.id === pedal.id
+                                ? {
+                                    ...p,
+                                    params: {
+                                      ...p.params,
+                                      [key]: Math.min(max, Math.max(min, value)),
+                                    },
+                                  }
+                                : p,
+                            ),
+                          },
+                          `pedal:${dest}:${active}:${pedal.id}:${key}`,
+                        );
+                      const controlName = `${pedal.kind} ${i + 1} ${key}`;
+                      return (
+                        <label key={key} className="range-control">
+                          <span className="pedal-dial" aria-hidden="true">
+                            <span
+                              style={{
+                                transform: `rotate(${-135 + (270 * (pedal.params[key] - min)) / (max - min)}deg)`,
+                              }}
+                            />
+                          </span>
+                          <span className="range-title">
+                            {key}
+                            <span className="numeric-value">
+                              <input
+                                type="number"
+                                aria-label={`${controlName} exact value`}
+                                min={min}
+                                max={max}
+                                step={step}
+                                value={pedal.params[key]}
+                                onChange={(e) => {
+                                  if (
+                                    e.target.value !== '' &&
+                                    Number.isFinite(Number(e.target.value))
+                                  )
+                                    update(Number(e.target.value));
+                                }}
+                              />
+                              {unit}
+                            </span>
+                          </span>
+                          <input
+                            type="range"
+                            aria-label={controlName}
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={pedal.params[key]}
+                            onChange={(e) => update(Number(e.target.value))}
+                          />
+                        </label>
+                      );
                     },
-                    `pedal:${dest}:${active}:${pedal.id}:${key}`,
-                  );
-                const controlName = `${pedal.kind} ${i + 1} ${key}`;
-                return (
-                  <label key={key} className="range-control">
-                    <span className="range-title">
-                      {key}
-                      <span className="numeric-value">
-                        <input
-                          type="number"
-                          aria-label={`${controlName} exact value`}
-                          min={min}
-                          max={max}
-                          step={step}
-                          value={pedal.params[key]}
-                          onChange={(e) => {
-                            if (e.target.value !== '' && Number.isFinite(Number(e.target.value)))
-                              update(Number(e.target.value));
-                          }}
-                        />
-                        {unit}
-                      </span>
-                    </span>
-                    <input
-                      type="range"
-                      aria-label={controlName}
-                      min={min}
-                      max={max}
-                      step={step}
-                      value={pedal.params[key]}
-                      onChange={(e) => update(Number(e.target.value))}
-                    />
-                  </label>
-                );
-              })}
-            </div>
-            <div className="pedal-actions">
-              <button
-                className="text-button"
-                aria-label={`Move ${pedal.kind} ${i + 1} left`}
-                disabled={i === 0}
-                onClick={() => move(i, i - 1)}
-              >
-                ← Move left
-              </button>
-              <button
-                className="text-button"
-                aria-label={`Move ${pedal.kind} ${i + 1} right`}
-                disabled={i === chain.pedals.length - 1}
-                onClick={() => move(i, i + 1)}
-              >
-                Move right →
-              </button>
-              <button
-                className="text-button"
-                aria-label={`Remove ${pedal.kind} ${i + 1}`}
-                onClick={() =>
-                  edit({ ...chain, pedals: chain.pedals.filter((p) => p.id !== pedal.id) })
-                }
-              >
-                Remove
-              </button>
-            </div>
-            <p className="footnote">
-              {pedal.kind === 'compressor'
-                ? '30 dB knee · aligned dry/wet · 1:1 unity path'
-                : 'tanh soft clip · 4× oversampling · low-pass tone'}
-            </p>
-          </article>
-        ))}
+                  )}
+                </div>
+                <label className="pedal-foot-switch">
+                  <input
+                    type="checkbox"
+                    aria-label={`Bypass ${pedal.kind} ${i + 1}`}
+                    checked={pedal.bypassed}
+                    onChange={(e) =>
+                      edit({
+                        ...chain,
+                        pedals: chain.pedals.map((p) =>
+                          p.id === pedal.id ? { ...p, bypassed: e.target.checked } : p,
+                        ),
+                      })
+                    }
+                  />
+                  <span className="foot-switch-face">
+                    <Power size={18} />
+                  </span>
+                  <span>
+                    {pedal.bypassed ? 'Bypassed' : chain.bypassed ? 'Chain bypassed' : 'Engaged'}
+                  </span>
+                </label>
+                <div className="pedal-actions">
+                  <button
+                    className="text-button"
+                    aria-label={`Move ${pedal.kind} ${i + 1} left`}
+                    disabled={i === 0}
+                    onClick={() => move(i, i - 1)}
+                  >
+                    ← Move left
+                  </button>
+                  <button
+                    className="text-button"
+                    aria-label={`Move ${pedal.kind} ${i + 1} right`}
+                    disabled={i === chain.pedals.length - 1}
+                    onClick={() => move(i, i + 1)}
+                  >
+                    Move right →
+                  </button>
+                  <button
+                    className="text-button"
+                    aria-label={`Remove ${pedal.kind} ${i + 1}`}
+                    onClick={() =>
+                      edit({ ...chain, pedals: chain.pedals.filter((p) => p.id !== pedal.id) })
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
+              </article>
+              <SignalCable
+                from={pedalName(i)}
+                to={i < chain.pedals.length - 1 ? pedalName(i + 1) : output}
+              />
+            </Fragment>
+          ))}
+          <div className="signal-terminal" role="listitem" aria-label={`Signal output: ${output}`}>
+            <span className="terminal-direction">OUTPUT</span>
+            <ArrowRight size={25} />
+            <strong>{output}</strong>
+            <span className="signal-jack input-jack" aria-hidden="true" />
+            <small>{dest.startsWith('track:') ? 'Then master pedals' : 'Then monitor'}</small>
+          </div>
+        </div>
+      </div>
+      {!chain.pedals.length && (
+        <p className="footnote">
+          Add a pedal or load a chain preset. Connections follow the pedal order.
+        </p>
+      )}
+      <div className="pedal-library-heading">
+        <h3>Chain presets</h3>
+        <span>Load · save · apply</span>
       </div>
       <div className="pedal-presets">
         <label>
@@ -359,11 +461,9 @@ export default function Pedalboard({
         >
           Apply chain to all associated ({associated.length})
         </button>
-        {dest === 'audition' && (
-          <button className="secondary-button" onClick={onReplay}>
-            Listen to chain
-          </button>
-        )}
+        <button className="secondary-button" onClick={onReplay}>
+          {dest === 'audition' ? 'Listen to chain' : 'Play score through chain'}
+        </button>
       </div>
       {!!associated.length && (
         <p className="footnote">Associated destinations: {associated.join(', ')}</p>
