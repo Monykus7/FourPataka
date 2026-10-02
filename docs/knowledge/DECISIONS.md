@@ -2,6 +2,16 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Planned instrument acoustics boundary
+
+<!-- features: instrument-acoustics, synthesis, comparison, storage -->
+
+The requested acoustics feature is deferred: a wet/dry algorithmic tiny chamber inside the Instrument builder, intended as an instrument-body approximation. It must work without impulse-response assets. The plan proposes short reflections with bounded damped feedback, and enable/reset, mix, size, decay and damping controls; the exact algorithm and ranges remain subject to an audio proof.
+
+Acoustics settings will belong to instrument presets, track copies and A/B snapshots. A destination's voices feed its own chamber before its pedal chain; destinations and comparison branches must not share runtime buffers. Existing waveform/coefficient inspectors continue to describe the raw source. Legacy data defaults to acoustics off. Dry unity, measured latency distinct from reflection timing, continuous comparison, finite decay, Stop disposal, copy isolation and offline/export agreement are future release gates, not verified runtime behavior. Current v0.14.1 contains no chamber model or controls, and this planning change leaves the main-feature/WAV priorities intact.
+
+Plan authority: `BUILD_PLAN.md`, section 5 "Planned instrument acoustics — tiny chamber" and stage 8; `IMPLEMENTATION_STATUS.md`, "Next roadmap work".
+
 ## Delay feed and echo state
 
 <!-- features: pedals, comparison, storage -->

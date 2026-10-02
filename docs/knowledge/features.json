@@ -27,6 +27,13 @@
       ]
     },
     {
+      "id": "instrument-acoustics",
+      "parent": "sound",
+      "title": "Instrument acoustics (planned)",
+      "summary": "Deferred, not implemented: an Instrument-builder algorithmic tiny chamber representing instrument body acoustics, without impulse-response (IR) files. Proposed enable/reset, wet/dry, chamber size, decay and damping controls live in saved instrument settings and independent track/A/B copies. The planned chamber sits before track pedals while source inspectors retain raw Fourier authority. Audio-proof gates cover dry unity, bounded feedback, latency, continuous clock/phase, finite tails and Stop, legacy-off migration, copy isolation and offline/WAV agreement. Current main-feature and export priorities remain unchanged.",
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
+    },
+    {
       "id": "waveform",
       "parent": "sound",
       "title": "Waveform drawing and control points",

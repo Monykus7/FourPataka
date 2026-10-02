@@ -85,6 +85,8 @@ Stage 2's phrase comparison and linked source microscope behavior pass the autom
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
+Instrument-builder acoustics is now planned, not implemented: an optional algorithmic "tiny room" representing the instrument's chamber, without IR files. Proposed controls are enable/reset, wet/dry, chamber size, decay and damping/body tone. Settings will belong to instrument presets and independent track/A/B copies, with the chamber before track pedals. Section 5 of `BUILD_PLAN.md` defines future dry-identity, stable feedback, continuous comparison, finite tails/Stop, persistence and offline/export gates. This stage 8 follow-up does not advance current release gates or change v0.14.1 audio behavior.
+
 Stage 4/5 completion still needs the full pedal-aware command reference, deeper accessibility work, save recovery UX, and browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
 
 ### Interactive Fourier workspace (v0.4.0)
