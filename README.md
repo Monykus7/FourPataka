@@ -23,6 +23,8 @@ npm run preview        # Serve the production build
 
 Browser tests use a locally installed Google Chrome. Change `channel` in `playwright.config.ts` to `msedge` to run against installed Edge. Screenshots and failure traces are generated in `.test-results/` and are not committed.
 
+Browser test cleanup is confined to `.test-results/browser`; native profiles/traces use `.test-results/desktop`. Visual Studio is not required. Native checks launch Electron directly in the normal Windows process environment. If an agent's restricted process context fails Electron's install-folder sandbox ACL check, use the normal execution environment rather than repeating that crashing launch or opening a debugger; keep the application's renderer sandbox enabled.
+
 ## Windows application
 
 The portable build is `release/FourPataka-0.14.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
