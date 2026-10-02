@@ -156,6 +156,7 @@ app.whenReady().then(() => {
         submenu: [
           { label: 'Instrument', accelerator: 'CmdOrCtrl+1', click: () => action('instrument') },
           { label: 'Compose', accelerator: 'CmdOrCtrl+2', click: () => action('compose') },
+          { label: 'Pedalboard', accelerator: 'CmdOrCtrl+3', click: () => action('pedalboard') },
           {
             label: 'Command reference',
             accelerator: 'CmdOrCtrl+K',

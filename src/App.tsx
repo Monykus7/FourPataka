@@ -14,6 +14,7 @@ import {
   ArrowLeftRight,
   ArrowRight,
   BookOpen,
+  Cable,
   Check,
   ChevronDown,
   ChevronRight,
@@ -79,7 +80,7 @@ import { version } from '../package.json';
 import { applyTheme, resolveTheme, THEMES } from './core/themes';
 const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
 
-type View = 'instrument' | 'compose' | 'learn';
+type View = 'instrument' | 'pedalboard' | 'compose' | 'learn';
 function readPreferences() {
   try {
     const saved = JSON.parse(localStorage.getItem(PREFERENCES_KEY) ?? '{}');
@@ -236,6 +237,11 @@ export default function App() {
   const metrics = descriptors(sound, fundamental, sampleRate);
   const track = project.tracks.find((t) => t.key === selectedTrack) ?? project.tracks[0];
   const associated = project.tracks.filter((t) => t.presetId === preset.id);
+  const pedalPath =
+    pedalDestination.startsWith('track:') &&
+    !project.tracks.some((t) => t.key === pedalDestination.slice(6))
+      ? 'audition'
+      : pedalDestination;
 
   const change = useCallback((mutate: (p: Project) => Project, groupKey = '') => {
     const time = Date.now();
@@ -591,7 +597,13 @@ export default function App() {
     if (action === 'open') void openNativeProject();
     else if (action === 'save') void exportJson();
     else if (action === 'undo' || action === 'redo') travel(action);
-    else if (action === 'instrument' || action === 'compose' || action === 'learn') setView(action);
+    else if (
+      action === 'instrument' ||
+      action === 'pedalboard' ||
+      action === 'compose' ||
+      action === 'learn'
+    )
+      setView(action);
     else if (action === 'play') void playScore();
     else if (action === 'stop') stop();
     else if (action === 'commands') {
@@ -708,6 +720,11 @@ export default function App() {
                 icon: SlidersHorizontal,
               },
               {
+                id: 'pedalboard' as const,
+                name: 'Pedalboard',
+                icon: Cable,
+              },
+              {
                 id: 'compose' as const,
                 name: 'Compose',
                 icon: FileMusic,
@@ -805,14 +822,22 @@ export default function App() {
         <main className="main-content">
           <div className="page-heading">
             <h1>
-              {view === 'instrument' ? 'Instrument' : view === 'compose' ? 'Compose' : 'Learn'}
+              {view === 'instrument'
+                ? 'Instrument'
+                : view === 'pedalboard'
+                  ? 'Pedalboard'
+                  : view === 'compose'
+                    ? 'Compose'
+                    : 'Learn'}
             </h1>
             <span className="page-metadata">
               {view === 'instrument'
                 ? `${referenceNote} · ${fundamental.toFixed(2)} Hz${material.kind === 'phrase' ? ' · phrase reference' : ''} · ${sampleRate / 1000} kHz`
-                : view === 'compose'
-                  ? `${score.tracks.length} tracks · ${score.tempo} BPM · ${score.seconds.toFixed(2)} s`
-                  : 'Source model · Fourier coefficients'}
+                : view === 'pedalboard'
+                  ? `${pedalPath === 'audition' ? `Audition ${active}` : pedalPath === 'master' ? 'Master' : `Track ${pedalPath.slice(6)}`} · signal chain`
+                  : view === 'compose'
+                    ? `${score.tracks.length} tracks · ${score.tempo} BPM · ${score.seconds.toFixed(2)} s`
+                    : 'Source model · Fourier coefficients'}
             </span>
           </div>
 
@@ -1032,27 +1057,6 @@ export default function App() {
                 </div>
               </section>
 
-              <Pedalboard
-                processing={project.processing}
-                trackKeys={project.tracks.map((t) => t.key)}
-                active={active}
-                destination={pedalDestination}
-                onDestination={setPedalDestination}
-                onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
-                pending={engine.current.processingPending(project.processing, active)}
-                onReplay={() => void audition()}
-              />
-              <ProcessedGraphs
-                analyser={engine.current.outputAnalyser(pedalDestination)}
-                sampleRate={sampleRate}
-                label={
-                  pedalDestination === 'audition'
-                    ? `audition ${active}, before mix gain`
-                    : pedalDestination === 'master'
-                      ? 'master, before mix gain'
-                      : `${pedalDestination}, before track level`
-                }
-              />
               <ComparisonPanel
                 material={material}
                 score={score}
@@ -1293,6 +1297,32 @@ export default function App() {
             </>
           )}
 
+          {view === 'pedalboard' && (
+            <>
+              <Pedalboard
+                processing={project.processing}
+                trackKeys={project.tracks.map((t) => t.key)}
+                active={active}
+                destination={pedalPath}
+                onDestination={setPedalDestination}
+                onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
+                pending={engine.current.processingPending(project.processing, active)}
+                onReplay={() => void audition()}
+              />
+              <ProcessedGraphs
+                analyser={engine.current.outputAnalyser(pedalPath)}
+                sampleRate={sampleRate}
+                label={
+                  pedalPath === 'audition'
+                    ? `audition ${active}, before mix gain`
+                    : pedalPath === 'master'
+                      ? 'master, before mix gain'
+                      : `${pedalPath}, before track level`
+                }
+              />
+            </>
+          )}
+
           {view === 'compose' && (
             <>
               <div className="compose-layout">
@@ -1451,7 +1481,7 @@ export default function App() {
                       }
                       onEdit={() => {
                         setPedalDestination('master');
-                        setView('instrument');
+                        setView('pedalboard');
                       }}
                     />
                     {project.tracks.map((t) => {
@@ -1525,7 +1555,7 @@ export default function App() {
                             }
                             onEdit={() => {
                               setPedalDestination(`track:${t.key}`);
-                              setView('instrument');
+                              setView('pedalboard');
                             }}
                           />
                           {t.appliedVersion < library.version && (
