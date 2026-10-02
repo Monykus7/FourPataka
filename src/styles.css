@@ -2345,3 +2345,21 @@ dd {
     transition: none !important;
   }
 }
+
+.timeline-ruler {
+  position: relative;
+  display: block;
+  height: 26px;
+  padding: 0;
+  min-width: 240px;
+  overflow: hidden;
+}
+.timeline-ruler > span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+.beat-line.bar-line {
+  border-left-color: var(--secondary);
+  opacity: 0.5;
+}

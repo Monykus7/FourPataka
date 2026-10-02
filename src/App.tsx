@@ -1,3 +1,4 @@
+import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
 import {
   lazy,
@@ -1413,63 +1414,14 @@ export default function App() {
                   )}
                 </section>
                 <div className="composition-right">
-                  <section className="panel timeline-panel">
-                    <div className="panel-header">
-                      <div>
-                        <h2>Timeline</h2>
-                      </div>
-                      <span className="tag">4/4</span>
-                    </div>
-                    <div className="timeline">
-                      <div className="timeline-ruler">
-                        {Array.from({ length: Math.ceil(timelineScore.beats / 4) + 1 }, (_, i) => (
-                          <span key={i}>BAR {i + 1}</span>
-                        ))}
-                      </div>
-                      {timelineScore.tracks.map((t) => (
-                        <div className="timeline-track" key={t.key}>
-                          <div className="timeline-track-name">
-                            {t.key}
-                            <span>{t.instrumentKey}</span>
-                          </div>
-                          <div className="timeline-lane">
-                            {Array.from({ length: Math.ceil(timelineScore.beats) }, (_, i) => (
-                              <span
-                                className="beat-line"
-                                key={i}
-                                style={{ left: `${(i / Math.max(timelineScore.beats, 4)) * 100}%` }}
-                              />
-                            ))}
-                            {t.events.map((e) => (
-                              <button
-                                key={e.id}
-                                aria-label={`${e.track} ${e.notes.join(' ') || 'rest'}, beat ${e.beat + 1}`}
-                                className={`timeline-event ${e.notes.length ? '' : 'rest-event'} ${activeEvents.some((a) => a.id === e.id) ? 'playing' : ''} ${selectedEvent?.id === e.id ? 'selected' : ''}`}
-                                style={{
-                                  left: `${(e.beat / Math.max(timelineScore.beats, 4)) * 100}%`,
-                                  width: `calc(${(e.duration / Math.max(timelineScore.beats, 4)) * 100}% - 3px)`,
-                                }}
-                                onClick={() => setSelectedEvent(e)}
-                              >
-                                {e.notes.join(' · ') || 'rest'}
-                              </button>
-                            ))}
-                            {playback === 'score' && (
-                              <span
-                                className="playhead"
-                                style={{
-                                  left: `${Math.min(100, (beat / Math.max(timelineScore.beats, 4)) * 100)}%`,
-                                }}
-                              />
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <p className="footnote">
-                      Tracks start together. Select an event to inspect its pitch and timing.
-                    </p>
-                  </section>
+                  <Timeline
+                    score={timelineScore}
+                    beat={beat}
+                    playing={playback === 'score'}
+                    activeEvents={activeEvents}
+                    selectedEvent={selectedEvent}
+                    onSelect={setSelectedEvent}
+                  />
                   <section className="panel track-instances">
                     <div className="section-title">
                       <h3>Independent track sounds</h3>
