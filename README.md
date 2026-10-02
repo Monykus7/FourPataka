@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.13.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.14.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -78,8 +78,9 @@ Library changes do not overwrite track instances. The editor works on the select
 ```text
 tempo 120
 time 4/4
+master through cleanGlue
 
-track melody using brightReed {
+track melody using brightReed through warmDrive {
   C5 quarter
   chord:(Bb D F)5 8th
   rest 8th
@@ -96,9 +97,13 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 `time <numerator>/<denominator>` sets one meter for the whole project: 1–32 beats per bar, with a beat unit of 1, 2, 4, 8, or 16. Omitted meter defaults to 4/4 for existing projects. Common choices include 3/4, 5/4, 6/8, 7/8 and 12/8. Tempo always counts quarter notes; 6/8 has six eighth-note beats per bar (three quarter notes). Changing meter changes guides and bar/beat positions without changing note durations. Partial final bars and notes crossing bar lines are valid. The timeline and transport retain the running tempo and meter until Stop/replay when score text is edited. Long timelines thin their grid labels to keep rendering bounded.
 
+`through <pedalKey>` copies a saved pedal chain to a track; `master through <pedalKey>` copies one to the full mix. Built-in keys are `clean`, `cleanGlue` and `warmDrive`. Compose selectors, Track Maker and command cards update these assignments in the source; autocomplete offers your saved keys after `through`. New chain presets expose a unique score key separately from their display name. Unknown keys and duplicate master directives block playback with diagnostics.
+
+Changing an assignment loads a fresh independent copy. Later score edits and library saving retain its local knobs, bypass, placement and cables. Removing a previously assigned directive clears that chain. Older projects without directives keep their manually configured boards. Pedalboard application synchronizes assignments when the destination's preset changes and preserves the exact applied copy. JSON carries those edited copies; score text alone carries their template assignments. Running playback keeps its current routing and clock until replay.
+
 ## Current boundary
 
-The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work is score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, live processed views and score chain assignments. Stage 3's automated functional behavior is covered; broader composition/polish and real-device gates remain. WAV export and the full measurement panel follow later. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 

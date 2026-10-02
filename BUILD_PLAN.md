@@ -98,6 +98,8 @@ Internal stable IDs support storage and application. The parser resolves score k
 
 When score text creates a new track or changes its `using`/`through` assignment, copy the referenced preset into that destination. Re-parsing an unchanged assignment must preserve its independent settings. Removed tracks release their runtime nodes; retain their editable settings in undo history.
 
+Implemented in v0.14.0: stable pedal keys, track `through`, one global `master through`, narrow source edits from Compose/Track Maker/reference cards, and pedal-key completion. Changed assignments deep-copy the template; unchanged assignments preserve local knobs, bypass and board wiring. Removing a previously applied directive clears that chain, while old scores without directives retain manual boards. Schema-v1 legacy keys migrate deterministically. Pedalboard application synchronizes changed preset associations into source without discarding the exact applied sandbox copy. Invalid source preserves settings and blocks Play. Typed edits remain pending until replay with clock continuity.
+
 ### Local save and import
 
 Introduce autosave with the first usable project model. Use a small versioned local store and debounce frequent slider/editor changes. Musical edits and text edits must survive refresh.
@@ -228,7 +230,7 @@ A header must identify the editing destination: library preset, a particular tra
 
 EQ v0.11.0 uses low/mid/high gains of −12…+12 dB, an adjustable 150…4000 Hz mid center, fixed 200 Hz low/4000 Hz high shelves, and mid Q = 1. It starts flat, offers output/mix and a one-step flat reset, and uses the existing independent chains and live-audition/frozen-score policy. EQ is released before implementing delay, as requested on 2026-10-02.
 
-Delay v0.13.0 implements time 20–2000 ms, feedback 0–95%, output −24…+12 dB and linear mix. Defaults are 300 ms / 30% feedback / 0 dB / 35% mix. Independent buffers retain echoes under pedal/whole-chain feed bypass, measured tail indicators bridge gaps, and Stop clears all state. A separate first-echo path and compensated feedback loop preserve cadence in Chromium at 44.1/48 kHz. Echo time contributes zero scheduling latency; a finite -60 dB tail estimate extends playback beyond the last release and refreshes for live audition edits. Score parameters remain frozen. Tempo sync and chain score directives remain future work.
+Delay v0.13.0 implements time 20–2000 ms, feedback 0–95%, output −24…+12 dB and linear mix. Defaults are 300 ms / 30% feedback / 0 dB / 35% mix. Independent buffers retain echoes under pedal/whole-chain feed bypass, measured tail indicators bridge gaps, and Stop clears all state. A separate first-echo path and compensated feedback loop preserve cadence in Chromium at 44.1/48 kHz. Echo time contributes zero scheduling latency; a finite -60 dB tail estimate extends playback beyond the last release and refreshes for live audition edits. Score parameters remain frozen. Chain score directives arrive in v0.14.0; tempo sync remains future work.
 
 Use numeric entry and keyboard adjustment alongside knobs. Clamp parameter ranges consistently in UI, import validation, and audio factories. An unchanged/identity effect at any mix setting should not introduce an unexplained gain boost.
 
@@ -500,6 +502,8 @@ Gate: editing B leaves A unchanged; A/B switches preserve the phrase position an
 Add compressor/overdrive first, then EQ/delay, ordered preset chains, independent track/master instances, Apply/Apply to all, bypass, and source/output taps.
 
 Gate: changing one track's chain leaves another independent instance unchanged; Apply to all updates only associated instances; compressor parallel paths are aligned; delay bypass preserves old echoes while adding none; Stop clears every tail.
+
+Automated functional coverage includes these behaviors and score chain directives as of v0.14.0. Physical listening and real mobile/browser verification remain open; this does not close the later release-polish gates.
 
 ### Stage 4 — composition studio
 

@@ -10,7 +10,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.13.0 adds delay to compact physical grid boards, equipment-menu placement, exact-value inspection and real serial patch routing. Compressor, overdrive, three-band EQ and delay are implemented. Delay bypass preserves stored echoes; Stop clears buffers. Chain score directives, WAV export and chord-symbol macros remain planned.
+Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned.
 
 ### Sound and Fourier interaction
 
@@ -45,7 +45,7 @@ Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L22), [AuditionBranch](
 
 #### Pedalboard and processing
 
-Compressor, overdrive, three-band EQ and delay have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Delay time is 20–2000 ms with feedback capped at 95%, output trim and linear mix. Pedal/whole-chain bypass closes the delay feed, retains old echoes and restores dry unity. Measured tail indicators bridge echo gaps; finite decay budgets extend cleanup, while Stop disposes buffers. Delay adds no track compensation latency. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Score through/master directives remain unimplemented.
+Compressor, overdrive, three-band EQ and delay have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Delay time is 20–2000 ms with feedback capped at 95%, output trim and linear mix. Pedal/whole-chain bypass closes the delay feed, retains old echoes and restores dry unity. Measured tail indicators bridge echo gaps; finite decay budgets extend cleanup, while Stop disposes buffers. Delay adds no track compensation latency. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Stable library score keys support through/master assignments. Assignment changes load independent copies; unchanged source and library saving preserve local settings. Pedalboard application synchronizes the score while retaining the exact sandbox copy.
 
 - Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/core/board.ts](../../src/core/board.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/PedalBoardSurface.tsx](../../src/components/PedalBoardSurface.tsx), [src/components/PedalControls.tsx](../../src/components/PedalControls.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [tests/unit/board.test.ts](../../tests/unit/board.test.ts), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
@@ -65,10 +65,11 @@ Key definitions: [ScoreEditor](../../src/App.tsx#L92), [View](../../src/App.tsx#
 
 #### Score parsing and editor
 
-Source offsets map diagnostics, explicit notes/chords/rests and track assignments back to text. Shared command metadata supplies reference cards. Autocomplete is optional. Chord-symbol macros with hover/focus expansion remain later work; unsupported pedal directives diagnose rather than being ignored.
+Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Shared command metadata supplies ten reference cards and source-aware insertion. Contextual pedal-key autocomplete is optional. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work.
 
 - Score parsing and editor / dependency group 1: [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/core/parser.ts](../../src/core/parser.ts), [tests/unit/parser.test.ts](../../tests/unit/parser.test.ts)
 - Score parsing and editor / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
+- Score parsing and editor / dependency group 3: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
 Key definitions: [activeLines](../../src/components/ScoreEditor.tsx#L12), [playbackField](../../src/components/ScoreEditor.tsx#L13), [scoreLanguage](../../src/components/ScoreEditor.tsx#L33), [token](../../src/components/ScoreEditor.tsx#L34), [theme](../../src/components/ScoreEditor.tsx#L49), [colors](../../src/components/ScoreEditor.tsx#L83), [Props](../../src/components/ScoreEditor.tsx#L91), [ScoreEditor](../../src/components/ScoreEditor.tsx#L102).
 
@@ -84,12 +85,14 @@ Key definitions: [CompositionSettings](../../src/components/CompositionSettings.
 
 #### Track creation and assignment
 
-Track maker validates note/chord/rest rows, reorders with buttons and previews length in project meter. Source-aware instrument assignment loads an independent preset copy while preserving track level and pedals.
+Track Maker validates note/chord/rest rows, reorders with buttons, previews project-meter length and optionally assigns a saved pedal key. Compose instrument/pedal selectors edit source spans in one undo operation. Changed chain assignments copy templates; unchanged reparsing and library saving preserve independently edited knobs, bypass and cables. Removing a previously applied source directive clears its chain; legacy unassigned boards survive.
 
-- Track creation and assignment / dependency group 1: [src/components/TrackMaker.tsx](../../src/components/TrackMaker.tsx)
-- Track creation and assignment / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
+- Track creation and assignment / dependency group 1: [src/components/ChainAssignment.tsx](../../src/components/ChainAssignment.tsx)
+- Track creation and assignment / dependency group 2: [src/components/TrackMaker.tsx](../../src/components/TrackMaker.tsx)
+- Track creation and assignment / dependency group 3: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
+- Track creation and assignment / dependency group 4: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
-Key definitions: [Row](../../src/components/TrackMaker.tsx#L9), [expression](../../src/components/TrackMaker.tsx#L10), [TrackMaker](../../src/components/TrackMaker.tsx#L12), [update](../../src/components/TrackMaker.tsx#L46), [move](../../src/components/TrackMaker.tsx#L48), [add](../../src/components/TrackMaker.tsx#L57).
+Key definitions: [ChainAssignment](../../src/components/ChainAssignment.tsx#L3), [Row](../../src/components/TrackMaker.tsx#L9), [expression](../../src/components/TrackMaker.tsx#L10), [TrackMaker](../../src/components/TrackMaker.tsx#L12), [update](../../src/components/TrackMaker.tsx#L46), [move](../../src/components/TrackMaker.tsx#L48), [add](../../src/components/TrackMaker.tsx#L57), [source](../../tests/browser/score-chains.spec.ts#L3).
 
 ### Project state and desktop studio
 

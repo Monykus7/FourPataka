@@ -174,10 +174,12 @@ test('EQ presets retain independent A/B, track and master copies through saving 
         () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing,
       );
       return [
-        processing.audition.A.pedals[0].params.low,
-        processing.audition.B.pedals[0].params.low,
-        processing.tracks.melody.pedals[0].params.low,
-        processing.master.pedals[0].params.low,
+        // Debounced storage can still contain the previous empty board. Poll
+        // for the whole saved snapshot instead of throwing before it arrives.
+        processing.audition.A.pedals[0]?.params.low,
+        processing.audition.B.pedals[0]?.params.low,
+        processing.tracks.melody.pedals[0]?.params.low,
+        processing.master.pedals[0]?.params.low,
         processing.tracks.bass.pedals.length,
       ];
     })
