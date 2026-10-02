@@ -124,7 +124,7 @@ test('packaged delay drags, dials, native saving and tail-aware bypass work toge
 });
 
 test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
-  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.14.0');
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.14.1');
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await placePedal(page, 'eq');
