@@ -1,9 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { appendTrack, insertCommand, nextTrackKey } from '../../src/core/scoreTools';
+import {
+  appendTrack,
+  insertCommand,
+  nextTrackKey,
+  setScoreDirective,
+} from '../../src/core/scoreTools';
 import { parseScore } from '../../src/core/parser';
 const keys = ['sine', 'brightReed'];
 const original = '// keep me\ntempo 80 // slow\ntrack lead using sine {\n  C4 quarter\n}\n';
 describe('source-authoritative composition tools', () => {
+  it('edits exact global value spans while preserving comments, CRLF and whitespace', () => {
+    const text = '// time 4/4\r\n\t time  3/4 // waltz\r\n' + original;
+    const result = setScoreDirective(text, keys, 'time', '6/8');
+    expect(result).toBe(text.replace('time  3/4', 'time  6/8'));
+    expect(parseScore(result, keys).meter).toEqual({ numerator: 6, denominator: 8 });
+    expect(setScoreDirective(original, keys, 'tempo', '95.5')).toBe(
+      original.replace('tempo 80', 'tempo 95.5'),
+    );
+  });
+  it('adds missing directives, supports empty projects and refuses invalid edits', () => {
+    expect(setScoreDirective('', keys, 'time', '7/8')).toBe('time 7/8\n');
+    expect(() => setScoreDirective(original, keys, 'time', '3/3')).toThrow('Time signature');
+    expect(() => setScoreDirective(original, keys, 'tempo', '301')).toThrow('Tempo');
+    expect(() => setScoreDirective(original, keys, 'time', '3/4\nrest quarter')).toThrow();
+    expect(() => setScoreDirective('time 4/4\ntime 3/4', keys, 'time', '6/8')).toThrow('Fix');
+  });
   it('adds a valid independent track without changing existing text', () => {
     const result = appendTrack(original, keys, 'bass', 'brightReed', ['Bb2 half', 'F2 half']);
     expect(result.startsWith(original)).toBe(true);

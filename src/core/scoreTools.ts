@@ -11,9 +11,27 @@ export function nextTrackKey(text: string, instrumentKeys: string[], prefix = 'l
 function assertEditable(text: string, keys: string[]) {
   const parsed = parseScore(text, keys);
   if (parsed.diagnostics.some((d) => d.message !== 'Add a track to start composing.')) {
-    throw new Error('Fix the score diagnostics before using the track maker or command cards.');
+    throw new Error('Fix the score diagnostics before using composition controls.');
   }
   return parsed;
+}
+export function setScoreDirective(
+  text: string,
+  instrumentKeys: string[],
+  name: 'tempo' | 'time',
+  value: string,
+) {
+  const parsed = assertEditable(text, instrumentKeys);
+  if (!value || /\s/.test(value)) throw new Error('Use one directive value without whitespace.');
+  const check = parseScore(
+    `${name} ${value}\ntrack check using ${instrumentKeys[0]} {\nC4 quarter\n}`,
+    instrumentKeys,
+  );
+  if (check.diagnostics.length) throw new Error(check.diagnostics[0].message);
+  const span = parsed.directives[name];
+  return span
+    ? text.slice(0, span.from) + value + text.slice(span.to)
+    : `${name} ${value}\n` + text;
 }
 export function appendTrack(
   text: string,
@@ -52,14 +70,7 @@ export function insertCommand(
       'C5 quarter',
     ]);
   if (name === 'tempo' || name === 'time') {
-    const existing = new RegExp(`^([\\t ]*${name}\\s+)(\\S+)`, 'm').exec(text);
-    if (!existing) return command.snippet + '\n' + text;
-    const valueFrom = existing.index + existing[1].length;
-    return (
-      text.slice(0, valueFrom) +
-      command.snippet.split(' ')[1] +
-      text.slice(valueFrom + existing[2].length)
-    );
+    return setScoreDirective(text, instrumentKeys, name, command.snippet.split(' ')[1]);
   }
   const target = parsed.tracks.find((t) => t.key === targetKey);
   if (!target) throw new Error('Make a track or choose an insertion destination first.');
