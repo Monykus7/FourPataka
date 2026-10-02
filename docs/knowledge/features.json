@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.12.0 adds compact physical grid boards, equipment-menu placement, an exact-value inspector and real serial patch routing. Compressor, overdrive and three-band EQ are implemented. Delay, chain score directives, WAV export and chord-symbol macros remain planned.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.12.1 provides compact physical grid boards, equipment-menu placement, an exact-value inspector and real serial patch routing. Compressor, overdrive and three-band EQ are implemented. Delay, chain score directives, WAV export and chord-symbol macros remain planned.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
