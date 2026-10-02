@@ -6,3 +6,4 @@ dist/
 .npm-cache/
 .electron-cache/
 release/
+.knowledge-cache/

@@ -1,6 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { extractCode, extractDocument } from '../../scripts/knowledge/extract.mjs';
+import { connectCode, validateFeatures } from '../../scripts/knowledge/graph.mjs';
 describe('project knowledge extraction', () => {
+  it('resolves aliased imports narrowly instead of guessing same-name symbols in unrelated files', async () => {
+    const provider = await extractCode(
+      'src/parser.ts',
+      'export function parseScore() { return 1; }',
+    );
+    const other = await extractCode('src/other.ts', 'export function parseScore() { return 2; }');
+    const consumer = await extractCode(
+      'src/main.ts',
+      "import { parseScore as compile } from './parser';\nexport function run() { return compile(); }",
+    );
+    const edges = connectCode(
+      [...provider.definitions, ...other.definitions, ...consumer.definitions],
+      { 'src/parser.ts': provider, 'src/other.ts': other, 'src/main.ts': consumer },
+    );
+    expect(
+      edges.some(
+        (e) => e.from === consumer.definitions[0].id && e.to === provider.definitions[0].id,
+      ),
+    ).toBe(true);
+    expect(edges.some((e) => e.to === other.definitions[0].id)).toBe(false);
+    expect(() =>
+      validateFeatures([
+        { id: 'a', parent: 'b' },
+        { id: 'b', parent: 'a' },
+      ]),
+    ).toThrow('cyclic');
+  });
   it('uses syntax definitions and import aliases, with class methods and exact source lines', async () => {
     const source = `import { parseScore as compile } from './parser';\n// Keep the playing revision.\nexport class Player {\n  play(text: string) { return compile(text); }\n}\nexport const jump = (value: number) => value + 1;`;
     const parsed = await extractCode('src/player.ts', source);
