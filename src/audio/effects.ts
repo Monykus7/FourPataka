@@ -4,6 +4,7 @@ import {
   chainMusicalSettings,
   clampPedal,
   EQ_SHAPE,
+  delayTail,
   type Chain,
   type Pedal,
 } from '../core/pedals';
@@ -13,6 +14,7 @@ export interface EffectGraph {
   output: GainNode;
   latency: number;
   tail: number;
+  readonly tailActive: boolean;
   update: (pedal: Pedal, chainBypass?: boolean) => void;
   dispose: () => void;
 }
@@ -54,6 +56,13 @@ export function createEffect(
     tone: BiquadFilterNode | null = null;
   let equalizer: { low: BiquadFilterNode; mid: BiquadFilterNode; high: BiquadFilterNode } | null =
     null;
+  let echo: {
+    delay: DelayNode;
+    loop: DelayNode;
+    feed: GainNode;
+    feedback: GainNode;
+    meter: AnalyserNode;
+  } | null = null;
   if (original.kind === 'compressor') {
     compressor = context.createDynamicsCompressor();
     compressor.knee.value = 30;
@@ -79,6 +88,24 @@ export function createEffect(
     input.connect(low).connect(mid).connect(high).connect(makeup).connect(wet);
     equalizer = { low, mid, high };
     nodes.push(low, mid, high);
+  } else if (original.kind === 'delay') {
+    const delay = context.createDelay(2),
+      loop = context.createDelay(2),
+      sum = context.createGain(),
+      feed = context.createGain(),
+      feedback = context.createGain(),
+      meter = context.createAnalyser();
+    meter.fftSize = 2048;
+    // Gate only new input. Bypass leaves the delay/feedback loop and its wet
+    // output alive, so stored echoes decay while new notes pass at dry unity.
+    input.connect(dry);
+    input.connect(feed).connect(delay).connect(sum);
+    sum.connect(feedback).connect(loop).connect(sum);
+    sum.connect(makeup).connect(wet);
+    feed.connect(meter);
+    feedback.connect(meter);
+    echo = { delay, loop, feed, feedback, meter };
+    nodes.push(delay, loop, sum, feed, feedback, meter);
   } else {
     // Both dry and wet use the same 4x resampling filters, including bypass.
     // Scale the identity branch so source peaks above 1 are not hard-clipped.
@@ -103,6 +130,10 @@ export function createEffect(
     nodes.push(normalize, restore, identity, drive, tone, shaper);
   }
   let initialized = false;
+  let settings = clampPedal(original),
+    bypassed = original.bypassed,
+    tailUntil = 0;
+  const tailSamples = new Float32Array(2048);
   const set = (param: AudioParam, value: number) => {
     if (!initialized) param.value = value;
     else param.setTargetAtTime(value, context.currentTime, 0.015);
@@ -110,6 +141,8 @@ export function createEffect(
   const update = (source: Pedal, chainBypass = false) => {
     const pedal = clampPedal(source),
       p = pedal.params;
+    settings = pedal;
+    bypassed = chainBypass || pedal.bypassed;
     if (compressor) {
       // Native compressor recovery state can attenuate a newly created unity
       // ratio graph. Use the aligned identity path at 1:1 for exact unity.
@@ -130,9 +163,18 @@ export function createEffect(
       set(equalizer.high.gain, p.high);
       set(equalizer.mid.frequency, Math.min(p.frequency, context.sampleRate * 0.49));
     }
+    if (echo) {
+      set(echo.delay.delayTime, p.time / 1000);
+      // Chromium's cycle breaker adds one 128-frame render quantum per loop
+      // (verified with impulses at 44.1/48 kHz). Keep the first echo outside the
+      // cycle and subtract that quantum only from repeats to maintain cadence.
+      set(echo.loop.delayTime, Math.max(0, p.time / 1000 - 128 / context.sampleRate));
+      set(echo.feedback.gain, p.feedback / 100);
+      set(echo.feed.gain, bypassed ? 0 : 1);
+    }
     set(makeup.gain, dbToGain(p.output));
-    const mix = chainBypass || pedal.bypassed ? 0 : p.mix / 100;
-    set(dry.gain, 1 - mix);
+    const mix = echo ? p.mix / 100 : bypassed ? 0 : p.mix / 100;
+    set(dry.gain, echo && bypassed ? 1 : 1 - mix);
     set(wet.gain, mix);
     initialized = true;
   };
@@ -142,8 +184,25 @@ export function createEffect(
     output,
     // EQ changes frequency-dependent phase, but adds no scheduling/look-ahead
     // delay. Padding it like an oversampled shaper would misalign track starts.
-    latency: compressor ? compressorLatency : equalizer ? 0 : oversamplingLatency,
-    tail: compressor ? compressorLatency : equalizer ? 0.1 : oversamplingLatency + 0.1,
+    latency: compressor ? compressorLatency : equalizer || echo ? 0 : oversamplingLatency,
+    get tail() {
+      return echo
+        ? delayTail(settings.params.time, settings.params.feedback)
+        : compressor
+          ? compressorLatency
+          : equalizer
+            ? 0.1
+            : oversamplingLatency + 0.1;
+    },
+    get tailActive() {
+      if (!echo) return false;
+      // Watch the loop input, including feedback, to bridge silent gaps between
+      // echoes. This is measured activity, not merely the saved bypass setting.
+      echo.meter.getFloatTimeDomainData(tailSamples);
+      if (tailSamples.some((sample) => Math.abs(sample) > 0.001))
+        tailUntil = context.currentTime + settings.params.time / 1000 + 0.05;
+      return bypassed && settings.params.mix > 0 && context.currentTime < tailUntil;
+    },
     update,
     dispose: () => nodes.forEach((n) => n.disconnect()),
   };
@@ -154,6 +213,7 @@ export interface ChainGraph {
   analyser: AnalyserNode;
   latency: number;
   tail: number;
+  readonly activeTails: string[];
   topology: string;
   readonly musicalSettings: string;
   update: (chain: Chain, bypassOnly?: boolean) => boolean;
@@ -163,7 +223,11 @@ export function chainLatency(chain: Chain, oversamplingLatency: number, compress
   return boardRoute(chain).pedals.reduce(
     (sum, p) =>
       sum +
-      (p.kind === 'compressor' ? compressorLatency : p.kind === 'eq' ? 0 : oversamplingLatency),
+      (p.kind === 'compressor'
+        ? compressorLatency
+        : p.kind === 'overdrive'
+          ? oversamplingLatency
+          : 0),
     0,
   );
 }
@@ -206,7 +270,12 @@ export function createChain(
     output,
     analyser,
     latency: chainLatency(chain, oversamplingLatency, compressorLatency),
-    tail: effects.reduce((sum, effect) => sum + effect.tail, 0),
+    get tail() {
+      return effects.reduce((sum, effect) => sum + effect.tail, 0);
+    },
+    get activeTails() {
+      return effects.flatMap((effect, i) => (effect.tailActive ? [route.pedals[i].id] : []));
+    },
     topology,
     get musicalSettings() {
       return chainMusicalSettings(frozen);

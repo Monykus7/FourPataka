@@ -2,6 +2,10 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Delay feed and echo state
+
+Delay uses a separate feed gain into a DelayNode/feedback loop. Pedal or whole-chain bypass closes that feed and restores dry unity, retaining the configured wet gain and stored echoes. Feedback is validated at 0–95%; it cannot sustain itself indefinitely. Each independent chain owns its own buffer. Echo time is intentional musical timing, so its graph latency is zero for track compensation. Tail metadata counts the first echo and feedback repeats until -60 dB; live delay edits refresh that estimate. The bypass indicator measures loop activity and bridges one delay interval of silence between echoes. Stop fades the session output before disposing all feedback nodes. Tempo sync remains later work.
+
 ## Phase and musical clock
 
 <!-- features: synthesis, comparison -->
