@@ -4,11 +4,6 @@ Updated: 2026-10-02. Latest release: v0.12.1. Earlier milestone entries retain t
 
 ## Milestone checkpoints
 
-Delay v0.13.0 is in progress. The settings model now validates time 20–2000 ms,
-feedback 0–95%, output −24…+12 dB and mix 0–100%. Defaults are 300 ms / 30%
-feedback / 35% mix / unity output. Audio, tail-aware bypass and release verification
-remain pending until the milestone entry below is completed.
-
 New implementation milestones aim for eight focused version-control commits, per the latest request. Earlier milestones used a minimum of four. Commits use the configured Monykus7 identity and are pushed to `https://github.com/Monykus7/FourPataka.git` as checkpoints are completed.
 
 ### Audio foundation (roadmap stage 0)
@@ -82,9 +77,9 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-The physical pedalboard now implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. The v0.12.0 package and automated release checks are verified. Delay follows this board update; the surrounding frontend overhaul remains separate work.
+The physical pedalboard implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Delay is implemented in the v0.13.0 work below; the surrounding frontend overhaul remains separate work.
 
-Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive/EQ, independent track/master routing and pedal-aware A/B snapshots. Delay is next, followed by chain-aware score directives before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
+Stage 2's phrase comparison and linked source microscope behavior pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive/EQ/delay, independent track/master routing and pedal-aware A/B snapshots. Chain-aware score directives are next before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation.
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
@@ -247,3 +242,11 @@ Validation for v0.12.0: all 119 unit checks and all 56 browser checks pass. All 
 The user reported equipment dragging failing. The open menu covered the first slot and intercepted its drop. The earlier native proof targeted the second slot and missed this overlap. The menu now stops painting and hit testing after the next animation frame, retaining the native drag source until completion. Delaying the hide allows Chromium to capture a valid drag image. Drop, cancellation, Escape and unmount clear any pending frame and temporary tool state. Real mouse gestures cover each pedal kind in the first slot, canceled drags and occupied-slot rejection followed by a valid drag.
 
 Validation: all 119 unit checks, 21 focused browser checks (board, EQ and pedalboard), and all six packaged desktop checks pass. The native equipment gesture targets the first slot and patches its audio path with the mouse. TypeScript/production build, formatting, portable packaging and knowledge-map freshness pass. The full browser suite was verified for v0.12.0; this patch reran the affected workflows. Output: `release/FourPataka-0.12.1-win-x64.exe`. The separate local Earth palette edit remains outside the patch commits.
+
+### Delay and echo-tail lifecycle (v0.13.0, release verification in progress)
+
+Delay joins Equipment placement, compact rotary dials, exact/sliders inspection, patch cables, preset saving and independent A/B/track/master copies. Controls: time 20–2000 ms, feedback 0–95%, output −24…+12 dB, mix 0–100%. Defaults: 300 ms / 30% / 0 dB / 35%. Echo time adds no track compensation latency. Separate first-echo and compensated feedback paths maintain repeated timing in Chromium at 44.1/48 kHz, including the shortest time and highest feedback.
+
+Pedal and whole-chain bypass close only the new delay feed, pass new notes dry and retain stored echoes. Loop activity and a one-interval hold drive Tail active indicators on the board, pedal and inspector. Playback includes the finite -60 dB echo allowance after release; live audition edits extend that allowance without truncating older echoes. Score parameters/topology remain frozen until replay; bypass stays live. Stop fades output in 20 ms and disposes all feedback buffers after the fade. Replaying begins fresh. Tempo sync remains planned.
+
+Validation so far: all 120 unit checks and all 70 browser checks pass, including eight delay proofs for echo cadence, feedback/mix, isolated buffers, both bypass modes, frozen score settings, live cleanup budgets, Stop/replay, independent saved copies, first-slot dragging, mobile controls and undo. The new native delay workflow passes against the production build, including drag placement, patching, dials, native file save/reload and whole-chain tail status. Desktop and 390 px screenshots were reviewed. The v0.13.0 portable build and complete packaged desktop suite are the remaining release checks. Chain score directives follow this release; chord macros, WAV export and the wider frontend overhaul remain planned.

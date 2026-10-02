@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.12.1-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.13.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -98,7 +98,7 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 ## Current boundary
 
-The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work includes delay and its echo-tail policy, and score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work is score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 
@@ -123,6 +123,8 @@ The dedicated **Pedalboard** tab has an explicit **Editing destination**: Auditi
 Choose **Patch cable**, then drag an output jack to an input jack, or click the two jacks in sequence. Keyboard Enter/Space also works. Occupied jacks are repatched, and loops are rejected. Select a visible cable and choose **Disconnect cable** to remove it. **Escape** cancels placement, movement or an unfinished cable. Audio follows the complete input-to-output cable path; loose pedals remain unprocessed, and an unplugged output is silent unless the entire board is bypassed. Existing chains load prewired in their original order.
 
 Small rotary dials and bypass switches stay on each pedal. Select a pedal to use exact values and sliders in its inspector. Moving pedals changes their placement; repatching changes their processing order. Positions and cables travel with presets, independent A/B/track/master copies, project save/load and undo.
+
+**Delay** offers time (20–2000 ms), feedback (0–95%), output trim and mix. It starts at 300 ms, 30% feedback and 35% mix. Pedal or whole-chain bypass stops feeding new echoes, passes new notes dry and lets stored echoes finish. The board and pedal show **Tail active** while measured echoes remain. **Stop** fades and clears all buffers; replay starts fresh. Audition edits are live; score settings wait for replay. Echo time remains deliberate musical timing and never pads other tracks. Long times and high feedback can keep playback active after the last note while echoes decay. Tempo sync remains planned.
 
 **Equipment → Three-band EQ** selects a flat three-band equalizer: low/mid/high gains −12…+12 dB, adjustable mid frequency 150…4000 Hz, output trim and mix. **Reset to flat** restores all EQ defaults in one undo step while retaining its identity, position and bypass state. Low/high shelves are fixed at 200 Hz / 4 kHz and mid Q is 1. Frequencies are clamped below Nyquist at the current sample rate. EQ adds no scheduling latency; its filter phase is part of the tone change. Start with modest boosts and use output trim to leave headroom.
 
