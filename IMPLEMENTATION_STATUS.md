@@ -4,6 +4,11 @@ Updated: 2026-10-02. Latest release: v0.12.1. Earlier milestone entries retain t
 
 ## Milestone checkpoints
 
+Delay v0.13.0 is in progress. The settings model now validates time 20–2000 ms,
+feedback 0–95%, output −24…+12 dB and mix 0–100%. Defaults are 300 ms / 30%
+feedback / 35% mix / unity output. Audio, tail-aware bypass and release verification
+remain pending until the milestone entry below is completed.
+
 New implementation milestones aim for eight focused version-control commits, per the latest request. Earlier milestones used a minimum of four. Commits use the configured Monykus7 identity and are pushed to `https://github.com/Monykus7/FourPataka.git` as checkpoints are completed.
 
 ### Audio foundation (roadmap stage 0)
