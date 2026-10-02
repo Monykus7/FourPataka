@@ -61,7 +61,7 @@ Line-oriented score text is authoritative. Parallel tracks start together; the c
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L84), [View](../../src/App.tsx#L86), [readPreferences](../../src/App.tsx#L87), [MiniWave](../../src/App.tsx#L102), [RangeControl](../../src/App.tsx#L122), [App](../../src/App.tsx#L172), [resetMacros](../../src/App.tsx#L271), [changeSound](../../src/App.tsx#L275).
+Key definitions: [ScoreEditor](../../src/App.tsx#L84), [View](../../src/App.tsx#L86), [readPreferences](../../src/App.tsx#L87), [MiniWave](../../src/App.tsx#L102), [RangeControl](../../src/App.tsx#L122), [App](../../src/App.tsx#L172), [resetMacros](../../src/App.tsx#L273), [changeSound](../../src/App.tsx#L277).
 
 #### Score parsing and editor
 
@@ -104,7 +104,7 @@ Project schema v1 retains source text and deep-copied applied sounds/chains. Lib
 - Independent copies, persistence and undo / dependency group 3: [tests/browser/persistence.spec.ts](../../tests/browser/persistence.spec.ts)
 - Independent copies, persistence and undo / dependency group 4: [tests/browser/studio.spec.ts](../../tests/browser/studio.spec.ts)
 
-Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L7), [TrackInstance](../../src/core/project.ts#L14), [Project](../../src/core/project.ts#L21), [STORAGE_KEY](../../src/core/project.ts#L34).
+Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L13), [TrackInstance](../../src/core/project.ts#L20), [Project](../../src/core/project.ts#L27), [STORAGE_KEY](../../src/core/project.ts#L40).
 
 #### Themes and responsive layout
 

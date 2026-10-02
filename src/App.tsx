@@ -219,8 +219,9 @@ export default function App() {
       parseScore(
         project.scoreText,
         instruments.map((i) => i.key),
+        project.processing.library.map((p) => p.key),
       ),
-    [project.scoreText, instruments],
+    [project.scoreText, instruments, project.processing.library],
   );
   const material = project.comparisonMaterial;
   const auditionPitch = material.kind === 'note' ? material.note : material.kind;
@@ -264,6 +265,7 @@ export default function App() {
       const parsed = parseScore(
         updated.scoreText,
         updated.instruments.map((i) => i.key),
+        updated.processing.library.map((p) => p.key),
       );
       return commit(h, reconcileTracks(updated, parsed), grouped);
     });

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { applyPreset, createProject, importProject, reconcileTracks } from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
 import { mathematicalPreset } from '../../src/core/music';
+import { makePedal } from '../../src/core/pedals';
 
 const reparse = (project: ReturnType<typeof createProject>) =>
   reconcileTracks(
@@ -9,9 +10,60 @@ const reparse = (project: ReturnType<typeof createProject>) =>
     parseScore(
       project.scoreText,
       project.instruments.map((p) => p.key),
+      project.processing.library.map((p) => p.key),
     ),
   );
 describe('independent project state', () => {
+  it('reconciles track/master assignments once, keeps edited copies and clears removed directives', () => {
+    const p = createProject();
+    p.scoreText =
+      'master through cleanGlue\ntrack melody using brightReed through warmDrive {\n C4 quarter\n}\ntrack bass using softBass through warmDrive {\n C2 quarter\n}';
+    const assigned = reparse(p);
+    const melody = assigned.processing.tracks.melody,
+      bass = assigned.processing.tracks.bass;
+    expect(melody.presetId).toBe('warm-drive');
+    expect(assigned.processing.master.presetId).toBe('clean-glue');
+    expect(melody.pedals).not.toBe(bass.pedals);
+    melody.pedals[0].params.drive = 12;
+    melody.bypassed = true;
+    assigned.processing.library.find((p) => p.key === 'warmDrive')!.chain.pedals[0].params.drive =
+      3;
+    const again = reparse(assigned);
+    expect(again.processing.tracks.melody.pedals[0].params.drive).toBe(12);
+    expect(bass.pedals[0].params.drive).toBe(6);
+    expect(importProject(JSON.stringify(again))).toEqual(again);
+    const removed = reparse({
+      ...again,
+      scoreText: again.scoreText
+        .replace('master through cleanGlue\n', '')
+        .replace(' through warmDrive', ''),
+    });
+    expect(removed.processing.master.pedals).toEqual([]);
+    expect(removed.processing.tracks.melody.pedals).toEqual([]);
+    expect(removed.processing.tracks.bass.pedals).toHaveLength(1);
+  });
+  it('retains legacy unassigned boards, ignores invalid score reconciliation and copies newly changed keys', () => {
+    const p = createProject();
+    p.processing.master.pedals = [makePedal('delay')];
+    p.processing.tracks.melody.pedals = [makePedal('eq')];
+    expect(reparse(p).processing).toEqual(p.processing);
+    const bad = {
+      ...p,
+      scoreText: p.scoreText.replace('using brightReed', 'using brightReed through missing'),
+    };
+    expect(reparse(bad)).toBe(bad);
+    const next = reparse({
+      ...p,
+      scoreText: p.scoreText.replace('using brightReed', 'using brightReed through warmDrive'),
+    });
+    expect(next.processing.tracks.melody.pedals[0].kind).toBe('overdrive');
+    expect(next.processing.master.pedals[0].kind).toBe('delay');
+    const changed = reparse({
+      ...next,
+      scoreText: next.scoreText.replace('through warmDrive', 'through cleanGlue'),
+    });
+    expect(changed.processing.tracks.melody.pedals[0].kind).toBe('compressor');
+  });
   it('composition reassignment preserves mix, pedals and other copies through save/reload', () => {
     const p = createProject();
     p.tracks[0].level = 0.37;
