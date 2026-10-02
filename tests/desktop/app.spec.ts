@@ -2,6 +2,7 @@ import { expect, test, _electron as electron, type ElectronApplication } from '@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { placePedal } from '../helpers/board';
 
 let app: ElectronApplication;
 test.beforeEach(async () => {
@@ -20,10 +21,10 @@ test.afterEach(async () => {
 });
 
 test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
-  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.11.0');
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.12.0');
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await placePedal(page, 'eq');
   const low = page.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
   const mid = page.getByRole('spinbutton', { name: 'eq 1 mid gain exact value', exact: true });
   await low.fill('6');
@@ -42,20 +43,32 @@ test('packaged EQ dials, flat reset and native project save retain exact setting
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(low).toHaveValue('6');
   await expect(mid).toHaveValue('-4');
+  const grip = page.getByRole('button', { name: 'Move eq 1 on board', exact: true });
+  await grip.focus();
+  await grip.press('ArrowDown');
   const savePath = resolve('.test-results', 'desktop', 'eq-round-trip.fourpataka.json');
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });
   }, savePath);
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Saved eq-round-trip.fourpataka.json');
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved eq-round-trip.fourpataka.json',
+  );
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
   expect(saved.processing.audition.A.pedals[0]).toMatchObject({
     kind: 'eq',
     params: { low: 6, mid: -4, high: 0.5, frequency: 2100 },
   });
+  const id = saved.processing.audition.A.pedals[0].id;
+  expect(saved.processing.audition.A.board.positions[id]).toEqual({ column: 0, row: 1 });
+  expect(saved.processing.audition.A.board.cables).toMatchObject([
+    { from: null, to: id },
+    { from: id, to: null },
+  ]);
   await page.reload();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await expect(low).toHaveValue('6');
+  await expect(page.locator('.compact-pedal.eq')).toHaveCSS('top', '268px');
   await expect(
     page.getByRole('spinbutton', { name: 'eq 1 mid frequency exact value', exact: true }),
   ).toHaveValue('2100');
@@ -64,10 +77,39 @@ test('packaged EQ dials, flat reset and native project save retain exact setting
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
 });
 
+test('packaged equipment can be dragged onto Velcro slots and patched with the mouse', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+  await page
+    .getByRole('menuitem', { name: 'Compressor', exact: true })
+    .dragTo(page.getByRole('button', { name: 'Place pedal row 1 column 2', exact: true }));
+  await expect(page.locator('.compact-pedal.compressor')).toHaveCSS('left', '252px');
+  await expect(page.locator('.compact-pedal.compressor')).toContainText('UNPATCHED');
+  const start = (await page
+    .getByRole('button', { name: 'Board input output jack', exact: true })
+    .boundingBox())!;
+  const end = (await page
+    .getByRole('button', { name: 'compressor 1 input jack', exact: true })
+    .boundingBox())!;
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(page.locator('.board-route-status')).toHaveText('Output unplugged');
+  await page.getByRole('button', { name: 'compressor 1 output jack', exact: true }).click();
+  await page.getByRole('button', { name: 'Board output input jack', exact: true }).click();
+  await expect(page.locator('.board-route-status')).toHaveText('1 in signal path');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await expect(page.getByRole('img', { name: 'After pedals waveform', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+  await page.screenshot({ path: '.test-results/desktop/physical-board.png', fullPage: true });
+});
+
 test('packaged pedal dials rotate and support exact keyboard adjustment with undo', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
+  await placePedal(page, 'overdrive');
   const dial = page.getByRole('slider', { name: 'overdrive 1 drive dial', exact: true });
   const exact = page.getByRole('spinbutton', {
     name: 'overdrive 1 drive exact value',
@@ -75,8 +117,14 @@ test('packaged pedal dials rotate and support exact keyboard adjustment with und
   });
   const box = (await dial.boundingBox())!;
   const point = (angle: number) => ({
-    x: box.x + box.width / 2 + Math.sin((angle * Math.PI) / 180) * 18,
-    y: box.y + box.height / 2 - Math.cos((angle * Math.PI) / 180) * 18,
+    x:
+      box.x +
+      box.width / 2 +
+      Math.sin((angle * Math.PI) / 180) * (Math.min(box.width, box.height) / 2 - 4),
+    y:
+      box.y +
+      box.height / 2 -
+      Math.cos((angle * Math.PI) / 180) * (Math.min(box.width, box.height) / 2 - 4),
   });
   await page.mouse.move(point(0).x, point(0).y);
   await page.mouse.down();
@@ -162,7 +210,7 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
     pedalboard.getByRole('spinbutton', { name: 'overdrive 1 drive exact value' }),
   ).toHaveValue('6');
   await expect(
-    page.getByRole('img', { name: 'Cable from Instrument A to Overdrive 1', exact: true }),
+    page.getByRole('button', { name: 'Select cable from Board input to Overdrive 1', exact: true }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
@@ -224,7 +272,7 @@ test('native project dialogs round-trip a project, preserve canceled operations,
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });
   }, savePath);
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Saved saved.fourpataka.json');
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved saved.fourpataka.json');
   const project = JSON.parse(await readFile(savePath, 'utf8'));
   project.name = 'Native round trip';
   await writeFile(savePath, JSON.stringify(project));

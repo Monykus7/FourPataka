@@ -10,7 +10,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. Current app is v0.11.0 with three-band EQ. Delay, chain score directives, WAV export and chord-symbol macros remain planned.
+Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.12.0 adds compact physical grid boards, equipment-menu placement, an exact-value inspector and real serial patch routing. Compressor, overdrive and three-band EQ are implemented. Delay, chain score directives, WAV export and chord-symbol macros remain planned.
 
 ### Sound and Fourier interaction
 
