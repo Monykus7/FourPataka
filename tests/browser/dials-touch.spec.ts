@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { placePedal } from '../helpers/board';
 
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
 test('touch rotation prevents page scrolling, clears canceled gestures and preserves snapshot isolation', async ({
@@ -6,8 +7,9 @@ test('touch rotation prevents page scrolling, clears canceled gestures and prese
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
+  await placePedal(page, 'overdrive');
   await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
+  await page.getByRole('button', { name: 'Dismiss notification', exact: true }).click();
   const dial = page.getByRole('slider', { name: 'overdrive 1 drive dial', exact: true });
   const exact = page.getByRole('spinbutton', {
     name: 'overdrive 1 drive exact value',
@@ -15,9 +17,9 @@ test('touch rotation prevents page scrolling, clears canceled gestures and prese
   });
   await dial.scrollIntoViewIfNeeded();
   const box = (await dial.boundingBox())!;
-  const point = (angle: number) => ({
-    x: box.x + box.width / 2 + Math.sin((angle * Math.PI) / 180) * 18,
-    y: box.y + box.height / 2 - Math.cos((angle * Math.PI) / 180) * 18,
+  const point = (angle: number, radius = Math.min(box.width, box.height) / 2 - 4) => ({
+    x: box.x + box.width / 2 + Math.sin((angle * Math.PI) / 180) * radius,
+    y: box.y + box.height / 2 - Math.cos((angle * Math.PI) / 180) * radius,
   });
   const client = await page.context().newCDPSession(page);
   const initialScroll = await page.evaluate(() => scrollY);
@@ -25,7 +27,7 @@ test('touch rotation prevents page scrolling, clears canceled gestures and prese
   for (let angle = 15; angle <= 90; angle += 15)
     await client.send('Input.dispatchTouchEvent', {
       type: 'touchMove',
-      touchPoints: [point(angle)],
+      touchPoints: [point(angle, 55)],
     });
   await client.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
   await expect(exact).toHaveValue('14');
@@ -35,7 +37,7 @@ test('touch rotation prevents page scrolling, clears canceled gestures and prese
   for (let angle = 75; angle >= 0; angle -= 15)
     await client.send('Input.dispatchTouchEvent', {
       type: 'touchMove',
-      touchPoints: [point(angle)],
+      touchPoints: [point(angle, 55)],
     });
   await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await expect(exact).toHaveValue('6');
