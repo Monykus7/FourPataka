@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "features": [
+    {
+      "id": "project",
+      "title": "FourPataka",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. Current app is v0.10.0. EQ/delay, chain score directives, WAV export and chord-symbol macros remain planned.",
+      "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
+    },
+    {
+      "id": "sound",
+      "parent": "project",
+      "title": "Sound and Fourier interaction",
+      "summary": "Editable source waveform, signed harmonic sine bank and phase-continuous comparison feed independent audio processing paths.",
+      "paths": []
+    },
+    {
+      "id": "synthesis",
+      "parent": "sound",
+      "title": "Sine-bank synthesis and voices",
+      "summary": "Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings.",
+      "paths": [
+        "src/core/music.ts",
+        "src/audio/voice.ts",
+        "src/components/SourceGraphs.tsx",
+        "tests/browser/audio.spec.ts"
+      ]
+    },
+    {
+      "id": "waveform",
+      "parent": "sound",
+      "title": "Waveform drawing and control points",
+      "summary": "Draw or place dots on an odd waveform half-cycle. Shape-preserving cubic interpolation avoids overshoot; projection produces signed sine coefficients. Reset restores a sine while preserving envelope and trim.",
+      "paths": [
+        "src/core/waveform.ts",
+        "src/components/FourierWorkspace.tsx",
+        "tests/unit/waveform.test.ts",
+        "tests/browser/fourier.spec.ts"
+      ]
+    },
+    {
+      "id": "comparison",
+      "parent": "sound",
+      "title": "Continuous A/B comparison and scheduling",
+      "summary": "A/B changes keep the musical clock and active envelopes. Phrase clipping preserves chords/rests. Stable source buses and warmed aligned pedal branches avoid silence gaps. Score comparison temporarily overrides only the selected track; Stop/replay restores saved copies.",
+      "paths": [
+        "src/core/comparison.ts",
+        "src/audio/engine.ts",
+        "src/components/ComparisonPanel.tsx",
+        "tests/browser/comparison.spec.ts"
+      ]
+    },
+    {
+      "id": "pedals",
+      "parent": "sound",
+      "title": "Pedalboard and processing",
+      "summary": "Compressor/overdrive chains have independent audition A/B, track and master instances. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. EQ, delay/tails and score through/master directives remain unimplemented.",
+      "paths": [
+        "src/core/pedals.ts",
+        "src/core/rotary.ts",
+        "src/audio/effects.ts",
+        "src/components/Pedalboard.tsx",
+        "src/components/RotaryDial.tsx",
+        "src/components/ChainBypass.tsx",
+        "src/components/SignalCable.tsx",
+        "src/components/ProcessedGraphs.tsx",
+        "src/pedalboard.css",
+        "tests/browser/dials.spec.ts",
+        "tests/browser/dials-touch.spec.ts",
+        "tests/browser/pedals.spec.ts",
+        "tests/browser/pedalboard.spec.ts"
+      ]
+    },
+    {
+      "id": "composition",
+      "parent": "project",
+      "title": "Composition studio",
+      "summary": "Line-oriented score text is authoritative. Parallel tracks start together; the compiled timeline and transport use the frozen playing revision. Text edits take effect on replay.",
+      "paths": ["src/App.tsx"]
+    },
+    {
+      "id": "notation",
+      "parent": "composition",
+      "title": "Score parsing and editor",
+      "summary": "Source offsets map diagnostics, explicit notes/chords/rests and track assignments back to text. Shared command metadata supplies reference cards. Autocomplete is optional. Chord-symbol macros with hover/focus expansion remain later work; unsupported pedal directives diagnose rather than being ignored.",
+      "paths": [
+        "src/core/parser.ts",
+        "src/components/ScoreEditor.tsx",
+        "tests/unit/parser.test.ts",
+        "tests/browser/composition.spec.ts"
+      ]
+    },
+    {
+      "id": "timing",
+      "parent": "composition",
+      "title": "Tempo, meter and timeline",
+      "summary": "Tempo always counts quarter notes. Project meters support 1–32 over 1/2/4/8/16; 6/8 spans three quarter beats. Partial bars and crossing notes are valid. Timing edits preserve comments and form one undo step; invalid or playing scores guard those controls.",
+      "paths": [
+        "src/core/meter.ts",
+        "src/core/timeline.ts",
+        "src/core/scoreTools.ts",
+        "src/components/Timeline.tsx",
+        "src/components/CompositionSettings.tsx",
+        "tests/unit/meter.test.ts",
+        "tests/unit/timeline.test.ts",
+        "tests/unit/scoreTools.test.ts",
+        "tests/browser/meter.spec.ts"
+      ]
+    },
+    {
+      "id": "tracks",
+      "parent": "composition",
+      "title": "Track creation and assignment",
+      "summary": "Track maker validates note/chord/rest rows, reorders with buttons and previews length in project meter. Source-aware instrument assignment loads an independent preset copy while preserving track level and pedals.",
+      "paths": ["src/components/TrackMaker.tsx", "tests/browser/composition.spec.ts"]
+    },
+    {
+      "id": "studio",
+      "parent": "project",
+      "title": "Project state and desktop studio",
+      "summary": "Versioned local project data, musical undo and sandboxed desktop workflows support personal use. Preferences stay separate from imported projects.",
+      "paths": []
+    },
+    {
+      "id": "storage",
+      "parent": "studio",
+      "title": "Independent copies, persistence and undo",
+      "summary": "Project schema v1 retains source text and deep-copied applied sounds/chains. Library edits never overwrite track instances. Validation preserves the current project on failed import. Grouped edits retain one undo entry per waveform stroke or rotary gesture.",
+      "paths": [
+        "src/core/project.ts",
+        "src/core/history.ts",
+        "tests/unit/project.test.ts",
+        "tests/unit/history.test.ts",
+        "tests/browser/persistence.spec.ts",
+        "tests/browser/studio.spec.ts"
+      ]
+    },
+    {
+      "id": "appearance",
+      "parent": "studio",
+      "title": "Themes and responsive layout",
+      "summary": "Instrument, Pedalboard and Compose are primary views; Learn is secondary. Five bundled themes use secondary/tertiary accents and contrast-adapted ink. Theme changes preserve playback and musical undo.",
+      "paths": [
+        "src/core/themes.ts",
+        "src/styles.css",
+        "src/paper.css",
+        "tests/unit/themes.test.ts",
+        "tests/browser/themes.spec.ts",
+        "tests/browser/design.spec.ts"
+      ]
+    },
+    {
+      "id": "desktop",
+      "parent": "studio",
+      "title": "Electron application and native files",
+      "summary": "Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests.",
+      "paths": [
+        "desktop/main.cjs",
+        "desktop/preload.cjs",
+        "scripts/desktop-dev.mjs",
+        "tests/desktop/app.spec.ts",
+        "package.json"
+      ]
+    },
+    {
+      "id": "knowledge",
+      "parent": "project",
+      "title": "Maintained project knowledge",
+      "summary": "Tree-sitter code links, source-linked docs/plans, feature and dependency summaries, local embedding seeds and personalized PageRank produce bounded context. Refresh hashes after changes and maintain behavioral summaries alongside implementation.",
+      "paths": [
+        "scripts/knowledge/",
+        "docs/knowledge/",
+        "tests/unit/knowledge.test.ts",
+        "AGENTS.md"
+      ]
+    }
+  ]
+}
