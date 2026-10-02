@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.14.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.14.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-Compose layout follow-up is implemented for v0.14.1 and undergoing portable/native verification: command reference now sits beside the score; timeline and independent track/master controls sit below. The editor fills its panel through the status bar and has a larger desktop minimum. Fourteen affected browser workflows pass; desktop/tablet/390 px geometry and screenshots confirm reading order, bounded editor scrolling and no page overflow. This layout correction does not advance a music-feature roadmap gate.
+Compose layout follow-up is implemented and verified in v0.14.1: command reference now sits beside the score; timeline and independent track/master controls sit below. The editor fills its panel through the status bar and has a larger desktop minimum. Fourteen affected browser workflows pass; desktop/tablet/390 px geometry and screenshots confirm reading order, bounded editor scrolling and no page overflow. This layout correction does not advance a music-feature roadmap gate.
 
 The physical pedalboard implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Delay is implemented in the v0.13.0 work below; the surrounding frontend overhaul remains separate work.
 
@@ -269,3 +269,10 @@ Validation: all 120 unit checks, all 70 browser checks and all seven packaged de
 
 Validation: all 127 unit checks and all 76 browser checks pass. All eight packaged desktop workflows are verified: six passed in the full run, and EQ/native-dialog checks passed in a focused rerun after isolating browser output cleanup from native profiles. The final rebuilt package additionally passes the native score-chain save/reload workflow. Earlier shared-output cleanup interrupted active native profiles; browser traces now use `.test-results/browser` and cannot remove `.test-results/desktop`. A restricted Windows development-Electron launch failed its install-folder ACL check; native verification uses the normal Windows process environment, with renderer sandboxing retained. Visual Studio is not required and is kept out of the verification workflow. TypeScript/production build, formatting and portable packaging pass. Desktop and 390 px chain layouts were visually reviewed. Local semantic retrieval returns current chain/copy behavior and source citations within 1,008/1,024 tokens; knowledge build/freshness checks pass. Output: `release/FourPataka-0.14.0-win-x64.exe`. Nine focused checkpoints use Monykus7 and are pushed to primary master. Stage 3's automated functional coverage is complete; broader stage 4/5 reference, accessibility, recovery and demonstration gates, physical listening and real-device/browser checks remain. WAV export follows those gates; chord-symbol macros and the frontend overhaul remain later work.
 
+
+
+### Compose layout correction (v0.14.1)
+
+The score and command reference now occupy the top desktop row. Timeline and independent track/master controls sit side by side below, with event inspection after them. DOM order gives narrow screens and keyboard navigation the same sequence: score, reference, timeline, tracks, inspector. Reference cards use two columns; search and destination controls wrap within the sidebar. The desktop editor minimum grows from 430 to 520 px and absorbs extra panel height. The status bar stays at the panel bottom, removing the former empty box underneath it. Size containment keeps long score documents from expanding the grid; CodeMirror scrolls locally. Lower panels use their own content height, avoiding stretched empty timeline space. No musical behavior or roadmap gate changes.
+
+Validation: 14 affected browser workflows pass; the 12 composition/meter/score-chain workflows were rerun after long-document containment and pass. Three packaged desktop checks cover native chain persistence, source-aware Compose controls with undo, local renderer isolation, audio and menu access; they pass against the final rebuilt v0.14.1 assets. Manual geometry and screenshot review cover desktop, 1024 px and 390 px layouts; 880 px also has no page overflow. A 100-event score stays within a locally scrolling editor, and keyboard selection opens the lower event inspector. Dense long-score timeline mouse targets remain composition-polish work. Production build, formatting, portable packaging and knowledge-map freshness pass. The broader unit/audio/browser suite was verified for v0.14.0; this patch reruns the affected workflows. Output: release/FourPataka-0.14.1-win-x64.exe. Six focused patch checkpoints are pushed under Monykus7; the updated portable application is opened for review.
