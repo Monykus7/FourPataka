@@ -1,0 +1,8 @@
+---
+description: Maintain FourPataka project knowledge alongside every implementation change
+alwaysApply: true
+---
+
+Read and follow the project-wide knowledge, commenting, version-control and release conventions in `AGENTS.md`.
+
+Update feature summaries and decisions with behavior changes. Regenerate `docs/knowledge/PROJECT_MAP.md` and run `npm run knowledge:check` before completing the change. Query context to navigate, then inspect source; do not treat summaries or rank as correctness evidence.

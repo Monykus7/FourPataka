@@ -554,3 +554,5 @@ Use focused verification for meaningful risks:
 The first implementation work remains the audio proof. After its gate passes, proceed through this single roadmap.
 
 Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
+
+Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongside implementation work. Tree-sitter symbols and document/plan sections link into an editorial feature hierarchy with dependency communities. Local semantic seeds, graph neighborhoods, personalized PageRank and a complete-context token budget provide task context. Keep behavioral summaries and decisions current, explain dense code invariants, and regenerate/check the map before completing changes; see [knowledge usage](docs/knowledge/USAGE.md) and `AGENTS.md`.
