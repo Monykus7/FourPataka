@@ -1,4 +1,5 @@
 import { clamp } from './music';
+import { boardRoute, validateBoard, type BoardLayout } from './board';
 export type PedalKind = 'compressor' | 'overdrive' | 'eq';
 export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
 export const EQ_DEFAULTS = {
@@ -47,6 +48,7 @@ export interface Pedal {
 export interface Chain {
   pedals: Pedal[];
   bypassed: boolean;
+  board?: BoardLayout;
 }
 export interface ChainInstance extends Chain {
   presetId: string | null;
@@ -142,6 +144,7 @@ export function validateChain(value: unknown): asserts value is ChainInstance {
       if (!Number.isFinite(n) || n < min || n > max) throw new Error(`Invalid pedal ${key}.`);
     });
   });
+  if (chain.board !== undefined) validateBoard(chain.board, [...ids]);
 }
 export function importProcessing(value: unknown): Processing {
   if (value === undefined) return defaultProcessing();
@@ -181,6 +184,7 @@ export function importProcessing(value: unknown): Processing {
   const instance = (chain: ChainInstance): ChainInstance => ({
     presetId: chain.presetId,
     bypassed: chain.bypassed,
+    ...(chain.board ? { board: structuredClone(chain.board) } : {}),
     pedals: chain.pedals.map((p) =>
       clampPedal({ id: p.id, kind: p.kind, bypassed: p.bypassed, params: { ...p.params } }),
     ),
@@ -190,6 +194,7 @@ export function importProcessing(value: unknown): Processing {
       id: p.id,
       label: p.label,
       chain: {
+        ...(p.chain.board ? { board: structuredClone(p.chain.board) } : {}),
         pedals: instance({ ...p.chain, presetId: null }).pedals,
         bypassed: p.chain.bypassed,
       },
@@ -213,7 +218,14 @@ export function applyAssociated(processing: Processing, source: ChainInstance): 
     ),
   };
 }
-export const chainTopology = (chain: Chain) =>
-  chain.pedals.map((p) => `${p.id}:${p.kind}`).join('|');
-export const chainMusicalSettings = (chain: Chain) =>
-  JSON.stringify(chain.pedals.map((p) => [p.id, p.kind, p.params]));
+export const chainTopology = (chain: Chain) => {
+  const route = boardRoute(chain);
+  return [
+    route.connected ? 'connected' : 'disconnected',
+    ...route.pedals.map((p) => `${p.id}:${p.kind}`),
+  ].join('|');
+};
+export const chainMusicalSettings = (chain: Chain) => {
+  const route = boardRoute(chain);
+  return JSON.stringify([route.connected, route.pedals.map((p) => [p.id, p.kind, p.params])]);
+};
