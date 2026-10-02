@@ -2,7 +2,7 @@ import { expect, test, _electron as electron, type ElectronApplication } from '@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { dragEquipment, placePedal } from '../helpers/board';
+import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
 
 let app: ElectronApplication;
 test.beforeEach(async () => {
@@ -20,8 +20,58 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('packaged delay drags, dials, native saving and tail-aware bypass work together', async () => {
+  const page = await app.firstWindow();
+  // Hidden test windows throttle renderer timers; this proof needs the same
+  // timely meters and tail indicators as a foreground application window.
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.setBackgroundThrottling(false),
+  );
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await dragEquipment(page, 'delay');
+  await patchBoard(page);
+  const time = page.getByRole('spinbutton', { name: 'delay 1 time exact value', exact: true });
+  await time.fill('400');
+  await page
+    .getByRole('spinbutton', { name: 'delay 1 feedback exact value', exact: true })
+    .fill('95');
+  const mix = page.getByRole('slider', { name: 'delay 1 mix dial', exact: true });
+  await mix.focus();
+  await mix.press('End');
+  await expect(
+    page.getByRole('spinbutton', { name: 'delay 1 mix exact value', exact: true }),
+  ).toHaveValue('100');
+  const savePath = resolve('.test-results', 'desktop', 'delay-round-trip.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved delay-round-trip.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.processing.audition.A.pedals[0]).toMatchObject({
+    kind: 'delay',
+    params: { time: 400, feedback: 95, output: 0, mix: 100 },
+  });
+  expect(saved.processing.audition.A.board.cables).toHaveLength(2);
+  await page.reload();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await expect(time).toHaveValue('400');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await expect
+    .poll(async () => page.locator('.meter-bars .lit').count(), { timeout: 10000 })
+    .toBeGreaterThan(0);
+  await page.getByRole('checkbox', { name: 'Bypass Audition A chain', exact: true }).check();
+  await expect(page.locator('.delay-tail-status')).toHaveText('Echo tails active');
+  await expect(page.locator('.compact-pedal.delay')).toContainText('Tail active');
+  await page.screenshot({ path: '.test-results/desktop/delay-board.png', fullPage: true });
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+  await expect(page.locator('.delay-tail-status')).toHaveCount(0);
+});
+
 test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
-  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.12.1');
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.13.0');
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await placePedal(page, 'eq');
