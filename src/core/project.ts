@@ -177,7 +177,14 @@ export function updateProcessingAssignments(project: Project, processing: Proces
     next: ChainInstance,
     target: string | null,
   ) => {
-    if (!existing || existing.presetId === next.presetId) return next;
+    // A sandbox copy can carry another destination's reconciliation marker.
+    // Reapplication must retain this destination's source history, otherwise
+    // the next reparse would discard the exact copied knobs for a template.
+    const { assignmentKey: _sourceMarker, ...copy } = next;
+    if (!existing || existing.presetId === next.presetId)
+      return existing?.assignmentKey === undefined
+        ? copy
+        : { ...copy, assignmentKey: existing.assignmentKey };
     const preset = processing.library.find((p) => p.id === next.presetId);
     const key = preset?.key ?? null;
     text = setScoreChain(text, keys, chainKeys, target, key);
