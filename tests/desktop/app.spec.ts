@@ -86,6 +86,11 @@ test('packaged equipment can be dragged onto Velcro slots and patched with the m
     .dragTo(page.getByRole('button', { name: 'Place pedal row 1 column 2', exact: true }));
   await expect(page.locator('.compact-pedal.compressor')).toHaveCSS('left', '252px');
   await expect(page.locator('.compact-pedal.compressor')).toContainText('UNPATCHED');
+  // Windows may constrain the native viewport to its work area. Center gesture
+  // targets above the fixed transport before reading raw mouse coordinates.
+  await page
+    .getByRole('button', { name: 'Board input output jack', exact: true })
+    .evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
   const start = (await page
     .getByRole('button', { name: 'Board input output jack', exact: true })
     .boundingBox())!;
@@ -115,6 +120,7 @@ test('packaged pedal dials rotate and support exact keyboard adjustment with und
     name: 'overdrive 1 drive exact value',
     exact: true,
   });
+  await dial.evaluate((el) => el.scrollIntoView({ block: 'center', inline: 'nearest' }));
   const box = (await dial.boundingBox())!;
   const point = (angle: number) => ({
     x:
