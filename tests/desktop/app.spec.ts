@@ -19,6 +19,51 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.11.0');
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  const low = page.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
+  const mid = page.getByRole('spinbutton', { name: 'eq 1 mid gain exact value', exact: true });
+  await low.fill('6');
+  await mid.fill('-4');
+  await page
+    .getByRole('spinbutton', { name: 'eq 1 mid frequency exact value', exact: true })
+    .fill('2100');
+  await page.getByRole('slider', { name: 'eq 1 high gain dial', exact: true }).focus();
+  await page.getByRole('slider', { name: 'eq 1 high gain dial', exact: true }).press('ArrowUp');
+  await expect(
+    page.getByRole('spinbutton', { name: 'eq 1 high gain exact value', exact: true }),
+  ).toHaveValue('0.5');
+  await page.getByRole('button', { name: 'Reset EQ 1 to flat', exact: true }).click();
+  await expect(low).toHaveValue('0');
+  await expect(mid).toHaveValue('0');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(low).toHaveValue('6');
+  await expect(mid).toHaveValue('-4');
+  const savePath = resolve('.test-results', 'desktop', 'eq-round-trip.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Saved eq-round-trip.fourpataka.json');
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.processing.audition.A.pedals[0]).toMatchObject({
+    kind: 'eq',
+    params: { low: 6, mid: -4, high: 0.5, frequency: 2100 },
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await expect(low).toHaveValue('6');
+  await expect(
+    page.getByRole('spinbutton', { name: 'eq 1 mid frequency exact value', exact: true }),
+  ).toHaveValue('2100');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await expect(page.getByRole('img', { name: 'After pedals waveform', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+});
+
 test('packaged pedal dials rotate and support exact keyboard adjustment with undo', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();

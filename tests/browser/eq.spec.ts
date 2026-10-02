@@ -55,7 +55,9 @@ test('EQ respects frozen score parameters, aligned tracks, live bypass and hard 
     const bypass = engine.measure().peak;
     engine.stop();
     await delay(150);
-    const silence = engine.measure().peak;
+    const stoppedSamples = new Float32Array(engine.analyser!.fftSize);
+    engine.analyser!.getFloatTimeDomainData(stoppedSamples);
+    const silence = Math.max(...stoppedSamples.map(Math.abs));
     await engine.context!.close();
     return { aligned, frozen, pending, changed, bypass, silence };
   });
@@ -110,7 +112,9 @@ test('EQ audition edits and A/B replacement retain progress and clean state on r
       afterSwitch = engine.progress;
     engine.stop();
     await delay(150);
-    const silence = engine.measure().peak;
+    const stoppedSamples = new Float32Array(engine.analyser!.fftSize);
+    engine.analyser!.getFloatTimeDomainData(stoppedSamples);
+    const silence = Math.max(...stoppedSamples.map(Math.abs));
     sound.harmonics.fill(0);
     await engine.auditionPhrase(sound, phrase, undefined, processing.audition.A);
     await delay(250);
