@@ -231,12 +231,38 @@
 .pedal-dial {
   position: relative;
   display: block;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   margin: 0 auto;
   border: 1px solid var(--border);
   border-radius: 50%;
   background: var(--surface-2);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+.pedal-dial:hover,
+.pedal-dial:focus-visible {
+  border-color: var(--pedal-ink);
+}
+.pedal-dial:focus-visible {
+  outline: 2px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+.pedal-dial.dial-dragging {
+  cursor: grabbing;
+  border-color: var(--pedal-ink);
+}
+.dial-instructions {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 .pedal-dial > span {
   position: absolute;

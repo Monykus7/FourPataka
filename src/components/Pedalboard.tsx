@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react';
 import { ArrowRight, Layers3, Power, Waves } from 'lucide-react';
 import SignalCable from './SignalCable';
+import RotaryDial from './RotaryDial';
 import {
   applyAssociated,
   emptyChain,
@@ -221,7 +222,7 @@ export default function Pedalboard({
                 <div className="pedal-parameters">
                   {Object.entries(PEDAL_CONTROLS[pedal.kind]).map(
                     ([key, [min, max, step, unit]]) => {
-                      const update = (value: number) =>
+                      const update = (value: number, group?: string) =>
                         edit(
                           {
                             ...chain,
@@ -237,18 +238,21 @@ export default function Pedalboard({
                                 : p,
                             ),
                           },
-                          `pedal:${dest}:${active}:${pedal.id}:${key}`,
+                          group ?? `pedal:${dest}:${active}:${pedal.id}:${key}`,
                         );
                       const controlName = `${pedal.kind} ${i + 1} ${key}`;
                       return (
-                        <label key={key} className="range-control">
-                          <span className="pedal-dial" aria-hidden="true">
-                            <span
-                              style={{
-                                transform: `rotate(${-135 + (270 * (pedal.params[key] - min)) / (max - min)}deg)`,
-                              }}
-                            />
-                          </span>
+                        <div key={key} className="range-control">
+                          <RotaryDial
+                            key={`${dest}:${active}:${pedal.id}:${key}`}
+                            label={controlName}
+                            value={pedal.params[key]}
+                            min={min}
+                            max={max}
+                            step={step}
+                            unit={unit}
+                            onChange={update}
+                          />
                           <span className="range-title">
                             {key}
                             <span className="numeric-value">
@@ -279,7 +283,7 @@ export default function Pedalboard({
                             value={pedal.params[key]}
                             onChange={(e) => update(Number(e.target.value))}
                           />
-                        </label>
+                        </div>
                       );
                     },
                   )}

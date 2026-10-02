@@ -251,7 +251,9 @@ export default function App() {
     const grouped =
       !!groupKey &&
       editGroup.current.key === groupKey &&
-      (groupKey.startsWith('waveform:') || time - editGroup.current.time < 900);
+      (groupKey.startsWith('waveform:') ||
+        groupKey.startsWith('rotary:') ||
+        time - editGroup.current.time < 900);
     editGroup.current = { key: groupKey, time };
     setHistory((h) => {
       const updated = mutate(h.present);
