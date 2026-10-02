@@ -54,7 +54,7 @@
       "id": "pedals",
       "parent": "sound",
       "title": "Pedalboard and processing",
-      "summary": "Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.",
+      "summary": "Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Flat reset restores all defaults in one undo step while retaining identity and bypass. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.",
       "paths": [
         "src/core/pedals.ts",
         "src/core/rotary.ts",

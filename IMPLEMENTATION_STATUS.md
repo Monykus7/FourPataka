@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive, independent track/master routing and pedal-aware A/B snapshots. Three-band EQ is the next release in progress; delay and chain-aware score directives follow before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
+Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive/EQ, independent track/master routing and pedal-aware A/B snapshots. Delay is next, followed by chain-aware score directives before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
@@ -201,10 +201,19 @@ The [project map](docs/knowledge/PROJECT_MAP.md) connects implemented features a
 
 Validation: all 9 knowledge unit checks pass, including changed/deleted source caches, alias resolution, PageRank mass, hierarchy, Unicode token budgets and watcher exclusions. Offline semantic verification passes for pedals, comparison, timing and waveform tasks at 256/1,024/2,048-token budgets with every network fetch blocked. Production TypeScript/Vite build and formatting pass. The full unit run has 114 passes and one Earth theme contrast failure caused by the separate, uncommitted palette edit; that edit is preserved outside these tooling checkpoints. Browser/native application tests were not repeated for documentation/tooling and comment-only app changes. Eight focused checkpoints use the configured Monykus7 identity and primary remote branch; this is not an application release.
 
-### Three-band EQ (v0.11.0 release verification in progress)
+### Three-band EQ (v0.11.0)
+
+1. Flat EQ defaults, shared ranges, validated imports and independent copied state.
+2. Three-filter audio factory, actual frequency-response proofs, neutral dry/wet/bypass and latency metadata.
+3. Connected pedal module, rotary/numeric controls, cable names, palette accents and keyboard ordering.
+4. One-operation flat reset retaining identity, position and bypass state.
+5. Saved presets, independent A/B/track/master copies, associated Apply and a full mobile rack.
+6. Live audition, continuous A/B, frozen/replayed score values, mixed-chain alignment and real analyser Stop cleanup.
+7. v0.11.0 metadata and packaged EQ/native-save regression coverage.
+8. Full browser/native verification, portable packaging, maintained documentation, eighth pushed checkpoint and automatic application launch.
 
 The selected next feature is EQ, released before delay. Low/mid/high gains support −12…+12 dB with 0.5 dB steps; mid center supports 150…4000 Hz. Fixed shelves are 200 Hz / 4 kHz and mid Q is 1. Output trim and linear mix follow the existing pedal contract. The effect starts flat; Reset to flat restores all parameters as one undo operation and retains its ID, placement and bypass. EQ works in the cable rack, saved chain presets and independent audition A/B, track and master instances. Live audition, frozen score parameters, live bypass, pending topology edits and continuous A/B retain their existing semantics.
 
 EQ uses fresh BiquadFilterNodes for each instance, clamps frequencies below Nyquist, adds no scheduling/look-ahead latency, smooths parameter changes and allows 100 ms of filter decay after note release. Tests cover flat gain/mix identity, actual low/mid/high response at 48/44.1 kHz, linear blend, bypass, 8 kHz bounded frequencies, independent stereo graphs, mixed compressor/EQ track compensation, frozen versus replayed parameters, live A/B clock continuity and real analyser silence after Stop. UI checks cover rotary keyboard values, numeric bounds, ordering/undo, complete flat reset, independent presets, persistence and the eight-module 390 px rack.
 
-All eight focused EQ browser checks pass before full release regression. Unit checks currently have 115 passes and the same one pre-existing Earth surface contrast failure; the user's separate palette edit remains untouched and uncommitted. Formatting passes. Metadata is v0.11.0; full browser regression, portable packaging and native checks are in progress. The roadmap remains stage 3 in progress: delay/feed-tail bypass and score chain directives follow; chord macros and WAV export remain later work.
+Validation for v0.11.0: all 48 browser checks and 5 packaged desktop checks pass. This includes all eight EQ checks, the previous waveform/composition/pedal regression suite, native EQ keyboard/reset/save/persistence and bundled version verification. Unit checks have 115 passes and the same one pre-existing Earth surface contrast failure (3.381:1 against the 4.5:1 gate); the user's separate palette edit remains untouched and uncommitted, and is present in this local build. Production TypeScript/Vite build, formatting and portable packaging pass. Desktop and 390 px EQ layouts were visually inspected. The maintained semantic graph retrieves the new EQ feature and decision within its requested 1,024-token budget; map freshness passes. Output: `release/FourPataka-0.11.0-win-x64.exe`. Eight focused checkpoints are pushed under Monykus7 and the verified portable app is launched after the release checkpoint. The roadmap remains stage 3 in progress: delay/feed-tail bypass and score chain directives follow; chord macros and WAV export remain later work.
