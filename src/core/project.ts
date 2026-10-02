@@ -1,4 +1,10 @@
-import { defaultProcessing, importProcessing, emptyChain, type Processing } from './pedals';
+import {
+  defaultProcessing,
+  importProcessing,
+  emptyChain,
+  type Processing,
+  type ChainInstance,
+} from './pedals';
 import { validateWavePoints } from './waveform';
 import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
@@ -71,6 +77,7 @@ export function createProject(): Project {
     parseScore(
       project.scoreText,
       instruments.map((i) => i.key),
+      project.processing.library.map((p) => p.key),
     ),
   );
 }
@@ -92,17 +99,36 @@ export function reconcileTracks(project: Project, score: CompiledScore): Project
           level: 0.75,
         };
   });
+  const reconcileChain = (
+    existing: ChainInstance | undefined,
+    key: string | null,
+  ): ChainInstance => {
+    const preset = key ? project.processing.library.find((p) => p.key === key) : undefined;
+    if (!existing)
+      return preset
+        ? { ...structuredClone(preset.chain), presetId: preset.id, assignmentKey: key }
+        : emptyChain();
+    // The marker records the source assignment, not the edited copy's current
+    // association. Unchanged source must preserve knobs, bypass and placement.
+    if (
+      existing?.assignmentKey === key ||
+      (existing?.assignmentKey === undefined && (!key || existing.presetId === preset?.id))
+    )
+      return key ? { ...existing, assignmentKey: key } : existing;
+    if (!key) return { ...emptyChain(), assignmentKey: null };
+    if (!preset) return existing ?? emptyChain();
+    return { ...structuredClone(preset.chain), presetId: preset.id, assignmentKey: key };
+  };
   return {
     ...project,
     tracks,
     processing: {
       ...project.processing,
+      master: reconcileChain(project.processing.master, score.master?.key ?? null),
       tracks: Object.fromEntries(
-        tracks.map((t) => [
+        score.tracks.map((t) => [
           t.key,
-          Object.hasOwn(project.processing.tracks, t.key)
-            ? project.processing.tracks[t.key]
-            : emptyChain(),
+          reconcileChain(project.processing.tracks[t.key], t.chainKey),
         ]),
       ),
     },
@@ -119,6 +145,7 @@ export function applyPreset(
   const parsed = parseScore(
     project.scoreText,
     project.instruments.map((p) => p.key),
+    project.processing.library.map((p) => p.key),
   );
   if (parsed.diagnostics.length) return project;
   let scoreText = project.scoreText;
@@ -291,6 +318,7 @@ export function importProject(text: string): Project {
     parseScore(
       clean.scoreText,
       clean.instruments.map((i) => i.key),
+      clean.processing.library.map((p) => p.key),
     ),
   );
 }
