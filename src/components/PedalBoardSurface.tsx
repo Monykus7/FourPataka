@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Cable, GripVertical, Power } from 'lucide-react';
 import {
   BOARD_COLUMNS,
@@ -55,11 +55,26 @@ export default function PedalBoardSurface({
   const [moving, setMoving] = useState<Moving | null>(null),
     [menu, setMenu] = useState(false),
     [tool, setTool] = useState<PedalKind | 'cable' | null>(null);
-  const [draft, setDraft] = useState<{ from: string | null; point: Point } | null>(null),
+  const [pendingDraft, setDraft] = useState<{ from: string | null; point: Point } | null>(null),
     [selectedCable, setSelectedCable] = useState<string | null>(null),
     [notice, setNotice] = useState('');
   const board = boardLayout(chain),
     route = boardRoute(chain);
+  // Undo, preset loading and removal can invalidate a gesture before the next pointer event.
+  const draft =
+    pendingDraft && (pendingDraft.from === null || board.positions[pendingDraft.from])
+      ? pendingDraft
+      : null;
+  const cableSelected = board.cables.some((c) => c.id === selectedCable);
+  useEffect(() => {
+    if (pendingDraft && pendingDraft.from !== null && !board.positions[pendingDraft.from])
+      setDraft(null);
+    if (move.current && !board.positions[move.current.id]) {
+      move.current = null;
+      setMoving(null);
+    }
+    if (selectedCable && !cableSelected) setSelectedCable(null);
+  }, [chain, pendingDraft, selectedCable, cableSelected]);
   const location = (cell: BoardCell) => ({
     x: ORIGIN_X + cell.column * CELL_WIDTH,
     y: ORIGIN_Y + cell.row * CELL_HEIGHT,
@@ -68,8 +83,10 @@ export default function PedalBoardSurface({
     id === null
       ? { x: output ? 40 : WIDTH - 40, y: HEIGHT / 2 }
       : {
-          x: location(board.positions[id]).x + (output ? PEDAL_WIDTH : 0),
-          y: location(board.positions[id]).y + 96,
+          x:
+            location(moving?.id === id ? moving.cell : board.positions[id]).x +
+            (output ? PEDAL_WIDTH : 0),
+          y: location(moving?.id === id ? moving.cell : board.positions[id]).y + 96,
         };
   const title = (id: string | null, output: boolean) =>
     id === null
@@ -180,6 +197,9 @@ export default function PedalBoardSurface({
       className="physical-board-editor"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
+          // Movement is a preview until release; canceling must never create a history entry.
+          move.current = null;
+          setMoving(null);
           setTool(null);
           setDraft(null);
           setMenu(false);
@@ -262,7 +282,7 @@ export default function PedalBoardSurface({
       <div className="pedal-rack-scroll" role="region" tabIndex={0} aria-label="Grid pedalboard">
         <div
           ref={canvas}
-          className={`physical-board ${tool ? 'tool-active' : ''}`}
+          className={`physical-board ${tool ? 'tool-active' : ''} ${tool && tool !== 'cable' ? 'placing-pedal' : ''}`}
           style={{ width: WIDTH, height: HEIGHT }}
           onPointerMove={(e) => {
             if (draft) setDraft({ ...draft, point: relative(e.clientX, e.clientY) });
@@ -453,7 +473,7 @@ export default function PedalBoardSurface({
         <span role="status">
           {notice || 'Velcro grid · 4 × 2 · arrow keys move a focused handle'}
         </span>
-        {selectedCable && (
+        {cableSelected && (
           <button
             className="text-button"
             onClick={() => {

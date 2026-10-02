@@ -51,12 +51,7 @@ Compressor, overdrive and three-band EQ have independent audition A/B, track and
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
 - Pedalboard and processing / dependency group 3: [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx)
 - Pedalboard and processing / dependency group 4: [tests/browser/board-audio.spec.ts](../../tests/browser/board-audio.spec.ts)
-- Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts)
-- Pedalboard and processing / dependency group 6: [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts)
-- Pedalboard and processing / dependency group 7: [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts)
-- Pedalboard and processing / dependency group 8: [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts)
-- Pedalboard and processing / dependency group 9: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
-- Pedalboard and processing / dependency group 10: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
+- Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts), [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts), [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts), [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts), [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts), [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L19), [createEffect](../../src/audio/effects.ts#L36), [set](../../src/audio/effects.ts#L106), [update](../../src/audio/effects.ts#L110), [ChainGraph](../../src/audio/effects.ts#L151), [chainLatency](../../src/audio/effects.ts#L162), [createChain](../../src/audio/effects.ts#L170).
 
