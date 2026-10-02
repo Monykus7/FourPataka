@@ -1,6 +1,14 @@
 import { clamp } from './music';
 export type PedalKind = 'compressor' | 'overdrive' | 'eq';
 export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
+export const EQ_DEFAULTS = {
+  low: 0,
+  mid: 0,
+  high: 0,
+  frequency: 1000,
+  output: 0,
+  mix: 100,
+} as const;
 export const PEDAL_NAMES: Record<PedalKind, string> = {
   compressor: 'Compressor',
   overdrive: 'Overdrive',
@@ -65,7 +73,7 @@ export function makePedal(kind: PedalKind): Pedal {
         ? { threshold: -24, ratio: 4, attack: 10, release: 250, output: 0, mix: 100 }
         : kind === 'overdrive'
           ? { drive: 6, tone: 6000, output: -6, mix: 100 }
-          : { low: 0, mid: 0, high: 0, frequency: 1000, output: 0, mix: 100 },
+          : { ...EQ_DEFAULTS },
   };
 }
 export function defaultProcessing(): Processing {

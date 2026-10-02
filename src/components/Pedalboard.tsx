@@ -8,6 +8,7 @@ import {
   makePedal,
   PEDAL_CONTROLS,
   PEDAL_NAMES,
+  EQ_DEFAULTS,
   type ChainInstance,
   type Processing,
   type PedalKind,
@@ -333,6 +334,22 @@ export default function Pedalboard({
                   </span>
                 </label>
                 <div className="pedal-actions">
+                  {pedal.kind === 'eq' && (
+                    <button
+                      className="text-button"
+                      aria-label={`Reset EQ ${i + 1} to flat`}
+                      onClick={() =>
+                        edit({
+                          ...chain,
+                          pedals: chain.pedals.map((p) =>
+                            p.id === pedal.id ? { ...p, params: { ...EQ_DEFAULTS } } : p,
+                          ),
+                        })
+                      }
+                    >
+                      Reset to flat
+                    </button>
+                  )}
                   <button
                     className="text-button"
                     aria-label={`Move ${pedal.kind} ${i + 1} left`}
