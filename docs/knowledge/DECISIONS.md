@@ -22,9 +22,17 @@ Evidence: `src/core/parser.ts`, `src/core/scoreTools.ts`, `src/core/meter.ts`, `
 
 <!-- features: storage, pedals, comparison -->
 
-Saving a preset never overwrites already-applied track copies. Apply is an explicit copy operation. Each processing destination owns processor state. Compressor and overdrive dry paths match wet latency; otherwise mixing/bypass causes comb filtering or timing changes. Audition parameter changes are live; score parameter/topology changes wait for replay, while bypass remains live. EQ, delay/tail handling and score chain directives still need implementation.
+Saving a preset never overwrites already-applied track copies. Apply is an explicit copy operation. Each processing destination owns processor state. Compressor and overdrive dry paths match wet latency; otherwise mixing/bypass causes comb filtering or timing changes. Audition parameter changes are live; score parameter/topology changes wait for replay, while bypass remains live. Delay/tail handling and score chain directives still need implementation.
 
 Evidence: `src/core/project.ts`, `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/browser/pedals.spec.ts`.
+
+## Three-band EQ identity and timing
+
+<!-- features: pedals, comparison -->
+
+EQ uses a 200 Hz low shelf, a variable 150…4000 Hz peaking mid with Q = 1, and a 4000 Hz high shelf. Gains start at zero, output at 0 dB, and mix at 100%. All filter frequencies stay below the context's Nyquist limit. Flat filters are identity at every linear dry/wet mix. Output trim affects only wet audio, while bypass selects untrimmed dry audio. Filter phase is frequency-dependent and is not look-ahead latency: EQ contributes zero to track scheduling compensation. A 100 ms filter decay allowance follows release; hard Stop disconnects the graph as before. Parameters use the existing 15 ms smoothing and independent processor ownership. Filter types follow the [Web Audio specification](https://www.w3.org/TR/webaudio-1.0/#BiquadFilterNode).
+
+Evidence: `src/core/pedals.ts`, `src/audio/effects.ts`, `tests/browser/eq.spec.ts`.
 
 ## Waveform and rotary gestures
 
