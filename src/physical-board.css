@@ -1,0 +1,367 @@
+.board-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 232px;
+  align-items: start;
+  gap: 16px;
+  margin-top: 20px;
+}
+.physical-board-editor {
+  min-width: 0;
+}
+.board-tools {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  min-height: 44px;
+  margin-bottom: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.board-route-status {
+  margin-left: auto;
+  color: var(--secondary-ink);
+}
+.board-route-status.unpatched {
+  color: var(--tertiary-ink);
+}
+.equipment-picker {
+  position: relative;
+  z-index: 8;
+}
+.equipment-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 190px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  padding: 6px;
+}
+.equipment-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  text-align: left;
+  font-size: 12px;
+  cursor: grab;
+}
+.equipment-menu button:hover,
+.equipment-menu button:focus-visible {
+  background: var(--surface-1);
+  color: var(--accent-ink);
+}
+.physical-board-editor .pedal-rack-scroll {
+  border-radius: 8px;
+  max-height: 570px;
+  overflow: auto;
+  background: var(--bg);
+}
+.physical-board {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.velcro-strip {
+  position: absolute;
+  left: 80px;
+  right: 72px;
+  height: 56px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 3px,
+      color-mix(in srgb, var(--text-muted) 14%, transparent) 3px 4px
+    ),
+    var(--surface-1);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  opacity: 0.8;
+}
+.strip-top {
+  top: 106px;
+}
+.strip-bottom {
+  top: 342px;
+}
+.board-slot {
+  position: absolute;
+  z-index: 0;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface-1) 35%, transparent);
+  border-radius: 7px;
+  color: var(--text-muted);
+  font: 9px var(--font-mono);
+}
+.board-slot span {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+}
+.tool-active .board-slot:not(:disabled) {
+  cursor: crosshair;
+}
+.tool-active .board-slot:not(:disabled):hover,
+.board-slot:focus-visible {
+  border-color: var(--accent-ink);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.board-cables {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 2;
+  fill: none;
+  stroke-linecap: round;
+}
+.board-cable {
+  cursor: pointer;
+  pointer-events: stroke;
+}
+.cable-hit {
+  stroke: transparent;
+  stroke-width: 18px;
+}
+.board-cable .cable-sheath {
+  stroke-width: 7;
+}
+.board-cable .cable-wire {
+  stroke-width: 2.5;
+}
+.board-cable.selected .cable-wire,
+.board-cable:focus-visible .cable-wire {
+  stroke: var(--accent-ink);
+  stroke-width: 4;
+}
+.draft-cable {
+  stroke: var(--accent-ink);
+  stroke-width: 3;
+  stroke-dasharray: 5 5;
+  pointer-events: none;
+}
+.compact-pedal.pedal-module {
+  position: absolute;
+  z-index: 3;
+  flex: none;
+  min-height: 0;
+  border-radius: 7px;
+  padding: 8px 10px;
+  gap: 6px;
+}
+.compact-pedal.selected {
+  outline: 1px solid var(--pedal-ink);
+  outline-offset: 3px;
+}
+.compact-pedal.moving {
+  z-index: 5;
+  opacity: 0.75;
+}
+.compact-pedal-title {
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.2px;
+  min-height: 36px;
+}
+.pedal-grip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  touch-action: none;
+  background: transparent;
+  color: var(--pedal-ink);
+  border: 0;
+  padding: 0;
+  cursor: grab;
+  font: 8px var(--font-mono);
+}
+.pedal-grip:active {
+  cursor: grabbing;
+}
+.pedal-grip:focus-visible {
+  outline: 1px solid var(--accent-ink);
+  outline-offset: 2px;
+}
+.small-pedal-dials {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 3px;
+}
+.small-dial-control {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 8px;
+  color: var(--text-muted);
+}
+.small-pedal-dials .pedal-dial {
+  width: 28px;
+  height: 28px;
+}
+.small-pedal-dials .pedal-dial > span {
+  inset: 3px;
+}
+.small-pedal-dials .pedal-dial > span::after {
+  height: 5px;
+}
+.board-jack {
+  position: absolute;
+  z-index: 6;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  background: var(--bg);
+  padding: 0;
+  cursor: crosshair;
+}
+.compact-pedal .board-jack {
+  top: 86px;
+}
+.board-jack.jack-in {
+  left: -10px;
+  right: auto;
+}
+.board-jack.jack-out {
+  right: -10px;
+  left: auto;
+}
+.board-jack:hover,
+.board-jack:focus-visible,
+.board-jack.patch-start {
+  border-color: var(--accent-ink);
+  outline: 1px solid var(--accent-ink);
+  outline-offset: 3px;
+}
+.board-terminal {
+  position: absolute;
+  z-index: 4;
+  width: 60px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  color: var(--secondary-ink);
+  font: 8px var(--font-mono);
+}
+.board-terminal .board-jack {
+  top: 10px;
+}
+.terminal-input {
+  justify-content: flex-start;
+}
+.terminal-input .board-jack {
+  left: 20px;
+  right: auto;
+  top: 40px;
+  transform: translateY(-30px);
+}
+.terminal-input span {
+  position: absolute;
+  top: -8px;
+}
+.terminal-output {
+  justify-content: flex-end;
+}
+.terminal-output .board-jack {
+  right: 20px;
+  left: auto;
+}
+.terminal-output span {
+  position: absolute;
+  top: -8px;
+}
+.compact-foot-switch {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 9px;
+  color: var(--pedal-ink);
+  cursor: pointer;
+}
+.compact-foot-switch input {
+  accent-color: var(--pedal-ink);
+}
+.board-footer {
+  min-height: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.board-inspector {
+  --pedal-color: var(--secondary);
+  --pedal-ink: var(--secondary-ink);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 16px;
+  background: var(--surface-1);
+}
+.board-inspector.eq {
+  --pedal-ink: var(--accent-ink);
+}
+.board-inspector.overdrive {
+  --pedal-ink: var(--tertiary-ink);
+}
+.board-inspector h3 {
+  font-size: 17px;
+  margin: 10px 0 18px;
+}
+.board-inspector .pedal-parameters {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+.board-inspector .range-title {
+  flex-direction: row;
+  justify-content: space-between;
+  min-height: 0;
+}
+.board-inspector .numeric-value input {
+  width: 54px;
+}
+.board-inspector > button {
+  margin-top: 14px;
+}
+.board-inspector .eq-shape {
+  margin-top: 18px;
+}
+@media (max-width: 1000px) {
+  .board-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .board-inspector .pedal-parameters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .board-inspector .pedal-parameters {
+    grid-template-columns: 1fr;
+  }
+  .physical-board-editor .pedal-rack-scroll {
+    max-height: 570px;
+  }
+  .board-workspace {
+    gap: 14px;
+  }
+  .board-route-status {
+    margin-left: 0;
+  }
+}
