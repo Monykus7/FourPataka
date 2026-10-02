@@ -1,5 +1,11 @@
 import { clamp } from './music';
-export type PedalKind = 'compressor' | 'overdrive';
+export type PedalKind = 'compressor' | 'overdrive' | 'eq';
+export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
+export const PEDAL_NAMES: Record<PedalKind, string> = {
+  compressor: 'Compressor',
+  overdrive: 'Overdrive',
+  eq: 'Three-band EQ',
+};
 export const PEDAL_CONTROLS = {
   compressor: {
     threshold: [-60, 0, 1, 'dB'],
@@ -12,6 +18,14 @@ export const PEDAL_CONTROLS = {
   overdrive: {
     drive: [0, 24, 0.5, 'dB'],
     tone: [80, 16000, 20, 'Hz'],
+    output: [-24, 12, 0.5, 'dB'],
+    mix: [0, 100, 1, '%'],
+  },
+  eq: {
+    low: [-12, 12, 0.5, 'dB'],
+    mid: [-12, 12, 0.5, 'dB'],
+    high: [-12, 12, 0.5, 'dB'],
+    frequency: [150, 4000, 10, 'Hz'],
     output: [-24, 12, 0.5, 'dB'],
     mix: [0, 100, 1, '%'],
   },
@@ -49,7 +63,9 @@ export function makePedal(kind: PedalKind): Pedal {
     params:
       kind === 'compressor'
         ? { threshold: -24, ratio: 4, attack: 10, release: 250, output: 0, mix: 100 }
-        : { drive: 6, tone: 6000, output: -6, mix: 100 },
+        : kind === 'overdrive'
+          ? { drive: 6, tone: 6000, output: -6, mix: 100 }
+          : { low: 0, mid: 0, high: 0, frequency: 1000, output: 0, mix: 100 },
   };
 }
 export function defaultProcessing(): Processing {
@@ -102,7 +118,7 @@ export function validateChain(value: unknown): asserts value is ChainInstance {
   chain.pedals.forEach((p) => {
     if (
       !p ||
-      !['compressor', 'overdrive'].includes(p.kind) ||
+      !Object.hasOwn(PEDAL_CONTROLS, p.kind) ||
       typeof p.id !== 'string' ||
       !p.id ||
       p.id.length > 100 ||
