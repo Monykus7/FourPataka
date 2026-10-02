@@ -16,3 +16,16 @@ export const rotateValue = (value: number, delta: number, min: number, max: numb
 export function dialStep(value: number, min: number, max: number, step: number) {
   return clamp(Number((min + Math.round((value - min) / step) * step).toFixed(8)), min, max);
 }
+export function dialKeyValue(key: string, value: number, min: number, max: number, step: number) {
+  const delta = {
+    ArrowUp: 1,
+    ArrowRight: 1,
+    ArrowDown: -1,
+    ArrowLeft: -1,
+    PageUp: 10,
+    PageDown: -10,
+  }[key];
+  if (key === 'Home') return min;
+  if (key === 'End') return max;
+  return delta === undefined ? null : dialStep(value + delta * step, min, max, step);
+}

@@ -3,10 +3,19 @@ import {
   angleDelta,
   dialRotation,
   dialStep,
+  dialKeyValue,
   pointerAngle,
   rotateValue,
 } from '../../src/core/rotary';
 describe('rotary dial math', () => {
+  it('supports precise and coarse keyboard steps, endpoints and unrelated keys', () => {
+    expect(dialKeyValue('ArrowRight', 4, 1, 20, 0.1)).toBe(4.1);
+    expect(dialKeyValue('PageDown', 4, 1, 20, 0.1)).toBe(3);
+    expect(dialKeyValue('ArrowDown', 1, 1, 20, 0.1)).toBe(1);
+    expect(dialKeyValue('Home', 4, 1, 20, 0.1)).toBe(1);
+    expect(dialKeyValue('End', 4, 1, 20, 0.1)).toBe(20);
+    expect(dialKeyValue('Tab', 4, 1, 20, 0.1)).toBeNull();
+  });
   it('matches the visible 270-degree sweep and ignores the unstable center', () => {
     expect(dialRotation(-60, -60, 0)).toBe(-135);
     expect(dialRotation(-30, -60, 0)).toBe(0);
