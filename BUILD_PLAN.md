@@ -34,6 +34,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Use concise functional information for personal use, without promotional taglines. Keep the original dark color scheme, minimal shadows, and restrained material detail rather than a full paper background.
 - Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format.
 - Add instrument acoustics later inside the Instrument builder: a wet/dry algorithmic "tiny room" representing the instrument's chamber. It must work without impulse-response (IR) files.
+- Expand the Instrument builder to support up to 32 signed harmonics in a later update, preserving existing 16-harmonic sounds and making piano/brass-inspired timbres a design target.
 
 Other defaults in this document are proposed implementation choices. They should be tuned in the audio proof without changing these confirmed behaviors.
 
@@ -59,6 +60,8 @@ Include the following by the end of stage 5:
 Stage 6 adds WAV export. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
+
+The 32-harmonic bank expansion is also queued under stage 8, ahead of richer instrument-realism controls. The initial H1–H16 release boundary remains historical/current scope; it is not the planned long-term limit.
 
 Keep repeat blocks, dotted notes, tuplets, time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
 
@@ -119,7 +122,7 @@ Undo/redo covers musical settings, preset application, macros, pedal order, and 
 
 ### Harmonics and mathematical presets
 
-H1 is the reference note at f₀. H2–H16 are its overtones at 2f₀–16f₀. Show sixteen tall bars with magnitudes from 0 to 1.
+Current implementation: H1 is the reference note at f₀. H2–H16 are its overtones at 2f₀–16f₀. Show sixteen tall bars with magnitudes from 0 to 1. The planned expansion below extends this bank to H32.
 
 For an instrument without phase controls, the source model is:
 
@@ -138,6 +141,22 @@ Seed presets with relative Fourier coefficients:
 - Triangle approximation: odd magnitudes proportional to 1/h², with alternating polarity.
 
 These are finite approximations. Avoid promising that sixteen terms reproduce an ideal discontinuous waveform or a real acoustic instrument. Instrument-inspired examples can be labeled as approximations.
+
+### Planned expansion — up to 32 harmonics
+
+Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in v0.14.1. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+
+Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
+
+Migrate every existing instrument template, applied track copy and A/B snapshot by preserving its first 16 magnitudes/polarities exactly and appending 16 zero magnitudes with positive polarity. Preserve trim, envelopes, undertones and waveform-point geometry. Loading or migrating old point geometry must not re-project it into a different sound. New waveform drawing/point edits should project into the expanded bank, with adequate sampling and tests of H17 and H32 recovery. Reset to sine clears all higher harmonics together.
+
+Update synthesis coefficient allocation, mathematical preset generation, coefficient macros/baselines, source waveform/spectrum ranges, microscope selection and labels, project validation/migrations, persistence and future offline rendering together. Keep existing saved mathematical presets unchanged through migration; freshly selected expanded presets can use their documented coefficient formulas through H32. Define macro scaling explicitly so extending the array does not silently alter an old sound or an old macro baseline.
+
+Continue excluding components at or above half the active context sample rate from playback and effective source inspection, while retaining their saved coefficients and marking them unavailable. The upper bank will therefore have fewer playable harmonics at high pitches. Preserve explicit trim and disabled automatic normalization; extra coefficients must not trigger hidden loudness compensation.
+
+Future implementation gate: old projects reproduce their original sound after migration; H17/H32 edits, polarity, solo, waveform projection and graphs agree below Nyquist; out-of-band components do not alias; all 32 values survive preset application, independent copies, A/B, undo and JSON round-trip. Verify continuous live edits/comparison, polyphonic resource/performance bounds, narrow-screen/keyboard operation and browser/portable/offline consistency.
+
+Piano and brass are instrument-inspired targets, not guaranteed by the harmonic-count increase. Keep per-partial attack/decay, excitation/dynamic brightness and piano-string inharmonicity as separate later synthesis work alongside chamber acoustics. Piano string stiffness and brass brightness variation motivate those follow-ups: [piano inharmonicity study](https://doi.org/10.1051/aacus/2021002), [Julius O. Smith's FM brass discussion](https://www.dsprelated.com/freebooks/sasp/FM_Brass.html).
 
 ### Undertones
 
@@ -561,6 +580,8 @@ Add guided experiments and the secondary analysis panel with clearly defined sou
 Gate: loading an experiment is undoable; metric units/reference/window are visible; silence produces no misleading numeric values; computed descriptors agree with simple known test signals.
 
 ### Stage 8 and later — advanced synthesis and notation
+
+Requested instrument-builder follow-up: expand the current 16-harmonic bank to support up to 32 harmonics, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
 Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 

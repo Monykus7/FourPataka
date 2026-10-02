@@ -27,6 +27,13 @@
       ]
     },
     {
+      "id": "harmonic-expansion",
+      "parent": "sound",
+      "title": "Up to 32 harmonics (planned)",
+      "summary": "Deferred, not implemented: expand the Instrument builder from 16 to 32 signed harmonics, distinct from the 32-voice polyphony cap. An expandable H17-H32 bank retains active coefficients when hidden. Legacy sounds zero-pad new magnitudes without changing existing coefficients or re-projecting point geometry. Synthesis, waveform projection, presets/macros, source graphs, solo and storage must agree; pitch-dependent Nyquist exclusions retain saved values. Future gates cover copy/migration fidelity, gain reference, phase/clock continuity, projection accuracy, polyphonic performance and offline agreement. Piano/brass-inspired timbres motivate separate later partial envelopes, dynamic brightness and inharmonicity; main-feature/WAV priorities remain unchanged.",
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
+    },
+    {
       "id": "instrument-acoustics",
       "parent": "sound",
       "title": "Instrument acoustics (planned)",

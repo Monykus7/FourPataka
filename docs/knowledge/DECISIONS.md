@@ -2,6 +2,16 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Planned 32-harmonic bank boundary
+
+<!-- features: harmonic-expansion, synthesis, waveform, comparison, storage -->
+
+The requested H1–H32 expansion is deferred; v0.14.1 still validates 16 magnitudes and 16 polarities. The separate 32-voice cap is a polyphony limit, not harmonic capacity. The plan exposes an upper bank without making visibility an audio switch. Existing sounds migrate by zero-padding magnitudes and adding positive polarities, preserving their original coefficients, trim and point geometry without automatic re-projection. Newly generated mathematical presets and waveform edits may use the expanded bank; macros need an explicit scaling policy rather than an incidental change from array length.
+
+Synthesis, projection, source inspection, solo, schema validation and independent saved copies must adopt the same capacity together. Nyquist exclusions remain pitch/sample-rate dependent, with saved upper coefficients retained. Continuous phase/clock, explicit gain reference, independent A/B/track ownership, undo, offline consistency and bounded performance are future gates. Piano/brass-inspired timbres are targets; time-varying partials, excitation/brightness and inharmonicity remain separate later work. This documentation adds no runtime controls and does not advance current release gates.
+
+Plan authority: `BUILD_PLAN.md`, section 5 "Planned expansion — up to 32 harmonics" and stage 8; `IMPLEMENTATION_STATUS.md`, "Next roadmap work". Current integration points: `src/core/music.ts`, `src/core/project.ts`, `src/core/waveform.ts`, `src/audio/voice.ts`, `src/components/FourierWorkspace.tsx`, `src/components/SourceGraphs.tsx`.
+
 ## Planned instrument acoustics boundary
 
 <!-- features: instrument-acoustics, synthesis, comparison, storage -->
