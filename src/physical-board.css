@@ -365,3 +365,6 @@
     margin-left: 0;
   }
 }
+.placing-pedal .board-cable {
+  pointer-events: none;
+}
