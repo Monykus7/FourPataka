@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-01. Latest release: v0.10.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.12.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-The physical pedalboard now implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Release packaging and the complete regression checks are in progress. Delay follows this board update; the surrounding frontend overhaul remains separate work.
+The physical pedalboard now implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. The v0.12.0 package and automated release checks are verified. Delay follows this board update; the surrounding frontend overhaul remains separate work.
 
 Stage 2's phrase comparison and linked source microscope behavior now pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 has compressor/overdrive/EQ, independent track/master routing and pedal-aware A/B snapshots. Delay is next, followed by chain-aware score directives before its full functional gate. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Enable `through` and master directives together with chain-key validation after the remaining effects.
 
@@ -219,3 +219,19 @@ The selected next feature is EQ, released before delay. Low/mid/high gains suppo
 EQ uses fresh BiquadFilterNodes for each instance, clamps frequencies below Nyquist, adds no scheduling/look-ahead latency, smooths parameter changes and allows 100 ms of filter decay after note release. Tests cover flat gain/mix identity, actual low/mid/high response at 48/44.1 kHz, linear blend, bypass, 8 kHz bounded frequencies, independent stereo graphs, mixed compressor/EQ track compensation, frozen versus replayed parameters, live A/B clock continuity and real analyser silence after Stop. UI checks cover rotary keyboard values, numeric bounds, ordering/undo, complete flat reset, independent presets, persistence and the eight-module 390 px rack.
 
 Validation for v0.11.0: all 48 browser checks and 5 packaged desktop checks pass. This includes all eight EQ checks, the previous waveform/composition/pedal regression suite, native EQ keyboard/reset/save/persistence and bundled version verification. Unit checks have 115 passes and the same one pre-existing Earth surface contrast failure (3.381:1 against the 4.5:1 gate); the user's separate palette edit remains untouched and uncommitted, and is present in this local build. Production TypeScript/Vite build, formatting and portable packaging pass. Desktop and 390 px EQ layouts were visually inspected. The maintained semantic graph retrieves the new EQ feature and decision within its requested 1,024-token budget; map freshness passes. Output: `release/FourPataka-0.11.0-win-x64.exe`. Eight focused checkpoints are pushed under Monykus7 and the verified portable app is launched after the release checkpoint. The roadmap remains stage 3 in progress: delay/feed-tail bypass and score chain directives follow; chord macros and WAV export remain later work.
+
+
+### Physical grid pedalboard (v0.12.0)
+
+1. Persistent four-column/two-row positions, explicit serial patch cables and validated legacy migration.
+2. Audio graph construction from complete cable routes; unplugged output silence and live whole-board bypass.
+3. Equipment-menu selection/drag placement, compact pedals, Velcro grid, small dials and selected-pedal exact controls.
+4. Captured placement previews with attached cables, empty-slot snapping, cancellation, removal cleanup and one-step undo.
+5. Existing EQ, rotary/touch, preset-copy, bypass, destination and playback checks adapted to equipment and real jacks.
+6. Actual routed-ID audition proofs, placement/off-path edit isolation, pending repatching, saved board preset/A/B/master independence and usage documentation.
+7. v0.12.0 metadata, native drag placement/mouse patching and project-save board round trips.
+8. Complete browser and packaged desktop verification, maintained knowledge, eighth pushed checkpoint and automatic portable launch.
+
+The board is a serial patching surface with up to eight pedals. Equipment selection does not immediately add a pedal. Placement and movement affect saved positions; cables determine audio order. Mouse drag or click/keyboard jack pairs replace occupied connections; cable selection/disconnection is undoable and feedback loops are rejected. Existing chains load prewired. Removing a pedal leaves its former route unplugged. During playback, repatching waits for replay, while placement remains live without a musical change; explicit A/B retains continuous warmed transitions. Compact dials share the inspector's exact values/sliders and existing grouped history. Surface, controller, controls and styles remain separate for the coming frontend overhaul.
+
+Validation for v0.12.0: all 119 unit checks and all 56 browser checks pass. All six packaged desktop checks are verified against the new Windows executable: four passed in the complete run, and the two native mouse checks passed after centering their coordinate targets above the fixed transport in Windows' constrained work-area viewport. Native coverage includes actual equipment drag/drop and captured cable patching, precise rotary control, EQ reset, saved positions/cables, local renderer isolation, native dialogs, audio, comparison and composition. TypeScript/production build, formatting and portable packaging pass. Desktop and 390 px layouts were visually reviewed. Local semantic retrieval returns the updated board concept and source citations within its 1,024-token budget; map freshness passes. The separate local Earth palette edit is preserved outside these commits; the current working palette passes unit contrast checks. Output: `release/FourPataka-0.12.0-win-x64.exe`. Eight focused commits use Monykus7 and are pushed to the primary master branch. Delay and its tail/bypass policy follow, then chain score directives; chord-symbol macros, WAV export and the broader frontend overhaul remain planned.
