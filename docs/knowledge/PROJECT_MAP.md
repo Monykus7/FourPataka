@@ -104,7 +104,7 @@ Project schema v1 retains source text and deep-copied applied sounds/chains. Lib
 - Independent copies, persistence and undo / dependency group 3: [tests/browser/persistence.spec.ts](../../tests/browser/persistence.spec.ts)
 - Independent copies, persistence and undo / dependency group 4: [tests/browser/studio.spec.ts](../../tests/browser/studio.spec.ts)
 
-Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L13), [TrackInstance](../../src/core/project.ts#L20), [Project](../../src/core/project.ts#L27), [STORAGE_KEY](../../src/core/project.ts#L40).
+Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L14), [TrackInstance](../../src/core/project.ts#L21), [Project](../../src/core/project.ts#L28), [STORAGE_KEY](../../src/core/project.ts#L41).
 
 #### Themes and responsive layout
 

@@ -4,11 +4,39 @@ import {
   insertCommand,
   nextTrackKey,
   setScoreDirective,
+  setScoreChain,
 } from '../../src/core/scoreTools';
 import { parseScore } from '../../src/core/parser';
 const keys = ['sine', 'brightReed'];
 const original = '// keep me\ntempo 80 // slow\ntrack lead using sine {\n  C4 quarter\n}\n';
 describe('source-authoritative composition tools', () => {
+  it('edits and removes chain assignments without damaging comments, spacing or events', () => {
+    const chains = ['clean', 'warmDrive', 'cleanGlue'];
+    const text =
+      '  master  through cleanGlue // mix\r\ntrack lead using sine   through warmDrive { // lead\r\n C4 quarter\r\n}\r\n';
+    expect(setScoreChain(text, keys, chains, 'lead', 'clean')).toBe(
+      text.replace('through warmDrive', 'through clean'),
+    );
+    const removed = setScoreChain(text, keys, chains, 'lead', null);
+    expect(removed).toBe(text.replace('   through warmDrive', ''));
+    expect(setScoreChain(text, keys, chains, null, null)).toBe(
+      text.replace('master  through cleanGlue', ''),
+    );
+    expect(setScoreChain(removed, keys, chains, 'lead', 'warmDrive')).toContain(
+      'using sine through warmDrive { // lead',
+    );
+    expect(setScoreDirective(text, keys, 'tempo', '90', chains)).toContain('tempo 90');
+    expect(appendTrack(text, keys, 'bass', 'sine', ['C2 half'], chains, 'clean')).toContain(
+      'using sine through clean',
+    );
+    expect(insertCommand(text, keys, 'master', 'lead', 'sine', chains, 'clean')).toBe(
+      text.replace('through cleanGlue', 'through clean'),
+    );
+    expect(insertCommand(text, keys, 'through', 'lead', 'sine', chains, 'clean')).toBe(
+      text.replace('through warmDrive', 'through clean'),
+    );
+    expect(() => setScoreChain(text, keys, chains, 'lead', 'unknown')).toThrow('score key');
+  });
   it('edits exact global value spans while preserving comments, CRLF and whitespace', () => {
     const text = '// time 4/4\r\n\t time  3/4 // waltz\r\n' + original;
     const result = setScoreDirective(text, keys, 'time', '6/8');

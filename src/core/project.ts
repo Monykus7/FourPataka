@@ -9,6 +9,7 @@ import { validateWavePoints } from './waveform';
 import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
 import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
+import { setScoreChain } from './scoreTools';
 
 export interface InstrumentPreset {
   id: string;
@@ -165,6 +166,33 @@ export function applyPreset(
         : t,
     ),
   };
+}
+
+export function updateProcessingAssignments(project: Project, processing: Processing): Project {
+  let text = project.scoreText;
+  const keys = project.instruments.map((p) => p.key),
+    chainKeys = processing.library.map((p) => p.key);
+  const sync = (
+    existing: ChainInstance | undefined,
+    next: ChainInstance,
+    target: string | null,
+  ) => {
+    if (!existing || existing.presetId === next.presetId) return next;
+    const preset = processing.library.find((p) => p.id === next.presetId);
+    const key = preset?.key ?? null;
+    text = setScoreChain(text, keys, chainKeys, target, key);
+    // Applying an edited sandbox copy must preserve those exact settings;
+    // reconciliation should not substitute the untouched library template.
+    return { ...next, assignmentKey: key };
+  };
+  const master = sync(project.processing.master, processing.master, null);
+  const tracks = Object.fromEntries(
+    Object.entries(processing.tracks).map(([key, chain]) => [
+      key,
+      sync(project.processing.tracks[key], chain, key),
+    ]),
+  );
+  return { ...project, scoreText: text, processing: { ...processing, master, tracks } };
 }
 
 function record(value: unknown): asserts value is Record<string, unknown> {

@@ -97,12 +97,17 @@ describe('score compilation', () => {
   });
   it('checks every displayed command example against the parser', () => {
     for (const command of COMMANDS) {
-      const text = ['tempo', 'time', 'track'].includes(command.name)
-        ? command.name === 'track'
-          ? command.snippet
-          : `${command.snippet}\ntrack lead using brightReed {\nC4 quarter\n}`
-        : `track lead using brightReed {\n${command.snippet}\n}`;
-      expect(parseScore(text, keys).diagnostics, command.name).toEqual([]);
+      const text =
+        command.name === 'through'
+          ? `track lead using brightReed ${command.snippet} {\n C4 quarter\n}`
+          : ['tempo', 'time', 'track', 'master'].includes(command.name)
+            ? command.name === 'track'
+              ? command.snippet
+              : `${command.snippet}\ntrack lead using brightReed {\nC4 quarter\n}`
+            : `track lead using brightReed {\n${command.snippet}\n}`;
+      expect(parseScore(text, keys, ['warmDrive', 'cleanGlue']).diagnostics, command.name).toEqual(
+        [],
+      );
     }
   });
 });

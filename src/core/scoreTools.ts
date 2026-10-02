@@ -8,8 +8,8 @@ export function nextTrackKey(text: string, instrumentKeys: string[], prefix = 'l
   while (keys.has(candidate)) candidate = `${prefix}${index++}`;
   return candidate;
 }
-function assertEditable(text: string, keys: string[]) {
-  const parsed = parseScore(text, keys);
+function assertEditable(text: string, keys: string[], chainKeys: string[] = []) {
+  const parsed = parseScore(text, keys, chainKeys);
   if (parsed.diagnostics.some((d) => d.message !== 'Add a track to start composing.')) {
     throw new Error('Fix the score diagnostics before using composition controls.');
   }
@@ -20,8 +20,9 @@ export function setScoreDirective(
   instrumentKeys: string[],
   name: 'tempo' | 'time',
   value: string,
+  chainKeys: string[] = [],
 ) {
-  const parsed = assertEditable(text, instrumentKeys);
+  const parsed = assertEditable(text, instrumentKeys, chainKeys);
   if (!value || /\s/.test(value)) throw new Error('Use one directive value without whitespace.');
   const check = parseScore(
     `${name} ${value}\ntrack check using ${instrumentKeys[0]} {\nC4 quarter\n}`,
@@ -39,8 +40,10 @@ export function appendTrack(
   key: string,
   instrumentKey: string,
   events: string[],
+  chainKeys: string[] = [],
+  chainKey: string | null = null,
 ) {
-  const parsed = assertEditable(text, instrumentKeys);
+  const parsed = assertEditable(text, instrumentKeys, chainKeys);
   if (!SCORE_KEY.test(key) || key.length > 100)
     throw new Error('Use a track key starting with a letter, followed by letters, digits, or _.');
   if (parsed.tracks.some((t) => t.key === key)) throw new Error(`Track “${key}” already exists.`);
@@ -50,10 +53,36 @@ export function appendTrack(
   if (!events.length) throw new Error('Add at least one note, chord, or rest.');
   if (events.some((event) => event.includes('\n') || event.includes('\r')))
     throw new Error('Use one event per row.');
-  const block = `track ${key} using ${instrumentKey} {\n${events.map((e) => `  ${e}`).join('\n')}\n}`;
-  const checked = parseScore(block, instrumentKeys);
+  if (chainKey && !chainKeys.includes(chainKey)) throw new Error('Choose an existing pedal chain.');
+  const block = `track ${key} using ${instrumentKey}${chainKey ? ` through ${chainKey}` : ''} {\n${events.map((e) => `  ${e}`).join('\n')}\n}`;
+  const checked = parseScore(block, instrumentKeys, chainKeys);
   if (checked.diagnostics.length) throw new Error(checked.diagnostics[0].message);
   return text + (text.trim() ? (text.endsWith('\n') ? '\n' : '\n\n') : '') + block + '\n';
+}
+export function setScoreChain(
+  text: string,
+  instrumentKeys: string[],
+  chainKeys: string[],
+  targetKey: string | null,
+  key: string | null,
+) {
+  const parsed = assertEditable(text, instrumentKeys, chainKeys);
+  if (key !== null && (!SCORE_KEY.test(key) || key.length > 100 || !chainKeys.includes(key)))
+    throw new Error('Choose an existing pedal score key.');
+  if (targetKey === null) {
+    const master = parsed.master;
+    if (!key)
+      return master ? text.slice(0, master.commandFrom) + text.slice(master.commandTo) : text;
+    return master
+      ? text.slice(0, master.from) + key + text.slice(master.to)
+      : `master through ${key}${text.includes('\r\n') ? '\r\n' : '\n'}` + text;
+  }
+  const track = parsed.tracks.find((t) => t.key === targetKey);
+  if (!track) throw new Error('Choose an existing track for pedal assignment.');
+  if (!key)
+    return track.chainKey ? text.slice(0, track.instrumentTo) + text.slice(track.chainTo) : text;
+  if (track.chainKey) return text.slice(0, track.chainFrom) + key + text.slice(track.chainTo);
+  return text.slice(0, track.instrumentTo) + ` through ${key}` + text.slice(track.instrumentTo);
 }
 export function insertCommand(
   text: string,
@@ -61,16 +90,33 @@ export function insertCommand(
   name: string,
   targetKey: string,
   instrumentKey: string,
+  chainKeys: string[] = [],
+  chainKey = chainKeys.includes('warmDrive') ? 'warmDrive' : chainKeys[0],
 ) {
-  const parsed = assertEditable(text, instrumentKeys);
+  const parsed = assertEditable(text, instrumentKeys, chainKeys);
   const command = COMMANDS.find((c) => c.name === name);
   if (!command) throw new Error('Unknown command card.');
   if (name === 'track')
-    return appendTrack(text, instrumentKeys, nextTrackKey(text, instrumentKeys), instrumentKey, [
-      'C5 quarter',
-    ]);
+    return appendTrack(
+      text,
+      instrumentKeys,
+      nextTrackKey(text, instrumentKeys),
+      instrumentKey,
+      ['C5 quarter'],
+      chainKeys,
+    );
+  if (name === 'master' || name === 'through') {
+    if (!chainKey) throw new Error('Save a pedal chain first.');
+    return setScoreChain(
+      text,
+      instrumentKeys,
+      chainKeys,
+      name === 'master' ? null : targetKey,
+      chainKey,
+    );
+  }
   if (name === 'tempo' || name === 'time') {
-    return setScoreDirective(text, instrumentKeys, name, command.snippet.split(' ')[1]);
+    return setScoreDirective(text, instrumentKeys, name, command.snippet.split(' ')[1], chainKeys);
   }
   const target = parsed.tracks.find((t) => t.key === targetKey);
   if (!target) throw new Error('Make a track or choose an insertion destination first.');
