@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.12.1 provides compact physical grid boards, equipment-menu placement, an exact-value inspector and real serial patch routing. Compressor, overdrive and three-band EQ are implemented. Delay, chain score directives, WAV export and chord-symbol macros remain planned.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.13.0 adds delay to compact physical grid boards, equipment-menu placement, exact-value inspection and real serial patch routing. Compressor, overdrive, three-band EQ and delay are implemented. Delay bypass preserves stored echoes; Stop clears buffers. Chain score directives, WAV export and chord-symbol macros remain planned.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
@@ -54,7 +54,7 @@
       "id": "pedals",
       "parent": "sound",
       "title": "Pedalboard and processing",
-      "summary": "Compressor, overdrive and three-band EQ have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Delay/tails and score through/master directives remain unimplemented.",
+      "summary": "Compressor, overdrive, three-band EQ and delay have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Delay time is 20–2000 ms with feedback capped at 95%, output trim and linear mix. Pedal/whole-chain bypass closes the delay feed, retains old echoes and restores dry unity. Measured tail indicators bridge echo gaps; finite decay budgets extend cleanup, while Stop disposes buffers. Delay adds no track compensation latency. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Score through/master directives remain unimplemented.",
       "paths": [
         "src/core/pedals.ts",
         "src/core/board.ts",
@@ -77,6 +77,7 @@
         "tests/browser/dials-touch.spec.ts",
         "tests/browser/pedals.spec.ts",
         "tests/browser/eq.spec.ts",
+        "tests/browser/delay.spec.ts",
         "tests/browser/pedalboard.spec.ts"
       ]
     },

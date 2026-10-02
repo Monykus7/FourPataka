@@ -4,7 +4,13 @@ These summaries record why implementation details matter. Source code and tests 
 
 ## Delay feed and echo state
 
+<!-- features: pedals, comparison, storage -->
+
 Delay uses a separate feed gain into a DelayNode/feedback loop. Pedal or whole-chain bypass closes that feed and restores dry unity, retaining the configured wet gain and stored echoes. Feedback is validated at 0–95%; it cannot sustain itself indefinitely. Each independent chain owns its own buffer. Echo time is intentional musical timing, so its graph latency is zero for track compensation. Tail metadata counts the first echo and feedback repeats until -60 dB; live delay edits refresh that estimate. The bypass indicator measures loop activity and bridges one delay interval of silence between echoes. Stop fades the session output before disposing all feedback nodes. Tempo sync remains later work.
+
+Impulse proofs found a 128-frame cycle-breaker offset on Chromium repeats at 44.1 and 48 kHz. The first echo therefore runs outside the feedback cycle; the repeat DelayNode subtracts that quantum so both first and repeated echoes follow the displayed time. New-input gain, feedback and trim remain separate. Loop activity is sampled by the scheduler even when another tab is visible. Cleanup budgets never shrink below echoes captured at previous audition settings. Natural playback ends after release plus the finite processing allowance, while explicit Stop fades in 20 ms and disposes nodes after 35 ms. Different A/B topologies keep the musical clock and retain the established warmed-branch replacement policy; they do not share buffers.
+
+Evidence: `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/browser/delay.spec.ts`, `tests/desktop/app.spec.ts`.
 
 ## Phase and musical clock
 
@@ -26,7 +32,7 @@ Evidence: `src/core/parser.ts`, `src/core/scoreTools.ts`, `src/core/meter.ts`, `
 
 <!-- features: storage, pedals, comparison -->
 
-Saving a preset never overwrites already-applied track copies. Apply is an explicit copy operation. Each processing destination owns processor state. Compressor and overdrive dry paths match wet latency; otherwise mixing/bypass causes comb filtering or timing changes. Audition parameter changes are live; score parameter/topology changes wait for replay, while bypass remains live. Delay/tail handling and score chain directives still need implementation.
+Saving a preset never overwrites already-applied track copies. Apply is an explicit copy operation. Each processing destination owns processor state. Compressor and overdrive dry paths match wet latency; otherwise mixing/bypass causes comb filtering or timing changes. Audition parameter changes are live; score parameter/topology changes wait for replay, while bypass remains live. Delay feed/tail bypass is implemented; score chain directives remain planned.
 
 Evidence: `src/core/project.ts`, `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/browser/pedals.spec.ts`.
 

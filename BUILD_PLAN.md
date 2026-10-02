@@ -228,6 +228,8 @@ A header must identify the editing destination: library preset, a particular tra
 
 EQ v0.11.0 uses low/mid/high gains of −12…+12 dB, an adjustable 150…4000 Hz mid center, fixed 200 Hz low/4000 Hz high shelves, and mid Q = 1. It starts flat, offers output/mix and a one-step flat reset, and uses the existing independent chains and live-audition/frozen-score policy. EQ is released before implementing delay, as requested on 2026-10-02.
 
+Delay v0.13.0 implements time 20–2000 ms, feedback 0–95%, output −24…+12 dB and linear mix. Defaults are 300 ms / 30% feedback / 0 dB / 35% mix. Independent buffers retain echoes under pedal/whole-chain feed bypass, measured tail indicators bridge gaps, and Stop clears all state. A separate first-echo path and compensated feedback loop preserve cadence in Chromium at 44.1/48 kHz. Echo time contributes zero scheduling latency; a finite -60 dB tail estimate extends playback beyond the last release and refreshes for live audition edits. Score parameters remain frozen. Tempo sync and chain score directives remain future work.
+
 Use numeric entry and keyboard adjustment alongside knobs. Clamp parameter ranges consistently in UI, import validation, and audio factories. An unchanged/identity effect at any mix setting should not introduce an unexplained gain boost.
 
 Initial parameter ranges: compressor threshold −60…0 dB, ratio 1…20, attack 0…100 ms, release 10…2000 ms; overdrive drive 0…24 dB and tone 80…16000 Hz; EQ gains −12…+12 dB and mid frequency 150…4000 Hz; delay time 20…2000 ms and feedback 0…95%. Pedal output trim uses −24…+12 dB where offered. Mix is 0…100%. Clamp frequency controls below the context's Nyquist limit. Audible defaults and trim values are checked in the audio proof.
