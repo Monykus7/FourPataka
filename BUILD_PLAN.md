@@ -417,7 +417,7 @@ Use a distinct, labeled clipping/error treatment. Do not reuse comparison or und
 
 Keep project identity, Play, Stop, parsed tempo, master mix level, monitor level, and output meter visible. A/B appears in comparison context rather than looking like a second project-wide transport.
 
-Primary areas are Instrument, Pedalboard, Compose, and Learn. The inspector adapts to the current partial, pedal, or event.
+Instrument, Pedalboard, and Compose have equal primary navigation tabs. Learn stays a smaller secondary link. The inspector adapts to the current partial, pedal, or event.
 
 ### Instrument
 
@@ -427,7 +427,7 @@ Support exact numeric input and keyboard adjustment. Clearly identify whether ed
 
 ### Pedalboard
 
-Use flat modules with clear signal arrows, knob names, numeric values, and on/off states. Include preset Save, Save as new, Apply, and Apply to all actions in the editing context.
+Give Pedalboard its own primary workspace. Use flat pedal modules with connected input/output jacks and visible patch cables following the actual serial effect order. Include knob indicators, parameter names, numeric values, sliders, status lights, and keyboard-accessible bypass footswitches. Keep preset Save, Save as new, Apply, and Apply to all actions in the editing context. Long desktop chains scroll locally; narrow screens use a vertical cable-connected list.
 
 Show both current order and any pending order change. Keep dry/wet and tail state understandable without requiring hover.
 

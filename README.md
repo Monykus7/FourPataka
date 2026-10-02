@@ -25,7 +25,7 @@ Browser tests use a locally installed Google Chrome. Change `channel` in `playwr
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.7.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.8.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -44,7 +44,7 @@ The desktop checks can also target the unpacked production executable by setting
 
 **Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.
 
-Instrument and Compose are the two primary views. Learn is a smaller secondary link. The interface keeps the original dark palette and orange accents, flat panels, concise headings, and a faint material texture inside panels.
+Instrument, Pedalboard, and Compose are the three primary views. Learn is a smaller secondary link. The interface keeps flat panels, concise headings, and a faint material texture inside panels, with five selectable themes.
 
 ## Compare sounds
 
@@ -114,7 +114,9 @@ Both editing tools update the current A/B sound and live audition. Each stroke o
 
 ## Pedalboard
 
-The Instrument view includes a pedalboard with an explicit **Editing destination**: Audition A/B, a named track, or Master. Add compressor/overdrive modules, set their numeric controls or sliders, bypass a pedal or the chain, and drag module titles to reorder (Move left/right are keyboard alternatives). A chain currently supports up to eight pedals.
+The dedicated **Pedalboard** tab has an explicit **Editing destination**: Audition A/B, a named track, or Master. Input/output jacks and patch cables show the serial signal path. Adding, removing, or reordering pedals updates the connections and effect order together. Pedals include dial indicators linked to their numeric fields/sliders, status lights, and keyboard-accessible bypass footswitches. Drag module titles to reorder, or use Move left/right. A chain currently supports up to eight pedals. Longer desktop chains scroll within the rack; narrow screens stack pedals with vertical cables.
+
+Compose's **Edit pedals** links open the selected track/master chain directly. **Listen to chain** auditions A/B; **Play score through chain** starts the score for a track/master destination. Live output graphs remain below the board. Desktop **View → Pedalboard** uses Ctrl+3; switching tabs keeps playback running.
 
 **Load chain preset** creates an independent copy. **Save chain preset** updates its library template while applied instances retain their values. **Save chain as new** creates a named template. Apply the current chain to a track or master, or use **Apply chain to all associated** to update exactly the listed destinations. All musical edits and applications are undoable. A/B copies include the audition chain; switching sides keeps the clock running and crossfades a warmed, aligned graph when its topology differs. Score comparison changes the source sound through the selected track's existing chain.
 

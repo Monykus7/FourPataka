@@ -138,3 +138,16 @@ Themes use tertiary colors for waveform dots, processed spectra, overdrive accen
 Validation: 78 unit tests, 30 browser tests, and 2 packaged desktop tests pass. Production build and formatting pass. Output: `release/FourPataka-0.7.0-win-x64.exe`. This release has four continuous-comparison checkpoints and four theme/release checkpoints, pushed using the configured Monykus7 identity. The verified portable application is launched after the release checkpoint.
 
 The main feature roadmap remains at stage 3 in progress: EQ, delay, delay-tail policies, and score chain directives are still next. These comparison and theme improvements do not complete those remaining gates.
+
+### Dedicated cable-connected pedalboard (v0.8.0)
+
+1. Equal primary Instrument/Pedalboard/Compose navigation, secondary Learn, direct Compose track/master editing links, and native Ctrl+3 menu navigation.
+2. Serial input/output terminals, jack sockets and patch cables following real pedal order; dial indicators with exact values/sliders, status LEDs, and keyboard-accessible bypass footswitches.
+3. Cable/order, empty/maximum chains, keyboard bypass/undo, destination isolation, tab playback continuity, responsive layouts, and native menu regression coverage. Pending status is scoped to the selected path, with cable animation paused for edited connections awaiting replay. Playback tests use longer phrases and readiness checks to tolerate slower UI execution.
+4. Usage/build-plan documentation and Windows v0.8.0 packaging and release checks.
+
+The dedicated view preserves the existing independent audition A/B, track and master chains, preset Save/Save as new/Apply actions, and processed output graphs. Cables represent serial connections managed by the pedal order; adding/removing/reordering modules updates the visual path. Desktop racks scroll internally for longer chains. Narrow screens stack modules with vertical cables. Source synthesis remains in Instrument, and view changes keep the running audio session.
+
+This UI milestone does not complete roadmap stage 3: EQ, delay/tail behavior and score chain directives remain next.
+
+Validation for v0.8.0: 78 unit tests, all 32 browser tests, and 2 packaged desktop tests pass. The initial browser run exposed short-playback fixture assumptions and one overall UI timeout; longer phrases, audio readiness polling and a bounded 60-second browser test timeout resolve these without changing musical playback behavior. Desktop tests use a bounded 90-second timeout and verify the Pedalboard menu, connected cable view, processed audio, continuous A/B, saved themes and native project dialogs. Production build, formatting, and desktop packaging pass. Output: `release/FourPataka-0.8.0-win-x64.exe`. Four focused checkpoints are pushed using the configured Monykus7 identity, and the verified portable app is launched after the release checkpoint.
