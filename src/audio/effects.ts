@@ -1,5 +1,13 @@
 import { dbToGain } from '../core/music';
-import { chainTopology, clampPedal, EQ_SHAPE, type Chain, type Pedal } from '../core/pedals';
+import {
+  chainTopology,
+  chainMusicalSettings,
+  clampPedal,
+  EQ_SHAPE,
+  type Chain,
+  type Pedal,
+} from '../core/pedals';
+import { boardRoute } from '../core/board';
 export interface EffectGraph {
   input: GainNode;
   output: GainNode;
@@ -147,11 +155,12 @@ export interface ChainGraph {
   latency: number;
   tail: number;
   topology: string;
+  readonly musicalSettings: string;
   update: (chain: Chain, bypassOnly?: boolean) => boolean;
   dispose: () => void;
 }
 export function chainLatency(chain: Chain, oversamplingLatency: number, compressorLatency = 0.006) {
-  return chain.pedals.reduce(
+  return boardRoute(chain).pedals.reduce(
     (sum, p) =>
       sum +
       (p.kind === 'compressor' ? compressorLatency : p.kind === 'eq' ? 0 : oversamplingLatency),
@@ -168,7 +177,8 @@ export function createChain(
     output = context.createGain(),
     analyser = context.createAnalyser();
   analyser.fftSize = 2048;
-  const effects = chain.pedals.map((p) =>
+  const route = boardRoute(chain);
+  const effects = route.pedals.map((p) =>
     createEffect(
       context,
       { ...p, bypassed: p.bypassed || chain.bypassed },
@@ -180,12 +190,17 @@ export function createChain(
   effects.forEach((effect, i) => {
     node.connect(effect.input);
     node = effect.output;
-    effect.update(chain.pedals[i], chain.bypassed);
+    effect.update(route.pedals[i], chain.bypassed);
   });
-  node.connect(output);
+  // An unplugged board has no path. Its external whole-board bypass is the
+  // only dry path; visual moves and loose pedals never alter processor order.
+  const disconnectedBypass = context.createGain();
+  if (route.connected) node.connect(output);
+  else input.connect(disconnectedBypass).connect(output);
+  disconnectedBypass.gain.value = chain.bypassed ? 1 : 0;
   output.connect(analyser);
   const topology = chainTopology(chain);
-  let frozen = structuredClone(chain);
+  const frozen = structuredClone(chain);
   return {
     input,
     output,
@@ -193,20 +208,23 @@ export function createChain(
     latency: chainLatency(chain, oversamplingLatency, compressorLatency),
     tail: effects.reduce((sum, effect) => sum + effect.tail, 0),
     topology,
+    get musicalSettings() {
+      return chainMusicalSettings(frozen);
+    },
     update(next, bypassOnly = false) {
       // ID matching keeps live bypass useful even when an order edit is pending.
       effects.forEach((effect, i) => {
-        const matching = next.pedals.find(
-          (p) => p.id === frozen.pedals[i].id && p.kind === frozen.pedals[i].kind,
-        );
+        const original = frozen.pedals.find((p) => p.id === route.pedals[i].id)!;
+        const matching = next.pedals.find((p) => p.id === original.id && p.kind === original.kind);
         const pedal = matching
           ? bypassOnly
-            ? { ...frozen.pedals[i], bypassed: matching.bypassed }
+            ? { ...original, bypassed: matching.bypassed }
             : matching
-          : frozen.pedals[i];
+          : original;
         effect.update(pedal, next.bypassed);
-        frozen.pedals[i] = structuredClone(pedal);
+        frozen.pedals[frozen.pedals.indexOf(original)] = structuredClone(pedal);
       });
+      disconnectedBypass.gain.setTargetAtTime(next.bypassed ? 1 : 0, context.currentTime, 0.015);
       return topology === chainTopology(next);
     },
     dispose() {
@@ -214,6 +232,7 @@ export function createChain(
       input.disconnect();
       output.disconnect();
       analyser.disconnect();
+      disconnectedBypass.disconnect();
     },
   };
 }
