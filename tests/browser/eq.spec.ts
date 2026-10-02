@@ -1,5 +1,99 @@
 import { expect, test } from '@playwright/test';
 
+test('EQ presets retain independent A/B, track and master copies through saving and reload', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  const low = page.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
+  await low.fill('6');
+  await page
+    .getByRole('textbox', { name: 'New chain preset name', exact: true })
+    .fill('EQ presence');
+  await page.getByRole('button', { name: 'Save chain as new', exact: true }).click();
+  await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
+  const target = page.getByRole('combobox', { name: 'Chain application destination', exact: true });
+  for (const value of ['track:melody', 'master']) {
+    await target.selectOption(value);
+    await page.getByRole('button', { name: 'Apply chain to destination', exact: true }).click();
+  }
+  await low.fill('12');
+  await page.getByRole('button', { name: 'Save chain preset', exact: true }).click();
+  const destination = page.getByRole('combobox', {
+    name: 'Pedal editing destination',
+    exact: true,
+  });
+  for (const value of ['track:melody', 'master']) {
+    await destination.selectOption(value);
+    await expect(low).toHaveValue('6');
+  }
+  await destination.selectOption('track:bass');
+  await expect(page.locator('.pedal-module.eq')).toHaveCount(0);
+  await destination.selectOption('audition');
+  await page
+    .getByRole('button', { name: 'Apply chain to all associated (2)', exact: true })
+    .click();
+  await expect
+    .poll(async () => {
+      const processing = await page.evaluate(
+        () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing,
+      );
+      return [
+        processing.audition.A.pedals[0].params.low,
+        processing.audition.B.pedals[0].params.low,
+        processing.tracks.melody.pedals[0].params.low,
+        processing.master.pedals[0].params.low,
+        processing.tracks.bass.pedals.length,
+      ];
+    })
+    .toEqual([12, 6, 12, 12, 0]);
+  await page.reload();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('master');
+  await expect(low).toHaveValue('12');
+  await low.fill('-4');
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('track:melody');
+  await expect(low).toHaveValue('12');
+  await expect(
+    page
+      .getByRole('combobox', { name: 'Pedal preset', exact: true })
+      .getByRole('option', { name: 'EQ presence' }),
+  ).toHaveCount(1);
+});
+
+test('EQ remains usable at 390 px with all eight modules and visible vertical connections', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await page.screenshot({ path: '.test-results/eq-mobile.png', fullPage: true });
+  for (let i = 1; i < 8; i++)
+    await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Add EQ', exact: true })).toBeDisabled();
+  await expect(page.locator('.pedal-module.eq')).toHaveCount(8);
+  await expect(page.locator('.patch-cable .vertical-cable')).toHaveCount(9);
+  const frequency = page.getByRole('slider', { name: 'eq 8 mid frequency dial', exact: true });
+  await frequency.focus();
+  await frequency.press('End');
+  await expect(
+    page.getByRole('spinbutton', { name: 'eq 8 mid frequency exact value', exact: true }),
+  ).toHaveValue('4000');
+  await page.getByRole('checkbox', { name: 'Bypass eq 8', exact: true }).check();
+  await page.getByRole('button', { name: 'Reset EQ 8 to flat', exact: true }).click();
+  await expect(
+    page.getByRole('spinbutton', { name: 'eq 8 mid frequency exact value', exact: true }),
+  ).toHaveValue('1000');
+  await expect(page.getByRole('checkbox', { name: 'Bypass eq 8', exact: true })).toBeChecked();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 test('EQ joins the cable path with precise rotary controls and bounds', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
@@ -7,6 +101,7 @@ test('EQ joins the cable path with precise rotary controls and bounds', async ({
   const eq = page.locator('.pedal-module.eq');
   await expect(eq).toContainText('Three-band EQ');
   await expect(eq).toContainText('Shelves 200 Hz / 4 kHz');
+  await page.screenshot({ path: '.test-results/eq-desktop.png', fullPage: true });
   await expect(page.locator('.patch-cable')).toHaveCount(2);
   const low = eq.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
   const dial = eq.getByRole('slider', { name: 'eq 1 low gain dial', exact: true });
