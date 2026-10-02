@@ -427,10 +427,11 @@ export class AudioEngine {
         );
       });
   }
-  processingPending(processing: Processing, side: 'A' | 'B') {
+  processingPending(processing: Processing, side: 'A' | 'B', destination?: string) {
     const session = this.session;
     if (!session) return false;
     return [...session.chains].some(([key, graph]) => {
+      if (destination && key !== destination) return false;
       const chain =
         key === 'audition'
           ? processing.audition[side]

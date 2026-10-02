@@ -58,6 +58,10 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).not.toHaveValue(
     originalH1,
   );
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'pedalboard'),
+  );
+  await expect(page.getByRole('heading', { name: 'Pedalboard', exact: true })).toBeVisible();
   const pedalboard = page.getByRole('region', { name: 'Pedalboard', exact: true });
   await pedalboard
     .getByRole('combobox', { name: 'Pedal preset', exact: true })
@@ -66,11 +70,21 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   await expect(
     pedalboard.getByRole('spinbutton', { name: 'overdrive 1 drive exact value' }),
   ).toHaveValue('6');
+  await expect(
+    page.getByRole('img', { name: 'Cable from Instrument A to Overdrive 1', exact: true }),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
   await expect(page.getByRole('img', { name: 'After pedals waveform', exact: true })).toBeVisible();
   await pedalboard.getByRole('checkbox', { name: 'Bypass overdrive 1', exact: true }).check();
   await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill(
+      'tempo 60\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
+    );
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await page
     .getByRole('combobox', { name: 'Comparison material', exact: true })
     .selectOption('phrase');

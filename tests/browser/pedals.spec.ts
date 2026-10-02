@@ -133,6 +133,17 @@ test('pedal presets apply independent copies, A/B includes chains, and order is 
   page,
 }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill(
+      'tempo 20\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
+    );
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Comparison material', exact: true })
+    .selectOption('phrase');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   const board = page.getByRole('region', { name: 'Pedalboard', exact: true });
   const destination = board.getByRole('combobox', { name: 'Pedal editing destination' });
   await board
@@ -193,6 +204,7 @@ test('pedal presets apply independent copies, A/B includes chains, and order is 
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
   await page.waitForTimeout(450);
   await page.reload();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await expect(
     board.getByRole('spinbutton', { name: 'compressor 1 ratio exact value' }),
   ).toHaveValue('3');
@@ -217,11 +229,13 @@ test('hard Stop clears a processed audition before a fresh silent replay', async
       chain = { pedals: [makePedal('overdrive'), makePedal('compressor')], bypassed: false };
     const phrase = {
       tempo: 60,
-      beats: 2,
-      events: [{ beat: 0, duration: 2, notes: ['A4'], frequencies: [440] }],
+      beats: 16,
+      events: [{ beat: 0, duration: 16, notes: ['A4'], frequencies: [440] }],
     };
     await engine.auditionPhrase(sound, phrase, undefined, chain);
-    await new Promise((r) => setTimeout(r, 200));
+    const deadline = performance.now() + 5000;
+    while (engine.measure().peak <= 0.001 && performance.now() < deadline)
+      await new Promise((r) => setTimeout(r, 25));
     const playing = engine.measure().peak;
     engine.stop();
     await new Promise((r) => setTimeout(r, 150));

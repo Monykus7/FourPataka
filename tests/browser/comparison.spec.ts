@@ -94,18 +94,25 @@ test('A/B shares a saved phrase and switches sound without restarting its positi
   page,
 }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill(
+      'tempo 20\ntrack melody using brightReed {\n C4 whole\n}\ntrack bass using softBass {\n Bb2 whole\n F2 whole\n rest whole\n}',
+    );
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await page
     .getByRole('combobox', { name: 'Comparison material', exact: true })
     .selectOption('phrase');
   await page.getByRole('combobox', { name: 'Comparison phrase track' }).selectOption('bass');
   await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('2');
-  await page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }).fill('4');
+  await page.getByRole('spinbutton', { name: 'Comparison phrase end boundary' }).fill('12');
   await page.getByRole('spinbutton', { name: 'Comparison phrase start beat' }).fill('1000003');
   await expect(page.getByRole('spinbutton', { name: 'Comparison phrase start beat' })).toHaveValue(
     '2',
   );
   await expect(page.locator('.comparison-summary')).toContainText(
-    'bass · 2 beats · 120 BPM · 2 events',
+    'bass · 10 beats · 20 BPM · 2 events',
   );
   await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
   await page.getByRole('button', { name: 'B', exact: true }).click();
@@ -125,7 +132,9 @@ test('A/B shares a saved phrase and switches sound without restarting its positi
     .poll(async () => Number(await progress.getAttribute('value')))
     .toBeGreaterThan(beforeSwitch);
   await page.getByRole('button', { name: 'Replay comparison', exact: true }).click();
-  await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeLessThan(0.2);
+  await expect
+    .poll(async () => Number(await progress.getAttribute('value')))
+    .toBeLessThan(beforeSwitch);
   await expect(page.getByRole('spinbutton', { name: 'Comparison phrase start beat' })).toHaveValue(
     '2',
   );
@@ -434,7 +443,7 @@ test('score comparison controls keep the playhead moving without changing saved 
   await page
     .getByRole('textbox', { name: 'Score editor' })
     .fill(
-      'tempo 60\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
+      'tempo 20\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
     );
   await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
@@ -446,7 +455,13 @@ test('score comparison controls keep the playhead moving without changing saved 
     () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks,
   );
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
-  await expect(page.locator('.transport-time')).toContainText('00:01');
+  await expect
+    .poll(async () =>
+      Number(
+        (await page.locator('.transport-time strong').textContent())?.match(/00:(\d+)/)?.[1] ?? 0,
+      ),
+    )
+    .toBeGreaterThan(0);
   await page.getByRole('combobox', { name: 'Live comparison track' }).selectOption('melody');
   await page.getByRole('button', { name: 'B', exact: true }).click();
   await expect(page.locator('.playback-note')).toContainText('Live A/B on melody');

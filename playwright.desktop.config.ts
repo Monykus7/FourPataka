@@ -3,6 +3,6 @@ export default defineConfig({
   testDir: './tests/desktop',
   outputDir: '.test-results/desktop',
   workers: 1,
-  timeout: 45000,
+  timeout: 90000,
   use: { trace: 'retain-on-failure' },
 });

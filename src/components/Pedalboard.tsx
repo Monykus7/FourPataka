@@ -91,7 +91,7 @@ export default function Pedalboard({
   const output = dest.startsWith('track:') ? 'Track level' : 'Project mix';
   return (
     <section
-      className={`panel pedalboard ${playing ? 'signal-live' : ''} ${chain.bypassed ? 'chain-bypassed' : ''}`}
+      className={`panel pedalboard ${playing && !pending ? 'signal-live' : ''} ${chain.bypassed ? 'chain-bypassed' : ''}`}
       aria-label="Pedalboard"
     >
       <div className="section-title">
@@ -158,7 +158,7 @@ export default function Pedalboard({
       )}
       <div className="signal-path-status">
         <span className={`signal-status-dot ${playing ? 'live' : ''}`} />
-        {playing ? 'Playing' : 'Ready'}
+        {playing ? (pending ? 'Playing previous chain' : 'Playing') : 'Ready'}
         <ArrowRight size={13} />
         {chain.bypassed
           ? 'Chain bypassed · signal passes through'

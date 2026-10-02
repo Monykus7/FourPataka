@@ -1,13 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-test('dark studio has two primary views, a smaller Learn link, and no mobile overflow', async ({
+test('dark studio has three primary views, a smaller Learn link, and no mobile overflow', async ({
   page,
 }) => {
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
   await expect(
     page.getByRole('navigation', { name: 'Studio views' }).getByRole('button'),
-  ).toHaveCount(2);
+  ).toHaveCount(3);
   const primary = await page.getByRole('button', { name: 'Instrument' }).boundingBox();
   const learn = await page.getByRole('button', { name: 'Learn', exact: true }).boundingBox();
   expect(learn!.height).toBeLessThan(primary!.height * 0.65);

@@ -54,6 +54,13 @@ test('themes color the whole studio, keep tertiary accents, and persist independ
 
 test('changing themes preserves comparison playback and musical undo history', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill(
+      'tempo 20\ntrack melody using brightReed {\n C4 whole\n C5 whole\n}\ntrack bass using softBass {\n C2 whole\n C3 whole\n}',
+    );
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await page.getByRole('combobox', { name: 'Comparison material' }).selectOption('phrase');
   await page.getByRole('spinbutton', { name: 'H1 exact magnitude' }).fill('0.6');
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
