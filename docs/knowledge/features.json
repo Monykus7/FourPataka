@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. Current app is v0.10.0. EQ/delay, chain score directives, WAV export and chord-symbol macros remain planned.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. Current app is v0.11.0 with three-band EQ. Delay, chain score directives, WAV export and chord-symbol macros remain planned.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
