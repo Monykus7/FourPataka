@@ -248,6 +248,9 @@ export default function App() {
 
   const change = useCallback((mutate: (p: Project) => Project, groupKey = '') => {
     const time = Date.now();
+    // A gesture UUID identifies one complete stroke/rotation, including pauses.
+    // Ordinary slider/typing groups expire; the next gesture gets a new UUID
+    // so quick consecutive drags still have independent undo entries.
     const grouped =
       !!groupKey &&
       editGroup.current.key === groupKey &&

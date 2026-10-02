@@ -60,11 +60,16 @@ export function createVoice(
     const real = new Float32Array(coefficients.length);
     const imag = new Float32Array(coefficients.length);
     coefficients.forEach((value, h) => {
+      // A new oscillator starts its own phase at zero. Rotate its cosine/sine
+      // coefficients by the phase reached since the original note start so the
+      // replacement joins that same wave: sin(wt + phase), not a retrigger.
       const phase = 2 * Math.PI * h * base * (at - start);
       real[h] = value * Math.sin(phase);
       imag[h] = value * Math.cos(phase);
     });
     oscillator.setPeriodicWave(
+      // Preserve signed absolute coefficients; automatic peak normalization
+      // would change every partial's gain when only one partial is edited.
       context.createPeriodicWave(real, imag, { disableNormalization: true }),
     );
     oscillator.frequency.value = base;

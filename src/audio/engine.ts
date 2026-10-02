@@ -225,6 +225,8 @@ export class AudioEngine {
     solo?: string,
     chain: Chain = emptyChain(),
   ) {
+    // Context preparation is asynchronous. Stop or a newer Play invalidates
+    // this request so a late resume cannot resurrect an already-canceled note.
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
@@ -294,6 +296,9 @@ export class AudioEngine {
         if (session.voiceTracks.get(voice) === key) voice.update(next);
       });
     };
+    // Restore the previous target from its frozen applied copy, then override
+    // both active voices and the map consulted by future scheduled events.
+    // Neither operation writes temporary comparison sounds into the project.
     if (session.comparisonTrack && session.comparisonTrack !== trackKey)
       update(session.comparisonTrack, session.originalSounds.get(session.comparisonTrack)!);
     session.comparisonTrack = trackKey;
@@ -336,6 +341,8 @@ export class AudioEngine {
       ),
     );
     session.latency = maxLatency + master.latency;
+    // Pad shorter track paths to maxLatency: simultaneous note starts alone
+    // cannot align compressor/oversampling look-ahead before the master mix.
     session.processingTail = master.tail;
     const buses = new Map<string, GainNode>();
     tracks.forEach((t) => {

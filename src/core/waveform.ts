@@ -10,6 +10,8 @@ export function waveformCoefficients(halfCycle: readonly number[], count = 16) {
     let sum = 0;
     for (let i = 1; i < intervals; i++)
       sum += halfCycle[i] * Math.sin((Math.PI * h * i) / intervals);
+    // Odd reflection removes cosine terms. Sine orthogonality on [0, pi]
+    // supplies the factor 2; interval spacing normalizes the sampled integral.
     return clamp((2 * sum) / intervals, -1, 1);
   });
 }
@@ -68,6 +70,8 @@ export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
     if (i === points.length - 1) return slopes.at(-1)!;
     const left = slopes[i - 1],
       right = slopes[i];
+    // A sign change is a local extremum: a zero tangent keeps the interpolated
+    // curve inside neighboring anchor amplitudes instead of overshooting.
     if (left * right <= 0) return 0;
     const w1 = 2 * gaps[i] + gaps[i - 1],
       w2 = gaps[i] + 2 * gaps[i - 1];
@@ -81,6 +85,8 @@ export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
       b = points[segment + 1],
       h = gaps[segment];
     const t = (x - a.x) / h;
+    // Hermite's basis uses segment-local t; tangents are measured per x.
+    // Multiplying derivatives by h preserves units on uneven dot gaps.
     return (
       (2 * t ** 3 - 3 * t ** 2 + 1) * a.y +
       (t ** 3 - 2 * t ** 2 + t) * h * tangents[segment] +

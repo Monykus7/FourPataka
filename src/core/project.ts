@@ -80,6 +80,8 @@ export function reconcileTracks(project: Project, score: CompiledScore): Project
   const tracks = score.tracks.map((track) => {
     const preset = project.instruments.find((i) => i.key === track.instrumentKey)!;
     const existing = project.tracks.find((t) => t.key === track.key);
+    // Reparse preserves independently edited sounds when the preset association
+    // is unchanged. A new library version requires an explicit Apply operation.
     return existing?.presetId === preset.id
       ? existing
       : {
