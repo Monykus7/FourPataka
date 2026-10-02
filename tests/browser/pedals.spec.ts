@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { placePedal, selectCable } from '../helpers/board';
 
 test('compressor unity mix stays aligned at 48 and 44.1 kHz', async ({ page }) => {
   await page.goto('/');
@@ -129,7 +130,7 @@ test('overdrive mixes linearly, preserves peaks above 1 when bypassed, and isola
   expect(proof.tail).toBeLessThan(0.00001);
 });
 
-test('pedal presets apply independent copies, A/B includes chains, and order is undoable', async ({
+test('pedal presets apply independent copies, A/B includes boards, and routing waits for replay', async ({
   page,
 }) => {
   await page.goto('/');
@@ -185,11 +186,11 @@ test('pedal presets apply independent copies, A/B includes chains, and order is 
   await drive.fill('4');
   await page.getByRole('button', { name: 'A', exact: true }).click();
   await expect(drive).toHaveValue('12');
-  await board.getByRole('button', { name: 'Add compressor', exact: true }).click();
-  await board.getByRole('button', { name: 'Move compressor 2 left' }).click();
-  await expect(
-    board.getByRole('spinbutton', { name: 'compressor 1 ratio exact value' }),
-  ).toBeVisible();
+  await placePedal(page, 'compressor');
+  const handle = page.getByRole('button', { name: 'Move compressor 2 on board' });
+  await handle.focus();
+  await handle.press('ArrowDown');
+  await expect(page.locator('.compact-pedal.compressor')).toHaveCSS('top', '268px');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(
     board.getByRole('spinbutton', { name: 'compressor 2 ratio exact value' }),
@@ -199,14 +200,19 @@ test('pedal presets apply independent copies, A/B includes chains, and order is 
   await expect(page.getByRole('img', { name: 'After pedals spectrum', exact: true })).toBeVisible();
   await board.getByRole('spinbutton', { name: 'compressor 2 ratio exact value' }).fill('3');
   await expect(board.locator('.pedal-pending')).toHaveCount(0);
-  await board.getByRole('button', { name: 'Move compressor 2 left' }).click();
+  await handle.focus();
+  await handle.press('ArrowDown');
+  await expect(board.locator('.pedal-pending')).toHaveCount(0);
+  await selectCable(page, 'Select cable from Compressor 2 to Board output');
+  await page.getByRole('button', { name: 'Disconnect cable', exact: true }).click();
   await expect(board.locator('.pedal-pending')).toBeVisible();
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
   await page.waitForTimeout(450);
   await page.reload();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('slider', { name: 'compressor 2 ratio dial', exact: true }).focus();
   await expect(
-    board.getByRole('spinbutton', { name: 'compressor 1 ratio exact value' }),
+    board.getByRole('spinbutton', { name: 'compressor 2 ratio exact value' }),
   ).toHaveValue('3');
   await page.screenshot({ path: '.test-results/pedalboard-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });

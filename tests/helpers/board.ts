@@ -30,3 +30,15 @@ export async function patchBoard(page: Page, order?: number[]) {
   await page.getByRole('button', { name: 'Board output input jack', exact: true }).click();
   await page.getByRole('button', { name: 'Cancel tool', exact: true }).click();
 }
+
+export async function selectCable(page: Page, label: string) {
+  const path = page.getByRole('button', { name: label, exact: true }).locator('.cable-wire');
+  await path.scrollIntoViewIfNeeded();
+  // The bounding-box center of a curved cable need not lie on its visible stroke.
+  const point = await path.evaluate((element) => {
+    const cable = element as SVGPathElement;
+    const local = cable.getPointAtLength(cable.getTotalLength() * 0.85);
+    return new DOMPoint(local.x, local.y).matrixTransform(cable.getScreenCTM()!).toJSON();
+  });
+  await page.mouse.click(point.x, point.y);
+}

@@ -1,9 +1,10 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { placePedal } from '../helpers/board';
 
 async function setup(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
+  await placePedal(page, 'overdrive');
   return {
     dial: page.getByRole('slider', { name: 'overdrive 1 drive dial', exact: true }),
     exact: page.getByRole('spinbutton', { name: 'overdrive 1 drive exact value', exact: true }),
@@ -13,7 +14,7 @@ async function setup(page: Page) {
 async function circle(dial: Locator) {
   await dial.scrollIntoViewIfNeeded();
   const box = (await dial.boundingBox())!;
-  return (degrees: number, radius = 18) => ({
+  return (degrees: number, radius = Math.min(box.width, box.height) / 2 - 4) => ({
     x: box.x + box.width / 2 + Math.sin((degrees * Math.PI) / 180) * radius,
     y: box.y + box.height / 2 - Math.cos((degrees * Math.PI) / 180) * radius,
   });

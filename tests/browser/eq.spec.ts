@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { placePedal } from '../helpers/board';
 
 test('EQ respects frozen score parameters, aligned tracks, live bypass and hard Stop', async ({
   page,
@@ -138,7 +139,7 @@ test('EQ presets retain independent A/B, track and master copies through saving 
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await placePedal(page, 'eq');
   const low = page.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
   await low.fill('6');
   await page
@@ -199,19 +200,20 @@ test('EQ presets retain independent A/B, track and master copies through saving 
   ).toHaveCount(1);
 });
 
-test('EQ remains usable at 390 px with all eight modules and visible vertical connections', async ({
+test('EQ remains usable at 390 px with all eight compact modules and patch connections', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await placePedal(page, 'eq');
   await page.screenshot({ path: '.test-results/eq-mobile.png', fullPage: true });
-  for (let i = 1; i < 8; i++)
-    await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Add EQ', exact: true })).toBeDisabled();
+  for (let i = 1; i < 8; i++) await placePedal(page, 'eq');
+  await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+  await expect(page.getByRole('menuitem', { name: 'Three-band EQ', exact: true })).toBeDisabled();
+  await page.keyboard.press('Escape');
   await expect(page.locator('.pedal-module.eq')).toHaveCount(8);
-  await expect(page.locator('.patch-cable .vertical-cable')).toHaveCount(9);
+  await expect(page.locator('.board-cable')).toHaveCount(9);
   const frequency = page.getByRole('slider', { name: 'eq 8 mid frequency dial', exact: true });
   await frequency.focus();
   await frequency.press('End');
@@ -230,13 +232,15 @@ test('EQ remains usable at 390 px with all eight modules and visible vertical co
 test('EQ joins the cable path with precise rotary controls and bounds', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await placePedal(page, 'eq');
   const eq = page.locator('.pedal-module.eq');
   await expect(eq).toContainText('Three-band EQ');
-  await expect(eq).toContainText('Shelves 200 Hz / 4 kHz');
+  await expect(page.getByRole('region', { name: 'Selected pedal controls' })).toContainText(
+    'Shelves 200 Hz / 4 kHz',
+  );
   await page.screenshot({ path: '.test-results/eq-desktop.png', fullPage: true });
-  await expect(page.locator('.patch-cable')).toHaveCount(2);
-  const low = eq.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
+  await expect(page.locator('.board-cable')).toHaveCount(2);
+  const low = page.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
   const dial = eq.getByRole('slider', { name: 'eq 1 low gain dial', exact: true });
   await expect(low).toHaveValue('0');
   await dial.focus();
@@ -248,15 +252,18 @@ test('EQ joins the cable path with precise rotary controls and bounds', async ({
   await expect(low).toHaveValue('-12');
   await low.fill('99');
   await expect(low).toHaveValue('12');
-  const frequency = eq.getByRole('spinbutton', { name: 'eq 1 mid frequency exact value' });
+  const frequency = page.getByRole('spinbutton', { name: 'eq 1 mid frequency exact value' });
   await frequency.fill('9000');
   await expect(frequency).toHaveValue('4000');
-  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
-  await page.getByRole('button', { name: 'Move eq 1 right', exact: true }).click();
-  await expect(page.locator('.pedal-module').first()).toHaveClass(/overdrive/);
-  await expect(page.locator('.patch-cable')).toHaveCount(3);
+  await placePedal(page, 'overdrive');
+  const handle = page.getByRole('button', { name: 'Move eq 1 on board', exact: true });
+  await handle.focus();
+  await handle.press('ArrowDown');
+  await expect(eq).toHaveCSS('top', '268px');
+  await expect(eq).toContainText('PATH 1');
+  await expect(page.locator('.board-cable')).toHaveCount(3);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(page.locator('.pedal-module').first()).toHaveClass(/eq/);
+  await expect(eq).toHaveCSS('top', '32px');
 });
 
 test('flat reset is one undo step and retains the module order and bypass state', async ({
@@ -264,11 +271,11 @@ test('flat reset is one undo step and retains the module order and bypass state'
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  await placePedal(page, 'eq');
   const eq = page.locator('.pedal-module.eq');
   const id = await eq.getAttribute('data-pedal-id');
   const value = (name: string) =>
-    eq.getByRole('spinbutton', { name: `eq 1 ${name} exact value`, exact: true });
+    page.getByRole('spinbutton', { name: `eq 1 ${name} exact value`, exact: true });
   for (const [name, n] of [
     ['low gain', '6'],
     ['mid gain', '-4'],
@@ -279,7 +286,7 @@ test('flat reset is one undo step and retains the module order and bypass state'
   ])
     await value(name).fill(n);
   await eq.getByRole('checkbox', { name: 'Bypass eq 1', exact: true }).check();
-  await eq.getByRole('button', { name: 'Reset EQ 1 to flat', exact: true }).click();
+  await page.getByRole('button', { name: 'Reset EQ 1 to flat', exact: true }).click();
   for (const [name, n] of [
     ['low gain', '0'],
     ['mid gain', '0'],

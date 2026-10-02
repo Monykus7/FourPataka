@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { placePedal, patchBoard } from '../helpers/board';
 
 test('pedal rack cables follow actual order, footswitches work by keyboard, and long chains scroll locally', async ({
   page,
@@ -7,31 +8,41 @@ test('pedal rack cables follow actual order, footswitches work by keyboard, and 
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   const board = page.getByRole('region', { name: 'Pedalboard', exact: true });
   await expect(
-    page.getByRole('img', { name: 'Cable from Instrument A to Project mix', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Board input to Board output',
+      exact: true,
+    }),
   ).toBeVisible();
-  await board.getByRole('button', { name: 'Add compressor', exact: true }).click();
-  await board.getByRole('button', { name: 'Add overdrive', exact: true }).click();
-  await expect(page.getByRole('img', { name: /^Cable from / })).toHaveCount(3);
+  await placePedal(page, 'compressor');
+  await placePedal(page, 'overdrive');
+  await expect(page.getByRole('button', { name: /^Select cable from / })).toHaveCount(3);
   await expect(
-    page.getByRole('img', { name: 'Cable from Compressor 1 to Overdrive 2', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Compressor 1 to Overdrive 2',
+      exact: true,
+    }),
   ).toBeVisible();
-  await board.getByRole('button', { name: 'Move overdrive 2 left', exact: true }).click();
+  await patchBoard(page, [1, 0]);
   await expect(
-    page.getByRole('img', { name: 'Cable from Instrument A to Overdrive 1', exact: true }),
+    page.getByRole('button', { name: 'Select cable from Board input to Overdrive 2', exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole('img', { name: 'Cable from Overdrive 1 to Compressor 2', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Overdrive 2 to Compressor 1',
+      exact: true,
+    }),
   ).toBeVisible();
-  const bypass = board.getByRole('checkbox', { name: 'Bypass compressor 2', exact: true });
+  const bypass = board.getByRole('checkbox', { name: 'Bypass compressor 1', exact: true });
   await bypass.focus();
   await page.keyboard.press('Space');
   await expect(bypass).toBeChecked();
-  await expect(board.locator('.compressor')).toHaveClass(/bypassed/);
+  await expect(board.locator('.compact-pedal.compressor')).toHaveClass(/bypassed/);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(bypass).not.toBeChecked();
-  const drive = board.getByRole('spinbutton', { name: 'overdrive 1 drive exact value' });
+  const drive = board.getByRole('spinbutton', { name: 'overdrive 2 drive exact value' });
+  await page.getByRole('slider', { name: 'overdrive 2 drive dial', exact: true }).focus();
   await drive.fill('12');
-  await expect(board.getByRole('slider', { name: 'overdrive 1 drive', exact: true })).toHaveValue(
+  await expect(board.getByRole('slider', { name: 'overdrive 2 drive', exact: true })).toHaveValue(
     '12',
   );
   await page.screenshot({ path: '.test-results/pedal-rack-desktop.png', fullPage: true });
@@ -42,21 +53,30 @@ test('pedal rack cables follow actual order, footswitches work by keyboard, and 
   await page.getByRole('combobox', { name: 'Theme preset' }).selectOption('earth');
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
-    page.getByRole('img', { name: 'Cable from Overdrive 1 to Compressor 2', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Overdrive 2 to Compressor 1',
+      exact: true,
+    }),
   ).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: '.test-results/pedal-rack-mobile.png', fullPage: true });
   await page.setViewportSize({ width: 1440, height: 1040 });
-  for (let i = 0; i < 6; i++)
-    await board.getByRole('button', { name: 'Add overdrive', exact: true }).click();
-  await expect(board.getByRole('button', { name: 'Add overdrive', exact: true })).toBeDisabled();
-  await expect(page.getByRole('img', { name: /^Cable from / })).toHaveCount(9);
-  const rack = page.getByRole('region', { name: 'Cable-connected pedal rack', exact: true });
+  for (let i = 0; i < 6; i++) await placePedal(page, 'overdrive');
+  await page.getByRole('button', { name: 'Equipment', exact: true }).click();
+  await expect(page.getByRole('menuitem', { name: 'Overdrive', exact: true })).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: /^Select cable from / })).toHaveCount(9);
+  const rack = page.getByRole('region', { name: 'Grid pedalboard', exact: true });
+  expect(await rack.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 390, height: 844 });
   expect(await rack.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await board.getByRole('combobox', { name: 'Pedal editing destination' }).selectOption('master');
   await expect(
-    page.getByRole('img', { name: 'Cable from Track mix to Project mix', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Board input to Board output',
+      exact: true,
+    }),
   ).toBeVisible();
 });
 
@@ -79,9 +99,12 @@ test('Compose edit links target the right dedicated chain and tab changes keep a
   await expect(
     page.getByRole('combobox', { name: 'Pedal editing destination', exact: true }),
   ).toHaveValue('track:melody');
-  await page.getByRole('button', { name: 'Add compressor', exact: true }).click();
+  await placePedal(page, 'compressor');
   await expect(
-    page.getByRole('img', { name: 'Cable from melody instrument to Compressor 1', exact: true }),
+    page.getByRole('button', {
+      name: 'Select cable from Board input to Compressor 1',
+      exact: true,
+    }),
   ).toBeVisible();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await page
