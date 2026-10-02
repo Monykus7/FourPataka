@@ -45,7 +45,7 @@ Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L16), [AuditionBranch](
 
 #### Pedalboard and processing
 
-Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.
+Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Flat reset restores all defaults in one undo step while retaining identity and bypass. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.
 
 - Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
