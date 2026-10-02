@@ -20,6 +20,27 @@ const reparse = (project: ReturnType<typeof createProject>) =>
     ),
   );
 describe('independent project state', () => {
+  it('reapplying the same preset retains destination markers rather than a copied sandbox marker', () => {
+    let p = createProject();
+    p.scoreText = p.scoreText.replace('using brightReed', 'using brightReed through warmDrive');
+    p = reparse(p);
+    const processing = structuredClone(p.processing);
+    processing.tracks.melody.assignmentKey = 'cleanGlue';
+    processing.tracks.melody.pedals[0].params.drive = 18;
+    const applied = reparse(updateProcessingAssignments(p, processing));
+    expect(applied.scoreText).toBe(p.scoreText);
+    expect(applied.processing.tracks.melody.assignmentKey).toBe('warmDrive');
+    expect(applied.processing.tracks.melody.pedals[0].params.drive).toBe(18);
+    // Legacy destinations have no marker: foreign source history must not
+    // make an unassigned manual board look like a removed source directive.
+    const legacy = createProject(),
+      next = structuredClone(legacy.processing);
+    next.master.assignmentKey = 'warmDrive';
+    next.master.pedals = [makePedal('eq')];
+    const retained = reparse(updateProcessingAssignments(legacy, next));
+    expect(retained.processing.master.pedals[0].kind).toBe('eq');
+    expect(retained.processing.master.assignmentKey).toBeUndefined();
+  });
   it('pedalboard Apply writes source assignments and preserves the exact edited applied copies', () => {
     const p = createProject(),
       processing = structuredClone(p.processing);
