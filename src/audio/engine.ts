@@ -4,7 +4,13 @@ export { createVoice } from './voice';
 import type { AuditionPhrase } from '../core/comparison';
 import type { CompiledScore } from '../core/parser';
 import type { TrackInstance } from '../core/project';
-import { emptyChain, chainMusicalSettings, type Chain, type Processing } from '../core/pedals';
+import {
+  emptyChain,
+  chainMusicalSettings,
+  chainTopology,
+  type Chain,
+  type Processing,
+} from '../core/pedals';
 import {
   createChain,
   chainLatency,
@@ -280,7 +286,7 @@ export class AudioEngine {
   switchAudition(sound: Sound, chain: Chain, solo?: string) {
     const session = this.session;
     if (!session || session.mode !== 'audition') return;
-    const topology = chain.pedals.map((p) => `${p.id}:${p.kind}`).join('|');
+    const topology = chainTopology(chain);
     if (session.chains.get('audition')!.topology !== topology)
       this.auditionChain(session, chain, true);
     else session.chains.get('audition')!.update(chain);
@@ -417,15 +423,7 @@ export class AudioEngine {
       const chain = processing.audition[side];
       session.chains.get('audition')?.update(chain);
       // Topology changes stay queued; parameter changes on existing pedals are live.
-      session.chainSettings.set(
-        'audition',
-        chainMusicalSettings({
-          ...chain,
-          pedals: chain.pedals.filter((p) =>
-            session.chains.get('audition')!.topology.split('|').includes(`${p.id}:${p.kind}`),
-          ),
-        }),
-      );
+      session.chainSettings.set('audition', session.chains.get('audition')!.musicalSettings);
     } else
       session.chains.forEach((graph, key) => {
         graph.update(
@@ -446,7 +444,7 @@ export class AudioEngine {
             ? processing.master
             : (processing.tracks[key.slice(6)] ?? emptyChain());
       return (
-        graph.topology !== chain.pedals.map((p) => `${p.id}:${p.kind}`).join('|') ||
+        graph.topology !== chainTopology(chain) ||
         (session.mode === 'score' && session.chainSettings.get(key) !== chainMusicalSettings(chain))
       );
     });

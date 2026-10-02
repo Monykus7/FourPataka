@@ -36,6 +36,14 @@ Reset to flat restores every EQ parameter together without replacing its ID, pos
 
 Evidence: `src/core/pedals.ts`, `src/audio/effects.ts`, `tests/browser/eq.spec.ts`.
 
+## Physical board placement and routing
+
+<!-- features: pedals, storage, comparison -->
+
+Board positions and explicit cables belong to each independent chain/preset copy. Legacy chains derive a prewired board with their original order. Null cable endpoints mean the board input/output terminals; they never collide with pedal IDs. One cable per jack and cycle validation enforce a serial signal path. Audio follows the complete input-to-output cable path, not pedal array order or visual position. Unconnected pedals do not run processors. An unplugged output is silent unless whole-board bypass is engaged. Position-only moves are nonmusical: they save and undo without pending replay. Repatching takes effect on replay during playback; A/B switches retain their existing continuous transition policy. This keeps the board interaction reusable during the broader frontend redesign.
+
+Evidence: `src/core/board.ts`, `src/core/pedals.ts`, `src/audio/effects.ts`, `src/audio/engine.ts`, `tests/unit/board.test.ts`, `tests/browser/board-audio.spec.ts`.
+
 ## Waveform and rotary gestures
 
 <!-- features: waveform, pedals, storage -->

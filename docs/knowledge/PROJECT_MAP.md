@@ -41,13 +41,13 @@ A/B changes keep the musical clock and active envelopes. Phrase clipping preserv
 - Continuous A/B comparison and scheduling / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx)
 - Continuous A/B comparison and scheduling / dependency group 2: [tests/browser/comparison.spec.ts](../../tests/browser/comparison.spec.ts)
 
-Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L16), [AuditionBranch](../../src/audio/engine.ts#L17), [Session](../../src/audio/engine.ts#L24), [AudioEngine](../../src/audio/engine.ts#L48), [AudioEngine.ready](../../src/audio/engine.ts#L62), [AudioEngine.setMonitor](../../src/audio/engine.ts#L87), [AudioEngine.setMix](../../src/audio/engine.ts#L91), [AudioEngine.begin](../../src/audio/engine.ts#L95).
+Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L22), [AuditionBranch](../../src/audio/engine.ts#L23), [Session](../../src/audio/engine.ts#L30), [AudioEngine](../../src/audio/engine.ts#L54), [AudioEngine.ready](../../src/audio/engine.ts#L68), [AudioEngine.setMonitor](../../src/audio/engine.ts#L93), [AudioEngine.setMix](../../src/audio/engine.ts#L97), [AudioEngine.begin](../../src/audio/engine.ts#L101).
 
 #### Pedalboard and processing
 
 Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Flat reset restores all defaults in one undo step while retaining identity and bypass. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.
 
-- Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [src/core/board.ts](../../src/core/board.ts), [tests/unit/board.test.ts](../../tests/unit/board.test.ts), [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
+- Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/core/board.ts](../../src/core/board.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [tests/unit/board.test.ts](../../tests/unit/board.test.ts), [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
 - Pedalboard and processing / dependency group 3: [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts)
 - Pedalboard and processing / dependency group 4: [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts)
@@ -55,7 +55,7 @@ Compressor, overdrive and three-band EQ chains have independent audition A/B, tr
 - Pedalboard and processing / dependency group 6: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
 - Pedalboard and processing / dependency group 7: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L3), [measureOversamplingLatency](../../src/audio/effects.ts#L11), [createEffect](../../src/audio/effects.ts#L28), [set](../../src/audio/effects.ts#L98), [update](../../src/audio/effects.ts#L102), [ChainGraph](../../src/audio/effects.ts#L143), [chainLatency](../../src/audio/effects.ts#L153), [createChain](../../src/audio/effects.ts#L161).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L19), [createEffect](../../src/audio/effects.ts#L36), [set](../../src/audio/effects.ts#L106), [update](../../src/audio/effects.ts#L110), [ChainGraph](../../src/audio/effects.ts#L151), [chainLatency](../../src/audio/effects.ts#L162), [createChain](../../src/audio/effects.ts#L170).
 
 ### Composition studio
 
