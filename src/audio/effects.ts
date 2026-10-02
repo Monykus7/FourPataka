@@ -1,5 +1,5 @@
 import { dbToGain } from '../core/music';
-import { chainTopology, clampPedal, type Chain, type Pedal } from '../core/pedals';
+import { chainTopology, clampPedal, EQ_SHAPE, type Chain, type Pedal } from '../core/pedals';
 export interface EffectGraph {
   input: GainNode;
   output: GainNode;
@@ -44,6 +44,8 @@ export function createEffect(
     unity: GainNode | null = null,
     drive: GainNode | null = null,
     tone: BiquadFilterNode | null = null;
+  let equalizer: { low: BiquadFilterNode; mid: BiquadFilterNode; high: BiquadFilterNode } | null =
+    null;
   if (original.kind === 'compressor') {
     compressor = context.createDynamicsCompressor();
     compressor.knee.value = 30;
@@ -55,6 +57,20 @@ export function createEffect(
     input.connect(compressor).connect(compressed).connect(makeup).connect(wet);
     align.connect(unity).connect(makeup);
     nodes.push(align, compressor, compressed, unity);
+  } else if (original.kind === 'eq') {
+    const low = context.createBiquadFilter(),
+      mid = context.createBiquadFilter(),
+      high = context.createBiquadFilter();
+    low.type = 'lowshelf';
+    mid.type = 'peaking';
+    high.type = 'highshelf';
+    low.frequency.value = Math.min(EQ_SHAPE.lowFrequency, context.sampleRate * 0.49);
+    high.frequency.value = Math.min(EQ_SHAPE.highFrequency, context.sampleRate * 0.49);
+    mid.Q.value = EQ_SHAPE.midQ;
+    input.connect(dry);
+    input.connect(low).connect(mid).connect(high).connect(makeup).connect(wet);
+    equalizer = { low, mid, high };
+    nodes.push(low, mid, high);
   } else {
     // Both dry and wet use the same 4x resampling filters, including bypass.
     // Scale the identity branch so source peaks above 1 are not hard-clipped.
@@ -100,6 +116,12 @@ export function createEffect(
       set(drive.gain, dbToGain(p.drive) / 8);
       set(tone.frequency, Math.min(p.tone, context.sampleRate * 0.49));
     }
+    if (equalizer) {
+      set(equalizer.low.gain, p.low);
+      set(equalizer.mid.gain, p.mid);
+      set(equalizer.high.gain, p.high);
+      set(equalizer.mid.frequency, Math.min(p.frequency, context.sampleRate * 0.49));
+    }
     set(makeup.gain, dbToGain(p.output));
     const mix = chainBypass || pedal.bypassed ? 0 : p.mix / 100;
     set(dry.gain, 1 - mix);
@@ -110,8 +132,10 @@ export function createEffect(
   return {
     input,
     output,
-    latency: compressor ? compressorLatency : oversamplingLatency,
-    tail: compressor ? compressorLatency : oversamplingLatency + 0.1,
+    // EQ changes frequency-dependent phase, but adds no scheduling/look-ahead
+    // delay. Padding it like an oversampled shaper would misalign track starts.
+    latency: compressor ? compressorLatency : equalizer ? 0 : oversamplingLatency,
+    tail: compressor ? compressorLatency : equalizer ? 0.1 : oversamplingLatency + 0.1,
     update,
     dispose: () => nodes.forEach((n) => n.disconnect()),
   };
@@ -128,7 +152,9 @@ export interface ChainGraph {
 }
 export function chainLatency(chain: Chain, oversamplingLatency: number, compressorLatency = 0.006) {
   return chain.pedals.reduce(
-    (sum, p) => sum + (p.kind === 'compressor' ? compressorLatency : oversamplingLatency),
+    (sum, p) =>
+      sum +
+      (p.kind === 'compressor' ? compressorLatency : p.kind === 'eq' ? 0 : oversamplingLatency),
     0,
   );
 }

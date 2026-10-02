@@ -45,16 +45,17 @@ Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L16), [AuditionBranch](
 
 #### Pedalboard and processing
 
-Compressor/overdrive chains have independent audition A/B, track and master instances. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. EQ, delay/tails and score through/master directives remain unimplemented.
+Compressor/overdrive chains have independent audition A/B, track and master instances. The flat three-band EQ model/audio factory is implemented; its pedal controls are being added. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.
 
 - Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
 - Pedalboard and processing / dependency group 3: [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts)
 - Pedalboard and processing / dependency group 4: [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts)
-- Pedalboard and processing / dependency group 5: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
-- Pedalboard and processing / dependency group 6: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
+- Pedalboard and processing / dependency group 5: [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts)
+- Pedalboard and processing / dependency group 6: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
+- Pedalboard and processing / dependency group 7: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L3), [measureOversamplingLatency](../../src/audio/effects.ts#L11), [createEffect](../../src/audio/effects.ts#L28), [set](../../src/audio/effects.ts#L82), [update](../../src/audio/effects.ts#L86), [ChainGraph](../../src/audio/effects.ts#L119), [chainLatency](../../src/audio/effects.ts#L129), [createChain](../../src/audio/effects.ts#L135).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L3), [measureOversamplingLatency](../../src/audio/effects.ts#L11), [createEffect](../../src/audio/effects.ts#L28), [set](../../src/audio/effects.ts#L98), [update](../../src/audio/effects.ts#L102), [ChainGraph](../../src/audio/effects.ts#L143), [chainLatency](../../src/audio/effects.ts#L153), [createChain](../../src/audio/effects.ts#L161).
 
 ### Composition studio
 
