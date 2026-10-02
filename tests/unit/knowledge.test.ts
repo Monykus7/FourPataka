@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { extractCode, extractDocument } from '../../scripts/knowledge/extract.mjs';
 import { connectCode, validateFeatures } from '../../scripts/knowledge/graph.mjs';
+import { neighborhood, personalizedPageRank } from '../../scripts/knowledge/rank.mjs';
+import { addSummaries } from '../../scripts/knowledge/summaries.mjs';
 describe('project knowledge extraction', () => {
+  it('keeps disconnected code out of a personalized neighborhood and conserves rank mass', () => {
+    const graph = {
+      nodes: ['a', 'b', 'c'].map((id) => ({ id })),
+      edges: [{ from: 'a', to: 'b', weight: 2 }],
+    };
+    const seeds = [{ id: 'a', score: 1 }];
+    const selected = neighborhood(graph, seeds);
+    expect([...selected]).toEqual(['a', 'b']);
+    const rank = personalizedPageRank(graph, seeds, selected);
+    expect([...rank.values()].reduce((a, b) => a + b, 0)).toBeCloseTo(1);
+    expect(rank.get('a')).toBeGreaterThan(rank.get('b'));
+    expect(rank.has('c')).toBe(false);
+  });
+  it('builds dependency subcommunities with a real feature parent and source evidence', () => {
+    const graph = {
+      features: [{ id: 'f', title: 'Audio', summary: 'Aligned signal.', paths: [] }],
+      nodes: [
+        { id: 'feature:f', members: ['file:a.ts', 'file:b.ts'], summary: 'Aligned signal.' },
+        { id: 'file:a.ts', kind: 'file', path: 'a.ts' },
+        { id: 'file:b.ts', kind: 'file', path: 'b.ts' },
+      ],
+      edges: [{ from: 'file:a.ts', to: 'file:b.ts', kind: 'imports', weight: 3 }],
+    };
+    const enriched = addSummaries(graph);
+    const communities = enriched.nodes.filter((n) => n.kind === 'community');
+    expect(communities).toHaveLength(1);
+    expect(communities[0].parent).toBe('feature:f');
+    expect(communities[0].evidence).toEqual(['a.ts', 'b.ts']);
+  });
   it('resolves aliased imports narrowly instead of guessing same-name symbols in unrelated files', async () => {
     const provider = await extractCode(
       'src/parser.ts',
