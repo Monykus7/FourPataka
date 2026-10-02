@@ -64,6 +64,37 @@ describe('score compilation', () => {
     expect(score.beats).toBe(0.25);
     expect(score.seconds).toBe(0.125);
   });
+  it('compiles track/master chains with exact key spans and rejects unknown, duplicate or misplaced routing', () => {
+    const text =
+      '  master through cleanGlue // mix\ntrack lead using brightReed   through warmDrive { // track\n C4 quarter\n}';
+    const score = parseScore(text, keys, ['cleanGlue', 'warmDrive']);
+    expect(score.diagnostics).toEqual([]);
+    expect(score.master?.key).toBe('cleanGlue');
+    expect(text.slice(score.master!.from, score.master!.to)).toBe('cleanGlue');
+    expect(score.tracks[0].chainKey).toBe('warmDrive');
+    expect(text.slice(score.tracks[0].chainFrom, score.tracks[0].chainTo)).toBe('warmDrive');
+    const unknown = parseScore(text, keys, []);
+    expect(unknown.diagnostics.map((d) => text.slice(d.from, d.to))).toEqual([
+      'cleanGlue',
+      'warmDrive',
+    ]);
+    expect(
+      parseScore(
+        'master through clean\nmaster through clean\ntrack x using brightReed {\n C4 quarter\n}',
+        keys,
+        ['clean'],
+      ).diagnostics[0].message,
+    ).toContain('Duplicate master');
+    expect(parse('master through clean').diagnostics[0].message).toContain('Expected a note');
+    expect(
+      parseScore('master clean\ntrack x using brightReed {\n}', keys, ['clean']).diagnostics[0]
+        .message,
+    ).toContain('Use master through');
+    expect(
+      parseScore('track x using brightReed through {\n C4 quarter\n}', keys, ['clean']).diagnostics
+        .length,
+    ).toBeGreaterThan(0);
+  });
   it('checks every displayed command example against the parser', () => {
     for (const command of COMMANDS) {
       const text = ['tempo', 'time', 'track'].includes(command.name)
