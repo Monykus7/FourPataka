@@ -7,6 +7,7 @@ import {
   emptyChain,
   makePedal,
   PEDAL_CONTROLS,
+  PEDAL_NAMES,
   type ChainInstance,
   type Processing,
   type PedalKind,
@@ -81,8 +82,7 @@ export default function Pedalboard({
   const chosen = processing.library.find((p) => p.id === presetId) ?? processing.library[0];
   const applyTarget =
     target.startsWith('track:') && !trackKeys.includes(target.slice(6)) ? 'master' : target;
-  const pedalName = (index: number) =>
-    `${chain.pedals[index].kind === 'compressor' ? 'Compressor' : 'Overdrive'} ${index + 1}`;
+  const pedalName = (index: number) => `${PEDAL_NAMES[chain.pedals[index].kind]} ${index + 1}`;
   const source =
     dest === 'master'
       ? 'Track mix'
@@ -150,6 +150,13 @@ export default function Pedalboard({
         >
           Add overdrive
         </button>
+        <button
+          className="secondary-button"
+          disabled={chain.pedals.length >= 8}
+          onClick={() => add('eq')}
+        >
+          Add EQ
+        </button>
       </div>
       {pending && (
         <p className="pedal-pending" role="status">
@@ -200,7 +207,11 @@ export default function Pedalboard({
               >
                 <span className="pedal-order">
                   {String(i + 1).padStart(2, '0')} ·{' '}
-                  {pedal.kind === 'compressor' ? 'DYNAMICS' : 'DRIVE'}
+                  {pedal.kind === 'compressor'
+                    ? 'DYNAMICS'
+                    : pedal.kind === 'eq'
+                      ? 'TONE'
+                      : 'DRIVE'}
                 </span>
                 <span className="signal-jack input-jack" aria-hidden="true" />
                 <span className="signal-jack output-jack" aria-hidden="true" />
@@ -212,7 +223,7 @@ export default function Pedalboard({
                     onDragStart={() => setDragging(pedal.id)}
                     onDragEnd={() => setDragging(null)}
                   >
-                    {pedal.kind === 'compressor' ? 'Compressor' : 'Overdrive'}
+                    {PEDAL_NAMES[pedal.kind]}
                   </strong>
                   <span
                     className={`pedal-led ${pedal.bypassed || chain.bypassed ? '' : 'engaged'}`}
@@ -240,7 +251,16 @@ export default function Pedalboard({
                           },
                           group ?? `pedal:${dest}:${active}:${pedal.id}:${key}`,
                         );
-                      const controlName = `${pedal.kind} ${i + 1} ${key}`;
+                      const parameterLabel =
+                        pedal.kind === 'eq'
+                          ? ({
+                              low: 'low gain',
+                              mid: 'mid gain',
+                              high: 'high gain',
+                              frequency: 'mid frequency',
+                            }[key] ?? key)
+                          : key;
+                      const controlName = `${pedal.kind} ${i + 1} ${parameterLabel}`;
                       return (
                         <div key={key} className="range-control">
                           <RotaryDial
@@ -254,7 +274,7 @@ export default function Pedalboard({
                             onChange={update}
                           />
                           <span className="range-title">
-                            {key}
+                            {parameterLabel}
                             <span className="numeric-value">
                               <input
                                 type="number"
@@ -288,6 +308,9 @@ export default function Pedalboard({
                     },
                   )}
                 </div>
+                {pedal.kind === 'eq' && (
+                  <p className="eq-shape">Shelves 200 Hz / 4 kHz · mid Q 1</p>
+                )}
                 <label className="pedal-foot-switch">
                   <input
                     type="checkbox"

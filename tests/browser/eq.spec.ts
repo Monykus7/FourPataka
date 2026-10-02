@@ -1,5 +1,36 @@
 import { expect, test } from '@playwright/test';
 
+test('EQ joins the cable path with precise rotary controls and bounds', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  const eq = page.locator('.pedal-module.eq');
+  await expect(eq).toContainText('Three-band EQ');
+  await expect(eq).toContainText('Shelves 200 Hz / 4 kHz');
+  await expect(page.locator('.patch-cable')).toHaveCount(2);
+  const low = eq.getByRole('spinbutton', { name: 'eq 1 low gain exact value', exact: true });
+  const dial = eq.getByRole('slider', { name: 'eq 1 low gain dial', exact: true });
+  await expect(low).toHaveValue('0');
+  await dial.focus();
+  await dial.press('ArrowUp');
+  await expect(low).toHaveValue('0.5');
+  await dial.press('End');
+  await expect(low).toHaveValue('12');
+  await dial.press('Home');
+  await expect(low).toHaveValue('-12');
+  await low.fill('99');
+  await expect(low).toHaveValue('12');
+  const frequency = eq.getByRole('spinbutton', { name: 'eq 1 mid frequency exact value' });
+  await frequency.fill('9000');
+  await expect(frequency).toHaveValue('4000');
+  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
+  await page.getByRole('button', { name: 'Move eq 1 right', exact: true }).click();
+  await expect(page.locator('.pedal-module').first()).toHaveClass(/overdrive/);
+  await expect(page.locator('.patch-cable')).toHaveCount(3);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(page.locator('.pedal-module').first()).toHaveClass(/eq/);
+});
+
 test('EQ is flat at every mix and shapes the three bands at 48 and 44.1 kHz', async ({ page }) => {
   await page.goto('/');
   const proofs = await page.evaluate(async () => {
