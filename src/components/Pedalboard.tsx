@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PedalBoardSurface from './PedalBoardSurface';
 import PedalControls from './PedalControls';
 import { boardLayout } from '../core/board';
+import { SCORE_KEY } from '../core/music';
 import {
   applyAssociated,
   emptyChain,
@@ -38,6 +39,17 @@ export default function Pedalboard({
 }) {
   const [presetId, setPresetId] = useState('clean');
   const [label, setLabel] = useState('');
+  const [keyInput, setKeyInput] = useState('');
+  const scoreKey =
+    keyInput ||
+    nextChainKey(
+      label,
+      processing.library.map((p) => p.key),
+    );
+  const validKey =
+    SCORE_KEY.test(scoreKey) &&
+    scoreKey.length <= 100 &&
+    !processing.library.some((p) => p.key === scoreKey);
   const [target, setTarget] = useState('master');
   const [selection, setSelection] = useState<string>();
   const dest =
@@ -234,9 +246,17 @@ export default function Pedalboard({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
         />
+        <input
+          aria-label="New chain score key"
+          placeholder="Score key"
+          maxLength={100}
+          value={scoreKey}
+          aria-invalid={!validKey}
+          onChange={(e) => setKeyInput(e.target.value)}
+        />
         <button
           className="secondary-button"
-          disabled={!label.trim() || processing.library.length >= 128}
+          disabled={!label.trim() || !validKey || processing.library.length >= 128}
           onClick={() => {
             const id = crypto.randomUUID();
             const next = {
@@ -245,10 +265,7 @@ export default function Pedalboard({
                 ...processing.library,
                 {
                   id,
-                  key: nextChainKey(
-                    label,
-                    processing.library.map((p) => p.key),
-                  ),
+                  key: scoreKey,
                   label: label.trim(),
                   chain: {
                     pedals: structuredClone(chain.pedals),
@@ -261,14 +278,15 @@ export default function Pedalboard({
             onChange(assign(next, dest, { ...chain, presetId: id }));
             setPresetId(id);
             setLabel('');
+            setKeyInput('');
           }}
         >
           Save chain as new
         </button>
       </div>
       <p className="footnote">
-        Associated preset: {template?.label ?? 'None'} · saving a preset keeps applied copies
-        unchanged.
+        Associated preset: {template ? `${template.label} · ${template.key}` : 'None'} · saving a
+        preset keeps applied copies unchanged.
       </p>
       <div className="pedal-presets">
         <label>

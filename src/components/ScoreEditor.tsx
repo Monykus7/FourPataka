@@ -94,6 +94,7 @@ interface Props {
   diagnostics: Diagnostic[];
   autocomplete: boolean;
   presetKeys: string[];
+  chainKeys: string[];
   lines: number[];
   onUndo: () => void;
   onRedo: () => void;
@@ -104,6 +105,7 @@ export default function ScoreEditor({
   diagnostics,
   autocomplete,
   presetKeys,
+  chainKeys,
   lines,
   onUndo,
   onRedo,
@@ -132,6 +134,19 @@ export default function ScoreEditor({
                     detail: 'Project time signature',
                   })),
                   validFor: /[\d/]*/,
+                };
+              const chain = /\bthrough\s+([A-Za-z0-9_]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (chain)
+                return {
+                  from: context.pos - chain[1].length,
+                  options: chainKeys.map((label) => ({
+                    label,
+                    type: 'variable',
+                    detail: 'Pedal chain preset',
+                  })),
+                  validFor: /[A-Za-z0-9_]*/,
                 };
               const word = context.matchBefore(/[A-Za-z0-9_]+/);
               if (!word && !context.explicit) return null;
@@ -227,7 +242,7 @@ export default function ScoreEditor({
   }, [diagnostics, value]);
   useEffect(() => {
     view.current?.dispatch({ effects: completion.current.reconfigure(completionExtension()) });
-  }, [autocomplete, presetKeys.join('|')]);
+  }, [autocomplete, presetKeys.join('|'), chainKeys.join('|')]);
   useEffect(() => {
     view.current?.dispatch({ effects: activeLines.of([...new Set(lines)]) });
   }, [lines.join(',')]);
