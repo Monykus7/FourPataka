@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-01. Latest release: v0.9.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-01. Latest release: v0.10.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -168,3 +168,18 @@ Meters are global per project: numerator 1–32, denominator 1/2/4/8/16. Tempo a
 This advances stage 4 composition tools. Stage 3 still needs EQ, delay/tail policies and chain-aware score directives; the pedal-aware command catalog depends on those. Chord-symbol macros and WAV export remain later work.
 
 Validation for v0.9.0: 100 unit tests, all 36 browser tests, and 3 packaged desktop tests pass. TypeScript/production build and formatting pass. Browser checks cover custom 11/16, 6/8 bar positions, source comments, timing undo/redo, persistence, instrument assignments, invalid meter guards, frozen playback timing, meter completion/preferences and mobile event reordering. Desktop checks target the freshly packaged Windows executable and cover the new Compose controls alongside audio, menu actions, renderer isolation and native project file operations. Desktop and 390 px browser layouts were visually checked. Output: `release/FourPataka-0.9.0-win-x64.exe`. Eight focused commits are pushed under Monykus7; the verified portable application is launched after the release checkpoint.
+
+### Interactive pedal dials (v0.10.0)
+
+1. Continuous angular motion, center dead zone, parameter bounds and step rounding with unit proofs.
+2. Captured circular mouse/touch gestures without an initial value jump.
+3. Accessible slider roles/values, screen-reader instructions and precise/coarse keyboard controls.
+4. Live pedal parameter integration, synchronized indicator/slider/exact input, visible focus, touch scroll suppression and whole-gesture undo.
+5. Browser proof of outside-dial capture, angle-seam continuity, endpoints, immediate reversal and separate gesture history.
+6. Real Chromium touch input, canceled-gesture cleanup, A/B isolation and persisted values at 390 px.
+7. Packaged desktop dial checks, usage instructions and stronger ink fallback for the existing local Earth surface edit. The pre-existing palette mapping edit remains separate from this milestone.
+8. Verified v0.10.0 metadata, Windows portable packaging, eight pushed checkpoints and application launch.
+
+Pedal circles now turn clockwise/counterclockwise and use the same parameter update path as the existing sliders. One drag is one undo step, including pauses exceeding ordinary edit grouping. New gestures create separate history groups. Pointer cancellation/lost capture clears the drag. Grabbing at the center waits for a stable angle. Arrow keys step once; Page Up/Down step ten times; Home/End select bounds. Numeric inputs and linear sliders remain available. Score parameter edits still take effect on replay; audition parameters stay live.
+
+Validation for v0.10.0: 106 unit tests, all 40 browser tests and 4 packaged desktop tests pass. The initial unit run found the existing local Earth surface contrast regression; stronger fallback ink fixes it, with a custom-surface proof and both theme browser checks repeated successfully. Circular drag checks cover no initial jump, pointer capture outside the circle, angular seam crossings, clamped limits, immediate reversal, pauses within one undo gesture, keyboard precision, touch cancellation, scrolling, persistence and independent A/B values. Native checks run against the freshly packaged executable. Production build, formatting and portable packaging pass. Output: `release/FourPataka-0.10.0-win-x64.exe`. Eight focused checkpoints are pushed under Monykus7 and the verified portable app is launched after the release checkpoint. The pre-existing Earth palette mapping edit remains uncommitted; its colors are preserved in this local build.
