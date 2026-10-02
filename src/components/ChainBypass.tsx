@@ -1,4 +1,5 @@
 import { PEDAL_NAMES, type ChainInstance } from '../core/pedals';
+import { boardRoute } from '../core/board';
 export default function ChainBypass({
   name,
   chain,
@@ -10,10 +11,14 @@ export default function ChainBypass({
   onChange: (chain: ChainInstance) => void;
   onEdit: () => void;
 }) {
+  const route = boardRoute(chain);
   return (
     <div className="track-chain-controls">
       <span>
-        {name} · {chain.pedals.map((p) => PEDAL_NAMES[p.kind]).join(' → ') || 'Clean chain'}
+        {name} ·{' '}
+        {route.connected
+          ? route.pedals.map((p) => PEDAL_NAMES[p.kind]).join(' → ') || 'Clean chain'
+          : 'Output unplugged'}
       </span>
       <label>
         <input

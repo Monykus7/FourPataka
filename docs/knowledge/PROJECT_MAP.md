@@ -45,15 +45,18 @@ Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L22), [AuditionBranch](
 
 #### Pedalboard and processing
 
-Compressor, overdrive and three-band EQ chains have independent audition A/B, track and master instances. EQ starts flat with 200 Hz/4 kHz shelves, a variable mid center and Q 1; filters add no scheduling latency. Flat reset restores all defaults in one undo step while retaining identity and bypass. Serial cables follow pedal order. Circular dials, exact inputs and sliders share parameter updates; each drag is one undo step. Score parameters freeze until replay, while bypass remains live. Delay/tails and score through/master directives remain unimplemented.
+Compressor, overdrive and three-band EQ have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Delay/tails and score through/master directives remain unimplemented.
 
-- Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/core/board.ts](../../src/core/board.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [tests/unit/board.test.ts](../../tests/unit/board.test.ts), [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
+- Pedalboard and processing / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/core/board.ts](../../src/core/board.ts), [src/components/ChainBypass.tsx](../../src/components/ChainBypass.tsx), [src/components/PedalBoardSurface.tsx](../../src/components/PedalBoardSurface.tsx), [src/components/PedalControls.tsx](../../src/components/PedalControls.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [tests/unit/board.test.ts](../../tests/unit/board.test.ts), [src/components/RotaryDial.tsx](../../src/components/RotaryDial.tsx), [src/core/rotary.ts](../../src/core/rotary.ts)
 - Pedalboard and processing / dependency group 2: [src/components/ProcessedGraphs.tsx](../../src/components/ProcessedGraphs.tsx)
-- Pedalboard and processing / dependency group 3: [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts)
-- Pedalboard and processing / dependency group 4: [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts)
-- Pedalboard and processing / dependency group 5: [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts)
-- Pedalboard and processing / dependency group 6: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
-- Pedalboard and processing / dependency group 7: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
+- Pedalboard and processing / dependency group 3: [src/components/SignalCable.tsx](../../src/components/SignalCable.tsx)
+- Pedalboard and processing / dependency group 4: [tests/browser/board-audio.spec.ts](../../tests/browser/board-audio.spec.ts)
+- Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts)
+- Pedalboard and processing / dependency group 6: [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts)
+- Pedalboard and processing / dependency group 7: [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts)
+- Pedalboard and processing / dependency group 8: [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts)
+- Pedalboard and processing / dependency group 9: [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts)
+- Pedalboard and processing / dependency group 10: [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L19), [createEffect](../../src/audio/effects.ts#L36), [set](../../src/audio/effects.ts#L106), [update](../../src/audio/effects.ts#L110), [ChainGraph](../../src/audio/effects.ts#L151), [chainLatency](../../src/audio/effects.ts#L162), [createChain](../../src/audio/effects.ts#L170).
 
