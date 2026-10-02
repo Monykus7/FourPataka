@@ -52,6 +52,10 @@
   font-size: 12px;
   cursor: grab;
 }
+.equipment-dragging .equipment-menu {
+  opacity: 0;
+  pointer-events: none;
+}
 .equipment-menu button:hover,
 .equipment-menu button:focus-visible {
   background: var(--surface-1);

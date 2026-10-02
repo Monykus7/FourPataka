@@ -51,13 +51,26 @@ export default function PedalBoardSurface({
 }) {
   const canvas = useRef<HTMLDivElement>(null),
     move = useRef<Moving | null>(null),
+    equipmentFrame = useRef<number | null>(null),
     suppressClick = useRef(false);
   const [moving, setMoving] = useState<Moving | null>(null),
     [menu, setMenu] = useState(false),
+    [equipmentDragging, setEquipmentDragging] = useState(false),
     [tool, setTool] = useState<PedalKind | 'cable' | null>(null);
   const [pendingDraft, setDraft] = useState<{ from: string | null; point: Point } | null>(null),
     [selectedCable, setSelectedCable] = useState<string | null>(null),
     [notice, setNotice] = useState('');
+  const clearEquipmentDrag = () => {
+    if (equipmentFrame.current !== null) cancelAnimationFrame(equipmentFrame.current);
+    equipmentFrame.current = null;
+    setEquipmentDragging(false);
+  };
+  useEffect(
+    () => () => {
+      if (equipmentFrame.current !== null) cancelAnimationFrame(equipmentFrame.current);
+    },
+    [],
+  );
   const board = boardLayout(chain),
     route = boardRoute(chain);
   // Undo, preset loading and removal can invalidate a gesture before the next pointer event.
@@ -111,6 +124,7 @@ export default function PedalBoardSurface({
       board: { ...board, positions: { ...board.positions, [pedal.id]: cell } },
     });
     onSelect(pedal.id);
+    clearEquipmentDrag();
     setTool(null);
     setNotice('Pedal placed. Choose a patch cable to connect its jacks.');
   };
@@ -203,13 +217,14 @@ export default function PedalBoardSurface({
           setTool(null);
           setDraft(null);
           setMenu(false);
+          clearEquipmentDrag();
           setSelectedCable(null);
           setNotice('');
         }
       }}
     >
       <div className="board-tools">
-        <div className="equipment-picker">
+        <div className={`equipment-picker ${equipmentDragging ? 'equipment-dragging' : ''}`}>
           <button
             className="secondary-button"
             aria-expanded={menu}
@@ -230,6 +245,18 @@ export default function PedalBoardSurface({
                     e.dataTransfer.setData('application/x-fourpataka-pedal', kind);
                     e.dataTransfer.effectAllowed = 'copy';
                     setTool(kind);
+                    setDraft(null);
+                    // Let Chromium capture the drag image before hiding the menu;
+                    // hiding its source during dragstart can cancel the native drag.
+                    equipmentFrame.current = requestAnimationFrame(() => {
+                      equipmentFrame.current = null;
+                      setEquipmentDragging(true);
+                    });
+                  }}
+                  onDragEnd={() => {
+                    clearEquipmentDrag();
+                    setMenu(false);
+                    setTool(null);
                   }}
                   onClick={() => {
                     setTool(kind);
@@ -245,6 +272,7 @@ export default function PedalBoardSurface({
                 onClick={() => {
                   setTool('cable');
                   setMenu(false);
+                  clearEquipmentDrag();
                 }}
               >
                 <Cable size={14} />
@@ -312,6 +340,8 @@ export default function PedalBoardSurface({
                   const kind = e.dataTransfer.getData('application/x-fourpataka-pedal');
                   if (kind === 'compressor' || kind === 'overdrive' || kind === 'eq')
                     place(kind, cell);
+                  clearEquipmentDrag();
+                  setTool(null);
                   setMenu(false);
                 }}
               >

@@ -54,7 +54,7 @@
       "id": "pedals",
       "parent": "sound",
       "title": "Pedalboard and processing",
-      "summary": "Compressor, overdrive and three-band EQ have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Delay/tails and score through/master directives remain unimplemented.",
+      "summary": "Compressor, overdrive and three-band EQ have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Delay/tails and score through/master directives remain unimplemented.",
       "paths": [
         "src/core/pedals.ts",
         "src/core/board.ts",
