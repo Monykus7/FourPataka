@@ -31,6 +31,53 @@ test('EQ joins the cable path with precise rotary controls and bounds', async ({
   await expect(page.locator('.pedal-module').first()).toHaveClass(/eq/);
 });
 
+test('flat reset is one undo step and retains the module order and bypass state', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add EQ', exact: true }).click();
+  const eq = page.locator('.pedal-module.eq');
+  const id = await eq.getAttribute('data-pedal-id');
+  const value = (name: string) =>
+    eq.getByRole('spinbutton', { name: `eq 1 ${name} exact value`, exact: true });
+  for (const [name, n] of [
+    ['low gain', '6'],
+    ['mid gain', '-4'],
+    ['high gain', '3'],
+    ['mid frequency', '1700'],
+    ['output', '-3'],
+    ['mix', '40'],
+  ])
+    await value(name).fill(n);
+  await eq.getByRole('checkbox', { name: 'Bypass eq 1', exact: true }).check();
+  await eq.getByRole('button', { name: 'Reset EQ 1 to flat', exact: true }).click();
+  for (const [name, n] of [
+    ['low gain', '0'],
+    ['mid gain', '0'],
+    ['high gain', '0'],
+    ['mid frequency', '1000'],
+    ['output', '0'],
+    ['mix', '100'],
+  ])
+    await expect(value(name)).toHaveValue(n);
+  await expect(eq).toHaveAttribute('data-pedal-id', id!);
+  await expect(eq.getByRole('checkbox', { name: 'Bypass eq 1', exact: true })).toBeChecked();
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  for (const [name, n] of [
+    ['low gain', '6'],
+    ['mid gain', '-4'],
+    ['high gain', '3'],
+    ['mid frequency', '1700'],
+    ['output', '-3'],
+    ['mix', '40'],
+  ])
+    await expect(value(name)).toHaveValue(n);
+  await expect(eq.getByRole('checkbox', { name: 'Bypass eq 1', exact: true })).toBeChecked();
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(value('low gain')).toHaveValue('0');
+});
+
 test('EQ is flat at every mix and shapes the three bands at 48 and 44.1 kHz', async ({ page }) => {
   await page.goto('/');
   const proofs = await page.evaluate(async () => {
