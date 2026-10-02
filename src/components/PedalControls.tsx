@@ -43,12 +43,14 @@ export default function PedalControls({
   onChange,
   onReplace,
   onRemove,
+  tailActive,
 }: {
   pedal: Pedal | undefined;
   index: number;
   onChange: ParameterChange;
   onReplace: (pedal: Pedal) => void;
   onRemove: () => void;
+  tailActive: boolean;
 }) {
   return (
     <section
@@ -111,6 +113,13 @@ export default function PedalControls({
                 Reset to flat
               </button>
             </>
+          )}
+          {pedal.kind === 'delay' && (
+            <p className="delay-note">
+              {tailActive
+                ? 'Tail active · stored echoes are finishing.'
+                : 'Bypass stops new echoes; existing echoes finish. Stop clears them.'}
+            </p>
           )}
           <button
             className="text-button"

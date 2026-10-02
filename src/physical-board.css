@@ -321,6 +321,9 @@
 .board-inspector.eq {
   --pedal-ink: var(--accent-ink);
 }
+.board-inspector.delay {
+  border-top-color: var(--secondary);
+}
 .board-inspector.overdrive {
   --pedal-ink: var(--tertiary-ink);
 }

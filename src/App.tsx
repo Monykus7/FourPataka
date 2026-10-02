@@ -1316,6 +1316,7 @@ export default function App() {
                 onDestination={setPedalDestination}
                 onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
                 pending={engine.current.processingPending(project.processing, active, pedalPath)}
+                activeTails={engine.current.activeTails(pedalPath)}
                 playing={pedalPath === 'audition' ? playback === 'audition' : playback === 'score'}
                 onCopy={copyAB}
                 onReplay={() => (pedalPath === 'audition' ? void audition() : void playScore())}

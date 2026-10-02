@@ -42,12 +42,14 @@ export default function PedalBoardSurface({
   onSelect,
   onChange,
   onParameter,
+  activeTails,
 }: {
   chain: ChainInstance;
   selected: string | undefined;
   onSelect: (id: string) => void;
   onChange: (chain: ChainInstance) => void;
   onParameter: ParameterChange;
+  activeTails: string[];
 }) {
   const canvas = useRef<HTMLDivElement>(null),
     move = useRef<Moving | null>(null),
@@ -235,7 +237,7 @@ export default function PedalBoardSurface({
           </button>
           {menu && (
             <div className="equipment-menu" role="menu" aria-label="Equipment">
-              {(['compressor', 'overdrive', 'eq'] as const).map((kind) => (
+              {(['compressor', 'overdrive', 'eq', 'delay'] as const).map((kind) => (
                 <button
                   key={kind}
                   role="menuitem"
@@ -338,7 +340,12 @@ export default function PedalBoardSurface({
                 onDrop={(e) => {
                   e.preventDefault();
                   const kind = e.dataTransfer.getData('application/x-fourpataka-pedal');
-                  if (kind === 'compressor' || kind === 'overdrive' || kind === 'eq')
+                  if (
+                    kind === 'compressor' ||
+                    kind === 'overdrive' ||
+                    kind === 'eq' ||
+                    kind === 'delay'
+                  )
                     place(kind, cell);
                   clearEquipmentDrag();
                   setTool(null);
@@ -492,7 +499,13 @@ export default function PedalBoardSurface({
                     }
                   />
                   <Power size={14} />
-                  <span>{pedal.bypassed || chain.bypassed ? 'Bypassed' : 'Engaged'}</span>
+                  <span>
+                    {activeTails.includes(pedal.id)
+                      ? 'Tail active'
+                      : pedal.bypassed || chain.bypassed
+                        ? 'Bypassed'
+                        : 'Engaged'}
+                  </span>
                 </label>
               </article>
             );
