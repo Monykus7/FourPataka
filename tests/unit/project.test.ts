@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyPreset, createProject, importProject, reconcileTracks } from '../../src/core/project';
+import {
+  applyPreset,
+  createProject,
+  importProject,
+  reconcileTracks,
+  updateProcessingAssignments,
+} from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
 import { mathematicalPreset } from '../../src/core/music';
 import { makePedal } from '../../src/core/pedals';
@@ -14,6 +20,21 @@ const reparse = (project: ReturnType<typeof createProject>) =>
     ),
   );
 describe('independent project state', () => {
+  it('pedalboard Apply writes source assignments and preserves the exact edited applied copies', () => {
+    const p = createProject(),
+      processing = structuredClone(p.processing);
+    const preset = processing.library.find((p) => p.key === 'warmDrive')!;
+    processing.tracks.melody = { ...structuredClone(preset.chain), presetId: preset.id };
+    processing.tracks.melody.pedals[0].params.drive = 12;
+    processing.master = structuredClone(processing.tracks.melody);
+    const applied = reparse(updateProcessingAssignments(p, processing));
+    expect(applied.scoreText).toContain('master through warmDrive');
+    expect(applied.scoreText).toContain('melody using brightReed through warmDrive');
+    expect(applied.processing.master.pedals[0].params.drive).toBe(12);
+    expect(applied.processing.tracks.melody.pedals[0].params.drive).toBe(12);
+    expect(applied.processing.tracks.bass.pedals).toEqual([]);
+    expect(importProject(JSON.stringify(applied))).toEqual(applied);
+  });
   it('reconciles track/master assignments once, keeps edited copies and clears removed directives', () => {
     const p = createProject();
     p.scoreText =
