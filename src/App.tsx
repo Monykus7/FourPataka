@@ -66,6 +66,7 @@ import {
   PREFERENCES_KEY,
   RECOVERY_KEY,
   reconcileTracks,
+  updateProcessingAssignments,
   STORAGE_KEY,
   type Project,
 } from './core/project';
@@ -74,9 +75,16 @@ import SourceGraphs from './components/SourceGraphs';
 import FourierWorkspace from './components/FourierWorkspace';
 import Pedalboard from './components/Pedalboard';
 import ChainBypass from './components/ChainBypass';
+import ChainAssignment from './components/ChainAssignment';
 import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
-import { appendTrack, insertCommand, nextTrackKey, setScoreDirective } from './core/scoreTools';
+import {
+  appendTrack,
+  insertCommand,
+  nextTrackKey,
+  setScoreDirective,
+  setScoreChain,
+} from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
@@ -203,6 +211,7 @@ export default function App() {
   const [modalError, setModalError] = useState('');
   const [commandSearch, setCommandSearch] = useState('');
   const [commandsOpen, setCommandsOpen] = useState(true);
+  const [commandChain, setCommandChain] = useState('warmDrive');
   const fileInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const engine = useRef(new AudioEngine());
@@ -212,6 +221,7 @@ export default function App() {
   const sound = project.comparison[active];
   const macroBaseline = useRef<Sound>(structuredClone(sound));
   const instruments = project.instruments;
+  const chainKeys = project.processing.library.map((p) => p.key);
   const preset = instruments.find((i) => i.id === project.editorPresetId)!;
   const isCustom = JSON.stringify(sound) !== JSON.stringify(preset.sound);
   const score = useMemo(
@@ -1316,7 +1326,14 @@ export default function App() {
                 active={active}
                 destination={pedalPath}
                 onDestination={setPedalDestination}
-                onChange={(processing, group) => change((p) => ({ ...p, processing }), group)}
+                onChange={(processing, group) => {
+                  try {
+                    const next = updateProcessingAssignments(projectRef.current, processing);
+                    change(() => next, group);
+                  } catch (e) {
+                    setToast((e as Error).message);
+                  }
+                }}
                 pending={engine.current.processingPending(project.processing, active, pedalPath)}
                 activeTails={engine.current.activeTails(pedalPath)}
                 playing={pedalPath === 'audition' ? playback === 'audition' : playback === 'score'}
@@ -1389,9 +1406,9 @@ export default function App() {
                         const keys = instruments.map((i) => i.key);
                         let text = project.scoreText;
                         if (Number(tempo) !== score.tempo)
-                          text = setScoreDirective(text, keys, 'tempo', tempo);
+                          text = setScoreDirective(text, keys, 'tempo', tempo, chainKeys);
                         if (meter !== meterLabel(score.meter))
-                          text = setScoreDirective(text, keys, 'time', meter);
+                          text = setScoreDirective(text, keys, 'time', meter, chainKeys);
                         change((p) => ({ ...p, scoreText: text }));
                       } catch (e) {
                         setToast((e as Error).message);
@@ -1408,6 +1425,7 @@ export default function App() {
                       diagnostics={score.diagnostics}
                       autocomplete={preferences.autocomplete}
                       presetKeys={instruments.map((i) => i.key)}
+                      chainKeys={chainKeys}
                       lines={highlightedLines}
                       onUndo={() => travel('undo')}
                       onRedo={() => travel('redo')}
@@ -1459,6 +1477,24 @@ export default function App() {
                       <h3>Independent track sounds</h3>
                       <Layers3 size={15} />
                     </div>
+                    <ChainAssignment
+                      name="master"
+                      value={score.master?.key ?? null}
+                      presets={project.processing.library}
+                      disabled={playback === 'score' || !!score.diagnostics.length}
+                      onChange={(key) =>
+                        change((p) => ({
+                          ...p,
+                          scoreText: setScoreChain(
+                            p.scoreText,
+                            p.instruments.map((i) => i.key),
+                            p.processing.library.map((p) => p.key),
+                            null,
+                            key,
+                          ),
+                        }))
+                      }
+                    />
                     <ChainBypass
                       name="master"
                       chain={project.processing.master}
@@ -1498,6 +1534,26 @@ export default function App() {
                               ))}
                             </select>
                           </label>
+                          <ChainAssignment
+                            name={t.key}
+                            value={
+                              score.tracks.find((parsed) => parsed.key === t.key)?.chainKey ?? null
+                            }
+                            presets={project.processing.library}
+                            disabled={playback === 'score' || !!score.diagnostics.length}
+                            onChange={(key) =>
+                              change((p) => ({
+                                ...p,
+                                scoreText: setScoreChain(
+                                  p.scoreText,
+                                  p.instruments.map((i) => i.key),
+                                  p.processing.library.map((p) => p.key),
+                                  t.key,
+                                  key,
+                                ),
+                              }))
+                            }
+                          />
                           <RangeControl
                             label={`${t.key} level`}
                             value={t.level * 100}
@@ -1626,7 +1682,7 @@ export default function App() {
                   >
                     {commandsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                     <h3>Command reference</h3>
-                    <span className="tag">8 COMMANDS</span>
+                    <span className="tag">{COMMANDS.length} COMMANDS</span>
                   </button>
                   <label className="search-box">
                     <Search size={14} />
@@ -1651,6 +1707,20 @@ export default function App() {
                           {project.tracks.map((t) => (
                             <option key={t.key} value={t.key}>
                               {t.key}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Pedal chain
+                        <select
+                          aria-label="Command pedal chain"
+                          value={chainKeys.includes(commandChain) ? commandChain : chainKeys[0]}
+                          onChange={(e) => setCommandChain(e.target.value)}
+                        >
+                          {project.processing.library.map((p) => (
+                            <option key={p.id} value={p.key}>
+                              {p.label} · {p.key}
                             </option>
                           ))}
                         </select>
@@ -1686,10 +1756,12 @@ export default function App() {
                                 c.name,
                                 track?.key ?? '',
                                 preset.key,
+                                chainKeys,
+                                chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
                               );
                               change((p) => ({ ...p, scoreText: text }));
                               setToast(
-                                `Inserted ${c.name}${['tempo', 'time', 'track'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
+                                `Inserted ${c.name}${['tempo', 'time', 'track', 'master'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
                               );
                             } catch (e) {
                               setToast((e as Error).message);
@@ -2124,15 +2196,18 @@ export default function App() {
             instruments.map((i) => i.key),
           )}
           instruments={instruments}
+          chains={project.processing.library}
           instrumentKey={preset.key}
           onClose={() => setTrackMakerOpen(false)}
-          onCreate={(key, instrument, events) => {
+          onCreate={(key, instrument, events, chainKey) => {
             const text = appendTrack(
               project.scoreText,
               instruments.map((i) => i.key),
               key,
               instrument,
               events,
+              chainKeys,
+              chainKey,
             );
             change((p) => ({ ...p, scoreText: text }));
             setSelectedTrack(key);

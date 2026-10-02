@@ -4,6 +4,7 @@ import { DURATIONS } from '../core/music';
 import { parseScore } from '../core/parser';
 import { measureLength, measurePosition, meterLabel, type TimeSignature } from '../core/meter';
 import type { InstrumentPreset } from '../core/project';
+import type { ChainPreset } from '../core/pedals';
 
 type Row = { id: number; kind: 'note' | 'chord' | 'rest'; notes: string; duration: string };
 const expression = (row: Row) =>
@@ -11,6 +12,7 @@ const expression = (row: Row) =>
 export default function TrackMaker({
   initialKey,
   instruments,
+  chains,
   instrumentKey,
   meter,
   onCreate,
@@ -18,14 +20,16 @@ export default function TrackMaker({
 }: {
   initialKey: string;
   instruments: InstrumentPreset[];
+  chains: ChainPreset[];
   instrumentKey: string;
   meter: TimeSignature;
-  onCreate: (key: string, instrument: string, events: string[]) => void;
+  onCreate: (key: string, instrument: string, events: string[], chain: string | null) => void;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [key, setKey] = useState(initialKey);
   const [instrument, setInstrument] = useState(instrumentKey);
+  const [chainKey, setChainKey] = useState('');
   const [rows, setRows] = useState<Row[]>([
     { id: 1, kind: 'note', notes: 'C4', duration: 'quarter' },
     { id: 2, kind: 'note', notes: 'E4', duration: 'quarter' },
@@ -33,10 +37,11 @@ export default function TrackMaker({
   ]);
   const nextId = useRef(4);
   const [error, setError] = useState('');
-  const text = `track ${key} using ${instrument} {\n${rows.map((row) => `  ${expression(row)}`).join('\n')}\n}`;
+  const text = `track ${key} using ${instrument}${chainKey ? ` through ${chainKey}` : ''} {\n${rows.map((row) => `  ${expression(row)}`).join('\n')}\n}`;
   const preview = parseScore(
     `time ${meterLabel(meter)}\n${text}`,
     instruments.map((i) => i.key),
+    chains.map((p) => p.key),
   );
   const update = (id: number, patch: Partial<Row>) =>
     setRows((before) => before.map((row) => (row.id === id ? { ...row, ...patch } : row)));
@@ -65,7 +70,7 @@ export default function TrackMaker({
         onSubmit={(event) => {
           event.preventDefault();
           try {
-            onCreate(key.trim(), instrument, rows.map(expression));
+            onCreate(key.trim(), instrument, rows.map(expression), chainKey || null);
           } catch (e) {
             setError((e as Error).message);
           }
@@ -111,6 +116,21 @@ export default function TrackMaker({
             </select>
           </label>
         </div>
+        <label className="track-instrument-choice">
+          Pedal chain
+          <select
+            aria-label="New track pedal chain"
+            value={chainKey}
+            onChange={(e) => setChainKey(e.target.value)}
+          >
+            <option value="">No score assignment</option>
+            {chains.map((p) => (
+              <option key={p.id} value={p.key}>
+                {p.label} · {p.key}
+              </option>
+            ))}
+          </select>
+        </label>
         <div className="maker-phrase-heading">
           <h3>Events</h3>
           <span>

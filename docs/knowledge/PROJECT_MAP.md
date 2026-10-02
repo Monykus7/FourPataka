@@ -61,7 +61,7 @@ Line-oriented score text is authoritative. Parallel tracks start together; the c
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L84), [View](../../src/App.tsx#L86), [readPreferences](../../src/App.tsx#L87), [MiniWave](../../src/App.tsx#L102), [RangeControl](../../src/App.tsx#L122), [App](../../src/App.tsx#L172), [resetMacros](../../src/App.tsx#L273), [changeSound](../../src/App.tsx#L277).
+Key definitions: [ScoreEditor](../../src/App.tsx#L92), [View](../../src/App.tsx#L94), [readPreferences](../../src/App.tsx#L95), [MiniWave](../../src/App.tsx#L110), [RangeControl](../../src/App.tsx#L130), [App](../../src/App.tsx#L180), [resetMacros](../../src/App.tsx#L283), [changeSound](../../src/App.tsx#L287).
 
 #### Score parsing and editor
 
@@ -70,7 +70,7 @@ Source offsets map diagnostics, explicit notes/chords/rests and track assignment
 - Score parsing and editor / dependency group 1: [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/core/parser.ts](../../src/core/parser.ts), [tests/unit/parser.test.ts](../../tests/unit/parser.test.ts)
 - Score parsing and editor / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
 
-Key definitions: [activeLines](../../src/components/ScoreEditor.tsx#L12), [playbackField](../../src/components/ScoreEditor.tsx#L13), [scoreLanguage](../../src/components/ScoreEditor.tsx#L33), [token](../../src/components/ScoreEditor.tsx#L34), [theme](../../src/components/ScoreEditor.tsx#L49), [colors](../../src/components/ScoreEditor.tsx#L83), [Props](../../src/components/ScoreEditor.tsx#L91), [ScoreEditor](../../src/components/ScoreEditor.tsx#L101).
+Key definitions: [activeLines](../../src/components/ScoreEditor.tsx#L12), [playbackField](../../src/components/ScoreEditor.tsx#L13), [scoreLanguage](../../src/components/ScoreEditor.tsx#L33), [token](../../src/components/ScoreEditor.tsx#L34), [theme](../../src/components/ScoreEditor.tsx#L49), [colors](../../src/components/ScoreEditor.tsx#L83), [Props](../../src/components/ScoreEditor.tsx#L91), [ScoreEditor](../../src/components/ScoreEditor.tsx#L102).
 
 #### Tempo, meter and timeline
 
@@ -89,7 +89,7 @@ Track maker validates note/chord/rest rows, reorders with buttons and previews l
 - Track creation and assignment / dependency group 1: [src/components/TrackMaker.tsx](../../src/components/TrackMaker.tsx)
 - Track creation and assignment / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
 
-Key definitions: [Row](../../src/components/TrackMaker.tsx#L8), [expression](../../src/components/TrackMaker.tsx#L9), [TrackMaker](../../src/components/TrackMaker.tsx#L11), [update](../../src/components/TrackMaker.tsx#L41), [move](../../src/components/TrackMaker.tsx#L43), [add](../../src/components/TrackMaker.tsx#L52).
+Key definitions: [Row](../../src/components/TrackMaker.tsx#L9), [expression](../../src/components/TrackMaker.tsx#L10), [TrackMaker](../../src/components/TrackMaker.tsx#L12), [update](../../src/components/TrackMaker.tsx#L46), [move](../../src/components/TrackMaker.tsx#L48), [add](../../src/components/TrackMaker.tsx#L57).
 
 ### Project state and desktop studio
 
