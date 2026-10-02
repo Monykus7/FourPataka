@@ -132,6 +132,8 @@ Compressor uses the native Web Audio processor with a 30 dB knee, measured look-
 
 Personal build workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured identity, and launch the verified portable application after every completed x.x.0 release.
 
+**Pedal dials** turn by dragging around the circle: clockwise increases the parameter; counterclockwise decreases it. Grabbing a dial keeps its current value. The dial follows a 270-degree sweep, stops at the parameter limits and stays linked to its slider and exact input. A whole mouse/touch drag is one undo step. Focus a dial and use arrow keys for one parameter step, Page Up/Down for ten, or Home/End for its limits.
+
 ## Themes
 
 Choose **Theme** below Learn: Original, Blue / pink, Green / orange, Violet / coral, or Earth / sage. The three Happy Hues presets use [palette 12](https://www.happyhues.co/palettes/12), [palette 10](https://www.happyhues.co/palettes/10), and [palette 6](https://www.happyhues.co/palettes/6), adapted to studio surfaces and controls. Earth / sage includes the supplied `#9A7F62`, `#5F6E73`, `#697E60`, `#D6D2C4`, and `#B7A99A` colors. Secondary and tertiary accents appear in harmonics, waveform dots/targets, pedals, processed spectra, timeline events, and score syntax. Text uses adjusted shades where needed for contrast while accents and swatches retain the palette colors.

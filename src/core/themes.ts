@@ -101,6 +101,8 @@ function readable(color: string, backgrounds: string[]) {
     const candidate = blend(color, ink, step / 100);
     if (backgrounds.every((bg) => contrast(candidate, bg) >= 4.5)) return candidate;
   }
+  for (const fallback of ['#000000', '#ffffff'])
+    if (backgrounds.every((bg) => contrast(fallback, bg) >= 4.5)) return fallback;
   return ink;
 }
 export function resolveTheme(id: unknown): Theme {

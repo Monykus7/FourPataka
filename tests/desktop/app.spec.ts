@@ -19,6 +19,34 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('packaged pedal dials rotate and support exact keyboard adjustment with undo', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page.getByRole('button', { name: 'Add overdrive', exact: true }).click();
+  const dial = page.getByRole('slider', { name: 'overdrive 1 drive dial', exact: true });
+  const exact = page.getByRole('spinbutton', {
+    name: 'overdrive 1 drive exact value',
+    exact: true,
+  });
+  const box = (await dial.boundingBox())!;
+  const point = (angle: number) => ({
+    x: box.x + box.width / 2 + Math.sin((angle * Math.PI) / 180) * 18,
+    y: box.y + box.height / 2 - Math.cos((angle * Math.PI) / 180) * 18,
+  });
+  await page.mouse.move(point(0).x, point(0).y);
+  await page.mouse.down();
+  for (let angle = 15; angle <= 90; angle += 15)
+    await page.mouse.move(point(angle).x, point(angle).y);
+  await page.mouse.up();
+  await expect(exact).toHaveValue('14');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(exact).toHaveValue('6');
+  await dial.focus();
+  await dial.press('ArrowUp');
+  await expect(exact).toHaveValue('6.5');
+  await expect(dial).toHaveAttribute('aria-valuenow', '6.5');
+});
+
 test('packaged Compose applies timing and instruments to source with undo', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
