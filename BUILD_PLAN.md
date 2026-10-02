@@ -33,6 +33,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Instrument and Compose are the primary views; Learn is a smaller secondary link.
 - Use concise functional information for personal use, without promotional taglines. Keep the original dark color scheme, minimal shadows, and restrained material detail rather than a full paper background.
 - Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format.
+- Add instrument acoustics later inside the Instrument builder: a wet/dry algorithmic "tiny room" representing the instrument's chamber. It must work without impulse-response (IR) files.
 
 Other defaults in this document are proposed implementation choices. They should be tuned in the audio proof without changing these confirmed behaviors.
 
@@ -57,6 +58,8 @@ Include the following by the end of stage 5:
 
 Stage 6 adds WAV export. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
+Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
+
 Keep repeat blocks, dotted notes, tuplets, time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
 
 Accounts, collaboration, and a backend are unnecessary for the planned local studio.
@@ -77,6 +80,8 @@ The project model contains:
 - Project mix levels and saved bypass states.
 
 An instrument state contains harmonic magnitudes, harmonic polarity, subharmonic magnitudes, the undertone enable flag, attack/release settings, and an explicit output trim. A pedal chain state contains ordered pedal instances, parameters, and per-pedal bypass states.
+
+Planned extension: acoustics settings belong to the instrument state and follow its preset, independent track copies, A/B snapshots, Apply, Apply to all, undo, autosave and JSON round-trip rules. Older projects and mathematical presets must migrate with acoustics disabled to preserve their existing sound. Runtime reflection/feedback buffers are never saved or shared between destinations.
 
 UI preferences such as autocomplete, collapsed sections, and panel sizes are stored separately from the musical data. Importing a project should not unexpectedly replace the user's global editor preferences.
 
@@ -163,6 +168,32 @@ Attack rises from zero. Hold until the notated note end, then release; release m
 Bound polyphony, counting voices that are releasing. Allocate undertone oscillators only for nonzero enabled components. Fade a stolen voice and clean up all of its nodes. The audio proof determines a documented desktop/mobile voice limit.
 
 A rest schedules no new notes. Release envelopes and effect tails can remain audible during a rest.
+
+### Planned instrument acoustics — tiny chamber
+
+Status: requested, deferred, and not implemented. Add a compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
+
+Use algorithmic reverb built from generated short reflections and a bounded, damped feedback network. No IR files, convolution library, recording upload or asset download should be required. Select the exact network and parameter ranges in a listening/numeric audio proof before committing to an implementation.
+
+Initial controls:
+
+- Enable acoustics, default off, with a one-step reset to dry/default chamber settings.
+- Wet/dry blend, 0–100%, with exact numeric and keyboard controls. Start with a documented linear blend; 0% wet must reproduce the existing dry signal at unity relative to the chamber input.
+- Chamber size/reflection spacing, emphasizing short instrument-body responses.
+- Decay and damping/body tone, with documented units and bounded ranges. More elaborate material, resonance and chamber presets can follow the initial proof.
+
+Proposed signal path: combined instrument voices after their envelopes and source trim → instrument chamber with dry/wet blend → track pedal chain → track level. Audition uses the same instrument stage before its selected pedal chain. A chamber instance is shared by that destination's polyphonic voices, with independent processor state for other tracks and A/B branches. The master pedalboard remains downstream of the track mix.
+
+Keep drawn waveform, harmonic coefficients and source inspectors authoritative for the unprocessed source. Any chamber-output measurement must identify its tap explicitly, so users can distinguish source synthesis from body coloration. Source editing and chamber editing remain separate undoable operations.
+
+Future implementation gate:
+
+- Dry identity and unchanged legacy playback; no hidden normalization or gain boost. Measure output/headroom and verify silence and parameter extremes at supported sample rates.
+- Stable bounded feedback, finite documented tail allowance, smooth live audition controls, and bounded processor/resource ownership across chords and repeated playback.
+- Continuous A/B switches preserve musical position and oscillator phase while transitioning independent chamber state. Reflection timing is intentional coloration; measure any processing latency separately and preserve existing track alignment.
+- Rests and note releases allow chamber decay; Stop fades and disposes chamber state with the rest of the session. Enable/bypass transitions need an explicit, tested feed/tail policy.
+- Preset application, snapshot isolation, grouped undo, autosave, import validation and migrations cover every chamber setting. Playing-score edits follow the existing frozen-revision/replay policy.
+- Browser and portable desktop workflows agree; offline/WAV rendering uses the same chamber model and includes its finite tails when this feature ships.
 
 ## 6. A/B comparison and harmonic macros
 
@@ -530,6 +561,8 @@ Add guided experiments and the secondary analysis panel with clearly defined sou
 Gate: loading an experiment is undoable; metric units/reference/window are visible; silence produces no misleading numeric values; computed descriptors agree with simple known test signals.
 
 ### Stage 8 and later — advanced synthesis and notation
+
+Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 
 Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 

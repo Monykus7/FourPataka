@@ -25,6 +25,10 @@ Sixteen signed harmonics and optional undertones retain absolute amplitude. Osci
 
 Key definitions: [Voice](../../src/audio/voice.ts#L3), [Source](../../src/audio/voice.ts#L10), [TRANSITION](../../src/audio/voice.ts#L15), [holdParameter](../../src/audio/voice.ts#L18), [createVoice](../../src/audio/voice.ts#L27), [source](../../src/audio/voice.ts#L57), [setSources](../../src/audio/voice.ts#L94), [end](../../src/audio/voice.ts#L136).
 
+#### Instrument acoustics (planned)
+
+Deferred, not implemented: an Instrument-builder algorithmic tiny chamber representing instrument body acoustics, without impulse-response (IR) files. Proposed enable/reset, wet/dry, chamber size, decay and damping controls live in saved instrument settings and independent track/A/B copies. The planned chamber sits before track pedals while source inspectors retain raw Fourier authority. Audio-proof gates cover dry unity, bounded feedback, latency, continuous clock/phase, finite tails and Stop, legacy-off migration, copy isolation and offline/WAV agreement. Current main-feature and export priorities remain unchanged.
+
 #### Waveform drawing and control points
 
 Draw or place dots on an odd waveform half-cycle. Shape-preserving cubic interpolation avoids overshoot; projection produces signed sine coefficients. Reset restores a sine while preserving envelope and trim.
