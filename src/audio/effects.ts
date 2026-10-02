@@ -94,8 +94,10 @@ export function createEffect(
       sum = context.createGain(),
       feed = context.createGain(),
       feedback = context.createGain(),
+      meterMute = context.createGain(),
       meter = context.createAnalyser();
     meter.fftSize = 2048;
+    meterMute.gain.value = 0;
     // Gate only new input. Bypass leaves the delay/feedback loop and its wet
     // output alive, so stored echoes decay while new notes pass at dry unity.
     input.connect(dry);
@@ -104,8 +106,10 @@ export function createEffect(
     sum.connect(makeup).connect(wet);
     feed.connect(meter);
     feedback.connect(meter);
+    // Keep this side tap pulled by the output graph even during silent gaps.
+    meter.connect(meterMute).connect(output);
     echo = { delay, loop, feed, feedback, meter };
-    nodes.push(delay, loop, sum, feed, feedback, meter);
+    nodes.push(delay, loop, sum, feed, feedback, meter, meterMute);
   } else {
     // Both dry and wet use the same 4x resampling filters, including bypass.
     // Scale the identity branch so source peaks above 1 are not hard-clipped.

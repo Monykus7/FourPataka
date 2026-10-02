@@ -249,6 +249,7 @@ export class AudioEngine {
     const frozen = structuredClone(phrase);
     let cursor = 0;
     const schedule = () => {
+      this.sampleTails(session);
       const horizon = this.context!.currentTime + 0.12;
       while (
         cursor < frozen.events.length &&
@@ -290,6 +291,7 @@ export class AudioEngine {
     if (session.chains.get('audition')!.topology !== topology)
       this.auditionChain(session, chain, true);
     else session.chains.get('audition')!.update(chain);
+    this.refreshAuditionTail(session);
     session.chainSettings.set('audition', chainMusicalSettings(chain));
     this.updateAudition(sound, solo);
   }
@@ -379,6 +381,7 @@ export class AudioEngine {
     const queue = [...score.events].sort((a, b) => a.beat - b.beat);
     let cursor = 0;
     const schedule = () => {
+      this.sampleTails(session);
       const horizon = this.context!.currentTime + 0.12;
       while (
         cursor < queue.length &&
@@ -422,6 +425,7 @@ export class AudioEngine {
     if (session.mode === 'audition') {
       const chain = processing.audition[side];
       session.chains.get('audition')?.update(chain);
+      this.refreshAuditionTail(session);
       // Topology changes stay queued; parameter changes on existing pedals are live.
       session.chainSettings.set('audition', session.chains.get('audition')!.musicalSettings);
     } else
@@ -451,6 +455,32 @@ export class AudioEngine {
   }
   outputAnalyser(destination: string) {
     return this.session?.chains.get(destination)?.analyser ?? null;
+  }
+  private refreshAuditionTail(session: Session) {
+    // Lengthening a live delay must extend cleanup, including a note already
+    // releasing. Never shorten the budget of echoes captured at old settings.
+    const remaining = Math.max(
+      0,
+      ...[...session.auditionBranches].map(
+        (branch) => branch.graph.tail + branch.align.delayTime.value,
+      ),
+    );
+    session.processingTail = Math.max(session.processingTail, remaining);
+    session.duration = Math.max(
+      session.duration,
+      session.phraseSeconds + (session.auditionSound?.release ?? 0) + session.processingTail,
+      ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
+    );
+  }
+  private sampleTails(session: Session) {
+    // Keep activity memory current even while Compose or Instrument is visible,
+    // including rests before the first echo and gaps between long repeats.
+    session.chains.forEach((graph) => {
+      void graph.activeTails;
+    });
+  }
+  activeTails(destination: string) {
+    return this.session?.chains.get(destination)?.activeTails ?? [];
   }
   stop(notify = true) {
     // Invalidate pending resume requests only for explicit Stop, not begin().

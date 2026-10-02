@@ -53,7 +53,7 @@ Compressor, overdrive and three-band EQ have independent audition A/B, track and
 - Pedalboard and processing / dependency group 4: [tests/browser/board-audio.spec.ts](../../tests/browser/board-audio.spec.ts)
 - Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts), [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts), [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts), [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts), [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts), [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L12), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L38), [set](../../src/audio/effects.ts#L137), [update](../../src/audio/effects.ts#L141), [tail](../../src/audio/effects.ts#L188), [tailActive](../../src/audio/effects.ts#L197), [ChainGraph](../../src/audio/effects.ts#L210).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L12), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L38), [set](../../src/audio/effects.ts#L141), [update](../../src/audio/effects.ts#L145), [tail](../../src/audio/effects.ts#L192), [tailActive](../../src/audio/effects.ts#L201), [ChainGraph](../../src/audio/effects.ts#L214).
 
 ### Composition studio
 
