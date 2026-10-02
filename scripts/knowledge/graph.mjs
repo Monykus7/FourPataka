@@ -126,9 +126,8 @@ export async function buildGraph(root) {
   const sources = await Promise.all(
     files.map(async (file) => ({ file, text: await fs.readFile(path.join(root, file), 'utf8') })),
   );
-  const features = JSON.parse(
-    sources.find((s) => s.file === 'docs/knowledge/features.json').text,
-  ).features;
+  const featureSource = sources.find((s) => s.file === 'docs/knowledge/features.json').text;
+  const features = JSON.parse(featureSource).features;
   validateFeatures(features);
   const parserFingerprint = hash(
     (await fs.readFile(new URL('./extract.mjs', import.meta.url), 'utf8')) +
@@ -212,7 +211,14 @@ export async function buildGraph(root) {
       name: feature.title,
       summary: feature.summary,
       path: 'docs/knowledge/features.json',
-      line: 1,
+      line: featureSource
+        .slice(
+          0,
+          featureSource.search(
+            new RegExp(`"id"\\s*:\\s*"${feature.id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}"`),
+          ),
+        )
+        .split('\n').length,
       members: members.map((n) => n.id),
       parent: feature.parent ? `feature:${feature.parent}` : null,
     });

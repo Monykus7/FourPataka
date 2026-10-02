@@ -2,11 +2,65 @@ import { describe, expect, it } from 'vitest';
 import { extractCode, extractDocument } from '../../scripts/knowledge/extract.mjs';
 import { connectCode, validateFeatures } from '../../scripts/knowledge/graph.mjs';
 import { neighborhood, personalizedPageRank } from '../../scripts/knowledge/rank.mjs';
-import { addSummaries } from '../../scripts/knowledge/summaries.mjs';
+import { addSummaries, projectMap } from '../../scripts/knowledge/summaries.mjs';
 import { packContext, tokenCount } from '../../scripts/knowledge/context.mjs';
 import { cosine, lexicalSeeds } from '../../scripts/knowledge/semantic.mjs';
 import { shouldRebuild } from '../../scripts/knowledge/watch.mjs';
+import { buildGraph } from '../../scripts/knowledge/graph.mjs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 describe('project knowledge extraction', () => {
+  it('refreshes changed symbols and removes deleted files and their edges from the cache', async () => {
+    const testRoot = path.resolve('.test-results');
+    await fs.mkdir(testRoot, { recursive: true });
+    const root = await fs.mkdtemp(path.join(testRoot, 'knowledge-fixture-'));
+    try {
+      await Promise.all(
+        ['src', 'desktop', 'tests', 'scripts', 'docs/knowledge'].map((dir) =>
+          fs.mkdir(path.join(root, dir), { recursive: true }),
+        ),
+      );
+      await fs.writeFile(
+        path.join(root, 'docs/knowledge/features.json'),
+        JSON.stringify(
+          { features: [{ id: 'root', title: 'Fixture', summary: 'A project.', paths: ['src/'] }] },
+          null,
+          2,
+        ),
+      );
+      await fs.writeFile(
+        path.join(root, 'src/helper.ts'),
+        'export function before() { return 1; }',
+      );
+      await fs.writeFile(
+        path.join(root, 'src/main.ts'),
+        "import { before } from './helper';\nexport function run() { return before(); }",
+      );
+      const original = await buildGraph(root);
+      expect(original.nodes.find((n) => n.id === 'feature:root').line).toBe(4);
+      expect(original.nodes.some((n) => n.name === 'before')).toBe(true);
+      expect((await buildGraph(root)).fingerprint).toBe(original.fingerprint);
+      await fs.writeFile(path.join(root, 'src/helper.ts'), 'export function after() { return 2; }');
+      const changed = await buildGraph(root);
+      expect(changed.fingerprint).not.toBe(original.fingerprint);
+      expect(changed.nodes.some((n) => n.name === 'before')).toBe(false);
+      expect(changed.nodes.some((n) => n.name === 'after')).toBe(true);
+      expect(projectMap(addSummaries(changed))).not.toBe(projectMap(addSummaries(original)));
+      await fs.writeFile(path.join(root, 'src/helper.ts'), 'export function after() { return 3; }');
+      const bodyOnly = await buildGraph(root);
+      expect(bodyOnly.fingerprint).not.toBe(changed.fingerprint);
+      expect(projectMap(addSummaries(bodyOnly))).toBe(projectMap(addSummaries(changed)));
+      await fs.unlink(path.join(root, 'src/helper.ts'));
+      const deleted = await buildGraph(root);
+      expect(deleted.nodes.some((n) => n.path === 'src/helper.ts')).toBe(false);
+      const ids = new Set(deleted.nodes.map((n) => n.id));
+      expect(deleted.edges.every((e) => ids.has(e.from) && ids.has(e.to))).toBe(true);
+    } finally {
+      const relative = path.relative(testRoot, path.resolve(root));
+      if (!relative.startsWith('..') && !path.isAbsolute(relative))
+        await fs.rm(root, { recursive: true, force: true });
+    }
+  });
   it('watches working sources while ignoring its own outputs and private caches', () => {
     expect(shouldRebuild('src\\audio\\voice.ts')).toBe(true);
     expect(shouldRebuild('BUILD_PLAN.md')).toBe(true);

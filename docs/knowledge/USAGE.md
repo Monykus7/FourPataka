@@ -10,7 +10,7 @@ npm run knowledge:query -- "keep a melody playing while switching A and B" --bud
 npm run knowledge:verify
 ```
 
-`knowledge:build` refreshes the content-hashed graph and the tracked [project map](PROJECT_MAP.md). `knowledge:check` fails if that map differs from the working source. `knowledge:embed -- --download-model` downloads a pinned public MiniLM model and runs embeddings locally; subsequent queries and embedding updates use its local directory without network requests. `knowledge:verify` rejects every fetch and exercises four semantic tasks across three complete-context budgets.
+`knowledge:build` refreshes the content-hashed graph and the tracked [project map](PROJECT_MAP.md). `knowledge:check` rebuilds the graph and fails if the generated map's summaries, dependency groups, citations or parser coverage differ from the tracked document. A body-only edit can refresh the local graph without changing this structural map. Full source fingerprints stay in the private cache so unrelated value edits and platform line endings do not produce spurious documentation differences. `knowledge:embed -- --download-model` downloads a pinned public MiniLM model and runs embeddings locally; subsequent queries and embedding updates use its local directory without network requests. `knowledge:verify` rejects every fetch and exercises four semantic tasks across three complete-context budgets.
 
 For installations without model files, explicitly choose lexical seed selection:
 

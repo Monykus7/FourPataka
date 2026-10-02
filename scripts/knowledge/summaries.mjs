@@ -47,7 +47,7 @@ export function addSummaries(graph) {
         parent: parent.id,
         name: `${feature.title} / dependency group ${index}`,
         path: 'docs/knowledge/features.json',
-        line: 1,
+        line: parent.line,
         summary: `${feature.summary} Connected sources: ${community.map((n) => n.path).join(', ')}. Definitions: ${symbols
           .slice(0, 10)
           .map((n) => n.name)
@@ -74,7 +74,7 @@ export function projectMap(graph) {
     '',
     'Generated with `npm run knowledge:build`. Edit features.json and DECISIONS.md for behavioral summaries; source locations below are derived from the working files.',
     '',
-    `Source fingerprint: \`${graph.fingerprint}\`.`,
+    'Full source fingerprints are kept in the local graph cache; this tracked map records feature summaries, dependency groups and source locations.',
     '',
     '## Retrieval path',
     '',
