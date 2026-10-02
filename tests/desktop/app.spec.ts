@@ -2,7 +2,7 @@ import { expect, test, _electron as electron, type ElectronApplication } from '@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { placePedal } from '../helpers/board';
+import { dragEquipment, placePedal } from '../helpers/board';
 
 let app: ElectronApplication;
 test.beforeEach(async () => {
@@ -80,11 +80,8 @@ test('packaged EQ dials, flat reset and native project save retain exact setting
 test('packaged equipment can be dragged onto Velcro slots and patched with the mouse', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
-  await page.getByRole('button', { name: 'Equipment', exact: true }).click();
-  await page
-    .getByRole('menuitem', { name: 'Compressor', exact: true })
-    .dragTo(page.getByRole('button', { name: 'Place pedal row 1 column 2', exact: true }));
-  await expect(page.locator('.compact-pedal.compressor')).toHaveCSS('left', '252px');
+  await dragEquipment(page, 'compressor');
+  await expect(page.locator('.compact-pedal.compressor')).toHaveCSS('left', '92px');
   await expect(page.locator('.compact-pedal.compressor')).toContainText('UNPATCHED');
   // Windows may constrain the native viewport to its work area. Center gesture
   // targets above the fixed transport before reading raw mouse coordinates.

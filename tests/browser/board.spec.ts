@@ -1,5 +1,43 @@
 import { expect, test } from '@playwright/test';
-import { patchBoard, placePedal } from '../helpers/board';
+import { beginEquipmentDrag, dragEquipment, patchBoard, placePedal } from '../helpers/board';
+
+for (const kind of ['compressor', 'overdrive', 'eq'] as const)
+  test(`${kind} equipment drags reach the first slot beneath the open menu`, async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+    await dragEquipment(page, kind);
+    await expect(page.locator(`.compact-pedal.${kind}`)).toHaveCount(1);
+    await expect(page.locator(`.compact-pedal.${kind}`)).toHaveCSS('left', '92px');
+    await expect(page.getByRole('menu', { name: 'Equipment', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Cancel tool', exact: true })).toHaveCount(0);
+  });
+
+test('canceled equipment drags leave the menu reusable and consume no history', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await beginEquipmentDrag(page, 'compressor');
+  await page.keyboard.press('Escape');
+  await page.mouse.up();
+  await expect(page.locator('.compact-pedal')).toHaveCount(0);
+  await expect(page.locator('.equipment-picker')).not.toHaveClass(/equipment-dragging/);
+  await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
+  await placePedal(page, 'eq', false);
+  await expect(page.locator('.compact-pedal.eq')).toHaveCount(1);
+});
+
+test('occupied slots reject equipment drops and the next drag still works', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await placePedal(page, 'eq', false);
+  await dragEquipment(page, 'compressor');
+  await expect(page.locator('.compact-pedal')).toHaveCount(1);
+  await expect(page.locator('.equipment-picker')).not.toHaveClass(/equipment-dragging/);
+  await dragEquipment(page, 'overdrive', 1, 2);
+  await expect(page.locator('.compact-pedal.overdrive')).toHaveCSS('left', '252px');
+  await expect(page.locator('.compact-pedal')).toHaveCount(2);
+});
 
 test('saved board presets and A/B/master copies keep their own placements and cables', async ({
   page,
