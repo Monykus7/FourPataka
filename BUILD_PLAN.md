@@ -1,6 +1,6 @@
 # FourPataka — Fourier Music Studio build plan
 
-Updated: 2026-09-30  
+Updated: 2026-10-02
 Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
@@ -222,6 +222,8 @@ A header must identify the editing destination: library preset, a particular tra
 - **Compressor:** threshold in dB, ratio, attack/release in ms, output/makeup gain in dB, and mix percentage. Set knee to a documented default initially; an advanced knee control can follow.
 - **Overdrive:** drive in dB, tone cutoff in Hz, output level in dB, and mix percentage. Use a documented soft-clipping curve and oversampling.
 - **Three-band EQ:** low gain, mid frequency, mid gain, and high gain. Use fixed, documented shelf frequencies and mid bandwidth initially.
+
+The next EQ release uses low/mid/high gains of −12…+12 dB, an adjustable 150…4000 Hz mid center, fixed 200 Hz low/4000 Hz high shelves, and mid Q = 1. It starts flat, offers output/mix and a one-step flat reset, and uses the existing independent chains and live-audition/frozen-score policy. Release EQ before implementing delay, as requested on 2026-10-02.
 - **Delay:** time in ms, feedback percentage, and mix percentage. Bound feedback strictly below 100%; use a conservative default. Tempo-synchronized times are a later extension.
 
 Use numeric entry and keyboard adjustment alongside knobs. Clamp parameter ranges consistently in UI, import validation, and audio factories. An unchanged/identity effect at any mix setting should not introduce an unexplained gain boost.
