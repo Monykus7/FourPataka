@@ -1,4 +1,4 @@
-import type { ChainInstance } from '../core/pedals';
+import { PEDAL_NAMES, type ChainInstance } from '../core/pedals';
 export default function ChainBypass({
   name,
   chain,
@@ -13,7 +13,7 @@ export default function ChainBypass({
   return (
     <div className="track-chain-controls">
       <span>
-        {name} · {chain.pedals.map((p) => p.kind).join(' → ') || 'Clean chain'}
+        {name} · {chain.pedals.map((p) => PEDAL_NAMES[p.kind]).join(' → ') || 'Clean chain'}
       </span>
       <label>
         <input
@@ -39,7 +39,7 @@ export default function ChainBypass({
               })
             }
           />
-          {pedal.kind} {i + 1}
+          {PEDAL_NAMES[pedal.kind]} {i + 1}
         </label>
       ))}
       <button className="text-button" onClick={onEdit}>

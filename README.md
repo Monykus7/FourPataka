@@ -98,7 +98,7 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 ## Current boundary
 
-The instrument/comparison foundation and first pedalboard slice are implemented: compressor, overdrive, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work includes EQ, delay and its echo-tail policy, and score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, independent audition/track/master chains, presets, bypass, and live processed views. The remaining stage 3 work includes delay and its echo-tail policy, and score chain assignments. WAV export and the full measurement panel follow later. `through` and master pedal directives currently produce an explicit diagnostic instead of playing an unprocessed approximation of the planned score. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 
@@ -119,6 +119,8 @@ Both editing tools update the current A/B sound and live audition. Each stroke o
 ## Pedalboard
 
 The dedicated **Pedalboard** tab has an explicit **Editing destination**: Audition A/B, a named track, or Master. Input/output jacks and patch cables show the serial signal path. Adding, removing, or reordering pedals updates the connections and effect order together. Pedals include dial indicators linked to their numeric fields/sliders, status lights, and keyboard-accessible bypass footswitches. Drag module titles to reorder, or use Move left/right. A chain currently supports up to eight pedals. Longer desktop chains scroll within the rack; narrow screens stack pedals with vertical cables.
+
+**Add EQ** inserts a flat three-band equalizer: low/mid/high gains −12…+12 dB, adjustable mid frequency 150…4000 Hz, output trim and mix. Low/high shelves are fixed at 200 Hz / 4 kHz and mid Q is 1. Frequencies are clamped below Nyquist at the current sample rate. EQ adds no scheduling latency; its filter phase is part of the tone change. Start with modest boosts and use output trim to leave headroom.
 
 Compose's **Edit pedals** links open the selected track/master chain directly. **Listen to chain** auditions A/B; **Play score through chain** starts the score for a track/master destination. Live output graphs remain below the board. Desktop **View → Pedalboard** uses Ctrl+3; switching tabs keeps playback running.
 
