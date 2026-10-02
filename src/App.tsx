@@ -1463,326 +1463,325 @@ export default function App() {
                     </div>
                   )}
                 </section>
-                <div className="composition-right">
-                  <Timeline
-                    score={timelineScore}
-                    beat={beat}
-                    playing={playback === 'score'}
-                    activeEvents={activeEvents}
-                    selectedEvent={selectedEvent}
-                    onSelect={setSelectedEvent}
-                  />
-                  <section className="panel track-instances">
-                    <div className="section-title">
-                      <h3>Independent track sounds</h3>
-                      <Layers3 size={15} />
-                    </div>
-                    <ChainAssignment
-                      name="master"
-                      value={score.master?.key ?? null}
-                      presets={project.processing.library}
-                      disabled={playback === 'score' || !!score.diagnostics.length}
-                      onChange={(key) =>
-                        change((p) => ({
-                          ...p,
-                          scoreText: setScoreChain(
-                            p.scoreText,
-                            p.instruments.map((i) => i.key),
-                            p.processing.library.map((p) => p.key),
-                            null,
-                            key,
-                          ),
-                        }))
-                      }
-                    />
-                    <ChainBypass
-                      name="master"
-                      chain={project.processing.master}
-                      onChange={(chain) =>
-                        change((p) => ({ ...p, processing: { ...p.processing, master: chain } }))
-                      }
-                      onEdit={() => {
-                        setPedalDestination('master');
-                        setView('pedalboard');
-                      }}
-                    />
-                    {project.tracks.map((t) => {
-                      const library = instruments.find((i) => i.id === t.presetId)!;
-                      const custom = JSON.stringify(t.sound) !== JSON.stringify(library.sound);
-                      return (
-                        <div className="track-instance" key={t.key}>
-                          <div>
-                            <Music2 size={16} />
-                            <strong>{t.key}</strong>
-                            <span className="tag">{custom ? 'CUSTOM' : library.label}</span>
-                          </div>
-                          <label className="track-instrument-choice">
-                            Instrument
-                            <select
-                              aria-label={`Instrument for ${t.key}`}
-                              value={library.id}
-                              disabled={playback === 'score' || !!score.diagnostics.length}
-                              onChange={(e) => {
-                                const chosen = instruments.find((i) => i.id === e.target.value)!;
-                                change((p) => applyPreset(p, chosen.id, chosen.sound, [t.key]));
-                              }}
-                            >
-                              {instruments.map((i) => (
-                                <option key={i.id} value={i.id}>
-                                  {i.label}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                          <ChainAssignment
-                            name={t.key}
-                            value={
-                              score.tracks.find((parsed) => parsed.key === t.key)?.chainKey ?? null
-                            }
-                            presets={project.processing.library}
-                            disabled={playback === 'score' || !!score.diagnostics.length}
-                            onChange={(key) =>
-                              change((p) => ({
-                                ...p,
-                                scoreText: setScoreChain(
-                                  p.scoreText,
-                                  p.instruments.map((i) => i.key),
-                                  p.processing.library.map((p) => p.key),
-                                  t.key,
-                                  key,
-                                ),
-                              }))
-                            }
-                          />
-                          <RangeControl
-                            label={`${t.key} level`}
-                            value={t.level * 100}
-                            min={0}
-                            max={100}
-                            step={1}
-                            unit="%"
-                            onChange={(n) =>
-                              change(
-                                (p) => ({
-                                  ...p,
-                                  tracks: p.tracks.map((track) =>
-                                    track.key === t.key ? { ...track, level: n / 100 } : track,
-                                  ),
-                                }),
-                                `track-level:${t.key}`,
+                <section className="panel commands-panel">
+                  <div className="commands-header">
+                    <button
+                      className="disclosure-button"
+                      onClick={() => setCommandsOpen(!commandsOpen)}
+                      aria-expanded={commandsOpen}
+                    >
+                      {commandsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      <h3>Command reference</h3>
+                      <span className="tag">{COMMANDS.length} COMMANDS</span>
+                    </button>
+                    <label className="search-box">
+                      <Search size={14} />
+                      <input
+                        aria-label="Search commands"
+                        placeholder="Find a command…"
+                        value={commandSearch}
+                        onChange={(e) => setCommandSearch(e.target.value)}
+                      />
+                    </label>
+                  </div>
+                  {commandsOpen && (
+                    <>
+                      <div className="command-destination">
+                        <label>
+                          Insert events into
+                          <select
+                            aria-label="Command insertion track"
+                            value={track?.key ?? ''}
+                            onChange={(e) => setSelectedTrack(e.target.value)}
+                          >
+                            {project.tracks.map((t) => (
+                              <option key={t.key} value={t.key}>
+                                {t.key}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          Pedal chain
+                          <select
+                            aria-label="Command pedal chain"
+                            value={chainKeys.includes(commandChain) ? commandChain : chainKeys[0]}
+                            onChange={(e) => setCommandChain(e.target.value)}
+                          >
+                            {project.processing.library.map((p) => (
+                              <option key={p.id} value={p.key}>
+                                {p.label} · {p.key}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <span>
+                          {playback === 'score'
+                            ? 'Stop playback to insert commands.'
+                            : 'Click a card to insert. Events go to the selected track.'}
+                        </span>
+                      </div>
+                      <div className="command-grid">
+                        {COMMANDS.filter((c) =>
+                          `${c.name} ${c.description}`
+                            .toLowerCase()
+                            .includes(commandSearch.toLowerCase()),
+                        ).map((c) => (
+                          <button
+                            className="command-item"
+                            key={c.name}
+                            title={`Insert ${c.name}`}
+                            aria-label={`Insert ${c.name} command`}
+                            disabled={
+                              playback === 'score' ||
+                              score.diagnostics.some(
+                                (d) => d.message !== 'Add a track to start composing.',
                               )
                             }
-                          />
-                          <button
-                            className="text-button"
                             onClick={() => {
-                              resetMacros(t.sound);
-                              change((p) => ({
-                                ...p,
-                                editorPresetId: t.presetId,
-                                comparison: {
-                                  ...p.comparison,
-                                  [p.comparison.active]: structuredClone(t.sound),
-                                },
-                                processing: {
-                                  ...p.processing,
-                                  audition: {
-                                    ...p.processing.audition,
-                                    [p.comparison.active]: structuredClone(
-                                      p.processing.tracks[t.key],
-                                    ),
-                                  },
-                                },
-                              }));
-                              setSelectedTrack(t.key);
-                              setView('instrument');
+                              try {
+                                const text = insertCommand(
+                                  project.scoreText,
+                                  instruments.map((i) => i.key),
+                                  c.name,
+                                  track?.key ?? '',
+                                  preset.key,
+                                  chainKeys,
+                                  chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
+                                );
+                                change((p) => ({ ...p, scoreText: text }));
+                                setToast(
+                                  `Inserted ${c.name}${['tempo', 'time', 'track', 'master'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
+                                );
+                              } catch (e) {
+                                setToast((e as Error).message);
+                              }
                             }}
                           >
-                            Load copy into editor
-                            <ArrowRight size={12} />
+                            <div>
+                              <code>{c.snippet}</code>
+                              <Plus size={13} />
+                            </div>
+                            <p>{c.description}</p>
                           </button>
-                          <ChainBypass
-                            name={`track ${t.key}`}
-                            chain={project.processing.tracks[t.key]}
-                            onChange={(chain) =>
-                              change((p) => ({
-                                ...p,
-                                processing: {
-                                  ...p.processing,
-                                  tracks: { ...p.processing.tracks, [t.key]: chain },
-                                },
-                              }))
-                            }
-                            onEdit={() => {
-                              setPedalDestination(`track:${t.key}`);
-                              setView('pedalboard');
-                            }}
-                          />
-                          {t.appliedVersion < library.version && (
-                            <span className="footnote">
-                              Library v{library.version} available · this copy keeps v
-                              {t.appliedVersion}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                    <p className="footnote">
-                      Changing an assignment loads a fresh preset copy. Library edits leave existing
-                      track copies intact.
-                    </p>
-                  </section>
-                  {inspectedEvent && (
-                    <section className="panel event-inspector">
-                      <div className="section-title">
-                        <h3>Event inspector</h3>
-                        <button
-                          className="icon-button"
-                          aria-label="Close event inspector"
-                          onClick={() => setSelectedEvent(null)}
-                        >
-                          <X size={14} />
-                        </button>
+                        ))}
                       </div>
-                      <strong>{inspectedEvent.notes.join(' · ') || 'Rest'}</strong>
-                      <p>
-                        {inspectedEvent.track} · line {inspectedEvent.line}
-                      </p>
-                      <dl>
-                        <div>
-                          <dt>Start</dt>
-                          <dd>
-                            Bar {measurePosition(inspectedEvent.beat, timelineScore.meter).bar} ·
-                            beat {measurePosition(inspectedEvent.beat, timelineScore.meter).beat}
-                          </dd>
-                        </div>
-                        <div>
-                          <dt>Duration</dt>
-                          <dd>{inspectedEvent.duration} quarter beats</dd>
-                        </div>
-                        <div>
-                          <dt>Frequencies</dt>
-                          <dd>
-                            {inspectedEvent.frequencies
-                              .map((f) => `${f.toFixed(2)} Hz`)
-                              .join(', ') || 'No new voice'}
-                          </dd>
-                        </div>
-                      </dl>
-                    </section>
+                      <div className="commands-footer">
+                        Durations: whole · half · quarter · 8th · 16th. Tempo counts quarter notes;
+                        meter counts its beat unit.
+                      </div>
+                    </>
                   )}
-                </div>
+                </section>
               </div>
-              <section className="panel commands-panel">
-                <div className="commands-header">
-                  <button
-                    className="disclosure-button"
-                    onClick={() => setCommandsOpen(!commandsOpen)}
-                    aria-expanded={commandsOpen}
-                  >
-                    {commandsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                    <h3>Command reference</h3>
-                    <span className="tag">{COMMANDS.length} COMMANDS</span>
-                  </button>
-                  <label className="search-box">
-                    <Search size={14} />
-                    <input
-                      aria-label="Search commands"
-                      placeholder="Find a command…"
-                      value={commandSearch}
-                      onChange={(e) => setCommandSearch(e.target.value)}
-                    />
-                  </label>
-                </div>
-                {commandsOpen && (
-                  <>
-                    <div className="command-destination">
-                      <label>
-                        Insert events into
-                        <select
-                          aria-label="Command insertion track"
-                          value={track?.key ?? ''}
-                          onChange={(e) => setSelectedTrack(e.target.value)}
-                        >
-                          {project.tracks.map((t) => (
-                            <option key={t.key} value={t.key}>
-                              {t.key}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Pedal chain
-                        <select
-                          aria-label="Command pedal chain"
-                          value={chainKeys.includes(commandChain) ? commandChain : chainKeys[0]}
-                          onChange={(e) => setCommandChain(e.target.value)}
-                        >
-                          {project.processing.library.map((p) => (
-                            <option key={p.id} value={p.key}>
-                              {p.label} · {p.key}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <span>
-                        {playback === 'score'
-                          ? 'Stop playback to insert commands.'
-                          : 'Click a card to insert. Events go to the selected track.'}
-                      </span>
-                    </div>
-                    <div className="command-grid">
-                      {COMMANDS.filter((c) =>
-                        `${c.name} ${c.description}`
-                          .toLowerCase()
-                          .includes(commandSearch.toLowerCase()),
-                      ).map((c) => (
-                        <button
-                          className="command-item"
-                          key={c.name}
-                          title={`Insert ${c.name}`}
-                          aria-label={`Insert ${c.name} command`}
-                          disabled={
-                            playback === 'score' ||
-                            score.diagnostics.some(
-                              (d) => d.message !== 'Add a track to start composing.',
+              <div className="composition-overview">
+                <Timeline
+                  score={timelineScore}
+                  beat={beat}
+                  playing={playback === 'score'}
+                  activeEvents={activeEvents}
+                  selectedEvent={selectedEvent}
+                  onSelect={setSelectedEvent}
+                />
+                <section className="panel track-instances">
+                  <div className="section-title">
+                    <h3>Independent track sounds</h3>
+                    <Layers3 size={15} />
+                  </div>
+                  <ChainAssignment
+                    name="master"
+                    value={score.master?.key ?? null}
+                    presets={project.processing.library}
+                    disabled={playback === 'score' || !!score.diagnostics.length}
+                    onChange={(key) =>
+                      change((p) => ({
+                        ...p,
+                        scoreText: setScoreChain(
+                          p.scoreText,
+                          p.instruments.map((i) => i.key),
+                          p.processing.library.map((p) => p.key),
+                          null,
+                          key,
+                        ),
+                      }))
+                    }
+                  />
+                  <ChainBypass
+                    name="master"
+                    chain={project.processing.master}
+                    onChange={(chain) =>
+                      change((p) => ({ ...p, processing: { ...p.processing, master: chain } }))
+                    }
+                    onEdit={() => {
+                      setPedalDestination('master');
+                      setView('pedalboard');
+                    }}
+                  />
+                  {project.tracks.map((t) => {
+                    const library = instruments.find((i) => i.id === t.presetId)!;
+                    const custom = JSON.stringify(t.sound) !== JSON.stringify(library.sound);
+                    return (
+                      <div className="track-instance" key={t.key}>
+                        <div>
+                          <Music2 size={16} />
+                          <strong>{t.key}</strong>
+                          <span className="tag">{custom ? 'CUSTOM' : library.label}</span>
+                        </div>
+                        <label className="track-instrument-choice">
+                          Instrument
+                          <select
+                            aria-label={`Instrument for ${t.key}`}
+                            value={library.id}
+                            disabled={playback === 'score' || !!score.diagnostics.length}
+                            onChange={(e) => {
+                              const chosen = instruments.find((i) => i.id === e.target.value)!;
+                              change((p) => applyPreset(p, chosen.id, chosen.sound, [t.key]));
+                            }}
+                          >
+                            {instruments.map((i) => (
+                              <option key={i.id} value={i.id}>
+                                {i.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <ChainAssignment
+                          name={t.key}
+                          value={
+                            score.tracks.find((parsed) => parsed.key === t.key)?.chainKey ?? null
+                          }
+                          presets={project.processing.library}
+                          disabled={playback === 'score' || !!score.diagnostics.length}
+                          onChange={(key) =>
+                            change((p) => ({
+                              ...p,
+                              scoreText: setScoreChain(
+                                p.scoreText,
+                                p.instruments.map((i) => i.key),
+                                p.processing.library.map((p) => p.key),
+                                t.key,
+                                key,
+                              ),
+                            }))
+                          }
+                        />
+                        <RangeControl
+                          label={`${t.key} level`}
+                          value={t.level * 100}
+                          min={0}
+                          max={100}
+                          step={1}
+                          unit="%"
+                          onChange={(n) =>
+                            change(
+                              (p) => ({
+                                ...p,
+                                tracks: p.tracks.map((track) =>
+                                  track.key === t.key ? { ...track, level: n / 100 } : track,
+                                ),
+                              }),
+                              `track-level:${t.key}`,
                             )
                           }
+                        />
+                        <button
+                          className="text-button"
                           onClick={() => {
-                            try {
-                              const text = insertCommand(
-                                project.scoreText,
-                                instruments.map((i) => i.key),
-                                c.name,
-                                track?.key ?? '',
-                                preset.key,
-                                chainKeys,
-                                chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
-                              );
-                              change((p) => ({ ...p, scoreText: text }));
-                              setToast(
-                                `Inserted ${c.name}${['tempo', 'time', 'track', 'master'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
-                              );
-                            } catch (e) {
-                              setToast((e as Error).message);
-                            }
+                            resetMacros(t.sound);
+                            change((p) => ({
+                              ...p,
+                              editorPresetId: t.presetId,
+                              comparison: {
+                                ...p.comparison,
+                                [p.comparison.active]: structuredClone(t.sound),
+                              },
+                              processing: {
+                                ...p.processing,
+                                audition: {
+                                  ...p.processing.audition,
+                                  [p.comparison.active]: structuredClone(
+                                    p.processing.tracks[t.key],
+                                  ),
+                                },
+                              },
+                            }));
+                            setSelectedTrack(t.key);
+                            setView('instrument');
                           }}
                         >
-                          <div>
-                            <code>{c.snippet}</code>
-                            <Plus size={13} />
-                          </div>
-                          <p>{c.description}</p>
+                          Load copy into editor
+                          <ArrowRight size={12} />
                         </button>
-                      ))}
+                        <ChainBypass
+                          name={`track ${t.key}`}
+                          chain={project.processing.tracks[t.key]}
+                          onChange={(chain) =>
+                            change((p) => ({
+                              ...p,
+                              processing: {
+                                ...p.processing,
+                                tracks: { ...p.processing.tracks, [t.key]: chain },
+                              },
+                            }))
+                          }
+                          onEdit={() => {
+                            setPedalDestination(`track:${t.key}`);
+                            setView('pedalboard');
+                          }}
+                        />
+                        {t.appliedVersion < library.version && (
+                          <span className="footnote">
+                            Library v{library.version} available · this copy keeps v
+                            {t.appliedVersion}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <p className="footnote">
+                    Changing an assignment loads a fresh preset copy. Library edits leave existing
+                    track copies intact.
+                  </p>
+                </section>
+                {inspectedEvent && (
+                  <section className="panel event-inspector">
+                    <div className="section-title">
+                      <h3>Event inspector</h3>
+                      <button
+                        className="icon-button"
+                        aria-label="Close event inspector"
+                        onClick={() => setSelectedEvent(null)}
+                      >
+                        <X size={14} />
+                      </button>
                     </div>
-                    <div className="commands-footer">
-                      Durations: whole · half · quarter · 8th · 16th. Tempo counts quarter notes;
-                      meter counts its beat unit.
-                    </div>
-                  </>
+                    <strong>{inspectedEvent.notes.join(' · ') || 'Rest'}</strong>
+                    <p>
+                      {inspectedEvent.track} · line {inspectedEvent.line}
+                    </p>
+                    <dl>
+                      <div>
+                        <dt>Start</dt>
+                        <dd>
+                          Bar {measurePosition(inspectedEvent.beat, timelineScore.meter).bar} · beat{' '}
+                          {measurePosition(inspectedEvent.beat, timelineScore.meter).beat}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Duration</dt>
+                        <dd>{inspectedEvent.duration} quarter beats</dd>
+                      </div>
+                      <div>
+                        <dt>Frequencies</dt>
+                        <dd>
+                          {inspectedEvent.frequencies.map((f) => `${f.toFixed(2)} Hz`).join(', ') ||
+                            'No new voice'}
+                        </dd>
+                      </div>
+                    </dl>
+                  </section>
                 )}
-              </section>
+              </div>
             </>
           )}
 
