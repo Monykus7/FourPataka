@@ -1,4 +1,4 @@
-import { clamp } from './music';
+import { clamp, SCORE_KEY } from './music';
 import { boardRoute, validateBoard, type BoardLayout } from './board';
 export type PedalKind = 'compressor' | 'overdrive' | 'eq' | 'delay';
 export const DELAY_DEFAULTS = { time: 300, feedback: 30, output: 0, mix: 35 } as const;
@@ -66,11 +66,27 @@ export interface Chain {
 }
 export interface ChainInstance extends Chain {
   presetId: string | null;
+  assignmentKey?: string | null;
 }
 export interface ChainPreset {
   id: string;
+  key: string;
   label: string;
   chain: Chain;
+}
+export function nextChainKey(label: string, used: string[]) {
+  const words = label.match(/[A-Za-z0-9]+/g) ?? ['chain'];
+  let base = words
+    .map((word, i) =>
+      i ? word[0].toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase(),
+    )
+    .join('')
+    .slice(0, 80);
+  if (!/^[A-Za-z]/.test(base)) base = 'chain' + base;
+  let key = base,
+    suffix = 2;
+  while (used.includes(key)) key = base + suffix++;
+  return key;
 }
 export interface Processing {
   library: ChainPreset[];
@@ -97,14 +113,16 @@ export function makePedal(kind: PedalKind): Pedal {
 export function defaultProcessing(): Processing {
   return {
     library: [
-      { id: 'clean', label: 'Clean', chain: { pedals: [], bypassed: false } },
+      { id: 'clean', key: 'clean', label: 'Clean', chain: { pedals: [], bypassed: false } },
       {
         id: 'clean-glue',
+        key: 'cleanGlue',
         label: 'Clean glue',
         chain: { pedals: [makePedal('compressor')], bypassed: false },
       },
       {
         id: 'warm-drive',
+        key: 'warmDrive',
         label: 'Warm drive',
         chain: { pedals: [makePedal('overdrive')], bypassed: false },
       },
@@ -140,6 +158,14 @@ export function validateChain(value: unknown): asserts value is ChainInstance {
     (typeof chain.presetId !== 'string' || chain.presetId.length > 100)
   )
     throw new Error('Invalid chain preset reference.');
+  if (
+    chain.assignmentKey !== undefined &&
+    chain.assignmentKey !== null &&
+    (typeof chain.assignmentKey !== 'string' ||
+      chain.assignmentKey.length > 100 ||
+      !SCORE_KEY.test(chain.assignmentKey))
+  )
+    throw new Error('Invalid score chain assignment.');
   const ids = new Set<string>();
   chain.pedals.forEach((p) => {
     if (
@@ -177,6 +203,22 @@ export function importProcessing(value: unknown): Processing {
   )
     throw new Error('Invalid processing settings.');
   const ids = new Set<string>();
+  // Reserve explicit keys first: migrating a legacy label must never steal a
+  // key already referenced by score text elsewhere in the imported library.
+  const keys: string[] = [];
+  p.library.forEach((preset) => {
+    if (preset?.key !== undefined) {
+      if (
+        typeof preset.key !== 'string' ||
+        preset.key.length > 100 ||
+        !SCORE_KEY.test(preset.key) ||
+        keys.includes(preset.key)
+      )
+        throw new Error('Pedal score keys must be valid and unique.');
+      keys.push(preset.key);
+    }
+  });
+  const migratedKeys = new Map<string, string>();
   p.library.forEach((preset) => {
     if (
       !preset ||
@@ -190,6 +232,9 @@ export function importProcessing(value: unknown): Processing {
     )
       throw new Error('Invalid chain preset.');
     ids.add(preset.id);
+    const key = preset.key ?? nextChainKey(preset.label, keys);
+    migratedKeys.set(preset.id, key);
+    if (preset.key === undefined) keys.push(key);
     validateChain(preset.chain);
   });
   [p.audition.A, p.audition.B, p.master, ...Object.values(p.tracks)].forEach((instance) => {
@@ -199,6 +244,7 @@ export function importProcessing(value: unknown): Processing {
   });
   const instance = (chain: ChainInstance): ChainInstance => ({
     presetId: chain.presetId,
+    ...(chain.assignmentKey !== undefined ? { assignmentKey: chain.assignmentKey } : {}),
     bypassed: chain.bypassed,
     ...(chain.board ? { board: structuredClone(chain.board) } : {}),
     pedals: chain.pedals.map((p) =>
@@ -208,6 +254,7 @@ export function importProcessing(value: unknown): Processing {
   return {
     library: p.library.map((p) => ({
       id: p.id,
+      key: migratedKeys.get(p.id)!,
       label: p.label,
       chain: {
         ...(p.chain.board ? { board: structuredClone(p.chain.board) } : {}),
