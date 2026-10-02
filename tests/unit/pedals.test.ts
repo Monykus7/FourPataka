@@ -3,11 +3,35 @@ import {
   applyAssociated,
   clampPedal,
   defaultProcessing,
+  delayTail,
   emptyChain,
   importProcessing,
   makePedal,
 } from '../../src/core/pedals';
 import { createProject, importProject } from '../../src/core/project';
+it('bounds delay feedback, estimates finite echo decay and imports independent copies', () => {
+  const project = createProject();
+  const delay = makePedal('delay');
+  expect(delay.params).toEqual({ time: 300, feedback: 30, output: 0, mix: 35 });
+  project.processing.master.pedals.push(delay);
+  const imported = importProject(JSON.stringify(project));
+  imported.processing.master.pedals[0].params.feedback = 60;
+  expect(delay.params.feedback).toBe(30);
+  for (const [key, value] of Object.entries({ time: 19, feedback: 100, output: 13, mix: NaN })) {
+    const invalid = structuredClone(project.processing);
+    invalid.master.pedals[0].params[key] = value;
+    expect(() => importProcessing(invalid)).toThrow();
+  }
+  const missing = structuredClone(project.processing);
+  delete missing.master.pedals[0].params.time;
+  expect(() => importProcessing(missing)).toThrow();
+  expect(clampPedal({ ...delay, params: { ...delay.params, feedback: 101 } }).params.feedback).toBe(
+    95,
+  );
+  expect(delayTail(500, 0)).toBe(0.5);
+  expect(delayTail(500, 50)).toBe(5.5);
+  expect(delayTail(2000, 95)).toBeLessThan(274);
+});
 it('migrates old projects to independent clean processing without changing sounds', () => {
   const old: any = createProject();
   delete old.processing;

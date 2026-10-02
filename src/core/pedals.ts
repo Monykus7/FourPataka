@@ -1,6 +1,13 @@
 import { clamp } from './music';
 import { boardRoute, validateBoard, type BoardLayout } from './board';
-export type PedalKind = 'compressor' | 'overdrive' | 'eq';
+export type PedalKind = 'compressor' | 'overdrive' | 'eq' | 'delay';
+export const DELAY_DEFAULTS = { time: 300, feedback: 30, output: 0, mix: 35 } as const;
+// Count the first echo too. Feedback is bounded below unity; this estimates
+// decay below -60 dB, not a scheduling latency that should pad other tracks.
+export function delayTail(time: number, feedback: number) {
+  const repeats = feedback > 0 ? Math.ceil(Math.log(0.001) / Math.log(feedback / 100)) : 0;
+  return (time / 1000) * (1 + repeats);
+}
 export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
 export const EQ_DEFAULTS = {
   low: 0,
@@ -14,6 +21,7 @@ export const PEDAL_NAMES: Record<PedalKind, string> = {
   compressor: 'Compressor',
   overdrive: 'Overdrive',
   eq: 'Three-band EQ',
+  delay: 'Delay',
 };
 export const PEDAL_CONTROLS = {
   compressor: {
@@ -35,6 +43,12 @@ export const PEDAL_CONTROLS = {
     mid: [-12, 12, 0.5, 'dB'],
     high: [-12, 12, 0.5, 'dB'],
     frequency: [150, 4000, 10, 'Hz'],
+    output: [-24, 12, 0.5, 'dB'],
+    mix: [0, 100, 1, '%'],
+  },
+  delay: {
+    time: [20, 2000, 10, 'ms'],
+    feedback: [0, 95, 1, '%'],
     output: [-24, 12, 0.5, 'dB'],
     mix: [0, 100, 1, '%'],
   },
@@ -75,7 +89,9 @@ export function makePedal(kind: PedalKind): Pedal {
         ? { threshold: -24, ratio: 4, attack: 10, release: 250, output: 0, mix: 100 }
         : kind === 'overdrive'
           ? { drive: 6, tone: 6000, output: -6, mix: 100 }
-          : { ...EQ_DEFAULTS },
+          : kind === 'eq'
+            ? { ...EQ_DEFAULTS }
+            : { ...DELAY_DEFAULTS },
   };
 }
 export function defaultProcessing(): Processing {
