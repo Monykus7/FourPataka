@@ -588,6 +588,7 @@ export default function App() {
     changeSound(() => transform(macroBaseline.current, next), `macro:${key}`, false);
   };
   const timelineScore = playback === 'score' && running ? running.score : score;
+  const inspectedEvent = timelineScore.events.find((e) => e.id === selectedEvent?.id) ?? null;
   const beat = playback === 'score' ? (elapsed * (running?.score.tempo ?? score.tempo)) / 60 : 0;
   const activeEvents =
     playback === 'score'
@@ -1471,6 +1472,24 @@ export default function App() {
                             <strong>{t.key}</strong>
                             <span className="tag">{custom ? 'CUSTOM' : library.label}</span>
                           </div>
+                          <label className="track-instrument-choice">
+                            Instrument
+                            <select
+                              aria-label={`Instrument for ${t.key}`}
+                              value={library.id}
+                              disabled={playback === 'score' || !!score.diagnostics.length}
+                              onChange={(e) => {
+                                const chosen = instruments.find((i) => i.id === e.target.value)!;
+                                change((p) => applyPreset(p, chosen.id, chosen.sound, [t.key]));
+                              }}
+                            >
+                              {instruments.map((i) => (
+                                <option key={i.id} value={i.id}>
+                                  {i.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
                           <RangeControl
                             label={`${t.key} level`}
                             value={t.level * 100}
@@ -1545,11 +1564,11 @@ export default function App() {
                       );
                     })}
                     <p className="footnote">
-                      Preset changes never overwrite a track. Load, edit, and explicitly Apply to
-                      update a destination.
+                      Changing an assignment loads a fresh preset copy. Library edits leave existing
+                      track copies intact.
                     </p>
                   </section>
-                  {selectedEvent && (
+                  {inspectedEvent && (
                     <section className="panel event-inspector">
                       <div className="section-title">
                         <h3>Event inspector</h3>
@@ -1561,26 +1580,26 @@ export default function App() {
                           <X size={14} />
                         </button>
                       </div>
-                      <strong>{selectedEvent.notes.join(' · ') || 'Rest'}</strong>
+                      <strong>{inspectedEvent.notes.join(' · ') || 'Rest'}</strong>
                       <p>
-                        {selectedEvent.track} · line {selectedEvent.line}
+                        {inspectedEvent.track} · line {inspectedEvent.line}
                       </p>
                       <dl>
                         <div>
                           <dt>Start</dt>
                           <dd>
-                            Bar {measurePosition(selectedEvent.beat, timelineScore.meter).bar} ·
-                            beat {measurePosition(selectedEvent.beat, timelineScore.meter).beat}
+                            Bar {measurePosition(inspectedEvent.beat, timelineScore.meter).bar} ·
+                            beat {measurePosition(inspectedEvent.beat, timelineScore.meter).beat}
                           </dd>
                         </div>
                         <div>
                           <dt>Duration</dt>
-                          <dd>{selectedEvent.duration} quarter beats</dd>
+                          <dd>{inspectedEvent.duration} quarter beats</dd>
                         </div>
                         <div>
                           <dt>Frequencies</dt>
                           <dd>
-                            {selectedEvent.frequencies
+                            {inspectedEvent.frequencies
                               .map((f) => `${f.toFixed(2)} Hz`)
                               .join(', ') || 'No new voice'}
                           </dd>

@@ -12,6 +12,26 @@ const reparse = (project: ReturnType<typeof createProject>) =>
     ),
   );
 describe('independent project state', () => {
+  it('composition reassignment preserves mix, pedals and other copies through save/reload', () => {
+    const p = createProject();
+    p.tracks[0].level = 0.37;
+    p.processing.tracks.melody.bypassed = true;
+    p.scoreText = p.scoreText.replace('time 4/4', 'time 7/8 // odd meter');
+    const sine = p.instruments.find((i) => i.key === 'sine')!;
+    const assigned = reparse(applyPreset(p, sine.id, sine.sound, ['melody']));
+    expect(assigned.tracks[0].level).toBe(0.37);
+    expect(assigned.processing).toEqual(p.processing);
+    expect(assigned.tracks[1]).toEqual(p.tracks[1]);
+    expect(assigned.tracks[0].sound).not.toBe(sine.sound);
+    const restored = importProject(JSON.stringify(assigned));
+    expect(restored).toEqual(assigned);
+    expect(
+      parseScore(
+        restored.scoreText,
+        restored.instruments.map((i) => i.key),
+      ).meter,
+    ).toEqual({ numerator: 7, denominator: 8 });
+  });
   it('round-trips the editable project through JSON', () => {
     const p = createProject();
     expect(importProject(JSON.stringify(p))).toEqual(p);

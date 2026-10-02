@@ -2408,3 +2408,22 @@ dd {
 .composition-settings :disabled {
   opacity: 0.5;
 }
+
+.track-instrument-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 10px 0;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.track-instrument-choice select {
+  max-width: 65%;
+  min-width: 0;
+  padding: 5px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
