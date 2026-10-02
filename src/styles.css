@@ -1317,6 +1317,14 @@ dd {
   grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
   gap: 19px;
 }
+.editor-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.editor-panel > :not(.score-editor) {
+  flex-shrink: 0;
+}
 .editor-panel .panel-header {
   padding: 17px 21px;
 }
@@ -1328,7 +1336,10 @@ dd {
   color: var(--text-muted);
 }
 .score-editor {
-  height: 430px;
+  /* The editor owns any extra row height; never leave it below the status bar. */
+  flex: 1;
+  height: 520px;
+  min-height: 520px;
 }
 .editor-status {
   padding: 11px 17px;
@@ -1368,10 +1379,15 @@ dd {
   color: var(--secondary-ink);
   padding-top: 3px;
 }
-.composition-right {
-  display: flex;
-  flex-direction: column;
-  gap: 17px;
+.composition-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr);
+  align-items: start;
+  gap: 19px;
+  margin-top: 20px;
+}
+.composition-overview .event-inspector {
+  grid-column: 1 / -1;
 }
 .timeline-panel .panel-header {
   padding: 17px 19px;
@@ -1505,7 +1521,31 @@ dd {
   max-width: 200px;
 }
 .commands-panel {
-  margin-top: 20px;
+  align-self: start;
+}
+.commands-panel .commands-header {
+  flex-wrap: wrap;
+}
+.commands-panel .search-box {
+  flex: 1;
+  min-width: 140px;
+}
+.commands-panel .search-box input {
+  width: 100%;
+  min-width: 0;
+}
+.commands-panel .command-destination {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.commands-panel .command-destination label {
+  justify-content: space-between;
+  min-width: 0;
+}
+.commands-panel .command-destination select {
+  min-width: 0;
+  max-width: 65%;
 }
 .commands-header {
   display: flex;
@@ -1536,7 +1576,7 @@ dd {
 }
 .command-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1px;
   background: var(--border);
   border-top: 1px solid var(--border);
@@ -1996,18 +2036,9 @@ dd {
     grid-template-columns: 1fr;
   }
   .score-editor {
+    flex: none;
     height: 400px;
-  }
-  .composition-right {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: start;
-  }
-  .composition-right .event-inspector {
-    grid-column: 1/-1;
-  }
-  .timeline-panel {
-    height: 100%;
+    min-height: 400px;
   }
   .learn-intro {
     padding: 25px 20px;
@@ -2266,9 +2297,15 @@ dd {
   }
   .score-editor {
     height: 385px;
+    min-height: 385px;
   }
-  .composition-right {
+  .composition-overview {
     display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .composition-overview > .panel {
+    width: 100%;
   }
   .editor-status {
     font-size: 8px;
