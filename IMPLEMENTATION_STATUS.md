@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.15.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest verified release: v0.15.0; v0.16.0 release candidate in verification. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -286,3 +286,20 @@ Validation: all 127 unit checks and all 76 browser checks pass. All eight packag
 The score and command reference now occupy the top desktop row. Timeline and independent track/master controls sit side by side below, with event inspection after them. DOM order gives narrow screens and keyboard navigation the same sequence: score, reference, timeline, tracks, inspector. Reference cards use two columns; search and destination controls wrap within the sidebar. The desktop editor minimum grows from 430 to 520 px and absorbs extra panel height. The status bar stays at the panel bottom, removing the former empty box underneath it. Size containment keeps long score documents from expanding the grid; CodeMirror scrolls locally. Lower panels use their own content height, avoiding stretched empty timeline space. No musical behavior or roadmap gate changes.
 
 Validation: 14 affected browser workflows pass; the 12 composition/meter/score-chain workflows were rerun after long-document containment and pass. Three packaged desktop checks cover native chain persistence, source-aware Compose controls with undo, local renderer isolation, audio and menu access; they pass against the final rebuilt v0.14.1 assets. Manual geometry and screenshot review cover desktop, 1024 px and 390 px layouts; 880 px also has no page overflow. A 100-event score stays within a locally scrolling editor, and keyboard selection opens the lower event inspector. Dense long-score timeline mouse targets remain composition-polish work. Production build, formatting, portable packaging and knowledge-map freshness pass. The broader unit/audio/browser suite was verified for v0.14.0; this patch reruns the affected workflows. Output: release/FourPataka-0.14.1-win-x64.exe. Six focused patch checkpoints are pushed under Monykus7; the updated portable application is opened for review.
+
+### Harmonic sign controls and distinct Soft bass (v0.16.0)
+
+1. Independent polarity update with coefficient, silent-partial and geometry invariants.
+2. Visible +/− buttons, explicit inspector Sign selector, signed coefficient and separate undo.
+3. Library/editor thumbnails sampled from actual signed source coefficients.
+4. Rounded Soft bass source with quiet even/odd partials and a version-2 factory template.
+5. Conservative untouched-factory library migration preserving owned track/A/B sounds.
+6. Browser sign/audio/persistence/preset migration and native save/reload regression workflows.
+7. v0.16.0 metadata, usage, behavioral decisions and regenerated knowledge map.
+8. Packaged application verification, final release record, pushed checkpoint and portable launch.
+
+The former inspector polarity field was read-only. Sign can now be changed directly under each harmonic or explicitly in the selected-partial inspector; magnitude remains independent, including at zero. Each sign edit is one undo operation and affects only the active sound. Existing phase-aligned live voice updates and frozen score playback policies remain in force. Source graphs display the signed coefficient and waveform. Library/editor thumbnails now represent actual signed banks instead of fallback sine icons.
+
+Soft bass now uses positive H1–H6 magnitudes [1, 0.22, 0.1, 0.045, 0.02, 0.009], with higher partials zero, attack 30 ms, release 350 ms and trim −12 dB. Triangle keeps its alternating-sign odd-harmonic 1/h² approximation. Exactly unchanged factory v1 Soft bass library templates upgrade to v2 on loading/import. Customized templates, existing applied tracks and A/B copies retain their sounds. Load Soft bass from the library and Apply explicitly when updating a track. Sixteen harmonics remain implemented; 32 harmonics and instrument acoustics remain planned.
+
+Verification in progress: all 138 unit checks pass and production TypeScript/bundle build passes. Final browser/native checks, portable packaging and visible application launch are pending; the v0.15.0 record above remains historical.
