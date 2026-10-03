@@ -109,17 +109,32 @@ function readPreferences() {
     return { autocomplete: true, monitor: 0.35, theme: 'original' };
   }
 }
-function MiniWave({ kind }: { kind: string }) {
+function MiniWave({ kind, sound }: { kind: string; sound?: Sound }) {
   const shapes: Record<string, string> = {
     sine: 'M2 18 C7 0 13 0 18 18 S29 36 34 18 S45 0 50 18',
     square: 'M2 28 L2 8 L14 8 L14 28 L26 28 L26 8 L38 8 L38 28 L50 28',
     saw: 'M2 28 L14 8 L14 28 L26 8 L26 28 L38 8 L38 28 L50 8',
     triangle: 'M2 18 L8 6 L20 30 L32 6 L44 30 L50 18',
   };
+  const samples = sound
+    ? Array.from({ length: 129 }, (_, i) =>
+        sound.harmonics.reduce(
+          (sum, magnitude, h) =>
+            sum + magnitude * sound.polarity[h] * Math.sin((2 * Math.PI * (h + 1) * i) / 128),
+          0,
+        ),
+      )
+    : null;
+  // Normalize only this decorative drawing's scale; coefficients and audio gain
+  // stay untouched. Named/custom library sounds must show their actual shape.
+  const scale = samples ? Math.max(1, ...samples.map(Math.abs)) : 1;
+  const actualPath = samples
+    ?.map((value, i) => `${i ? 'L' : 'M'}${2 + (i * 48) / 128},${18 - (value * 12) / scale}`)
+    .join(' ');
   return (
     <svg viewBox="0 0 52 36" aria-hidden="true">
       <path
-        d={shapes[kind] ?? shapes.sine}
+        d={actualPath ?? shapes[kind] ?? shapes.sine}
         fill="none"
         stroke="currentColor"
         strokeWidth="1.7"
@@ -838,7 +853,7 @@ export default function App() {
                 className={`preset-item ${preset.id === i.id ? 'selected' : ''}`}
               >
                 <span className="preset-mini">
-                  <MiniWave kind={i.key} />
+                  <MiniWave kind={i.key} sound={i.sound} />
                 </span>
                 <span>
                   {i.label}
@@ -881,7 +896,7 @@ export default function App() {
                 <div className="panel-header instrument-header">
                   <div className="instrument-title">
                     <span className="title-wave">
-                      <MiniWave kind={preset.key} />
+                      <MiniWave kind={preset.key} sound={sound} />
                     </span>
                     <div>
                       <div className="context-label">
