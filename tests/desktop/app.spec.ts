@@ -2,6 +2,7 @@ import { expect, test, _electron as electron, type ElectronApplication } from '@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { version } from '../../package.json';
 import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
 
 let app: ElectronApplication;
@@ -171,7 +172,7 @@ test('packaged delay drags, dials, native saving and tail-aware bypass work toge
 });
 
 test('packaged EQ dials, flat reset and native project save retain exact settings', async () => {
-  expect(await app.evaluate(({ app }) => app.getVersion())).toBe('0.14.1');
+  expect(await app.evaluate(({ app }) => app.getVersion())).toBe(version);
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await placePedal(page, 'eq');

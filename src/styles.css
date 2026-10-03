@@ -1678,7 +1678,7 @@ dd {
   line-height: 1.7;
 }
 .commands-footer {
-  display: flex;
+  display: block;
   justify-content: space-between;
   gap: 15px;
   padding: 11px 20px;
