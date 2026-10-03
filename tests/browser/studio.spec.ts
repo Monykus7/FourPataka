@@ -93,7 +93,7 @@ test('new preset, JSON export/import validation, and undoable import', async ({ 
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(bad)),
   });
-  await expect(page.getByRole('status')).toContainText('Import failed:');
+  await expect(page.locator('.toast[role=status]')).toContainText('Import failed:');
   await expect(page.getByRole('heading', { name: 'Midnight reed PRESET' })).toBeVisible();
   const good = { ...project, name: 'Imported session' };
   await page.locator('input[type=file]').setInputFiles({

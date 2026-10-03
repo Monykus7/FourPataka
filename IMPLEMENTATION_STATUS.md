@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest verified release: v0.15.0; v0.16.0 release candidate in verification. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-02. Latest release: v0.16.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -302,4 +302,4 @@ The former inspector polarity field was read-only. Sign can now be changed direc
 
 Soft bass now uses positive H1–H6 magnitudes [1, 0.22, 0.1, 0.045, 0.02, 0.009], with higher partials zero, attack 30 ms, release 350 ms and trim −12 dB. Triangle keeps its alternating-sign odd-harmonic 1/h² approximation. Exactly unchanged factory v1 Soft bass library templates upgrade to v2 on loading/import. Customized templates, existing applied tracks and A/B copies retain their sounds. Load Soft bass from the library and Apply explicitly when updating a track. Sixteen harmonics remain implemented; 32 harmonics and instrument acoustics remain planned.
 
-Verification in progress: all 138 unit checks pass and production TypeScript/bundle build passes. Final browser/native checks, portable packaging and visible application launch are pending; the v0.15.0 record above remains historical.
+Validation for v0.16.0: all 138 unit checks pass. All 87 browser workflows have passing coverage: 83 passed in the full run, and all four remaining workflows passed in a focused rerun. Recovery/import assertions now target the toast because the signed-coefficient output also has an accessible status role; delay persistence polling waits for the first debounced write instead of throwing on absent storage. Meter completion passed unchanged on rerun after its initial click did not insert. All ten native workflows pass in the full run against the final packaged executable, including harmonic keyboard/sign/undo, independent preset state, Soft bass and native JSON save/reload. Production TypeScript/bundle, formatting, Windows portable packaging and knowledge build/freshness pass. The 1440 px and 390 px sign layouts were visually reviewed; narrow-screen page width remains 390 px. Semantic retrieval returns the new preset/sign/migration behavior within 1,006/1,024 tokens. Output: release/FourPataka-0.16.0-win-x64.exe. The portable application is visibly open and its extracted app.asar SHA-256 matches the bundle verified by native tests. Eight focused checkpoints use Monykus7 and are pushed to origin/master. Physical listening and broader real-device/accessibility gates remain pending. Stage 4/5 gates, WAV export, 32 harmonics and instrument acoustics retain their planned status.

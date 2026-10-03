@@ -149,7 +149,10 @@ test('delay controls save independent presets, apply copies, and retain exact se
   await expect
     .poll(async () =>
       page.evaluate(() => {
-        const p = JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing;
+        // The first debounce may still be pending after a rapid edit sequence.
+        const stored = localStorage.getItem('fourpataka.project.v1');
+        if (!stored) return null;
+        const p = JSON.parse(stored).processing;
         return [
           p.audition.A.pedals[0]?.params.time,
           p.audition.B.pedals[0]?.params.time,
