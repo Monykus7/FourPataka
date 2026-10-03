@@ -2,6 +2,16 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Contextual command reference (v0.15.0)
+
+<!-- features: command-reference, notation, tracks, storage -->
+
+Eleven shared definitions describe syntax, rules, category and insertion scope while the parser remains playback authority. Reference snippets resolve current saved instrument/pedal keys and the next unique track key, rather than advertising unrelated built-ins. `using` replaces only the selected track's parsed instrument span; normal source reconciliation copies a changed preset independently and preserves unchanged settings. Pedal/global cards retain their narrow source edits and duplicate prevention. A reference instrument selection is UI state; it does not mutate the audition sound or a track until insertion.
+
+Only compiled tracks are insertion targets, so an empty score cannot accidentally use a stale saved destination. Empty scores still accept globals/new tracks; invalid text and score playback block insertion but not documentation. Syntax/rules and unavailable reasons remain visible without hover, category/search filters match all query terms, and source commands remain separate from UI controls. Completion after `using` and `through` is restricted to the matching library and respects its preference. The native menu requests focus after the Compose DOM commit; hidden-window verification asserts DOM focus rather than unavailable OS window focus. This closes the functional command-reference item without claiming full accessibility or device validation.
+
+Evidence: `src/core/commands.ts`, `src/core/commandReference.ts`, `src/core/scoreTools.ts`, `src/components/CommandReference.tsx`, `src/components/ScoreEditor.tsx`, `src/App.tsx`, `tests/unit/commandReference.test.ts`, `tests/browser/command-reference.spec.ts`, `tests/desktop/app.spec.ts`.
+
 ## Planned 32-harmonic bank boundary
 
 <!-- features: harmonic-expansion, synthesis, waveform, comparison, storage -->

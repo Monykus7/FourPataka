@@ -374,6 +374,8 @@ Measures are visual guides. Notes may cross a measure boundary, and an incomplet
 
 The Commands panel lists the complete catalog, valid values, descriptions, and pasteable snippets. Shared command metadata powers reference text, snippets, and completion suggestions; grammar behavior is checked against those examples.
 
+Implemented for v0.15.0: eleven scoped cards including track-header `using` and `through`, contextual instrument/pedal keys and unique new-track previews, category filtering, rule/syntax/key search, keyboard-readable details, visible insertion destinations and unavailable-action reasons. Instrument assignment edits only its parsed key span; global cards update rather than duplicate directives. Empty scores allow globals/first-track creation while track-dependent cards are disabled. Invalid or playing scores block insertion, with documentation still readable. Contextual `using`/`through` completion restricts suggestions to the correct library, and the native Command reference menu focuses search after the view commits. UI controls are documented separately from notation. This closes the command-reference functional item; broader stage 4/5 accessibility, recovery and real-device gates remain.
+
 List Play, Stop, Audition, Save preset, Apply, Apply to all, and bypass under Controls. They are UI actions rather than score commands.
 
 ### CodeMirror 6
@@ -560,6 +562,8 @@ Automated functional coverage includes these behaviors and score chain directive
 Add parallel tracks, master directives, the complete command reference, toggleable autocomplete, diagnostics, timeline/event inspector, and playback-revision handling.
 
 Gate: tracks begin together and route correctly; all reference snippets parse; invalid text points to the relevant span; editing running score text never produces incorrect source highlights; UI tempo changes update the source directive.
+
+The complete contextual command-reference catalog and source insertion are implemented for v0.15.0. Verification details belong in `IMPLEMENTATION_STATUS.md`; this item does not close the broader stage 5 release gate.
 
 ### Stage 5 — initial-release polish
 

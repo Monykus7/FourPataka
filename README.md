@@ -50,6 +50,8 @@ The enlarged score editor and command reference sit side by side. The editor fil
 
 **Make a track** selects an instrument and assembles note, chord, and rest rows with pitch and duration controls. It shows phrase length in the project meter, supports event reordering with up/down buttons, and validates the score preview before creating the track in one undo step. Command-reference cards insert directly into the selected track; tempo and time cards update existing directives without duplicating them. Both tools require a valid score and stopped score playback.
 
+**Command reference** shows eleven cards with their insertion destination and exact example. Select an instrument for `using` or a new track, and a pedal chain for `through` or `master`; examples follow these choices. Filter by category or search command names, syntax, rules and selected keys. Expand each card's **syntax and rules** by mouse or keyboard. `using` changes only the selected track's instrument assignment; `through` updates its header, while `master` updates the full mix. Empty scores allow globals and the first track; unavailable actions explain their requirements. Documentation remains readable during playback or diagnostics. Instrument completion after `using` and pedal completion after `through` offer the appropriate saved keys and respect the autocomplete switch. The native command-reference menu focuses search. Playback/preset/bypass controls are listed separately from score notation.
+
 Instrument, Pedalboard, and Compose are the three primary views. Learn is a smaller secondary link. The interface keeps flat panels, concise headings, and a faint material texture inside panels, with five selectable themes.
 
 ## Compare sounds

@@ -69,17 +69,26 @@ Line-oriented score text is authoritative. The enlarged score editor fills its p
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L92), [View](../../src/App.tsx#L94), [readPreferences](../../src/App.tsx#L95), [MiniWave](../../src/App.tsx#L110), [RangeControl](../../src/App.tsx#L130), [App](../../src/App.tsx#L180), [resetMacros](../../src/App.tsx#L283), [changeSound](../../src/App.tsx#L287).
+Key definitions: [ScoreEditor](../../src/App.tsx#L92), [View](../../src/App.tsx#L94), [readPreferences](../../src/App.tsx#L95), [MiniWave](../../src/App.tsx#L110), [RangeControl](../../src/App.tsx#L130), [App](../../src/App.tsx#L180), [resetMacros](../../src/App.tsx#L284), [changeSound](../../src/App.tsx#L288).
 
 #### Score parsing and editor
 
-Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Shared command metadata supplies ten reference cards and source-aware insertion. Contextual pedal-key autocomplete is optional. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work.
+Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Eleven shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work.
 
 - Score parsing and editor / dependency group 1: [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/core/parser.ts](../../src/core/parser.ts), [tests/unit/parser.test.ts](../../tests/unit/parser.test.ts)
 - Score parsing and editor / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
 - Score parsing and editor / dependency group 3: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
 Key definitions: [activeLines](../../src/components/ScoreEditor.tsx#L12), [playbackField](../../src/components/ScoreEditor.tsx#L13), [scoreLanguage](../../src/components/ScoreEditor.tsx#L33), [token](../../src/components/ScoreEditor.tsx#L34), [theme](../../src/components/ScoreEditor.tsx#L49), [colors](../../src/components/ScoreEditor.tsx#L83), [Props](../../src/components/ScoreEditor.tsx#L91), [ScoreEditor](../../src/components/ScoreEditor.tsx#L102).
+
+#### Contextual command reference
+
+Eleven scoped cards show the selected instrument/pedal keys, unique new-track snippets, syntax/rules and insertion destinations. Search matches all terms across syntax, rules and selected keys; categories filter the catalog. Using edits only the selected track instrument span, preserving notes/comments/routing and independent copy semantics. Compiled tracks prevent stale destinations on an empty score; globals/first-track creation remain available. Invalid/playing scores block insertion while details stay readable by keyboard. Native menu focuses search after DOM commit. Functional reference work is implemented; broader stage 4/5 accessibility, recovery and device gates remain.
+
+- Contextual command reference / dependency group 1: [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts), [src/core/scoreTools.ts](../../src/core/scoreTools.ts)
+- Contextual command reference / dependency group 2: [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts)
+
+Key definitions: [Props](../../src/components/CommandReference.tsx#L12), [CommandReference](../../src/components/CommandReference.tsx#L25), [ReferenceContext](../../src/core/commandReference.ts#L3), [referenceSnippet](../../src/core/commandReference.ts#L12), [insertionReason](../../src/core/commandReference.ts#L27), [insertionDestination](../../src/core/commandReference.ts#L38), [matchesCommand](../../src/core/commandReference.ts#L44), [CommandGroup](../../src/core/commands.ts#L1).
 
 #### Tempo, meter and timeline
 
@@ -149,7 +158,7 @@ Key definitions: [root](../../scripts/knowledge/cli.mjs#L10), [option](../../scr
 
 ## Parser coverage
 
-Tree-sitter reports partial syntax recovery in `src/App.tsx`, `src/core/music.ts`. These files remain indexed; inspect exact source before changing recovered regions. TypeScript compilation is a separate correctness check.
+Tree-sitter reports partial syntax recovery in `src/App.tsx`, `src/core/music.ts`, `tests/desktop/app.spec.ts`. These files remain indexed; inspect exact source before changing recovered regions. TypeScript compilation is a separate correctness check.
 
 ## Maintenance
 
