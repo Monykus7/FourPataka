@@ -211,6 +211,7 @@ export default function App() {
   const [modalError, setModalError] = useState('');
   const [commandInstrument, setCommandInstrument] = useState('');
   const [commandsOpen, setCommandsOpen] = useState(true);
+  const [commandFocusRequest, setCommandFocusRequest] = useState(0);
   const [commandChain, setCommandChain] = useState('warmDrive');
   const fileInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -343,6 +344,13 @@ export default function App() {
     engine.current.setMonitor(preferences.monitor);
   }, [preferences]);
   useLayoutEffect(() => applyTheme(preferences.theme), [preferences.theme]);
+  useLayoutEffect(() => {
+    if (!commandFocusRequest) return;
+    // A hidden native window may suspend animation frames. Focus after React's
+    // DOM commit so the menu action also works when Compose is first mounted.
+    document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' });
+    document.querySelector<HTMLInputElement>('[aria-label="Search commands"]')?.focus();
+  }, [commandFocusRequest]);
   useEffect(() => {
     engine.current.setMix(project.mixGain);
   }, [project.mixGain]);
@@ -630,10 +638,7 @@ export default function App() {
     else if (action === 'commands') {
       setView('compose');
       setCommandsOpen(true);
-      requestAnimationFrame(() => {
-        document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' });
-        document.querySelector<HTMLInputElement>('[aria-label="Search commands"]')?.focus();
-      });
+      setCommandFocusRequest((request) => request + 1);
     } else if (action === 'track') {
       if (
         playback === 'score' ||

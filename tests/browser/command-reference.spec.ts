@@ -1,0 +1,139 @@
+import { expect, test } from '@playwright/test';
+
+test('reference previews match selected keys and instrument assignment preserves other tracks with undo', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  await reference
+    .getByRole('combobox', { name: 'Command instrument', exact: true })
+    .selectOption('triangle');
+  await reference
+    .getByRole('combobox', { name: 'Command pedal chain', exact: true })
+    .selectOption('cleanGlue');
+  await reference
+    .getByRole('combobox', { name: 'Command insertion track', exact: true })
+    .selectOption('bass');
+  await expect(
+    reference.getByRole('button', { name: 'Insert master command', exact: true }),
+  ).toContainText('master through cleanGlue');
+  await expect(
+    reference.getByRole('button', { name: 'Insert through command', exact: true }),
+  ).toContainText('Track: bass');
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const before = await editor.innerText();
+  await reference.getByRole('button', { name: 'Insert using command', exact: true }).focus();
+  await reference.getByRole('button', { name: 'Insert using command', exact: true }).press('Enter');
+  await expect
+    .poll(() => editor.innerText())
+    .toBe(before.replace('bass using softBass', 'bass using triangle'));
+  await expect(
+    page.getByRole('combobox', { name: 'Instrument for bass', exact: true }),
+  ).toHaveValue('triangle');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(() => editor.innerText()).toBe(before);
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await reference.getByRole('button', { name: 'Insert track command', exact: true }).click();
+  await expect(editor).toContainText('track lead using triangle');
+  await expect(
+    reference.getByRole('button', { name: 'Insert track command', exact: true }),
+  ).toContainText('track lead2 using triangle');
+  await page.reload();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await expect(
+    page.getByRole('combobox', { name: 'Instrument for bass', exact: true }),
+  ).toHaveValue('triangle');
+});
+
+test('rules are keyboard-readable, searchable by syntax and selected keys, with an explicit empty result', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  await reference
+    .getByRole('combobox', { name: 'Command category', exact: true })
+    .selectOption('Routing');
+  await expect(reference.locator('.command-card')).toHaveCount(3);
+  const rules = reference.getByText('through syntax and rules', { exact: true });
+  await rules.focus();
+  await rules.press('Enter');
+  await expect(reference.locator('details[open]')).toContainText('never an event line');
+  await reference.getByRole('textbox', { name: 'Search commands' }).fill('master warmDrive');
+  await expect(reference.locator('.command-card')).toHaveCount(1);
+  await reference
+    .getByRole('combobox', { name: 'Command pedal chain', exact: true })
+    .selectOption('cleanGlue');
+  await expect(reference.locator('.command-empty')).toBeVisible();
+  await reference.getByRole('textbox', { name: 'Search commands' }).fill('master cleanGlue');
+  await expect(
+    reference.getByRole('button', { name: 'Insert master command', exact: true }),
+  ).toBeVisible();
+  await reference.getByRole('combobox', { name: 'Command category', exact: true }).selectOption('');
+  await reference.getByRole('textbox', { name: 'Search commands' }).fill('duration 0.25');
+  await expect(
+    reference.getByRole('button', { name: 'Insert note command', exact: true }),
+  ).toBeVisible();
+});
+
+test('empty and invalid scores guard track cards while first-track creation and global insertion remain useful', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  await editor.fill('');
+  await expect(
+    reference.getByRole('button', { name: 'Insert through command', exact: true }),
+  ).toBeDisabled();
+  await expect(
+    reference.getByRole('button', { name: 'Insert note command', exact: true }),
+  ).toBeDisabled();
+  await reference.getByRole('button', { name: 'Insert master command', exact: true }).click();
+  await expect(editor).toContainText('master through warmDrive');
+  await reference.getByRole('button', { name: 'Insert track command', exact: true }).click();
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+  await page.getByRole('button', { name: 'Play score', exact: true }).click();
+  await expect(
+    reference.getByRole('button', { name: 'Insert tempo command', exact: true }),
+  ).toBeDisabled();
+  await reference.getByText('master syntax and rules', { exact: true }).click();
+  await expect(reference.locator('details[open]')).toContainText('master mix');
+  await page.getByRole('button', { name: 'Stop all sound' }).click();
+  await editor.fill('track broken {');
+  await expect(
+    reference.getByRole('button', { name: 'Insert track command', exact: true }),
+  ).toBeDisabled();
+  await expect(reference).toContainText('Fix score diagnostics');
+});
+
+test('instrument completion offers instrument keys only and honors autocomplete preference', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  await editor.fill('track lead using ');
+  await editor.press('End');
+  await editor.press('Control+Space');
+  await expect(page.locator('.cm-tooltip-autocomplete')).toContainText('brightReed');
+  await expect(page.locator('.cm-tooltip-autocomplete')).not.toContainText('warmDrive');
+  await editor.press('Escape');
+  await page.getByRole('switch', { name: 'Autocomplete', exact: true }).click();
+  await editor.focus();
+  await editor.press('Control+Space');
+  await expect(page.locator('.cm-tooltip-autocomplete')).toHaveCount(0);
+});
+
+test('expanded reference stays bounded on narrow screens', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  await reference.getByText('through syntax and rules', { exact: true }).click();
+  await reference.getByText('track syntax and rules', { exact: true }).click();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: '.test-results/command-reference-mobile.png', fullPage: true });
+});

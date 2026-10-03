@@ -1594,6 +1594,9 @@ dd {
   min-width: 0;
   background: var(--surface-1);
 }
+.command-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
 .command-card .command-item {
   display: block;
   width: 100%;
@@ -1641,6 +1644,15 @@ dd {
 }
 .command-empty {
   padding-top: 15px;
+}
+.command-controls {
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.command-controls summary {
+  cursor: pointer;
+  color: var(--text);
 }
 .command-item:hover {
   background: var(--surface-2);

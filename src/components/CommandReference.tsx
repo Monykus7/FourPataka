@@ -180,6 +180,22 @@ export default function CommandReference({
           <div className="commands-footer">
             Durations: whole = 4 · half = 2 · quarter = 1 · 8th = ½ · 16th = ¼ quarter-note beats.
             Global directives belong outside tracks; using/through belong in track headers.
+            <details className="command-controls">
+              <summary>Controls (not score commands)</summary>
+              <p>
+                Play score starts the score; Listen auditions the instrument. Stop all sound clears
+                voices and effect tails.
+              </p>
+              <p>
+                Save preset updates a library template. Apply copies settings to a destination;
+                Apply to all updates associated copies in one undo step.
+              </p>
+              <p>
+                Pedal and board bypass are controls on their independent chains. Save project /
+                Export JSON preserve the editable project; monitor volume changes listening level
+                only.
+              </p>
+            </details>
           </div>
         </div>
       )}

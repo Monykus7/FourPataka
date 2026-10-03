@@ -20,6 +20,53 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('native command reference focuses search and saves contextual instrument and pedal assignments', async () => {
+  const page = await app.firstWindow();
+  await expect(page.getByRole('button', { name: 'Compose', exact: true })).toBeVisible();
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'commands'),
+  );
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  // The native test window is hidden, so OS focus cannot be asserted.
+  await expect
+    .poll(() =>
+      reference
+        .getByRole('textbox', { name: 'Search commands' })
+        .evaluate((input) => document.activeElement === input),
+    )
+    .toBe(true);
+  await reference.getByRole('combobox', { name: 'Command insertion track' }).selectOption('bass');
+  await reference
+    .getByRole('combobox', { name: 'Command instrument', exact: true })
+    .selectOption('triangle');
+  await reference
+    .getByRole('combobox', { name: 'Command pedal chain', exact: true })
+    .selectOption('cleanGlue');
+  const using = reference.getByRole('button', { name: 'Insert using command', exact: true });
+  await using.focus();
+  await using.press('Enter');
+  await reference.getByRole('button', { name: 'Insert through command', exact: true }).click();
+  await reference.getByRole('button', { name: 'Insert master command', exact: true }).click();
+  const savePath = resolve('.test-results', 'desktop', 'command-reference.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved command-reference.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toContain('track bass using triangle through cleanGlue');
+  expect(saved.tracks.find((track: any) => track.key === 'bass').presetId).toBe('triangle');
+  expect(saved.processing.master.assignmentKey).toBe('cleanGlue');
+  expect(saved.processing.tracks.bass.assignmentKey).toBe('cleanGlue');
+  await page.reload();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
+    'track bass using triangle through cleanGlue',
+  );
+});
+
 test('native score chain assignments preserve independent copies through file save and reload', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
