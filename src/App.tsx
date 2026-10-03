@@ -32,7 +32,6 @@ import {
   Plus,
   RotateCcw,
   Save,
-  Search,
   SlidersHorizontal,
   Square,
   Undo2,
@@ -57,7 +56,7 @@ import {
   type Sound,
   type WavePreset,
 } from './core/music';
-import { COMMANDS, parseScore, type CompiledScore, type ScoreEvent } from './core/parser';
+import { parseScore, type CompiledScore, type ScoreEvent } from './core/parser';
 import {
   applyPreset,
   createProject,
@@ -78,6 +77,7 @@ import ChainBypass from './components/ChainBypass';
 import ChainAssignment from './components/ChainAssignment';
 import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
+import CommandReference from './components/CommandReference';
 import {
   appendTrack,
   insertCommand,
@@ -209,7 +209,7 @@ export default function App() {
   const [presetLabel, setPresetLabel] = useState('');
   const [presetKey, setPresetKey] = useState('');
   const [modalError, setModalError] = useState('');
-  const [commandSearch, setCommandSearch] = useState('');
+  const [commandInstrument, setCommandInstrument] = useState('');
   const [commandsOpen, setCommandsOpen] = useState(true);
   const [commandChain, setCommandChain] = useState('warmDrive');
   const fileInput = useRef<HTMLInputElement>(null);
@@ -1463,116 +1463,63 @@ export default function App() {
                     </div>
                   )}
                 </section>
-                <section className="panel commands-panel">
-                  <div className="commands-header">
-                    <button
-                      className="disclosure-button"
-                      onClick={() => setCommandsOpen(!commandsOpen)}
-                      aria-expanded={commandsOpen}
-                    >
-                      {commandsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      <h3>Command reference</h3>
-                      <span className="tag">{COMMANDS.length} COMMANDS</span>
-                    </button>
-                    <label className="search-box">
-                      <Search size={14} />
-                      <input
-                        aria-label="Search commands"
-                        placeholder="Find a command…"
-                        value={commandSearch}
-                        onChange={(e) => setCommandSearch(e.target.value)}
-                      />
-                    </label>
-                  </div>
-                  {commandsOpen && (
-                    <>
-                      <div className="command-destination">
-                        <label>
-                          Insert events into
-                          <select
-                            aria-label="Command insertion track"
-                            value={track?.key ?? ''}
-                            onChange={(e) => setSelectedTrack(e.target.value)}
-                          >
-                            {project.tracks.map((t) => (
-                              <option key={t.key} value={t.key}>
-                                {t.key}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label>
-                          Pedal chain
-                          <select
-                            aria-label="Command pedal chain"
-                            value={chainKeys.includes(commandChain) ? commandChain : chainKeys[0]}
-                            onChange={(e) => setCommandChain(e.target.value)}
-                          >
-                            {project.processing.library.map((p) => (
-                              <option key={p.id} value={p.key}>
-                                {p.label} · {p.key}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <span>
-                          {playback === 'score'
-                            ? 'Stop playback to insert commands.'
-                            : 'Click a card to insert. Events go to the selected track.'}
-                        </span>
-                      </div>
-                      <div className="command-grid">
-                        {COMMANDS.filter((c) =>
-                          `${c.name} ${c.description}`
-                            .toLowerCase()
-                            .includes(commandSearch.toLowerCase()),
-                        ).map((c) => (
-                          <button
-                            className="command-item"
-                            key={c.name}
-                            title={`Insert ${c.name}`}
-                            aria-label={`Insert ${c.name} command`}
-                            disabled={
-                              playback === 'score' ||
-                              score.diagnostics.some(
-                                (d) => d.message !== 'Add a track to start composing.',
-                              )
-                            }
-                            onClick={() => {
-                              try {
-                                const text = insertCommand(
-                                  project.scoreText,
-                                  instruments.map((i) => i.key),
-                                  c.name,
-                                  track?.key ?? '',
-                                  preset.key,
-                                  chainKeys,
-                                  chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
-                                );
-                                change((p) => ({ ...p, scoreText: text }));
-                                setToast(
-                                  `Inserted ${c.name}${['tempo', 'time', 'track', 'master'].includes(c.name) ? '' : ` into ${track?.key}`}.`,
-                                );
-                              } catch (e) {
-                                setToast((e as Error).message);
-                              }
-                            }}
-                          >
-                            <div>
-                              <code>{c.snippet}</code>
-                              <Plus size={13} />
-                            </div>
-                            <p>{c.description}</p>
-                          </button>
-                        ))}
-                      </div>
-                      <div className="commands-footer">
-                        Durations: whole · half · quarter · 8th · 16th. Tempo counts quarter notes;
-                        meter counts its beat unit.
-                      </div>
-                    </>
-                  )}
-                </section>
+                <CommandReference
+                  open={commandsOpen}
+                  onOpen={setCommandsOpen}
+                  context={{
+                    instrumentKey: instruments.some((i) => i.key === commandInstrument)
+                      ? commandInstrument
+                      : preset.key,
+                    chainKey: chainKeys.includes(commandChain)
+                      ? commandChain
+                      : (chainKeys[0] ?? ''),
+                    newTrackKey: nextTrackKey(
+                      project.scoreText,
+                      instruments.map((i) => i.key),
+                    ),
+                    targetKey:
+                      score.tracks.find((t) => t.key === selectedTrack)?.key ??
+                      score.tracks[0]?.key ??
+                      '',
+                    playing: playback === 'score',
+                    invalid: score.diagnostics.some(
+                      (d) => d.message !== 'Add a track to start composing.',
+                    ),
+                  }}
+                  tracks={score.tracks.map((t) => t.key)}
+                  instruments={instruments}
+                  chains={project.processing.library}
+                  onTrack={setSelectedTrack}
+                  onInstrument={setCommandInstrument}
+                  onChain={setCommandChain}
+                  onInsert={(command) => {
+                    try {
+                      const targetKey =
+                        score.tracks.find((t) => t.key === selectedTrack)?.key ??
+                        score.tracks[0]?.key ??
+                        '';
+                      const text = insertCommand(
+                        project.scoreText,
+                        instruments.map((i) => i.key),
+                        command.name,
+                        targetKey,
+                        instruments.some((i) => i.key === commandInstrument)
+                          ? commandInstrument
+                          : preset.key,
+                        chainKeys,
+                        chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
+                      );
+                      change((p) => ({ ...p, scoreText: text }));
+                      setToast(
+                        command.scope === 'track'
+                          ? `Inserted ${command.name} into ${targetKey}.`
+                          : `Inserted ${command.name}.`,
+                      );
+                    } catch (error) {
+                      setToast((error as Error).message);
+                    }
+                  }}
+                />
               </div>
               <div className="composition-overview">
                 <Timeline
