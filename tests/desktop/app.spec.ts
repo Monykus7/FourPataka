@@ -21,6 +21,44 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('native harmonic sign and distinct Soft bass survive file save and reload', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
+  const sign = page.getByRole('button', { name: 'H3 inverted polarity', exact: true });
+  await sign.focus();
+  await sign.press('Enter');
+  await expect(sign).toHaveText('+');
+  await expect(page.getByRole('combobox', { name: 'H3 polarity', exact: true })).toHaveValue('1');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(sign).toHaveText('−');
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(sign).toHaveText('+');
+  const savePath = resolve('.test-results', 'desktop', 'harmonic-sign.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved harmonic-sign.fourpataka.json',
+  );
+  let saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.comparison.A.polarity[2]).toBe(1);
+  expect(saved.instruments.find((p: any) => p.key === 'triangle').sound.polarity[2]).toBe(-1);
+  await page.reload();
+  await expect(sign).toHaveText('+');
+  await page.getByRole('button', { name: 'Soft bass softBass', exact: true }).click();
+  await page.getByRole('button', { name: 'H2', exact: true }).click();
+  await expect(page.getByRole('spinbutton', { name: 'H2 exact magnitude' })).toHaveValue('0.22');
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect
+    .poll(async () => {
+      saved = JSON.parse(await readFile(savePath, 'utf8'));
+      return saved.comparison.A.harmonics[1];
+    })
+    .toBe(0.22);
+  expect(saved.instruments.find((p: any) => p.key === 'softBass').version).toBe(2);
+});
+
 test('native command reference focuses search and saves contextual instrument and pedal assignments', async () => {
   const page = await app.firstWindow();
   await expect(page.getByRole('button', { name: 'Compose', exact: true })).toBeVisible();
