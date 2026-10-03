@@ -10,7 +10,7 @@ import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
 import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
 import { setScoreChain } from './scoreTools';
-import { softBassPreset } from './instrumentPresets';
+import { softBassPreset, upgradeSoftBassTemplate } from './instrumentPresets';
 
 export interface InstrumentPreset {
   id: string;
@@ -332,13 +332,15 @@ export function importProject(text: string): Project {
       A: structuredClone(project.comparison.A),
       B: structuredClone(project.comparison.B),
     },
-    instruments: project.instruments.map((p) => ({
-      id: p.id,
-      key: p.key,
-      label: p.label,
-      version: p.version,
-      sound: structuredClone(p.sound),
-    })),
+    instruments: project.instruments.map((p) =>
+      upgradeSoftBassTemplate({
+        id: p.id,
+        key: p.key,
+        label: p.label,
+        version: p.version,
+        sound: structuredClone(p.sound),
+      }),
+    ),
     tracks: project.tracks.map((t) => ({
       key: t.key,
       presetId: t.presetId,
@@ -362,7 +364,18 @@ export function loadProject(): { project: Project; warning: string | null } {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return { project: createProject(), warning: null };
     try {
-      return { project: importProject(stored), warning: null };
+      const project = importProject(stored);
+      const before = JSON.parse(stored).instruments.find(
+        (preset: InstrumentPreset) => preset.id === 'soft-bass',
+      );
+      const after = project.instruments.find((preset) => preset.id === 'soft-bass');
+      return {
+        project,
+        warning:
+          before?.version === 1 && after?.version === 2
+            ? 'Soft bass library preset updated. Existing tracks and A/B sounds are kept. Load Soft bass from the library to use the new shape.'
+            : null,
+      };
     } catch {
       localStorage.setItem(UNREADABLE_KEY, stored);
       const backup = localStorage.getItem(RECOVERY_KEY);
