@@ -48,6 +48,7 @@ import {
   components,
   descriptors,
   mathematicalPreset,
+  setHarmonicPolarity,
   NEUTRAL_MACROS,
   pitch,
   SCORE_KEY,
@@ -78,6 +79,7 @@ import ChainAssignment from './components/ChainAssignment';
 import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
 import CommandReference from './components/CommandReference';
+import HarmonicPolarity from './components/HarmonicPolarity';
 import {
   appendTrack,
   insertCommand,
@@ -289,6 +291,11 @@ export default function App() {
     const next = keepMatchingWavePoints(mutate(sound));
     if (manual) resetMacros(next);
     change((p) => ({ ...p, comparison: { ...p.comparison, [p.comparison.active]: next } }), key);
+  };
+  const changePolarity = (index: number, polarity: 1 | -1) => {
+    setSelectedPartial(`H${index + 1}`);
+    // Discrete sign changes are separate undo steps; magnitude drags stay grouped.
+    changeSound((current) => setHarmonicPolarity(current, index, polarity));
   };
   const travel = useCallback((direction: 'undo' | 'redo') => {
     editGroup.current = { key: '', time: 0 };
@@ -994,6 +1001,12 @@ export default function App() {
                               H{i + 1}
                               {sound.polarity[i] === -1 && <sup>−</sup>}
                             </button>
+                            <HarmonicPolarity
+                              harmonic={component.label}
+                              value={sound.polarity[i]}
+                              compact
+                              onChange={(polarity) => changePolarity(i, polarity)}
+                            />
                             <span className="partial-frequency">
                               {component.frequency >= 1000
                                 ? `${(component.frequency / 1000).toFixed(1)}k`
@@ -1009,6 +1022,7 @@ export default function App() {
                     <span>
                       <span className="orange-dot" />
                       H1 = f₀ · H2–H16 = 2f₀–16f₀
+                      <span className="sign-guide"> · + / − changes sign</span>
                     </span>
                     <button
                       className="text-button"
@@ -1242,7 +1256,29 @@ export default function App() {
                         <dt>Polarity</dt>
                         <dd>{partial.polarity === 1 ? 'Normal (+)' : 'Inverted (−)'}</dd>
                       </div>
+                      <div>
+                        <dt>Signed coefficient</dt>
+                        <dd>
+                          <output aria-label={`${partial.label} signed coefficient`}>
+                            {partial.polarity < 0 ? '−' : '+'}
+                            {partial.magnitude.toFixed(3)}
+                          </output>
+                        </dd>
+                      </div>
                     </dl>
+                    {partial.kind === 'harmonic' && (
+                      <>
+                        <HarmonicPolarity
+                          harmonic={partial.label}
+                          value={partial.polarity}
+                          onChange={(polarity) => changePolarity(partial.index, polarity)}
+                        />
+                        <p className="footnote">
+                          Sign flips this sine wave; magnitude controls its strength. A
+                          zero-magnitude harmonic stays silent.
+                        </p>
+                      </>
+                    )}
                     <p className="footnote">
                       dB relative to magnitude 1, before trim.{' '}
                       {partial.frequency < 20
