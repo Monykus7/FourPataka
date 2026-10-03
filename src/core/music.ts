@@ -34,6 +34,21 @@ export interface Sound {
   trim: number;
 }
 export type WavePreset = 'sine' | 'square' | 'saw' | 'triangle';
+export type HarmonicPolarity = 1 | -1;
+
+export function setHarmonicPolarity(
+  sound: Sound,
+  index: number,
+  polarity: HarmonicPolarity,
+): Sound {
+  if (!Number.isInteger(index) || index < 0 || index >= sound.harmonics.length)
+    throw new Error('Choose an existing harmonic.');
+  if (polarity !== 1 && polarity !== -1) throw new Error('Polarity must be +1 or −1.');
+  if (sound.polarity[index] === polarity) return sound;
+  // Sign is independent of strength, including silent partials. Copy the bank
+  // so an editor change cannot mutate another snapshot or library template.
+  return { ...sound, polarity: sound.polarity.map((value, i) => (i === index ? polarity : value)) };
+}
 export function mathematicalPreset(kind: WavePreset): Sound {
   return {
     harmonics: Array.from({ length: 16 }, (_, i) => {
