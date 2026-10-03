@@ -630,9 +630,10 @@ export default function App() {
     else if (action === 'commands') {
       setView('compose');
       setCommandsOpen(true);
-      requestAnimationFrame(() =>
-        document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' }),
-      );
+      requestAnimationFrame(() => {
+        document.querySelector('.commands-panel')?.scrollIntoView({ block: 'center' });
+        document.querySelector<HTMLInputElement>('[aria-label="Search commands"]')?.focus();
+      });
     } else if (action === 'track') {
       if (
         playback === 'score' ||

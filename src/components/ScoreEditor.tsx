@@ -148,6 +148,19 @@ export default function ScoreEditor({
                   })),
                   validFor: /[A-Za-z0-9_]*/,
                 };
+              const instrument = /\busing\s+([A-Za-z0-9_]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (instrument)
+                return {
+                  from: context.pos - instrument[1].length,
+                  options: presetKeys.map((label) => ({
+                    label,
+                    type: 'variable',
+                    detail: 'Instrument preset',
+                  })),
+                  validFor: /[A-Za-z0-9_]*/,
+                };
               const word = context.matchBefore(/[A-Za-z0-9_]+/);
               if (!word && !context.explicit) return null;
               return {
@@ -156,6 +169,7 @@ export default function ScoreEditor({
                   ...COMMANDS.map((c) => ({
                     label: c.name,
                     detail: c.description,
+                    info: `${c.syntax}\n${c.rules}`,
                     apply: c.snippet,
                     type: 'keyword',
                   })),
