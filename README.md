@@ -27,7 +27,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.15.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.16.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -119,7 +119,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the authoritative roadmap and [IMPLEMENTA
 
 ## Interactive Fourier workspace
 
-In Instrument, use **Harmonics** or **Waveform** to choose the large editor. The other representation stays visible in a smaller preview. Harmonic controls retain their exact magnitudes and polarity controls in the partial inspector.
+In Instrument, use **Harmonics** or **Waveform** to choose the large editor. The other representation stays visible in a smaller preview. Use the **+ / −** button beneath each harmonic to flip its sign. The selected partial inspector also offers an explicit **Sign** selector and signed coefficient. Sign is independent of magnitude: a zero-strength harmonic stays silent and remembers its sign for later edits. Each sign change is separately undoable.
 
 Choose **Dots** (default) or **Draw** in the waveform editor. Click in the left half to add a dot, drag an existing dot, or use its position/amplitude fields. Arrow keys adjust the focused dot and Delete removes it; the Remove dot button also works. Fixed zero endpoints plus up to 30 editable dots define a smooth, shape-preserving cubic curve. The curve passes through its anchors without overshooting their amplitudes. Draw mode retains freehand strokes. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H16; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the coral dashed curve is the target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
 
@@ -163,3 +163,5 @@ Themes are bundled for offline desktop use and saved as a local preference along
 
 [Project map](docs/knowledge/PROJECT_MAP.md) links code symbols, behavioral decisions and roadmap features. [Usage](docs/knowledge/USAGE.md) describes local semantic retrieval, personalized PageRank and fixed context token budgets. Run `npm run knowledge:build` and `npm run knowledge:check` after changes; update feature summaries and decisions alongside implementation. `npm run knowledge:watch` can refresh derived documentation during a working session.
 
+
+Soft bass now uses a rounded source with quiet even and odd harmonics; Triangle retains its alternating odd-harmonic coefficients. Untouched factory Soft bass templates in old projects upgrade in the library. Existing tracks, A/B snapshots and customized presets keep their sounds. **Load Soft bass from the library**, then Apply when you want to update a track.

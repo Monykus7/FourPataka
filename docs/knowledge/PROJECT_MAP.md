@@ -10,7 +10,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain.
+Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration.
 
 ### Sound and Fourier interaction
 
@@ -18,12 +18,23 @@ Editable source waveform, signed harmonic sine bank and phase-continuous compari
 
 #### Sine-bank synthesis and voices
 
-Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings.
+Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates.
 
-- Sine-bank synthesis and voices / dependency group 1: [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/music.ts](../../src/core/music.ts), [src/components/SourceGraphs.tsx](../../src/components/SourceGraphs.tsx)
+- Sine-bank synthesis and voices / dependency group 1: [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/music.ts](../../src/core/music.ts), [src/components/HarmonicPolarity.tsx](../../src/components/HarmonicPolarity.tsx), [src/components/SourceGraphs.tsx](../../src/components/SourceGraphs.tsx), [tests/unit/polarity.test.ts](../../tests/unit/polarity.test.ts)
 - Sine-bank synthesis and voices / dependency group 2: [tests/browser/audio.spec.ts](../../tests/browser/audio.spec.ts)
+- Sine-bank synthesis and voices / dependency group 3: [tests/browser/polarity.spec.ts](../../tests/browser/polarity.spec.ts)
 
 Key definitions: [Voice](../../src/audio/voice.ts#L3), [Source](../../src/audio/voice.ts#L10), [TRANSITION](../../src/audio/voice.ts#L15), [holdParameter](../../src/audio/voice.ts#L18), [createVoice](../../src/audio/voice.ts#L27), [source](../../src/audio/voice.ts#L57), [setSources](../../src/audio/voice.ts#L94), [end](../../src/audio/voice.ts#L136).
+
+#### Instrument presets and source thumbnails
+
+Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], attack 30 ms, release 350 ms and trim −12 dB; Triangle retains alternating odd signs. Library and editor thumbnails sample their actual signed harmonic bank, excluding undertones/trim/envelope. Decorative thumbnail scaling never normalizes audio. Only an untouched factory v1 library template upgrades; applied tracks and A/B remain owned copies until explicit loading/application.
+
+- Instrument presets and source thumbnails / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/instrumentPresets.ts](../../src/core/instrumentPresets.ts), [tests/unit/instrumentPresets.test.ts](../../tests/unit/instrumentPresets.test.ts)
+- Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
+- Instrument presets and source thumbnails / dependency group 3: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+
+Key definitions: [ScoreEditor](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L112), [RangeControl](../../src/App.tsx#L147), [App](../../src/App.tsx#L197), [resetMacros](../../src/App.tsx#L301), [changeSound](../../src/App.tsx#L305).
 
 #### Up to 32 harmonics (planned)
 
@@ -69,7 +80,7 @@ Line-oriented score text is authoritative. The enlarged score editor fills its p
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L92), [View](../../src/App.tsx#L94), [readPreferences](../../src/App.tsx#L95), [MiniWave](../../src/App.tsx#L110), [RangeControl](../../src/App.tsx#L130), [App](../../src/App.tsx#L180), [resetMacros](../../src/App.tsx#L284), [changeSound](../../src/App.tsx#L288).
+Key definitions: [ScoreEditor](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L112), [RangeControl](../../src/App.tsx#L147), [App](../../src/App.tsx#L197), [resetMacros](../../src/App.tsx#L301), [changeSound](../../src/App.tsx#L305).
 
 #### Score parsing and editor
 
@@ -117,14 +128,14 @@ Versioned local project data, musical undo and sandboxed desktop workflows suppo
 
 #### Independent copies, persistence and undo
 
-Project schema v1 retains source text and deep-copied applied sounds/chains. Library edits never overwrite track instances. Validation preserves the current project on failed import. Grouped edits retain one undo entry per waveform stroke or rotary gesture.
+Project schema v1 retains source text and deep-copied applied sounds/chains. Library edits never overwrite track instances. Validation preserves the current project on failed import. Grouped edits retain one undo entry per waveform stroke or rotary gesture. Only exactly unchanged factory Soft bass v1 library templates upgrade to v2; custom templates, existing applied track sounds and A/B snapshots remain unchanged.
 
 - Independent copies, persistence and undo / dependency group 1: [src/core/history.ts](../../src/core/history.ts), [tests/unit/history.test.ts](../../tests/unit/history.test.ts)
 - Independent copies, persistence and undo / dependency group 2: [src/core/project.ts](../../src/core/project.ts), [tests/unit/project.test.ts](../../tests/unit/project.test.ts)
 - Independent copies, persistence and undo / dependency group 3: [tests/browser/persistence.spec.ts](../../tests/browser/persistence.spec.ts)
 - Independent copies, persistence and undo / dependency group 4: [tests/browser/studio.spec.ts](../../tests/browser/studio.spec.ts)
 
-Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L14), [TrackInstance](../../src/core/project.ts#L21), [Project](../../src/core/project.ts#L28), [STORAGE_KEY](../../src/core/project.ts#L41).
+Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L15), [TrackInstance](../../src/core/project.ts#L22), [Project](../../src/core/project.ts#L29), [STORAGE_KEY](../../src/core/project.ts#L42).
 
 #### Themes and responsive layout
 

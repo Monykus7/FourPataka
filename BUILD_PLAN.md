@@ -131,7 +131,7 @@ x(t) = Σ[h = 1…16] p[h] × a[h] × sin(2π h f₀ t)
      + enabled × Σ[d = 2…6] u[d] × sin(2π (f₀/d) t)
 ```
 
-Here `a[h]` and `u[d]` are magnitudes, and `p[h]` is +1 or −1. Polarity is saved metadata, visible in the inspector. This permits a triangle preset's alternating odd-harmonic signs without requiring a phase-control interface. Magnitude edits and macros preserve polarity.
+Here `a[h]` and `u[d]` are magnitudes, and `p[h]` is +1 or −1. Polarity is independently editable using + / − buttons under the harmonic bars and a Sign selector in the partial inspector. The inspector shows the signed coefficient. Zero-magnitude harmonics remain editable and silent; each sign action is separately undoable. This permits a triangle preset's alternating odd-harmonic signs without requiring a phase-control interface. Magnitude edits and macros preserve polarity.
 
 Seed presets with relative Fourier coefficients:
 
@@ -139,12 +139,15 @@ Seed presets with relative Fourier coefficients:
 - Square approximation: odd harmonic magnitudes proportional to 1/h.
 - Saw approximation: harmonic magnitudes proportional to 1/h.
 - Triangle approximation: odd magnitudes proportional to 1/h², with alternating polarity.
+- Soft bass: positive H1–H6 magnitudes of 1, 0.22, 0.1, 0.045, 0.02 and 0.009, with higher harmonics zero, attack 30 ms, release 350 ms and output trim −12 dB. Its rounded source is distinct from Triangle. Library and active-sound thumbnails draw the actual signed bank; only their decorative drawing scale is normalized.
+
+For v0.16.0, only an exactly recognized, untouched version-1 factory Soft bass library template upgrades to version 2. Renamed, customized and saved templates remain unchanged. Existing applied tracks and A/B snapshots retain their independent sound and version. Load the updated library preset and Apply explicitly to change those copies.
 
 These are finite approximations. Avoid promising that sixteen terms reproduce an ideal discontinuous waveform or a real acoustic instrument. Instrument-inspired examples can be labeled as approximations.
 
 ### Planned expansion — up to 32 harmonics
 
-Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.15.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.16.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
 
 Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
 

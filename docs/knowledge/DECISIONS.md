@@ -119,3 +119,15 @@ Evidence: `src/core/waveform.ts`, `src/core/rotary.ts`, `src/components/RotaryDi
 Projects remain local. Browser and desktop storage are separate; JSON transfers the editable project. The Electron renderer has no Node access and uses a narrow, origin-checked native bridge. Knowledge embeddings run locally after model files download; repository content is never sent to inference services. Generated graph/vector caches are rebuildable and excluded from version control.
 
 Evidence: `src/core/project.ts`, `desktop/main.cjs`, `desktop/preload.cjs`, `scripts/knowledge/`.
+
+## Harmonic sign and Soft bass source (v0.16.0)
+
+<!-- features: synthesis, waveform, instrument-presets, storage, comparison -->
+
+Polarity is an independently editable +1/−1 sine coefficient sign, not a strength slider or an arbitrary phase angle. Every harmonic has a visible sign toggle and the partial inspector provides an explicit Sign selector and signed coefficient. Zero-magnitude signs remain editable without producing audio. Each discrete sign action owns an undo entry, retains magnitudes/envelope/trim/undertones, updates only the active owned A/B sound and resets the macro baseline. Obsolete waveform-point geometry is discarded through the existing coefficient-consistency check. The audio engine already supports signed sine replacement with phase-aligned 20 ms crossfades, so live edits retain the clock and envelope; score sounds retain the existing frozen-playback policy.
+
+Soft bass previously reused Triangle's exact coefficients with only envelope changes. Version 2 uses positive H1–H6 magnitudes [1, 0.22, 0.1, 0.045, 0.02, 0.009], higher magnitudes zero, attack 30 ms, release 350 ms and trim −12 dB. Triangle remains alternating-sign odd harmonics at 1/h². Neither source is audio-normalized. Library/editor thumbnails sample the actual signed harmonic bank; their decorative scale excludes trim, envelope and undertones and never changes sound data.
+
+Only an exact untouched factory Soft bass v1 template with matching ID, key, label, version and sound fields upgrades to v2 on project loading/import. Customized/renamed/versioned templates remain intact. Applied tracks and A/B snapshots remain independently owned, preserving their previous waveform and applied version. A local-load notice explains that the updated library must be loaded and explicitly applied to change those sounds. Project schema remains v1; no harmonic capacity, acoustics, routing or latency changes are included.
+
+Evidence: `src/core/music.ts`, `src/components/HarmonicPolarity.tsx`, `src/core/instrumentPresets.ts`, `src/core/project.ts`, `src/App.tsx`, `tests/unit/polarity.test.ts`, `tests/unit/instrumentPresets.test.ts`, `tests/browser/polarity.spec.ts`, `tests/browser/instrument-presets.spec.ts`, `tests/desktop/app.spec.ts`.
