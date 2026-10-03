@@ -98,8 +98,10 @@ describe('score compilation', () => {
   it('checks every displayed command example against the parser', () => {
     for (const command of COMMANDS) {
       const text =
-        command.name === 'through'
-          ? `track lead using brightReed ${command.snippet} {\n C4 quarter\n}`
+        command.name === 'through' || command.name === 'using'
+          ? command.name === 'using'
+            ? `track lead ${command.snippet} {\n C4 quarter\n}`
+            : `track lead using brightReed ${command.snippet} {\n C4 quarter\n}`
           : ['tempo', 'time', 'track', 'master'].includes(command.name)
             ? command.name === 'track'
               ? command.snippet

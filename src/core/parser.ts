@@ -227,39 +227,4 @@ export function parseScore(
   return result;
 }
 
-export const COMMANDS = [
-  { name: 'tempo', description: 'Quarter-note beats per minute · 20–300', snippet: 'tempo 120' },
-  { name: 'time', description: 'Project meter · 1–32 over 1, 2, 4, 8, or 16', snippet: 'time 4/4' },
-  {
-    name: 'master',
-    description: 'Independent pedal chain on the full mix',
-    snippet: 'master through cleanGlue',
-  },
-  {
-    name: 'through',
-    description: 'Saved chain copied into the selected track',
-    snippet: 'through warmDrive',
-  },
-  {
-    name: 'track',
-    description: 'Independent sound; all tracks start together',
-    snippet: 'track lead using brightReed {\n  C5 quarter\n}',
-  },
-  { name: 'note', description: 'Scientific pitch notation · C0–B8', snippet: 'C5 quarter' },
-  {
-    name: 'chord',
-    description: 'Simultaneous notes with a default octave',
-    snippet: 'chord:(Bb D F)5 8th',
-  },
-  {
-    name: 'voicing',
-    description: 'Explicit octaves override the default',
-    snippet: 'chord:(Bb4 D5 F5) quarter',
-  },
-  { name: 'rest', description: 'Advance time without starting a note', snippet: 'rest half' },
-  {
-    name: 'comment',
-    description: 'Ignored until the end of the line',
-    snippet: '// Comment',
-  },
-];
+export { COMMANDS } from './commands';
