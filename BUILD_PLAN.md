@@ -144,7 +144,7 @@ These are finite approximations. Avoid promising that sixteen terms reproduce an
 
 ### Planned expansion — up to 32 harmonics
 
-Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in v0.14.1. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.15.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
 
 Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
 
