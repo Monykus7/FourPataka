@@ -28,7 +28,9 @@ test('empty score survives refresh and a corrupt save recovers without losing it
   await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
     'Recovered session',
   );
-  await expect(page.getByRole('status')).toContainText('Recovered the previous local save');
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Recovered the previous local save',
+  );
   expect(await page.evaluate(() => localStorage.getItem('fourpataka.project.unreadable.v1'))).toBe(
     '{bad json',
   );

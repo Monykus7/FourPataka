@@ -79,6 +79,8 @@ The source graphs use the first sounding note in the selected material as a labe
 
 Library changes do not overwrite track instances. The editor works on the selected A/B sound; **Apply** explicitly copies that sound to the chosen destination. **Load copy into editor** brings an independent track sound back into the workbench.
 
+Soft bass now uses a rounded source with quiet even and odd harmonics; Triangle retains its alternating odd-harmonic coefficients. Untouched factory Soft bass templates in old projects upgrade in the library. Existing tracks, A/B snapshots and customized presets keep their sounds. **Load Soft bass from the library**, then Apply when you want to update a track.
+
 ## Score notation
 
 ```text
@@ -163,5 +165,3 @@ Themes are bundled for offline desktop use and saved as a local preference along
 
 [Project map](docs/knowledge/PROJECT_MAP.md) links code symbols, behavioral decisions and roadmap features. [Usage](docs/knowledge/USAGE.md) describes local semantic retrieval, personalized PageRank and fixed context token budgets. Run `npm run knowledge:build` and `npm run knowledge:check` after changes; update feature summaries and decisions alongside implementation. `npm run knowledge:watch` can refresh derived documentation during a working session.
 
-
-Soft bass now uses a rounded source with quiet even and odd harmonics; Triangle retains its alternating odd-harmonic coefficients. Untouched factory Soft bass templates in old projects upgrade in the library. Existing tracks, A/B snapshots and customized presets keep their sounds. **Load Soft bass from the library**, then Apply when you want to update a track.
