@@ -1602,7 +1602,7 @@ dd {
 .command-scope {
   display: block;
   margin-bottom: 9px;
-  color: var(--tertiary);
+  color: var(--tertiary-ink);
   font: 10px var(--font-mono);
   overflow-wrap: anywhere;
 }
@@ -1621,7 +1621,7 @@ dd {
   margin: 8px 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: var(--secondary);
+  color: var(--secondary-ink);
   font-size: 10px;
 }
 .command-help p {
