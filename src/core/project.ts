@@ -10,6 +10,7 @@ import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
 import { parseScore, type CompiledScore } from './parser';
 import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
 import { setScoreChain } from './scoreTools';
+import { softBassPreset } from './instrumentPresets';
 
 export interface InstrumentPreset {
   id: string;
@@ -46,9 +47,7 @@ export const EXAMPLE_SCORE = `// Example score\ntempo 120\ntime 4/4\n\ntrack mel
 export function createProject(): Project {
   const bright = mathematicalPreset('square');
   bright.harmonics = bright.harmonics.map((m, i) => (i === 0 ? 1 : m * 0.78));
-  const bass = mathematicalPreset('triangle');
-  bass.attack = 0.03;
-  bass.release = 0.35;
+  const bass = softBassPreset();
   const instruments: InstrumentPreset[] = [
     ...(['sine', 'square', 'saw', 'triangle'] as const).map((key) => ({
       id: key,
@@ -58,7 +57,7 @@ export function createProject(): Project {
       sound: mathematicalPreset(key),
     })),
     { id: 'bright-reed', key: 'brightReed', label: 'Bright reed', version: 1, sound: bright },
-    { id: 'soft-bass', key: 'softBass', label: 'Soft bass', version: 1, sound: bass },
+    { id: 'soft-bass', key: 'softBass', label: 'Soft bass', version: 2, sound: bass },
   ];
   const project: Project = {
     processing: defaultProcessing(),
