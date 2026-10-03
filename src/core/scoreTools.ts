@@ -84,6 +84,21 @@ export function setScoreChain(
   if (track.chainKey) return text.slice(0, track.chainFrom) + key + text.slice(track.chainTo);
   return text.slice(0, track.instrumentTo) + ` through ${key}` + text.slice(track.instrumentTo);
 }
+export function setScoreInstrument(
+  text: string,
+  instrumentKeys: string[],
+  chainKeys: string[],
+  targetKey: string,
+  instrumentKey: string,
+) {
+  const parsed = assertEditable(text, instrumentKeys, chainKeys);
+  if (!instrumentKeys.includes(instrumentKey))
+    throw new Error('Choose an existing instrument preset.');
+  const target = parsed.tracks.find((track) => track.key === targetKey);
+  if (!target) throw new Error('Choose an existing track for instrument assignment.');
+  // Replace only the parser-owned key span; routing and comments belong to the user.
+  return text.slice(0, target.instrumentFrom) + instrumentKey + text.slice(target.instrumentTo);
+}
 export function insertCommand(
   text: string,
   instrumentKeys: string[],
@@ -105,6 +120,8 @@ export function insertCommand(
       ['C5 quarter'],
       chainKeys,
     );
+  if (name === 'using')
+    return setScoreInstrument(text, instrumentKeys, chainKeys, targetKey, instrumentKey);
   if (name === 'master' || name === 'through') {
     if (!chainKey) throw new Error('Save a pedal chain first.');
     return setScoreChain(
