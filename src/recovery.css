@@ -1,0 +1,125 @@
+.recovery-dialog {
+  width: min(720px, 94vw);
+  max-height: 88vh;
+  padding: 24px;
+  overflow: auto;
+  background: var(--surface-1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.recovery-dialog::backdrop {
+  background: #080711ba;
+}
+.recovery-dialog .panel-header {
+  padding: 0 0 16px;
+}
+.recovery-dialog h2 {
+  font-size: 18px;
+}
+.recovery-dialog > p {
+  margin: 16px 0;
+  font-size: 12px;
+}
+.recovery-copies {
+  padding: 0;
+  border: 0;
+  margin: 20px 0;
+}
+.recovery-copies legend {
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.recovery-copies label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+.recovery-copies label:has(input:checked) {
+  border-color: var(--tertiary);
+}
+.recovery-copies input {
+  accent-color: var(--tertiary);
+}
+.recovery-copies label > span:first-of-type {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.recovery-copies strong {
+  display: block;
+  font-size: 12px;
+}
+.recovery-copies small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.recovery-preview {
+  padding: 16px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.recovery-preview h3 {
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.recovery-preview p {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.recovery-preview pre {
+  max-height: 200px;
+  overflow: auto;
+  font: 12px/1.7 var(--font-mono);
+}
+.recovery-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+.recovery-actions button {
+  font-size: 12px;
+}
+.recovery-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 12px;
+}
+.recovery-notice button {
+  color: var(--tertiary-ink);
+  font-size: 12px;
+}
+@media (max-width: 550px) {
+  .recovery-dialog {
+    padding: 16px;
+  }
+  .recovery-copies label {
+    flex-wrap: wrap;
+  }
+  .recovery-copies .tag {
+    margin-left: 28px;
+  }
+  .recovery-actions {
+    justify-content: stretch;
+  }
+  .recovery-actions button {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
