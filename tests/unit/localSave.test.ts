@@ -28,7 +28,7 @@ it('keeps the previous distinct project across identical saves and canonicalized
   expect(storage.getItem(RECOVERY_KEY)).toBe('older bytes');
   const edited = structuredClone(first);
   edited.comparison.B.harmonics[0] = 0.4;
-  edited.processing.master.bypass = true;
+  edited.processing.master.bypassed = true;
   saveLocalProject(edited, storage);
   expect(storage.getItem(RECOVERY_KEY)).toBe(JSON.stringify(first));
   saveLocalProject(edited, storage);

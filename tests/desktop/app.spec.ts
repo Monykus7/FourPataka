@@ -21,6 +21,81 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('native recovery menu exports exact damaged bytes and restores a checkpoint with undo', async () => {
+  const page = await app.firstWindow();
+  await expect(
+    page.getByRole('button', { name: 'Open local save recovery', exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('fourpataka.project.v1')))
+    .not.toBeNull();
+  const fixture = await page.evaluate(() => {
+    const prior = JSON.parse(localStorage.getItem('fourpataka.project.v1')!);
+    prior.name = 'Native recovery';
+    prior.comparison.A.harmonics[0] = 0.37;
+    prior.processing.master.bypassed = true;
+    const raw = JSON.stringify(prior, null, 2);
+    const damaged = '{broken Ω\n';
+    localStorage.setItem('fourpataka.project.recovery.v1', raw);
+    localStorage.setItem('fourpataka.project.unreadable.v1', damaged);
+    return { raw, damaged };
+  });
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'recovery'),
+  );
+  const dialog = page.getByRole('dialog', { name: 'Local save recovery' });
+  await expect(dialog.getByRole('heading', { name: 'Native recovery', exact: true })).toBeVisible();
+  await dialog.getByRole('radio', { name: /Unreadable save/ }).check();
+  await expect(
+    dialog.getByRole('button', { name: 'Restore selected copy', exact: true }),
+  ).toBeDisabled();
+  const copyPath = resolve('.test-results', 'desktop', 'unreadable-recovery.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, copyPath);
+  await dialog.getByRole('button', { name: 'Export selected copy', exact: true }).click();
+  await expect(dialog.getByRole('status')).toContainText('Saved unreadable-recovery.json');
+  expect(await readFile(copyPath, 'utf8')).toBe(fixture.damaged);
+  await dialog.getByRole('radio', { name: /Previous autosave/ }).check();
+  await dialog.getByRole('button', { name: 'Restore selected copy', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
+    'Native recovery',
+  );
+  await expect(page.getByRole('spinbutton', { name: 'H1 exact magnitude' })).toHaveValue('0.37');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
+    'Untitled session',
+  );
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
+    'Native recovery',
+  );
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing.master.bypassed,
+      ),
+    )
+    .toBe(true);
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
+    'Native recovery',
+  );
+  const canceled = await page.evaluate(() => localStorage.getItem('fourpataka.project.v1'));
+  await app.evaluate(({ dialog }) => {
+    dialog.showSaveDialog = async () => ({ canceled: true });
+  });
+  expect(
+    await page.evaluate(() => window.fourpatakaDesktop!.saveRecovery!('bad bytes', 'cancel')),
+  ).toEqual({ canceled: true });
+  expect(await page.evaluate(() => localStorage.getItem('fourpataka.project.v1'))).toBe(canceled);
+  await expect(
+    page.evaluate(() =>
+      window.fourpatakaDesktop!.saveRecovery!('x'.repeat(10_000_001), 'oversize'),
+    ),
+  ).rejects.toThrow('10 MB');
+});
+
 test('native harmonic sign and distinct Soft bass survive file save and reload', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
