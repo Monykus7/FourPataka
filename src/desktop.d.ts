@@ -5,6 +5,7 @@ declare global {
       platform: string;
       openProject?: () => Promise<{ canceled: boolean; text?: string; name?: string }>;
       saveProject?: (text: string, name: string) => Promise<{ canceled: boolean; name?: string }>;
+      saveRecovery?: (text: string, name: string) => Promise<{ canceled: boolean; name?: string }>;
       onMenuAction: (callback: (action: string) => void) => () => void;
     };
   }
