@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-03. Latest verified release: v0.16.0; v0.17.0 release candidate in verification. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-03. Latest release: v0.17.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -313,8 +313,9 @@ Validation for v0.16.0: all 138 unit checks pass. All 87 browser workflows have 
 5. Native recovery menu and bounded raw-file export with cancellation/size checks.
 6. Browser recovery, exact downloads, captured-copy stability, preferences, reload and focus proofs.
 7. v0.17.0 metadata, current roadmap gates, usage, decisions and regenerated knowledge map.
-8. Browser/native portable verification, final record, pushed checkpoint and launch.
+8. Storage-full fallback exposes unarchived latest damaged bytes without another write.
+9. Browser/native portable verification, final record, pushed checkpoint and launch.
 
 Recovery exposes the previous distinct autosave and unreadable-save copy with validation, name, UTF-8 size and score preview. Valid restoration stops audio and restores owned project state as one undo step; settings outside the project remain separate. Invalid copies cannot restore and can be exported with original contents. Capturing bytes on dialog opening prevents background autosave from changing an inspected/exported copy. Unchanged reloads preserve the previous checkpoint. Startup recovery still reads a valid backup when archiving fails; damage gets a persistent review notice. The native File menu/shortcut opens the panel, and a narrow origin-checked bridge exports raw text through the user's save dialog with a 10 MB bound. Current project JSON retains its 2 MB validation boundary.
 
-Verification in progress: all 144 unit checks and four recovery browser workflows pass. A development/native recovery workflow passes, including exact damaged UTF-8 export, restore/undo, reload, cancellation and oversized-input rejection. Production build and formatting pass. Full browser/native checks against the final portable package and visible release launch remain pending. The local-save recovery functional item closes; broader accessibility, demonstration and real-device gates remain open before WAV export. Thirty-two harmonics, instrument acoustics and chord-symbol macros remain later work.
+Validation for v0.17.0: all 145 unit checks pass. All 92 browser workflows have passing coverage: the full 91-workflow suite passed before the archival-failure refinement, then all six affected recovery/persistence workflows passed against the final behavior, including the additional full-storage export case. All eleven native workflows passed against the first packaged v0.17.0 bundle. The final rebuilt portable bundle additionally passes recovery/exact native export/undo/reload, local assets/renderer isolation/audio/menus and native project dialogs with cancellation/size checks. Browser proofs cover captured-copy stability, original Unicode bytes, independent sounds/processing, separate preferences, stopped playback on restoration, Escape/focus, unchanged reload checkpoint preservation and the 390 px dialog. Desktop 1440 px and narrow-screen layouts were visually reviewed. Production TypeScript/bundle, formatting, knowledge build/freshness and portable packaging pass. Semantic retrieval returns recovery/checkpoint/source authority within 1,023/1,024 tokens. Output: release/FourPataka-0.17.0-win-x64.exe. The portable app is visibly open; its extracted app.asar SHA-256 matches the final native-tested bundle. Nine focused checkpoints use Monykus7 and are pushed to origin/master. Only the local-save recovery functional item closes: broader keyboard/accessibility, end-to-end demonstration and physical device/browser/listening gates remain open before WAV export. Thirty-two harmonics, instrument acoustics and chord-symbol macros remain later work.
