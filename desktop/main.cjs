@@ -128,6 +128,25 @@ app.whenReady().then(() => {
     await fs.writeFile(result.filePath, text, 'utf8');
     return { canceled: false, name: path.basename(result.filePath) };
   });
+  ipcMain.handle('fourpataka:save-recovery', async (event, text, name) => {
+    assertStudio(event);
+    // A damaged save is intentionally not JSON-validated. This bridge only
+    // writes bounded text to a destination chosen through the native dialog.
+    if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > 10_000_000)
+      throw new Error('Recovery copy exceeds 10 MB or is not text.');
+    const basename =
+      (typeof name === 'string' ? name : 'FourPataka-recovery')
+        .slice(0, 100)
+        .replace(/[^a-z0-9_-]/gi, '-') || 'FourPataka-recovery';
+    const result = await dialog.showSaveDialog(window, {
+      title: 'Export recovery copy',
+      defaultPath: `${basename}.json`,
+      filters: [{ name: 'Recovery text', extensions: ['json'] }],
+    });
+    if (result.canceled || !result.filePath) return { canceled: true };
+    await fs.writeFile(result.filePath, text, 'utf8');
+    return { canceled: false, name: path.basename(result.filePath) };
+  });
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       {
@@ -135,6 +154,11 @@ app.whenReady().then(() => {
         submenu: [
           { label: 'Open project…', accelerator: 'CmdOrCtrl+O', click: () => action('open') },
           { label: 'Save project as…', accelerator: 'CmdOrCtrl+S', click: () => action('save') },
+          {
+            label: 'Local save recovery…',
+            accelerator: 'CmdOrCtrl+Shift+O',
+            click: () => action('recovery'),
+          },
           { type: 'separator' },
           { role: 'quit' },
         ],

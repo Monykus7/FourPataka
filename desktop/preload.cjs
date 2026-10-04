@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld('fourpatakaDesktop', {
   platform: process.platform,
   openProject: () => ipcRenderer.invoke('fourpataka:open-project'),
   saveProject: (text, name) => ipcRenderer.invoke('fourpataka:save-project', text, name),
+  saveRecovery: (text, name) => ipcRenderer.invoke('fourpataka:save-recovery', text, name),
   onMenuAction: (callback) => {
     const listener = (_event, action) => callback(action);
     ipcRenderer.on('fourpataka:menu', listener);
