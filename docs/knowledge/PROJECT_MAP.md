@@ -10,7 +10,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration.
+Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open.
 
 ### Sound and Fourier interaction
 
@@ -34,7 +34,7 @@ Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], atta
 - Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 - Instrument presets and source thumbnails / dependency group 3: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L112), [RangeControl](../../src/App.tsx#L147), [App](../../src/App.tsx#L197), [resetMacros](../../src/App.tsx#L301), [changeSound](../../src/App.tsx#L305).
+Key definitions: [ScoreEditor](../../src/App.tsx#L98), [View](../../src/App.tsx#L100), [readPreferences](../../src/App.tsx#L101), [MiniWave](../../src/App.tsx#L116), [RangeControl](../../src/App.tsx#L151), [App](../../src/App.tsx#L201), [resetMacros](../../src/App.tsx#L307), [changeSound](../../src/App.tsx#L311).
 
 #### Up to 32 harmonics (planned)
 
@@ -80,7 +80,7 @@ Line-oriented score text is authoritative. The enlarged score editor fills its p
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L112), [RangeControl](../../src/App.tsx#L147), [App](../../src/App.tsx#L197), [resetMacros](../../src/App.tsx#L301), [changeSound](../../src/App.tsx#L305).
+Key definitions: [ScoreEditor](../../src/App.tsx#L98), [View](../../src/App.tsx#L100), [readPreferences](../../src/App.tsx#L101), [MiniWave](../../src/App.tsx#L116), [RangeControl](../../src/App.tsx#L151), [App](../../src/App.tsx#L201), [resetMacros](../../src/App.tsx#L307), [changeSound](../../src/App.tsx#L311).
 
 #### Score parsing and editor
 
@@ -128,14 +128,28 @@ Versioned local project data, musical undo and sandboxed desktop workflows suppo
 
 #### Independent copies, persistence and undo
 
-Project schema v1 retains source text and deep-copied applied sounds/chains. Library edits never overwrite track instances. Validation preserves the current project on failed import. Grouped edits retain one undo entry per waveform stroke or rotary gesture. Only exactly unchanged factory Soft bass v1 library templates upgrade to v2; custom templates, existing applied track sounds and A/B snapshots remain unchanged.
+Project schema v1 retains source text and deep-copied applied sounds/chains. Library edits never overwrite track instances. Validation preserves the current project on failed import. Grouped edits retain one undo entry per waveform stroke or rotary gesture. Only exactly unchanged factory Soft bass v1 library templates upgrade to v2; custom templates, existing applied track sounds and A/B snapshots remain unchanged. Debounced and pagehide saves retain the previous distinct checkpoint; semantically unchanged canonicalized reloads preserve it. Local recovery copies are captured by value for inspection/export and validated for stopped, undoable restoration.
 
 - Independent copies, persistence and undo / dependency group 1: [src/core/history.ts](../../src/core/history.ts), [tests/unit/history.test.ts](../../tests/unit/history.test.ts)
-- Independent copies, persistence and undo / dependency group 2: [src/core/project.ts](../../src/core/project.ts), [tests/unit/project.test.ts](../../tests/unit/project.test.ts)
+- Independent copies, persistence and undo / dependency group 2: [src/core/localSave.ts](../../src/core/localSave.ts), [src/core/project.ts](../../src/core/project.ts), [tests/unit/localSave.test.ts](../../tests/unit/localSave.test.ts), [tests/unit/project.test.ts](../../tests/unit/project.test.ts)
 - Independent copies, persistence and undo / dependency group 3: [tests/browser/persistence.spec.ts](../../tests/browser/persistence.spec.ts)
 - Independent copies, persistence and undo / dependency group 4: [tests/browser/studio.spec.ts](../../tests/browser/studio.spec.ts)
 
-Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [InstrumentPreset](../../src/core/project.ts#L15), [TrackInstance](../../src/core/project.ts#L22), [Project](../../src/core/project.ts#L29), [STORAGE_KEY](../../src/core/project.ts#L42).
+Key definitions: [History](../../src/core/history.ts#L1), [commit](../../src/core/history.ts#L6), [undo](../../src/core/history.ts#L14), [redo](../../src/core/history.ts#L22), [LocalStore](../../src/core/localSave.ts#L10), [RecoveryCopy](../../src/core/localSave.ts#L15), [readRecoveryCopies](../../src/core/localSave.ts#L24), [loadProject](../../src/core/localSave.ts#L59).
+
+#### Local save recovery inspection and restoration
+
+A header Recovery dialog inspects one previous distinct autosave and one unreadable-save slot with project name, UTF-8 bytes, validation and score preview. Captured original bytes remain stable across autosaves and export unchanged. Valid restoration stops playback, replaces project state as one undo step and preserves independent track/A/B/pedal state and separate preferences. Invalid copies cannot restore but remain exportable. Escape/cancel/export leave history unchanged. Startup damage uses a valid backup even if archiving fails, or opens a fresh example when both fail. Persistent review notice, keyboard focus and narrow-screen layout support recovery. Native File menu opens the panel; trusted raw export is capped at 10 MB and uses a user-chosen path.
+
+- Local save recovery inspection and restoration / dependency group 1: [desktop/main.cjs](../../desktop/main.cjs)
+- Local save recovery inspection and restoration / dependency group 2: [desktop/preload.cjs](../../desktop/preload.cjs)
+- Local save recovery inspection and restoration / dependency group 3: [src/App.tsx](../../src/App.tsx), [src/core/localSave.ts](../../src/core/localSave.ts), [src/components/RecoveryDialog.tsx](../../src/components/RecoveryDialog.tsx), [tests/unit/localSave.test.ts](../../tests/unit/localSave.test.ts)
+- Local save recovery inspection and restoration / dependency group 4: [src/desktop.d.ts](../../src/desktop.d.ts)
+- Local save recovery inspection and restoration / dependency group 5: [tests/browser/persistence.spec.ts](../../tests/browser/persistence.spec.ts)
+- Local save recovery inspection and restoration / dependency group 6: [tests/browser/recovery.spec.ts](../../tests/browser/recovery.spec.ts)
+- Local save recovery inspection and restoration / dependency group 7: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L16), [developmentUrl](../../desktop/main.cjs#L17), [trustedUrl](../../desktop/main.cjs#L21), [assertStudio](../../desktop/main.cjs#L30), [action](../../desktop/main.cjs#L39), [createWindow](../../desktop/main.cjs#L43).
 
 #### Themes and responsive layout
 
@@ -149,7 +163,7 @@ Key definitions: [Theme](../../src/core/themes.ts#L1), [THEMES](../../src/core/t
 
 #### Electron application and native files
 
-Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests.
+Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON.
 
 - Electron application and native files / dependency group 1: [desktop/main.cjs](../../desktop/main.cjs)
 - Electron application and native files / dependency group 2: [desktop/preload.cjs](../../desktop/preload.cjs)

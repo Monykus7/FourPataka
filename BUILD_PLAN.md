@@ -1,6 +1,6 @@
 # FourPataka — Fourier Music Studio build plan
 
-Updated: 2026-10-02
+Updated: 2026-10-03
 Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
@@ -112,6 +112,8 @@ Implemented in v0.14.0: stable pedal keys, track `through`, one global `master t
 
 Introduce autosave with the first usable project model. Use a small versioned local store and debounce frequent slider/editor changes. Musical edits and text edits must survive refresh.
 
+Implemented in v0.17.0: a Recovery panel inspects one previous distinct autosave and one unreadable-save slot, retaining original contents. Unchanged/canonicalized reloads do not rotate the previous checkpoint. Valid copies restore as one stopped, undoable project replacement with independent sound/pedal state; preferences stay separate. Invalid copies remain exportable as raw text and cannot be restored. Native raw export uses an origin-checked file-dialog bridge with a 10 MB UTF-8 limit. Recovery captures bytes on opening; Escape/cancel/export do not create musical history. Startup archival failure does not prevent reading a valid backup; persistent notices direct the user to review available copies. This closes the local-save recovery functional item, while broader stage 5 accessibility/device and end-to-end demonstration gates remain.
+
 JSON export includes score text, referenced presets, independent track/master settings, bypass states, and A/B snapshots. Score text by itself is a notation excerpt; JSON is the portable editable project.
 
 Validate imported schema versions, identifiers, array lengths, finite numeric values, parameter ranges, and references before replacing the current project. A failed import leaves the current project intact. Unknown future schema versions receive a clear error; migrations for older supported versions are explicit.
@@ -147,7 +149,7 @@ These are finite approximations. Avoid promising that sixteen terms reproduce an
 
 ### Planned expansion — up to 32 harmonics
 
-Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.16.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.17.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
 
 Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
 
@@ -571,6 +573,8 @@ The complete contextual command-reference catalog and source insertion are imple
 ### Stage 5 — initial-release polish
 
 Finish keyboard operation, layouts, gain meters, local save recovery, import validation, example presets/projects, and browser/device verification.
+
+Local-save recovery inspection, export and undoable restoration are implemented in v0.17.0. Verification is recorded in IMPLEMENTATION_STATUS.md; this does not close the complete stage 5 release gate.
 
 Gate: the main demonstration works end to end; no required control depends on hover or dragging; text contrast passes; stop/replay and save/reload restore independent settings and bypass states correctly.
 
