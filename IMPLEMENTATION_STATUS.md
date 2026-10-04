@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-02. Latest release: v0.16.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-03. Latest verified release: v0.16.0; v0.17.0 release candidate in verification. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -81,7 +81,7 @@ Compose layout follow-up is implemented and verified in v0.14.1: command referen
 
 The physical pedalboard implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Delay is implemented in the v0.13.0 work below; the surrounding frontend overhaul remains separate work.
 
-Stage 2's phrase comparison and linked source microscope behavior pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 now has compressor/overdrive/EQ/delay, independent track/master routing, pedal-aware A/B snapshots and chain-aware score directives in v0.14.0. Automated routing/copy/tail behavior is covered. The complete contextual command-reference item is implemented in the v0.15.0 work below. Next, close the remaining stage 4/5 keyboard/accessibility, recovery and end-to-end demonstration gates before WAV export. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Chord-symbol macros and the wider frontend overhaul remain later work.
+Stage 2's phrase comparison and linked source microscope behavior pass the automated functional gate. Physical listening for clicks and real-device checks remain pending. Stage 3 now has compressor/overdrive/EQ/delay, independent track/master routing, pedal-aware A/B snapshots and chain-aware score directives in v0.14.0. Automated routing/copy/tail behavior is covered. The complete contextual command-reference item is implemented in the v0.15.0 work below. The local-save recovery functional item is implemented in v0.17.0. Next, close the remaining stage 4/5 keyboard/accessibility and end-to-end demonstration gates before WAV export. Preserve compressor alignment, delay bypass/tail policy, topology revision policy, and hard Stop cleanup. Chord-symbol macros and the wider frontend overhaul remain later work.
 
 Chord-symbol macros such as `chord:Cmaj13#11`, with hover/focus expanded-note previews, are in the later music IDE backlog. Main comparison and pedal features have priority.
 
@@ -89,7 +89,7 @@ Instrument-builder acoustics is now planned, not implemented: an optional algori
 
 Up to 32 signed harmonics is also planned, not implemented. The current application still has a 16-harmonic bank and a separate 32-voice polyphony limit. The later Instrument update will expose H17–H32 in a second bank, preserve existing coefficients by zero-padding legacy sounds, and update waveform projection, presets/macros, synthesis, inspection and storage together. Nyquist filtering still limits playable upper harmonics by pitch/sample rate. Piano/brass-inspired sounds motivate the expansion, while per-partial envelopes, dynamic brightness, inharmonicity and chamber acoustics remain separate realism work. Section 5 defines future compatibility, continuity, copy, projection and performance gates; current main-feature/WAV priorities are unchanged.
 
-Stage 4/5 completion still needs deeper accessibility work, save recovery UX, and end-to-end browser/device verification. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
+Stage 4/5 completion still needs deeper accessibility work and end-to-end browser/device verification; the recovery inspection/export/restore workflow is implemented in v0.17.0. WAV/offline export follows stage 6. The current source descriptors/experiments are an early subset of stage 7, not its complete output measurement panel.
 
 ### Contextual command reference (v0.15.0)
 
@@ -303,3 +303,18 @@ The former inspector polarity field was read-only. Sign can now be changed direc
 Soft bass now uses positive H1–H6 magnitudes [1, 0.22, 0.1, 0.045, 0.02, 0.009], with higher partials zero, attack 30 ms, release 350 ms and trim −12 dB. Triangle keeps its alternating-sign odd-harmonic 1/h² approximation. Exactly unchanged factory v1 Soft bass library templates upgrade to v2 on loading/import. Customized templates, existing applied tracks and A/B copies retain their sounds. Load Soft bass from the library and Apply explicitly when updating a track. Sixteen harmonics remain implemented; 32 harmonics and instrument acoustics remain planned.
 
 Validation for v0.16.0: all 138 unit checks pass. All 87 browser workflows have passing coverage: 83 passed in the full run, and all four remaining workflows passed in a focused rerun. Recovery/import assertions now target the toast because the signed-coefficient output also has an accessible status role; delay persistence polling waits for the first debounced write instead of throwing on absent storage. Meter completion passed unchanged on rerun after its initial click did not insert. All ten native workflows pass in the full run against the final packaged executable, including harmonic keyboard/sign/undo, independent preset state, Soft bass and native JSON save/reload. Production TypeScript/bundle, formatting, Windows portable packaging and knowledge build/freshness pass. The 1440 px and 390 px sign layouts were visually reviewed; narrow-screen page width remains 390 px. Semantic retrieval returns the new preset/sign/migration behavior within 1,006/1,024 tokens. Output: release/FourPataka-0.16.0-win-x64.exe. The portable application is visibly open and its extracted app.asar SHA-256 matches the bundle verified by native tests. Eight focused checkpoints use Monykus7 and are pushed to origin/master. Physical listening and broader real-device/accessibility gates remain pending. Stage 4/5 gates, WAV export, 32 harmonics and instrument acoustics retain their planned status.
+
+### Local save recovery (v0.17.0)
+
+1. Previous distinct checkpoint preservation across autosave and canonicalized reloads.
+2. Independently validated immutable recovery snapshots and robust startup fallback.
+3. Keyboard-accessible recovery inspection dialog and responsive preview.
+4. Header/notice integration, captured-byte export and one-step stopped restore/undo.
+5. Native recovery menu and bounded raw-file export with cancellation/size checks.
+6. Browser recovery, exact downloads, captured-copy stability, preferences, reload and focus proofs.
+7. v0.17.0 metadata, current roadmap gates, usage, decisions and regenerated knowledge map.
+8. Browser/native portable verification, final record, pushed checkpoint and launch.
+
+Recovery exposes the previous distinct autosave and unreadable-save copy with validation, name, UTF-8 size and score preview. Valid restoration stops audio and restores owned project state as one undo step; settings outside the project remain separate. Invalid copies cannot restore and can be exported with original contents. Capturing bytes on dialog opening prevents background autosave from changing an inspected/exported copy. Unchanged reloads preserve the previous checkpoint. Startup recovery still reads a valid backup when archiving fails; damage gets a persistent review notice. The native File menu/shortcut opens the panel, and a narrow origin-checked bridge exports raw text through the user's save dialog with a 10 MB bound. Current project JSON retains its 2 MB validation boundary.
+
+Verification in progress: all 144 unit checks and four recovery browser workflows pass. A development/native recovery workflow passes, including exact damaged UTF-8 export, restore/undo, reload, cancellation and oversized-input rejection. Production build and formatting pass. Full browser/native checks against the final portable package and visible release launch remain pending. The local-save recovery functional item closes; broader accessibility, demonstration and real-device gates remain open before WAV export. Thirty-two harmonics, instrument acoustics and chord-symbol macros remain later work.

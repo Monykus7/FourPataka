@@ -27,7 +27,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.16.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.17.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -53,6 +53,14 @@ The enlarged score editor and command reference sit side by side. The editor fil
 **Command reference** shows eleven cards with their insertion destination and exact example. Select an instrument for `using` or a new track, and a pedal chain for `through` or `master`; examples follow these choices. Filter by category or search command names, syntax, rules and selected keys. Expand each card's **syntax and rules** by mouse or keyboard. `using` changes only the selected track's instrument assignment; `through` updates its header, while `master` updates the full mix. Empty scores allow globals and the first track; unavailable actions explain their requirements. Documentation remains readable during playback or diagnostics. Instrument completion after `using` and pedal completion after `through` offer the appropriate saved keys and respect the autocomplete switch. The native command-reference menu focuses search. Playback/preset/bypass controls are listed separately from score notation.
 
 Instrument, Pedalboard, and Compose are the three primary views. Learn is a smaller secondary link. The interface keeps flat panels, concise headings, and a faint material texture inside panels, with five selectable themes.
+
+## Local save recovery
+
+Use **Recovery** in the header to inspect the previous autosave and any unreadable save. The panel shows each copy's name, UTF-8 byte count, validation result and score preview. Choose a valid copy and **Restore selected copy**; playback stops, independent instrument/A/B/pedal settings return together, and Undo restores the session you had open. Preferences and monitor volume stay separate. Escape or Close leaves the session unchanged and returns focus.
+
+**Export selected copy** keeps the original contents, including a damaged save that cannot be restored. Browser export downloads JSON text; desktop export uses the native file dialog and supports raw copies up to 10 MB. File → Local save recovery (Ctrl+Shift+O) opens the same panel in the app. Canceling export changes no project data.
+
+There is one previous distinct autosave and one unreadable-save slot. Reopening an unchanged project preserves the previous copy. The panel captures its copies when opened, so later autosaves do not change the item being inspected/exported. A damaged startup save loads a valid backup when available and shows a persistent review notice; otherwise a fresh example opens while damaged copies remain accessible. Clearing browser/app storage removes these copies, so JSON files remain the portable backup.
 
 ## Compare sounds
 
