@@ -1,5 +1,10 @@
 import { expect, it } from 'vitest';
-import { saveLocalProject, type LocalStore } from '../../src/core/localSave';
+import {
+  loadProject,
+  readRecoveryCopies,
+  saveLocalProject,
+  type LocalStore,
+} from '../../src/core/localSave';
 import { createProject, RECOVERY_KEY, STORAGE_KEY, UNREADABLE_KEY } from '../../src/core/project';
 
 function memoryStore(): LocalStore & { values: Map<string, string> } {
@@ -55,4 +60,56 @@ it('leaves the current save intact when a recovery write fails', () => {
   };
   expect(() => saveLocalProject(next, blocked)).toThrow('Quota exceeded');
   expect(storage.getItem(STORAGE_KEY)).toBe(bytes);
+});
+
+it('loads a valid backup despite archival failure and does not hide corrupt backups as storage errors', () => {
+  const storage = memoryStore();
+  const prior = { ...createProject(), name: 'Saved work' };
+  storage.setItem(STORAGE_KEY, '');
+  storage.setItem(RECOVERY_KEY, JSON.stringify(prior));
+  const blocked: LocalStore = {
+    ...storage,
+    setItem: () => {
+      throw new Error('Quota exceeded');
+    },
+  };
+  const result = loadProject(blocked);
+  expect(result.project.name).toBe('Saved work');
+  expect(result.warning).toContain('could not be archived');
+  expect(result.recoveryIssue).toBe(true);
+  storage.setItem(RECOVERY_KEY, '{bad backup');
+  const fresh = loadProject(storage);
+  expect(fresh.warning).toContain('fresh example');
+  expect(fresh.warning).not.toContain('storage is unavailable');
+  expect(storage.getItem(RECOVERY_KEY)).toBe('{bad backup');
+  expect(storage.getItem(UNREADABLE_KEY)).toBe('');
+});
+
+it('captures exact raw snapshots, validation errors and UTF-8 bytes without mutating storage', () => {
+  const storage = memoryStore();
+  const prior = { ...createProject(), name: 'Recovered Ω' };
+  const raw = JSON.stringify(prior, null, 2);
+  storage.setItem(RECOVERY_KEY, raw);
+  storage.setItem(UNREADABLE_KEY, '{Ω\n');
+  const { copies, error } = readRecoveryCopies(storage);
+  expect(error).toBeNull();
+  expect(copies[0]).toMatchObject({ text: raw, project: { name: 'Recovered Ω' }, error: null });
+  expect(copies[1]).toMatchObject({ text: '{Ω\n', bytes: 4, project: null });
+  expect(copies[1].error).toBeTruthy();
+  storage.setItem(RECOVERY_KEY, JSON.stringify(createProject()));
+  expect(copies[0].text).toBe(raw);
+  copies[0].project!.comparison.B.harmonics[0] = 0.2;
+  expect(prior.comparison.B.harmonics[0]).toBe(1);
+});
+
+it('reports unavailable storage and absent copies without changing current work', () => {
+  expect(readRecoveryCopies(memoryStore())).toEqual({ copies: [], error: null });
+  const blocked: LocalStore = {
+    getItem: () => {
+      throw new Error('Access denied');
+    },
+    setItem: () => {},
+  };
+  expect(readRecoveryCopies(blocked).error).toContain('unavailable');
+  expect(loadProject(blocked).warning).toContain('unavailable');
 });
