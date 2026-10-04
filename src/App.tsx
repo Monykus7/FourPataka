@@ -63,13 +63,16 @@ import {
   createProject,
   importProject,
   PREFERENCES_KEY,
-  RECOVERY_KEY,
   reconcileTracks,
   updateProcessingAssignments,
-  STORAGE_KEY,
   type Project,
 } from './core/project';
-import { loadProject } from './core/localSave';
+import {
+  loadProject,
+  readRecoveryCopies,
+  saveLocalProject,
+  type RecoveryCopy,
+} from './core/localSave';
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
 import FourierWorkspace from './components/FourierWorkspace';
@@ -80,6 +83,7 @@ import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
 import CommandReference from './components/CommandReference';
 import HarmonicPolarity from './components/HarmonicPolarity';
+import RecoveryDialog from './components/RecoveryDialog';
 import {
   appendTrack,
   insertCommand,
@@ -207,6 +211,8 @@ export default function App() {
   const [view, setView] = useState<View>('instrument');
   const [preferences, setPreferences] = useState(readPreferences);
   const [toast, setToast] = useState<string | null>(initial.warning);
+  const [recoveryNotice, setRecoveryNotice] = useState(initial.recoveryIssue);
+  const [recovery, setRecovery] = useState<ReturnType<typeof readRecoveryCopies> | null>(null);
   const [saveStatus, setSaveStatus] = useState('Saved locally');
   const [selectedPartial, setSelectedPartial] = useState('H1');
   const [solo, setSolo] = useState(false);
@@ -328,16 +334,7 @@ export default function App() {
     setSaveStatus('Saving…');
     const timer = setTimeout(() => {
       try {
-        const previous = localStorage.getItem(STORAGE_KEY);
-        if (previous) {
-          try {
-            importProject(previous);
-            localStorage.setItem(RECOVERY_KEY, previous);
-          } catch {
-            /* keep recoverable copy */
-          }
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(project));
+        saveLocalProject(project);
         setSaveStatus('Saved locally');
       } catch {
         setSaveStatus('Save unavailable');
@@ -346,7 +343,7 @@ export default function App() {
     }, 400);
     const flush = () => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(projectRef.current));
+        saveLocalProject(projectRef.current);
       } catch {
         /* status already surfaced by autosave */
       }
@@ -530,6 +527,15 @@ export default function App() {
     if (to === active) resetMacros(project.comparison[from]);
     setToast(`Copied ${from} to ${to}.`);
   };
+  const downloadJson = (text: string, filename: string) => {
+    const blob = new Blob([text], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
   const exportJson = async () => {
     if (window.fourpatakaDesktop?.saveProject) {
       try {
@@ -543,23 +549,37 @@ export default function App() {
       }
       return;
     }
-    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `${project.name.replace(/[^a-z0-9_-]/gi, '-') || 'FourPataka'}.fourpataka.json`;
-    anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadJson(
+      JSON.stringify(project, null, 2),
+      `${project.name.replace(/[^a-z0-9_-]/gi, '-') || 'FourPataka'}.fourpataka.json`,
+    );
     setToast('Project exported, including presets, track copies, and A/B sounds.');
   };
-  const acceptProject = (text: string) => {
+  const acceptProject = (
+    text: string,
+    message = 'Project imported. Undo restores your previous session.',
+  ) => {
     const imported = importProject(text);
     stop();
     resetMacros(imported.comparison[imported.comparison.active]);
     change(() => imported);
     setSelectedTrack(imported.tracks[0]?.key ?? '');
     setSelectedEvent(null);
-    setToast('Project imported. Undo restores your previous session.');
+    setToast(message);
+  };
+  const openRecovery = () => {
+    // Capture slot bytes once. Ongoing autosaves must not silently change the
+    // selection the user is inspecting or exporting.
+    setRecovery(readRecoveryCopies());
+  };
+  const exportRecovery = async (copy: RecoveryCopy): Promise<string | null> => {
+    const name = `FourPataka-${copy.key}-recovery`;
+    if (window.fourpatakaDesktop?.saveRecovery) {
+      const result = await window.fourpatakaDesktop.saveRecovery(copy.text, name);
+      return result.canceled ? null : `Saved ${result.name}.`;
+    }
+    downloadJson(copy.text, `${name}.json`);
+    return 'Recovery copy exported with its original contents.';
   };
   const openNativeProject = async () => {
     try {
@@ -647,6 +667,7 @@ export default function App() {
   menuActions.current = (action) => {
     if (action === 'open') void openNativeProject();
     else if (action === 'save') void exportJson();
+    else if (action === 'recovery') openRecovery();
     else if (action === 'undo' || action === 'redo') travel(action);
     else if (
       action === 'instrument' ||
@@ -748,6 +769,14 @@ export default function App() {
             <ArrowDownToLine size={15} />
             <span>{window.fourpatakaDesktop ? 'Save project' : 'Export JSON'}</span>
           </button>
+          <button
+            className="subtle-button"
+            onClick={openRecovery}
+            aria-label="Open local save recovery"
+          >
+            <RotateCcw size={15} />
+            <span>Recovery</span>
+          </button>
           <input
             type="file"
             ref={fileInput}
@@ -757,6 +786,22 @@ export default function App() {
           />
         </div>
       </header>
+
+      {recoveryNotice && (
+        <aside className="recovery-notice" aria-label="Local save recovery notice">
+          <span>{initial.warning}</span>
+          <button className="text-button" onClick={openRecovery}>
+            Review recovery copies
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Dismiss recovery notice"
+            onClick={() => setRecoveryNotice(false)}
+          >
+            <X size={14} />
+          </button>
+        </aside>
+      )}
 
       <div className="workspace">
         <aside className="sidebar">
@@ -2135,6 +2180,23 @@ export default function App() {
             <X size={15} />
           </button>
         </div>
+      )}
+      {recovery && (
+        <RecoveryDialog
+          copies={recovery.copies}
+          storageError={recovery.error}
+          onClose={() => setRecovery(null)}
+          onExport={exportRecovery}
+          onRestore={(copy) => {
+            // Revalidate captured bytes and reuse the import's stopped, one-step
+            // history transition. Preferences and monitor settings stay separate.
+            acceptProject(
+              copy.text,
+              `Restored ${copy.label.toLowerCase()}. Undo restores your previous session.`,
+            );
+            setRecoveryNotice(false);
+          }}
+        />
       )}
       <dialog
         ref={dialog}
