@@ -113,3 +113,26 @@ it('reports unavailable storage and absent copies without changing current work'
   expect(readRecoveryCopies(blocked).error).toContain('unavailable');
   expect(loadProject(blocked).warning).toContain('unavailable');
 });
+
+it('exposes the latest damaged bytes directly when archival cannot write, ahead of an older archive', () => {
+  const storage = memoryStore();
+  storage.setItem(STORAGE_KEY, '{latest damaged Ω');
+  storage.setItem(RECOVERY_KEY, JSON.stringify(createProject()));
+  storage.setItem(UNREADABLE_KEY, '{older damage');
+  const full: LocalStore = {
+    ...storage,
+    setItem: () => {
+      throw new Error('Quota exceeded');
+    },
+  };
+  expect(loadProject(full).warning).toContain('could not be archived');
+  const snapshot = readRecoveryCopies(full);
+  expect(snapshot.copies).toHaveLength(2);
+  expect(snapshot.copies[1]).toMatchObject({
+    key: 'unreadable',
+    label: 'Unreadable save (latest)',
+    text: '{latest damaged Ω',
+    project: null,
+  });
+  expect(storage.getItem(UNREADABLE_KEY)).toBe('{older damage');
+});

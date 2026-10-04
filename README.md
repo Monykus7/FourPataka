@@ -60,7 +60,7 @@ Use **Recovery** in the header to inspect the previous autosave and any unreadab
 
 **Export selected copy** keeps the original contents, including a damaged save that cannot be restored. Browser export downloads JSON text; desktop export uses the native file dialog and supports raw copies up to 10 MB. File → Local save recovery (Ctrl+Shift+O) opens the same panel in the app. Canceling export changes no project data.
 
-There is one previous distinct autosave and one unreadable-save slot. Reopening an unchanged project preserves the previous copy. The panel captures its copies when opened, so later autosaves do not change the item being inspected/exported. A damaged startup save loads a valid backup when available and shows a persistent review notice; otherwise a fresh example opens while damaged copies remain accessible. Clearing browser/app storage removes these copies, so JSON files remain the portable backup.
+There is one previous distinct autosave and one unreadable-save slot. Reopening an unchanged project preserves the previous copy. The panel captures its copies when opened, so later autosaves do not change the item being inspected/exported. A damaged startup save loads a valid backup when available and shows a persistent review notice; otherwise a fresh example opens while damaged copies remain accessible. If archiving fails because storage is full, the still-stored damaged latest save remains directly inspectable/exportable without another write. Clearing browser/app storage removes these copies, so JSON files remain the portable backup.
 
 ## Compare sounds
 
