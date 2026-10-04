@@ -62,7 +62,6 @@ import {
   applyPreset,
   createProject,
   importProject,
-  loadProject,
   PREFERENCES_KEY,
   RECOVERY_KEY,
   reconcileTracks,
@@ -70,6 +69,7 @@ import {
   STORAGE_KEY,
   type Project,
 } from './core/project';
+import { loadProject } from './core/localSave';
 import { commit, redo, undo, type History } from './core/history';
 import SourceGraphs from './components/SourceGraphs';
 import FourierWorkspace from './components/FourierWorkspace';

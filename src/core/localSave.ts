@@ -1,8 +1,116 @@
-import { importProject, RECOVERY_KEY, STORAGE_KEY, UNREADABLE_KEY, type Project } from './project';
+import {
+  createProject,
+  importProject,
+  RECOVERY_KEY,
+  STORAGE_KEY,
+  UNREADABLE_KEY,
+  type Project,
+} from './project';
 
 export interface LocalStore {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
+}
+
+export interface RecoveryCopy {
+  key: 'previous' | 'unreadable';
+  label: string;
+  text: string;
+  bytes: number;
+  project: Project | null;
+  error: string | null;
+}
+
+export function readRecoveryCopies(storage?: LocalStore): {
+  copies: RecoveryCopy[];
+  error: string | null;
+} {
+  const copies: RecoveryCopy[] = [];
+  let error: string | null = null;
+  for (const [key, label, storageKey] of [
+    ['previous', 'Previous autosave', RECOVERY_KEY],
+    ['unreadable', 'Unreadable save', UNREADABLE_KEY],
+  ] as const) {
+    try {
+      const text = (storage ?? localStorage).getItem(storageKey);
+      if (text === null) continue;
+      let project: Project | null = null;
+      let validation: string | null = null;
+      try {
+        project = importProject(text);
+      } catch (e) {
+        validation = (e as Error).message;
+      }
+      copies.push({
+        key,
+        label,
+        text,
+        bytes: new TextEncoder().encode(text).length,
+        project,
+        error: validation,
+      });
+    } catch {
+      error = 'Local storage is unavailable. Your current session is unchanged.';
+    }
+  }
+  return { copies, error };
+}
+
+export function loadProject(storage?: LocalStore): {
+  project: Project;
+  warning: string | null;
+  recoveryIssue: boolean;
+} {
+  try {
+    const store = storage ?? localStorage;
+    const stored = store.getItem(STORAGE_KEY);
+    if (stored === null) return { project: createProject(), warning: null, recoveryIssue: false };
+    try {
+      const project = importProject(stored);
+      const before = JSON.parse(stored).instruments.find(
+        (preset: { id: string }) => preset.id === 'soft-bass',
+      );
+      const after = project.instruments.find((preset) => preset.id === 'soft-bass');
+      return {
+        project,
+        recoveryIssue: false,
+        warning:
+          before?.version === 1 && after?.version === 2
+            ? 'Soft bass library preset updated. Existing tracks and A/B sounds are kept. Load Soft bass from the library to use the new shape.'
+            : null,
+      };
+    } catch {
+      // Archiving failure must not prevent reading an available valid backup.
+      let archived = true;
+      try {
+        store.setItem(UNREADABLE_KEY, stored);
+      } catch {
+        archived = false;
+      }
+      try {
+        const backup = store.getItem(RECOVERY_KEY);
+        if (backup !== null)
+          return {
+            project: importProject(backup),
+            recoveryIssue: true,
+            warning: `Recovered the previous local save. The latest save could not be read.${archived ? '' : ' Its damaged bytes could not be archived.'}`,
+          };
+      } catch {
+        /* Both invalid copies stay available for raw export. */
+      }
+      return {
+        project: createProject(),
+        recoveryIssue: true,
+        warning: `The local save could not be read. A fresh example is open; ${archived ? 'the unreadable save was kept in storage' : 'the damaged save could not be archived'}.`,
+      };
+    }
+  } catch {
+    return {
+      project: createProject(),
+      recoveryIssue: true,
+      warning: 'Local storage is unavailable. Export JSON to keep your work.',
+    };
+  }
 }
 
 export function saveLocalProject(project: Project, storage: LocalStore = localStorage): void {
