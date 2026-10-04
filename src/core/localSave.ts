@@ -53,6 +53,32 @@ export function readRecoveryCopies(storage?: LocalStore): {
       error = 'Local storage is unavailable. Your current session is unchanged.';
     }
   }
+  try {
+    const latest = (storage ?? localStorage).getItem(STORAGE_KEY);
+    if (latest !== null) {
+      try {
+        importProject(latest);
+      } catch (e) {
+        // A full store may reject archival. Expose the damaged current bytes
+        // directly without another write, preferring them over an older archive.
+        const index = copies.findIndex((copy) => copy.key === 'unreadable');
+        if (index < 0 || copies[index].text !== latest) {
+          const copy: RecoveryCopy = {
+            key: 'unreadable',
+            label: 'Unreadable save (latest)',
+            text: latest,
+            bytes: new TextEncoder().encode(latest).length,
+            project: null,
+            error: (e as Error).message,
+          };
+          if (index < 0) copies.push(copy);
+          else copies[index] = copy;
+        }
+      }
+    }
+  } catch {
+    error = 'Local storage is unavailable. Your current session is unchanged.';
+  }
   return { copies, error };
 }
 

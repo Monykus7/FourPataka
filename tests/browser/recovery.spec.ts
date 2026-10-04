@@ -181,3 +181,41 @@ test('empty recovery and malformed backup remain keyboard usable at 390 pixels',
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
   await page.screenshot({ path: '.test-results/recovery-mobile.png', fullPage: true });
 });
+
+test('full storage leaves the damaged latest save exportable without an archival write', async ({
+  page,
+}) => {
+  const backup = { ...createProject(), name: 'Quota recovery' };
+  const damaged = '{unarchived Ω damage';
+  await page.addInitScript(
+    ({ backup, damaged }) => {
+      localStorage.setItem('fourpataka.project.v1', damaged);
+      localStorage.setItem('fourpataka.project.recovery.v1', JSON.stringify(backup));
+      localStorage.setItem('fourpataka.project.unreadable.v1', '{older damage');
+      const original = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (key, value) {
+        if (key.startsWith('fourpataka.project.'))
+          throw new DOMException('Quota exceeded', 'QuotaExceededError');
+        return original.call(this, key, value);
+      };
+    },
+    { backup, damaged },
+  );
+  await page.goto('/');
+  await expect(page.getByRole('textbox', { name: 'Project name', exact: true })).toHaveValue(
+    'Quota recovery',
+  );
+  await expect(page.getByText('Save unavailable', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Open local save recovery' }).click();
+  await dialog(page)
+    .getByRole('radio', { name: /Unreadable save \(latest\)/ })
+    .check();
+  await expect(dialog(page).getByRole('button', { name: 'Restore selected copy' })).toBeDisabled();
+  const download = page.waitForEvent('download');
+  await dialog(page).getByRole('button', { name: 'Export selected copy' }).click();
+  expect(await readFile((await (await download).path())!, 'utf8')).toBe(damaged);
+  expect(await page.evaluate((key) => localStorage.getItem(key), STORAGE_KEY)).toBe(damaged);
+  expect(await page.evaluate((key) => localStorage.getItem(key), UNREADABLE_KEY)).toBe(
+    '{older damage',
+  );
+});
