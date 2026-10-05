@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import packageInfo from '../../package.json' with { type: 'json' };
 import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
 import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
+import { chordShellWorkflow } from '../helpers/autocomplete';
 
 let app: ElectronApplication;
 test.beforeEach(async () => {
@@ -20,6 +21,12 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged autocomplete inserts an empty chord shell with keyboard fields and playable user notes', async () => {
+  const page = await app.firstWindow();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await chordShellWorkflow(page, 'chord:');
 });
 
 test('native WAV menu renders, validates binary data, cancels safely and saves PCM', async () => {
