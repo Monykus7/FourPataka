@@ -161,3 +161,13 @@ Timeline inspection is UI state, not source text, transport seeking or musical h
 The shared browser/portable demonstration walks actual Tab order instead of programmatically focusing/clicking its targets. It covers waveform edits, independent A/B copying/comparison, saved instrument and track creation, EQ placement/patching/exact values, source-authoritative chain application, play/replay/Stop, editable JSON and reload. This closes an automated main-workflow demonstration, not a comprehensive assistive-technology or physical-device/listening audit; those release gates remain explicit before stage 5 is declared complete.
 
 Evidence: `src/core/waveform.ts`, `src/components/FourierWorkspace.tsx`, `src/components/PedalBoardSurface.tsx`, `src/components/TrackMaker.tsx`, `src/components/Timeline.tsx`, `src/App.tsx`, `tests/unit/waveform.test.ts`, `tests/helpers/keyboardWorkflow.ts`, `tests/browser/keyboard.spec.ts`, `tests/browser/board.spec.ts`, `tests/browser/fourier.spec.ts`, `tests/browser/timeline.spec.ts`, `tests/desktop/app.spec.ts`.
+
+## Visible waveform help and compact command reference (v0.18.1)
+
+<!-- features: waveform, command-reference, keyboard-workflow, composition, appearance -->
+
+Keyboard functionality must be visible where it is used. In Dots mode, Add dot now sits beside the waveform tool choices. A readable guide directly above the graph uses key labels for Tab, position/amplitude arrows and Delete. Interior dots reference the guide's actual instructions as their accessible description, rather than the enclosing note's shorter accessible name. Exact values, pointer drawing/placement, projection, bounds, undo and independent copies retain existing behavior.
+
+The command catalog no longer sizes the Compose row to every card and expanded rule. A flex panel caps its total height at 560 px desktop / 460 px narrow screen while leaving its search header outside the body scroller. The body retains all destination controls, command cards, reasons, rules and footer, with a named focusable scroll region and stable scrollbar space. Space on that region uses native scrolling without invoking global Play. Search/category changes reset its scroll synchronously after commit while preserving input focus. Changing contextual instrument/track/pedal selections preserves the same source-aware insertion and copy policy. Musical clocks, phase, latency, source text, project schema and roadmap gates do not change.
+
+Evidence: `src/components/FourierWorkspace.tsx`, `src/components/CommandReference.tsx`, `src/paper.css`, `src/styles.css`, `tests/browser/fourier.spec.ts`, `tests/browser/command-reference.spec.ts`, `tests/helpers/keyboardWorkflow.ts`, `tests/desktop/app.spec.ts`.

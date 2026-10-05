@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-04. Latest release: v0.18.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-04. v0.18.1 UI patch validation in progress; last verified release: v0.18.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -77,7 +77,7 @@ A/B switching replays from the start; editing a coefficient keeps the running en
 
 ## Next roadmap work
 
-Compose layout follow-up is implemented and verified in v0.14.1: command reference now sits beside the score; timeline and independent track/master controls sit below. The editor fills its panel through the status bar and has a larger desktop minimum. Fourteen affected browser workflows pass; desktop/tablet/390 px geometry and screenshots confirm reading order, bounded editor scrolling and no page overflow. This layout correction does not advance a music-feature roadmap gate.
+Compose layout follow-up is implemented and verified in v0.14.1: command reference now sits beside the score; timeline and independent track/master controls sit below. The editor fills its panel through the status bar and has a larger desktop minimum. Fourteen affected browser workflows pass; desktop/tablet/390 px geometry and screenshots confirm reading order, bounded editor scrolling and no page overflow. The v0.18.1 UI correction below adds a compact reference scroller with search kept outside it, plus visible waveform keyboard guidance. These layout corrections do not advance a music-feature roadmap gate.
 
 The physical pedalboard implements equipment-menu placement, a four-column/two-row Velcro grid, compact dials, a selected-pedal inspector and real mouse/keyboard patch routing. Positions and cables are saved independently in presets and A/B/track/master copies. Placement is nonmusical; routing changes during playback wait for replay. Delay is implemented in the v0.13.0 work below; the surrounding frontend overhaul remains separate work.
 
@@ -329,3 +329,11 @@ Validation for v0.17.0: all 145 unit checks pass. All 92 browser workflows have 
 5. Shared browser/native demonstration traverses the actual Tab order through waveform editing, independent A/B, instrument saving, Track Maker, EQ placement/patching/exact values, source-aware chain application, play/replay/Stop, JSON saving and reload. Broader screen-reader, physical-device/browser and listening checks remain open; WAV export is the next main feature, with 32 harmonics/acoustics/chord symbols still later.
 
 Validation for v0.18.0: all 146 unit checks pass. All 98 browser workflows have passing coverage: 95 passed in the full run, and both existing EQ audio proofs plus the dense timeline workflow passed in a focused rerun. The EQ proofs sampled silence during the concurrent browser/native run and pass unchanged separately. The long-score fixture now uses CodeMirror's Select All rather than DOM fill, which can replace only virtualized rendered lines; it verifies the authoritative saved document before checking frozen playback. All five affected timeline/meter workflows pass against that final fixture. The full browser run also passes the actual Tab-order demonstration and all new dot/menu/modal checks. All twelve native workflows pass in the full run against the packaged v0.18.0 executable, including the shared keyboard demonstration, native JSON, independent A/B/track/master processing, menus/audio and renderer isolation. Desktop 1440 px and narrow 390 px timeline layouts were visually reviewed without page overflow. Production TypeScript/bundle, formatting, knowledge build/freshness and portable packaging pass. Semantic retrieval returns the new keyboard/source/inspection decisions within 1,013/1,024 tokens. Output: release/FourPataka-0.18.0-win-x64.exe. The portable studio is visibly open and its extracted app.asar SHA-256 matches the final native-tested bundle. Eight focused checkpoints use Monykus7 and are pushed to origin/master. The automated main-workflow demonstration closes; broader assistive-technology, physical-device/browser and listening gates remain open before stage 5 is declared fully complete. WAV export is next main-feature work; 32 harmonics, acoustics and chord symbols remain later.
+
+### Waveform discoverability and compact reference — v0.18.1
+
+Add dot now sits beside Dots/Draw instead of below the graph. A visible key guide directly above the editable Dots graph shows Tab, Left/Right position, Up/Down amplitude and Delete; focused dots expose its actual instructions as their accessible description. Existing drawing, exact inputs, dot limits, reset, undo and independent copies remain intact.
+
+Command reference caps its total height at 560 px desktop / 460 px narrow screen, around half or less of the expanded catalog's natural height. Search stays outside the named, focusable internal scroller containing destination controls, all cards/rules and the footer. Space scrolls the focused catalog without invoking global Play. Search/category filtering resets catalog scroll while retaining search focus. Source insertion, audio phase/clock/latency, project schema and roadmap gates retain their existing policies.
+
+Validation in progress: sixteen affected browser workflows pass, including visible/accessibly described key guidance, waveform drawing/dots/reset/undo, bounded reference geometry at 1440/390 px, scrolling, fixed search, filtering, source-aware insertion, composition/meter and the full Tab-order demonstration. Browser screenshots were reviewed; native workflows and the final portable build are being verified. The broader audio/unit/native suites were previously verified for v0.18.0; this UI patch reruns affected workflows.

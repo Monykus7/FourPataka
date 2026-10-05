@@ -27,7 +27,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.18.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The portable build is `release/FourPataka-0.18.1-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -46,9 +46,11 @@ The desktop checks can also target the unpacked production executable by setting
 
 The enlarged score editor and command reference sit side by side. The editor fills the panel down to its status bar. Timeline and independent track sounds sit below; narrow screens stack score, reference, timeline and tracks in that order. Search and command insertion remain next to the editor on desktop.
 
+Command reference is a compact panel with search fixed above its scrollable catalog. It is capped at 560 px on desktop and 460 px on narrow screens. Scroll or Tab through all commands and expanded rules; Space scrolls the focused catalog. Search and category changes return results to the top.
+
 Timeline event pickers show notes/rests, bar, beat and duration, even in a dense score. Previous/Next step through a track. Each track has one note Tab stop; Left/Right moves between its events and Home/End jumps to its endpoints. Selection inspects the displayed score revision without changing playback position.
 
-In Instrument → Waveform → Dots, **Add dot** splits the widest gap on the target curve. Use exact Position/Amplitude inputs, arrows on a focused dot, and Delete to remove it. Equipment menus support Up/Down and Home/End; Enter chooses a tool, then Enter on a free slot places a pedal. Keyboard cable selection starts at the board input jack; activate output/input jack pairs to connect the path. Escape cancels the board tool and returns to Equipment while playback continues. Instrument and Track Maker dialogs have named headings and return focus when closed.
+In Instrument → Waveform → Dots, **Add dot** beside Dots/Draw splits the widest gap on the target curve. A visible keyboard guide above the graph shows Tab to focus a dot, Left/Right for position, Up/Down for amplitude and Delete to remove it. Exact Position/Amplitude inputs remain below the graph. Equipment menus support Up/Down and Home/End; Enter chooses a tool, then Enter on a free slot places a pedal. Keyboard cable selection starts at the board input jack; activate output/input jack pairs to connect the path. Escape cancels the board tool and returns to Equipment while playback continues. Instrument and Track Maker dialogs have named headings and return focus when closed.
 
 **Tempo / Time signature** edit score directives, preserving comments and whitespace, in one undo step. Select a common meter or edit **Beats per bar** and **Beat unit** for a custom meter. **Instrument** selectors assign a fresh independent preset copy to a track while keeping its level and pedals. Timing and assignments require stopped score playback and valid text; the first track can be created in an empty score.
 

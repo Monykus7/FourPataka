@@ -500,6 +500,8 @@ Show both current order and any pending order change. Keep dry/wet and tail stat
 
 Use an editor-focused split, around 60/40 for score and command reference. The editor fills its panel down to the status bar; do not leave unused panel space underneath a fixed-height editor. Below that row, show timeline and independent track/master controls side by side. Event inspection belongs with this lower overview. The v0.14.1 layout implements this arrangement and enlarges the desktop editing area.
 
+The v0.18.1 correction caps command reference at 560 px on desktop and 460 px on narrow screens, approximately half or less of its expanded catalog height. Search remains above the internally scrolling catalog; filtering resets catalog scroll without moving search focus. Keyboard focus, Space/Page navigation, all cards/rules and contextual insertion remain available. The score retains its independently scrollable editing area.
+
 At narrower widths, stack score, command reference, timeline and track controls in that reading order. Keep timeline/board scrolling local and controls readable. A drawer inspector remains planned; the implemented event inspector stays in the lower overview. Do not shrink sixteen labels and multiple knobs into unreadable controls.
 
 ### Components and interaction
@@ -507,6 +509,8 @@ At narrower widths, stack score, command reference, timeline and track controls 
 Use accessible low-level primitives for sliders, menus, dialogs, tooltips, and tabs, with the custom palette. Every knob has a textual value and keyboard operation. Reordering has button/keyboard alternatives.
 
 Implemented for v0.18.0: Add dot inserts an anchor on the current target curve in its widest gap, with exact inputs and deletion focus recovery. Equipment supports arrow/Home/End navigation, skips unavailable items, and transfers keyboard selection to a free slot or board jack; placement focuses the new pedal. Named instrument/track dialogs focus their first field and return to their trigger. Each timeline track offers a readable event picker and Previous/Next, with one note Tab stop and arrow/Home/End inspection. Inspection uses the displayed frozen score revision and never seeks playback or edits source/history. Broader screen-reader, physical-device and listening verification remains open.
+
+Waveform discoverability improves in v0.18.1: Add dot sits beside Dots/Draw, and an always-visible guide above the editable Dots graph shows Tab, position/amplitude arrows and Delete. Focused dots expose the same instructions as accessible descriptions. This is UI polish, without a new musical-feature or release gate.
 
 Maintain visible focus, avoid color-only states, and honor reduced-motion preferences. Preserve useful timing information while reducing decorative animation. Throttle analyser painting separately from audio scheduling.
 
