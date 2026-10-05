@@ -127,7 +127,7 @@ test('instrument completion offers instrument keys only and honors autocomplete 
   await expect(page.locator('.cm-tooltip-autocomplete')).toHaveCount(0);
 });
 
-test('compact reference scrolls while search stays reachable on desktop and narrow screens', async ({
+test('reference matches the score height while search stays reachable on desktop and narrow screens', async ({
   page,
 }) => {
   await page.goto('/');
@@ -139,16 +139,20 @@ test('compact reference scrolls while search stays reachable on desktop and narr
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1040 });
     await search.fill('');
     await expect(reference.locator('.command-card')).toHaveCount(11);
-    const size = await reference.evaluate((element) => {
-      const body = element.querySelector('.command-reference-scroll')!;
-      const header = element.querySelector('.commands-header')!;
-      return {
-        height: element.getBoundingClientRect().height,
-        fullHeight: body.scrollHeight + header.getBoundingClientRect().height,
-      };
-    });
-    expect(size.height).toBeLessThanOrEqual(width === 390 ? 460 : 560);
-    expect(size.height).toBeLessThan(size.fullHeight * 0.55);
+    await expect
+      .poll(async () => {
+        const referenceBox = (await reference.boundingBox())!;
+        const scoreBox = (await page.locator('.editor-panel').boundingBox())!;
+        return Math.abs(referenceBox.height - scoreBox.height);
+      })
+      .toBeLessThan(1);
+    const scoreHeight = (await page.locator('.editor-panel').boundingBox())!.height;
+    await reference.getByRole('button', { name: /Command reference/ }).click();
+    expect((await reference.boundingBox())!.height).toBeLessThan(scoreHeight / 2);
+    await reference.getByRole('button', { name: /Command reference/ }).click();
+    await expect
+      .poll(async () => Math.abs((await reference.boundingBox())!.height - scoreHeight))
+      .toBeLessThan(1);
     await catalog.focus();
     await catalog.press('Space');
     await expect.poll(() => catalog.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
@@ -163,6 +167,14 @@ test('compact reference scrolls while search stays reachable on desktop and narr
     expect(searchBox.y + searchBox.height).toBeLessThanOrEqual(headerBox.y + headerBox.height);
     await search.fill('master warmDrive');
     await expect(reference.locator('.command-card')).toHaveCount(1);
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await reference.boundingBox())!.height -
+            (await page.locator('.editor-panel').boundingBox())!.height,
+        ),
+      )
+      .toBeLessThan(1);
     await expect.poll(() => catalog.evaluate((element) => element.scrollTop)).toBe(0);
     await expect(search).toBeFocused();
     await search.fill('');
@@ -171,6 +183,19 @@ test('compact reference scrolls while search stays reachable on desktop and narr
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
     );
-    await page.screenshot({ path: `.test-results/compact-reference-${width}.png`, fullPage: true });
+    await page.screenshot({ path: `.test-results/matched-reference-${width}.png`, fullPage: true });
+  }
+  await page.getByRole('textbox', { name: 'Score editor' }).fill('broken');
+  await expect(page.locator('.diagnostics-list')).toBeVisible();
+  for (const width of [1440, 1000, 390]) {
+    await page.setViewportSize({ width, height: 1040 });
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await reference.boundingBox())!.height -
+            (await page.locator('.editor-panel').boundingBox())!.height,
+        ),
+      )
+      .toBeLessThan(1);
   }
 });
