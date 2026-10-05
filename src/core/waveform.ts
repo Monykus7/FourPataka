@@ -60,9 +60,8 @@ export function validateWavePoints(points: unknown): asserts points is WavePoint
 
 // Shape-preserving cubic Hermite interpolation: flat tangents at turns and
 // weighted harmonic-mean tangents elsewhere avoid overshoot between anchors.
-export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
+function pointCurve(points: readonly WavePoint[]) {
   validateWavePoints(points);
-  if (!Number.isInteger(length) || length < 3) throw new Error('Invalid sample count.');
   const gaps = points.slice(1).map((p, i) => p.x - points[i].x);
   const slopes = points.slice(1).map((p, i) => (p.y - points[i].y) / gaps[i]);
   const tangents = points.map((_, i) => {
@@ -77,9 +76,8 @@ export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
       w2 = gaps[i] + 2 * gaps[i - 1];
     return (w1 + w2) / (w1 / left + w2 / right);
   });
-  let segment = 0;
-  return Array.from({ length }, (_, i) => {
-    const x = i / (length - 1);
+  return (x: number) => {
+    let segment = 0;
     while (segment < points.length - 2 && x > points[segment + 1].x) segment++;
     const a = points[segment],
       b = points[segment + 1],
@@ -93,7 +91,28 @@ export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
       (-2 * t ** 3 + 3 * t ** 2) * b.y +
       (t ** 3 - t ** 2) * h * tangents[segment + 1]
     );
-  });
+  };
+}
+
+export function waveformFromPoints(points: readonly WavePoint[], length = 257) {
+  if (!Number.isInteger(length) || length < 3) throw new Error('Invalid sample count.');
+  const at = pointCurve(points);
+  return Array.from({ length }, (_, i) => at(i / (length - 1)));
+}
+
+export function insertWavePoint(points: readonly WavePoint[]) {
+  const at = pointCurve(points);
+  if (points.length >= 32) return null;
+  let segment = 0;
+  for (let i = 1; i < points.length - 1; i++)
+    if (points[i + 1].x - points[i].x > points[segment + 1].x - points[segment].x + 1e-10)
+      segment = i;
+  // The widest gap always accommodates the minimum spacing. Start on the target
+  // curve rather than zero; recomputing its tangents may still refine the shape.
+  const x = (points[segment].x + points[segment + 1].x) / 2;
+  const next = structuredClone([...points]);
+  next.splice(segment + 1, 0, { x, y: at(x) });
+  return { points: next, index: segment + 1 };
 }
 
 export function soundFromPoints(sound: Sound, points: WavePoint[]): Sound {

@@ -8,6 +8,7 @@ import {
   waveformFromPoints,
   soundFromPoints,
   resetWaveform,
+  insertWavePoint,
 } from '../../src/core/waveform';
 
 it('recovers signed sine coefficients from a sampled half cycle', () => {
@@ -20,6 +21,27 @@ it('recovers signed sine coefficients from a sampled half cycle', () => {
   });
   expect(result.trim).toBe(sound.trim);
   expect(result.undertones).toEqual(sound.undertones);
+});
+
+it('inserts an independent anchor on the curve in the widest gap, preserving bounds', () => {
+  const points = [
+    { x: 0, y: 0 },
+    { x: 0.25, y: 1 },
+    { x: 1, y: 0 },
+  ];
+  const inserted = insertWavePoint(points)!;
+  expect(inserted.index).toBe(2);
+  expect(inserted.points[2].x).toBe(0.625);
+  expect(inserted.points[2].y).toBeCloseTo(waveformFromPoints(points, 9)[5], 12);
+  expect(inserted.points[2].y).toBeGreaterThan(0);
+  inserted.points[1].y = -1;
+  expect(points[1].y).toBe(1);
+  let next = points;
+  while (next.length < 32) next = insertWavePoint(next)!.points;
+  expect(insertWavePoint(next)).toBeNull();
+  expect(() => waveformFromPoints(next)).not.toThrow();
+  expect(next[0]).toEqual({ x: 0, y: 0 });
+  expect(next.at(-1)).toEqual({ x: 1, y: 0 });
 });
 it('projects silence and bounds coefficients without normalizing the entire sound', () => {
   expect(waveformCoefficients([0, 0, 0])).toEqual(Array(16).fill(0));
