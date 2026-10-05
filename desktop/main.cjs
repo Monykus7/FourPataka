@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, protocol, net, session, ipcMain, dialog } = re
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
+const { validateWav } = require('./wav.cjs');
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -147,6 +148,22 @@ app.whenReady().then(() => {
     await fs.writeFile(result.filePath, text, 'utf8');
     return { canceled: false, name: path.basename(result.filePath) };
   });
+  ipcMain.handle('fourpataka:save-wav', async (event, data, name) => {
+    assertStudio(event);
+    const buffer = validateWav(data);
+    const basename =
+      (typeof name === 'string' ? name : 'FourPataka')
+        .slice(0, 100)
+        .replace(/[^a-z0-9_-]/gi, '-') || 'FourPataka';
+    const result = await dialog.showSaveDialog(window, {
+      title: 'Save WAV export',
+      defaultPath: `${basename}.wav`,
+      filters: [{ name: 'PCM WAV audio', extensions: ['wav'] }],
+    });
+    if (result.canceled || !result.filePath) return { canceled: true };
+    await fs.writeFile(result.filePath, buffer);
+    return { canceled: false, name: path.basename(result.filePath) };
+  });
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([
       {
@@ -154,6 +171,7 @@ app.whenReady().then(() => {
         submenu: [
           { label: 'Open project…', accelerator: 'CmdOrCtrl+O', click: () => action('open') },
           { label: 'Save project as…', accelerator: 'CmdOrCtrl+S', click: () => action('save') },
+          { label: 'Export WAV…', accelerator: 'CmdOrCtrl+Shift+E', click: () => action('wav') },
           {
             label: 'Local save recovery…',
             accelerator: 'CmdOrCtrl+Shift+O',

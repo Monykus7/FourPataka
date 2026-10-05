@@ -22,6 +22,59 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('native WAV menu renders, validates binary data, cancels safely and saves PCM', async () => {
+  const page = await app.firstWindow();
+  await expect(page.getByRole('heading', { name: 'Instrument', exact: true })).toBeVisible();
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),
+  );
+  const panel = page.getByRole('dialog', { name: 'Export WAV' });
+  expect(
+    await panel
+      .getByRole('combobox', { name: 'Sample rate' })
+      .evaluate((el) => el === document.activeElement),
+  ).toBe(true);
+  await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
+  await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
+  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  await app.evaluate(({ dialog }) => {
+    dialog.showSaveDialog = async () => ({ canceled: true });
+  });
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Save canceled');
+  const filePath = resolve('.test-results', 'desktop', 'export-proof.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved export-proof.wav');
+  const bytes = await readFile(filePath);
+  expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(bytes.readUInt32LE(4)).toBe(bytes.length - 8);
+  expect(bytes.readUInt16LE(22)).toBe(1);
+  expect(bytes.readUInt32LE(24)).toBe(44100);
+  expect(bytes.readUInt16LE(34)).toBe(16);
+  expect(bytes.readUInt32LE(40)).toBe(bytes.length - 44);
+  const rejected = await page.evaluate(async () => {
+    try {
+      await window.fourpatakaDesktop!.saveWav!(new ArrayBuffer(44), 'bad');
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  expect(rejected).toBe(true);
+  // Opening the menu twice must not replace an in-progress export snapshot.
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),
+  );
+  await expect(panel.getByRole('button', { name: 'Render again', exact: true })).toBeEnabled();
+  await panel.getByRole('button', { name: 'Close WAV export' }).click();
+  await expect(panel).not.toBeVisible();
+});
+
 test('packaged keyboard-only studio demonstration saves and reloads independent sounds and processing', async () => {
   test.setTimeout(120_000);
   const page = await app.firstWindow();
