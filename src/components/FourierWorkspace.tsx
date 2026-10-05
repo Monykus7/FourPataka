@@ -254,6 +254,20 @@ export default function FourierWorkspace({
                   Draw
                 </button>
               </div>
+              {tool === 'points' && (
+                <button
+                  className="secondary-button"
+                  disabled={points.length >= 32}
+                  onClick={() => {
+                    const added = insertWavePoint(points);
+                    if (!added) return;
+                    applyPoints(added.points);
+                    setSelected(added.index);
+                  }}
+                >
+                  Add dot
+                </button>
+              )}
               <button
                 className="secondary-button wave-reset"
                 onClick={() => {
@@ -265,6 +279,27 @@ export default function FourierWorkspace({
               >
                 Reset waveform to sine
               </button>
+            </div>
+          )}
+          {mode === 'waveform' && tool === 'points' && (
+            <div className="wave-keyboard-help" role="note" aria-label="Waveform keyboard controls">
+              <div className="wave-keyboard-keys" id="wave-keyboard-help">
+                <strong>Keyboard editing</strong>
+                <span>
+                  <kbd>Tab</kbd> focus a dot
+                </span>
+                <span>
+                  <kbd>←</kbd>
+                  <kbd>→</kbd> position
+                </span>
+                <span>
+                  <kbd>↑</kbd>
+                  <kbd>↓</kbd> amplitude
+                </span>
+                <span>
+                  <kbd>Delete</kbd> remove
+                </span>
+              </div>
             </div>
           )}
           <svg
@@ -321,6 +356,9 @@ export default function FourierWorkspace({
                   role={i > 0 && i < points.length - 1 ? 'button' : undefined}
                   tabIndex={i > 0 && i < points.length - 1 ? 0 : undefined}
                   aria-label={`Wave point ${i}`}
+                  aria-describedby={
+                    i > 0 && i < points.length - 1 ? 'wave-keyboard-help' : undefined
+                  }
                   aria-pressed={i === pointIndex}
                   onFocus={() => setSelected(i)}
                   onKeyDown={(e) => {
@@ -362,18 +400,6 @@ export default function FourierWorkspace({
               <span>
                 Dot {pointIndex} / {points.length - 2}
               </span>
-              <button
-                className="text-button"
-                disabled={points.length >= 32}
-                onClick={() => {
-                  const added = insertWavePoint(points);
-                  if (!added) return;
-                  applyPoints(added.points);
-                  setSelected(added.index);
-                }}
-              >
-                Add dot
-              </button>
               <label>
                 Position %{' '}
                 <input
@@ -416,7 +442,7 @@ export default function FourierWorkspace({
           <p className="footnote">
             {mode === 'waveform'
               ? tool === 'points'
-                ? 'Add dot splits the widest gap. Click or use exact values to place it; arrows adjust focused dots, Delete removes. Up to 30 editable dots.'
+                ? 'Add dot splits the widest gap. Click to place, drag to move, or use exact values below. Up to 30 editable dots.'
                 : 'Draw in the left half; the right half mirrors it.'
               : 'Switch to Waveform to edit the source shape.'}
           </p>

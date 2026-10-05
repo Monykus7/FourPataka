@@ -7,6 +7,13 @@ test('keyboard adds waveform anchors up to the limit with independent undo and p
   const mode = page.getByRole('button', { name: 'Waveform', exact: true });
   await mode.focus();
   await mode.press('Enter');
+  const guide = page.getByRole('note', { name: 'Waveform keyboard controls', exact: true });
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText('Keyboard editing');
+  await expect(guide).toContainText('Tab');
+  await expect(guide).toContainText('Delete');
+  const graph = page.getByRole('group', { name: 'Editable harmonic source waveform' });
+  expect((await guide.boundingBox())!.y).toBeLessThan((await graph.boundingBox())!.y);
   const add = page.getByRole('button', { name: 'Add dot', exact: true });
   await add.focus();
   await add.press('Enter');
@@ -29,6 +36,7 @@ test('keyboard adds waveform anchors up to the limit with independent undo and p
   await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(30);
   const dot = page.getByRole('button', { name: 'Wave point 30', exact: true });
   await dot.focus();
+  await expect(dot).toHaveAccessibleDescription(/Keyboard editing.*position.*amplitude.*remove/);
   await dot.press('Space');
   await expect(page.locator('.audition-button')).not.toHaveClass(/playing/);
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
