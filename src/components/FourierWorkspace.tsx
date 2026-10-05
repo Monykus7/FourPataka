@@ -1,8 +1,9 @@
-import { useRef, useState, type ReactNode, type PointerEvent } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode, type PointerEvent } from 'react';
 import { clamp, type Sound } from '../core/music';
 import {
   keepMatchingWavePoints,
   harmonicShape,
+  insertWavePoint,
   resetWaveform,
   soundFromPoints,
   soundFromWaveform,
@@ -23,6 +24,15 @@ export default function FourierWorkspace({
   const [mode, setMode] = useState<'harmonics' | 'waveform'>('harmonics');
   const [tool, setTool] = useState<'points' | 'draw'>('points');
   const [selected, setSelected] = useState(1);
+  const wave = useRef<SVGSVGElement>(null);
+  const focusAfterDelete = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    if (focusAfterDelete.current === null) return;
+    wave.current
+      ?.querySelector<SVGCircleElement>(`[data-point="${focusAfterDelete.current}"]`)
+      ?.focus();
+    focusAfterDelete.current = null;
+  });
   const [target, setTarget] = useState<{ samples: number[]; signature: string } | null>(null);
   const stroke = useRef<{
     samples: number[];
@@ -263,6 +273,7 @@ export default function FourierWorkspace({
             role="group"
             aria-label="Editable harmonic source waveform"
             style={{ touchAction: mode === 'waveform' ? 'none' : 'auto' }}
+            ref={wave}
             onPointerDown={start}
             onPointerMove={draw}
             onPointerUp={() => {
@@ -330,6 +341,7 @@ export default function FourierWorkspace({
                     }
                     if (e.key === 'Delete' || e.key === 'Backspace') {
                       e.preventDefault();
+                      if (points.length > 3) focusAfterDelete.current = Math.max(1, i - 1);
                       removePoint(i);
                     }
                   }}
@@ -346,6 +358,18 @@ export default function FourierWorkspace({
               <span>
                 Dot {pointIndex} / {points.length - 2}
               </span>
+              <button
+                className="text-button"
+                disabled={points.length >= 32}
+                onClick={() => {
+                  const added = insertWavePoint(points);
+                  if (!added) return;
+                  applyPoints(added.points);
+                  setSelected(added.index);
+                }}
+              >
+                Add dot
+              </button>
               <label>
                 Position %{' '}
                 <input
@@ -388,7 +412,7 @@ export default function FourierWorkspace({
           <p className="footnote">
             {mode === 'waveform'
               ? tool === 'points'
-                ? 'Click to add a dot; drag to move it. Arrow keys adjust; Delete removes. Smooth curve between dots · up to 30 editable dots.'
+                ? 'Add dot splits the widest gap. Click or use exact values to place it; arrows adjust focused dots, Delete removes. Up to 30 editable dots.'
                 : 'Draw in the left half; the right half mirrors it.'
               : 'Switch to Waveform to edit the source shape.'}
           </p>

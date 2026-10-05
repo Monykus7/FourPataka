@@ -1,5 +1,40 @@
 import { expect, test } from '@playwright/test';
 
+test('keyboard adds waveform anchors up to the limit with independent undo and precise editing', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const mode = page.getByRole('button', { name: 'Waveform', exact: true });
+  await mode.focus();
+  await mode.press('Enter');
+  const add = page.getByRole('button', { name: 'Add dot', exact: true });
+  await add.focus();
+  await add.press('Enter');
+  await expect(add).toBeFocused();
+  await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(6);
+  const amplitude = page.getByRole('spinbutton', { name: 'Selected dot amplitude' });
+  await amplitude.fill('-.4');
+  const edited = await amplitude.inputValue();
+  const undo = page.getByRole('button', { name: 'Undo', exact: true });
+  await undo.focus();
+  await undo.press('Enter');
+  await expect(amplitude).not.toHaveValue(edited);
+  await undo.press('Enter');
+  await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(5);
+  await page.getByRole('button', { name: 'Redo', exact: true }).press('Enter');
+  await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(6);
+  await add.focus();
+  for (let i = 6; i < 30; i++) await add.press('Enter');
+  await expect(add).toBeDisabled();
+  await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(30);
+  const dot = page.getByRole('button', { name: 'Wave point 30', exact: true });
+  await dot.focus();
+  await dot.press('Delete');
+  await expect(page.getByRole('button', { name: 'Wave point 29', exact: true })).toBeFocused();
+  await expect(add).toBeEnabled();
+  await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(29);
+});
+
 test('waveform drawing updates coefficients, preserves A/B and supports one-stroke undo', async ({
   page,
 }) => {
