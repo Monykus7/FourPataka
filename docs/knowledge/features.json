@@ -136,7 +136,7 @@
       "id": "command-reference",
       "parent": "composition",
       "title": "Contextual command reference",
-      "summary": "Eleven scoped cards show the selected instrument/pedal keys, unique new-track snippets, syntax/rules and insertion destinations. Search matches all terms across syntax, rules and selected keys; categories filter the catalog. Using edits only the selected track instrument span, preserving notes/comments/routing and independent copy semantics. Compiled tracks prevent stale destinations on an empty score; globals/first-track creation remain available. Invalid/playing scores block insertion while details stay readable by keyboard. Native menu focuses search after DOM commit. Functional reference work is implemented; broader stage 4/5 accessibility, recovery and device gates remain.",
+      "summary": "Eleven scoped cards show the selected instrument/pedal keys, unique new-track snippets, syntax/rules and insertion destinations. Search matches all terms across syntax, rules and selected keys; categories filter the catalog. Using edits only the selected track instrument span, preserving notes/comments/routing and independent copy semantics. Compiled tracks prevent stale destinations on an empty score; globals/first-track creation remain available. Invalid/playing scores block insertion while details stay readable by keyboard. Native menu focuses search after DOM commit. Functional reference work is implemented; local recovery follows in v0.17.0 and keyboard workflow polish in v0.18.0. Broader assistive-technology and real-device/listening gates remain.",
       "paths": [
         "src/core/commands.ts",
         "src/core/commandReference.ts",
