@@ -1,5 +1,95 @@
 import { expect, test } from '@playwright/test';
 
+test('export applies the master pedal order and preserves its independent copy while rendering', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { renderWav } = await import('/src/audio/' + 'export.ts');
+    const { createProject, reconcileTracks } = await import('/src/core/' + 'project.ts');
+    const { parseScore } = await import('/src/core/' + 'parser.ts');
+    const { makePedal, emptyChain } = await import('/src/core/' + 'pedals.ts');
+    let project = createProject();
+    project.scoreText = 'tempo 120\ntrack test using sine {\n A4 quarter\n}';
+    project = reconcileTracks(
+      project,
+      parseScore(
+        project.scoreText,
+        project.instruments.map((p: any) => p.key),
+      ),
+    );
+    project.tracks[0].level = 1;
+    project.tracks[0].sound.trim = 0;
+    project.mixGain = 0.6;
+    const drive = makePedal('overdrive'),
+      eq = makePedal('eq');
+    drive.params.drive = 24;
+    drive.params.mix = 100;
+    eq.params.frequency = 440;
+    eq.params.mid = -18;
+    project.processing.master = { ...emptyChain(), pedals: [drive, eq] };
+    const pending = renderWav(project, { sampleRate: 48000, channels: 1, tailSeconds: 0 });
+    project.processing.master.pedals.reverse();
+    const first = await pending;
+    const second = await renderWav(project, { sampleRate: 48000, channels: 1, tailSeconds: 0 });
+    const rms = (render: any) => {
+      const data = render.buffer.getChannelData(0);
+      let energy = 0;
+      for (let i = 4800; i < 9600; i++) energy += data[i] ** 2;
+      return Math.sqrt(energy / 4800);
+    };
+    return {
+      first: rms(first),
+      second: rms(second),
+      order: first.plan.snapshot.processing.master.pedals.map((p: any) => p.kind),
+    };
+  });
+  expect(proof.order).toEqual(['overdrive', 'eq']);
+  expect(proof.first).toBeGreaterThan(0.01);
+  expect(proof.second).toBeGreaterThan(0.01);
+  expect(Math.abs(proof.first - proof.second)).toBeGreaterThan(0.02);
+});
+
+test('offline polyphony follows the same scheduled 32-voice admission as playback at both sample rates', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const amplitudes = await page.evaluate(async () => {
+    const { renderWav } = await import('/src/audio/' + 'export.ts');
+    const { createProject, reconcileTracks } = await import('/src/core/' + 'project.ts');
+    const { parseScore } = await import('/src/core/' + 'parser.ts');
+    let project = createProject();
+    project.scoreText =
+      'tempo 120\ntrack many using sine {\n chord:(' +
+      Array(32).fill('A').join(' ') +
+      ')4 quarter\n}\ntrack last using sine {\n A4 quarter\n}';
+    project = reconcileTracks(
+      project,
+      parseScore(
+        project.scoreText,
+        project.instruments.map((p: any) => p.key),
+      ),
+    );
+    project.mixGain = 1;
+    project.tracks.forEach((t: any, i: number) => {
+      t.level = 0.01;
+      t.sound.trim = -20;
+      t.sound.polarity[0] = i ? -1 : 1;
+    });
+    const values: number[] = [];
+    for (const sampleRate of [44100, 48000]) {
+      const rendered = await renderWav(project, { sampleRate, channels: 1, tailSeconds: 0 });
+      const data = rendered.buffer.getChannelData(0);
+      let energy = 0;
+      for (let i = sampleRate / 10; i < sampleRate / 5; i++) energy += data[i] ** 2;
+      values.push(Math.sqrt(energy / (sampleRate / 10)) * Math.sqrt(2));
+    }
+    return values;
+  });
+  // The 33rd voice retires one of 32 positive sources: 31 positive + 1 negative.
+  amplitudes.forEach((value) => expect(value).toBeCloseTo(0.03, 5));
+});
+
 test('WAV rendering uses applied sounds, timing, mix, independent snapshots and shared latency alignment', async ({
   page,
 }) => {
