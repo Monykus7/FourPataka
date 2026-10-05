@@ -2,6 +2,26 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Planned phaser, chorus and reverb pedals
+
+<!-- features: pedal-expansion, pedals, comparison, wav-export, instrument-acoustics -->
+
+Phaser, chorus and algorithmic reverb are requested later pedalboard work, not current runtime kinds or menu equipment. Section 7 of BUILD_PLAN.md owns proposed controls/ranges, the phaser → chorus → reverb order and effect-specific proof gates. Keep the current stage 7 learning/measurement priority. Each effect must adopt the existing compact board/inspector, cable order, independent library/A-B/track/master settings, frozen score versus smooth live-audition behavior, import/history and shared live/offline graph policies together.
+
+Phaser all-pass phase/notches and chorus's modulated short delay are intended musical effects, distinct from look-ahead alignment. Any actual algorithmic latency or feedback cycle-breaking delay must be measured and documented. Modulation uses a session-relative musical-time reference, retains LFO continuity for live edits and does not restart the underlying score clock. Runtime phase/buffers belong to each graph, not shared preset objects or serialized projects. Chorus initially has no feedback and clamps depth against base delay; balance its wet voices explicitly so their sum does not introduce a hidden gain boost.
+
+The reverb pedal represents a selectable track/master space using generated reflections and a bounded damped feedback network without IR files. It is separate from the planned instrument-owned tiny chamber before track pedals; both may coexist. Define decay as a −60 dB target, validate stability at parameter/sample-rate extrema, and include pre-delay in finite tail estimates. Reverb bypass closes new wet input but preserves existing tails; chorus drains its short history and phaser feedback needs a measured bounded bypass policy. Hard Stop disposes every oscillator/feedback buffer, and replay starts fresh. Extend tail meters/cleanup/WAV caps and warnings, peak review and memory estimates when these ship. Old projects stay unchanged with no new effect enabled by migration. Listening, numeric identity/mix/continuity/tail/latency proofs and keyboard/native/save/copy/export checks are future gates, not evidence of completed implementation.
+
+Plan authority: BUILD_PLAN.md section 7 and stage 8; IMPLEMENTATION_STATUS.md next roadmap work. Integration evidence: src/core/pedals.ts, src/audio/effects.ts, src/audio/scoreGraph.ts, src/audio/engine.ts, src/audio/export.ts, src/components/Pedalboard.tsx, src/components/PedalControls.tsx.
+
+## Balanced timeline and track controls (v0.19.2)
+
+<!-- features: composition, timing, tracks, keyboard-workflow, appearance -->
+
+The desktop track-sounds panel now stretches to the timeline's own content height. Size containment excludes track controls from grid-row sizing, while a flexing named focusable scroller holds master/track assignments, levels, independent-copy loading and bypass/edit controls below a fixed heading. The timeline remains at its useful natural height. Narrow stacked layouts bound the track panel at 440 px and keep the same reading order. Space on the scroller uses native scrolling without global Play; child inputs retain their normal key handling. Invalid/empty scores retain existing owned copies and disable source assignments as before. Scrolling/focus/selection do not alter the source or history; actual edits retain the existing undo and copy policy. Audio phase/clock, processing latency, units and export behavior are unchanged.
+
+Evidence: src/App.tsx, src/styles.css, tests/browser/timeline.spec.ts. Earlier v0.14.1 natural-height layout and v0.19.1 score/reference matching remain historical decisions; this patch changes only the lower track panel's sizing and scroll containment.
+
 ## Score-height command reference (v0.19.1)
 
 <!-- features: command-reference, composition, appearance, keyboard-workflow -->

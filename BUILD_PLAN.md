@@ -35,6 +35,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format.
 - Add instrument acoustics later inside the Instrument builder: a wet/dry algorithmic "tiny room" representing the instrument's chamber. It must work without impulse-response (IR) files.
 - Expand the Instrument builder to support up to 32 signed harmonics in a later update, preserving existing 16-harmonic sounds and making piano/brass-inspired timbres a design target.
+- Add phaser, chorus and algorithmic reverb pedals later, using the existing cable board, independent copies and shared live/offline processing. The reverb pedal is separate from instrument-body acoustics.
 
 Other defaults in this document are proposed implementation choices. They should be tuned in the audio proof without changing these confirmed behaviors.
 
@@ -294,6 +295,20 @@ Use numeric entry and keyboard adjustment alongside knobs. Clamp parameter range
 Initial parameter ranges: compressor threshold −60…0 dB, ratio 1…20, attack 0…100 ms, release 10…2000 ms; overdrive drive 0…24 dB and tone 80…16000 Hz; EQ gains −12…+12 dB and mid frequency 150…4000 Hz; delay time 20…2000 ms and feedback 0…95%. Pedal output trim uses −24…+12 dB where offered. Mix is 0…100%. Clamp frequency controls below the context's Nyquist limit. Audible defaults and trim values are checked in the audio proof.
 
 Use a linear dry/wet blend initially: dry gain = 1−mix, wet gain = mix, with mix expressed as 0…1. Compressor latency alignment remains necessary before blending. Delay's wet path deliberately carries its echo timing.
+
+### Planned pedal expansion — phaser, chorus and reverb
+
+Status: requested and planned, not implemented. Keep the current stage 7 learning/measurement priority; implement these as a later pedal expansion with one verified effect per release. Proposed order is phaser, chorus, then reverb. Tune the algorithm, ranges and defaults in a numeric/listening proof before shipping; proposed ranges below are not current controls.
+
+- **Phaser:** a modulated all-pass cascade producing moving notches when blended with dry audio. Proposed controls: rate 0.05–5 Hz, depth 0–100%, center 100–4000 Hz, four/six/eight stages, bounded feedback 0–85%, output trim and mix. Select any feedback/cycle-breaking delay deliberately and verify it rather than assuming a direct feedback loop works. Frequency-dependent all-pass phase is the effect; do not compensate it away as scheduling latency. Document any actual look-ahead/algorithmic latency separately. Smooth frequency/rate/depth changes while retaining the session-relative LFO phase; stage changes are topology changes.
+- **Chorus:** one or two short modulated delay voices, initially without feedback. Proposed controls: rate 0.05–5 Hz, base delay 5–30 ms, modulation depth 0–10 ms, output trim and mix. Limit excursion to keep every delay at least 1 ms; reject/clamp combinations consistently in UI, import and audio. Modulated delay is intentional musical timing, distinct from processing compensation. Use a session-relative LFO phase reference in live/offline rendering, retain phase for live parameter edits, and verify pitch movement, dry unity and a finite tail bounded by maximum delay. Stereo widening can follow the initial mono-compatible implementation.
+- **Reverb:** an algorithmic space pedal with generated early reflections and a damped, bounded feedback network; no IR files or downloads. Proposed controls: pre-delay 0–100 ms, decay 0.1–10 s (defined as a −60 dB decay target), size, damping frequency in Hz, output trim and wet/dry mix. Confirm stable coefficient bounds at supported sample rates and maximum settings before selecting the network/defaults. Derive a conservative finite tail estimate from the network and include pre-delay; do not treat room decay as track-alignment latency. This pedal processes its assigned track/master signal, while the separate planned tiny instrument chamber belongs to instrument sound settings before track pedals. Both may coexist with clearly separate ownership and controls.
+
+All three use the existing compact pedal/dial plus selected-pedal inspector interface, cable-defined order, library templates and independent audition A/B/track/master instances. Output trim initially follows −24…+12 dB, mix 0–100%; controls expose units and keyboard/exact entry. Clamp frequencies below Nyquist and validate every parameter through the shared schema. Keep old projects unchanged with no new effect enabled by migration. Persist settings and placement/cables, not running LFO phase or audio buffers; each runtime graph owns its state.
+
+Live audition parameters remain smooth; score parameters and routing retain the current frozen-until-replay policy. Parameter edits must preserve the musical clock and applicable LFO phase; topology replacement follows warmed/crossfaded audition branches or queued score replay. Start offline modulation against the same musical-time reference used by playback. Pedal/whole-chain bypass restores dry unity; chorus drains its short wet history, reverb closes new wet input and lets existing reverberation decay, and any phaser feedback tail needs an explicitly measured bounded policy. Keep tail activity and cleanup budgets current across gaps and live decay changes. Hard Stop disposes all oscillators/feedback/delay state and replay starts fresh.
+
+Future gates: dry/identity gain and explicit mix law; finite bounded output/feedback at extrema and 44.1/48 kHz; phaser notch movement and documented phase/latency; chorus delay/pitch/LFO continuity; reverb pre-delay/decay/damping and bounded tails; smooth edits/A-B clock continuity; actual cable order and copy isolation; keyboard/drag/dial/inspector/import/undo/save/reload; bypass versus Stop/replay; mono/stereo compatibility; shared live/offline synthesis and tail/peak/memory handling in WAV export. Extend export truncation warnings to these effects where applicable. Manual listening remains a separate release gate. None of these new pedals ships in the current layout patch.
 
 ### Routing
 
@@ -603,6 +618,8 @@ Add guided experiments and the secondary analysis panel with clearly defined sou
 Gate: loading an experiment is undoable; metric units/reference/window are visible; silence produces no misleading numeric values; computed descriptors agree with simple known test signals.
 
 ### Stage 8 and later — advanced synthesis and notation
+
+Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the existing independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber and retain the current stage 7 main-feature priority.
 
 Requested instrument-builder follow-up: expand the current 16-harmonic bank to support up to 32 harmonics, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
