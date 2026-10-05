@@ -1661,165 +1661,177 @@ export default function App() {
                   selectedEvent={selectedEvent}
                   onSelect={setSelectedEvent}
                 />
-                <section className="panel track-instances">
+                <section className="panel track-instances" aria-label="Independent track sounds">
                   <div className="section-title">
                     <h3>Independent track sounds</h3>
                     <Layers3 size={15} />
                   </div>
-                  <ChainAssignment
-                    name="master"
-                    value={score.master?.key ?? null}
-                    presets={project.processing.library}
-                    disabled={playback === 'score' || !!score.diagnostics.length}
-                    onChange={(key) =>
-                      change((p) => ({
-                        ...p,
-                        scoreText: setScoreChain(
-                          p.scoreText,
-                          p.instruments.map((i) => i.key),
-                          p.processing.library.map((p) => p.key),
-                          null,
-                          key,
-                        ),
-                      }))
-                    }
-                  />
-                  <ChainBypass
-                    name="master"
-                    chain={project.processing.master}
-                    onChange={(chain) =>
-                      change((p) => ({ ...p, processing: { ...p.processing, master: chain } }))
-                    }
-                    onEdit={() => {
-                      setPedalDestination('master');
-                      setView('pedalboard');
+                  <div
+                    className="track-instances-scroll"
+                    role="region"
+                    aria-label="Track sound controls"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      // Keep Space available for native scrolling, without global Play.
+                      if (event.key === ' ' && event.target === event.currentTarget)
+                        event.stopPropagation();
                     }}
-                  />
-                  {project.tracks.map((t) => {
-                    const library = instruments.find((i) => i.id === t.presetId)!;
-                    const custom = JSON.stringify(t.sound) !== JSON.stringify(library.sound);
-                    return (
-                      <div className="track-instance" key={t.key}>
-                        <div>
-                          <Music2 size={16} />
-                          <strong>{t.key}</strong>
-                          <span className="tag">{custom ? 'CUSTOM' : library.label}</span>
-                        </div>
-                        <label className="track-instrument-choice">
-                          Instrument
-                          <select
-                            aria-label={`Instrument for ${t.key}`}
-                            value={library.id}
+                  >
+                    <ChainAssignment
+                      name="master"
+                      value={score.master?.key ?? null}
+                      presets={project.processing.library}
+                      disabled={playback === 'score' || !!score.diagnostics.length}
+                      onChange={(key) =>
+                        change((p) => ({
+                          ...p,
+                          scoreText: setScoreChain(
+                            p.scoreText,
+                            p.instruments.map((i) => i.key),
+                            p.processing.library.map((p) => p.key),
+                            null,
+                            key,
+                          ),
+                        }))
+                      }
+                    />
+                    <ChainBypass
+                      name="master"
+                      chain={project.processing.master}
+                      onChange={(chain) =>
+                        change((p) => ({ ...p, processing: { ...p.processing, master: chain } }))
+                      }
+                      onEdit={() => {
+                        setPedalDestination('master');
+                        setView('pedalboard');
+                      }}
+                    />
+                    {project.tracks.map((t) => {
+                      const library = instruments.find((i) => i.id === t.presetId)!;
+                      const custom = JSON.stringify(t.sound) !== JSON.stringify(library.sound);
+                      return (
+                        <div className="track-instance" key={t.key}>
+                          <div>
+                            <Music2 size={16} />
+                            <strong>{t.key}</strong>
+                            <span className="tag">{custom ? 'CUSTOM' : library.label}</span>
+                          </div>
+                          <label className="track-instrument-choice">
+                            Instrument
+                            <select
+                              aria-label={`Instrument for ${t.key}`}
+                              value={library.id}
+                              disabled={playback === 'score' || !!score.diagnostics.length}
+                              onChange={(e) => {
+                                const chosen = instruments.find((i) => i.id === e.target.value)!;
+                                change((p) => applyPreset(p, chosen.id, chosen.sound, [t.key]));
+                              }}
+                            >
+                              {instruments.map((i) => (
+                                <option key={i.id} value={i.id}>
+                                  {i.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <ChainAssignment
+                            name={t.key}
+                            value={
+                              score.tracks.find((parsed) => parsed.key === t.key)?.chainKey ?? null
+                            }
+                            presets={project.processing.library}
                             disabled={playback === 'score' || !!score.diagnostics.length}
-                            onChange={(e) => {
-                              const chosen = instruments.find((i) => i.id === e.target.value)!;
-                              change((p) => applyPreset(p, chosen.id, chosen.sound, [t.key]));
+                            onChange={(key) =>
+                              change((p) => ({
+                                ...p,
+                                scoreText: setScoreChain(
+                                  p.scoreText,
+                                  p.instruments.map((i) => i.key),
+                                  p.processing.library.map((p) => p.key),
+                                  t.key,
+                                  key,
+                                ),
+                              }))
+                            }
+                          />
+                          <RangeControl
+                            label={`${t.key} level`}
+                            value={t.level * 100}
+                            min={0}
+                            max={100}
+                            step={1}
+                            unit="%"
+                            onChange={(n) =>
+                              change(
+                                (p) => ({
+                                  ...p,
+                                  tracks: p.tracks.map((track) =>
+                                    track.key === t.key ? { ...track, level: n / 100 } : track,
+                                  ),
+                                }),
+                                `track-level:${t.key}`,
+                              )
+                            }
+                          />
+                          <button
+                            className="text-button"
+                            onClick={() => {
+                              resetMacros(t.sound);
+                              change((p) => ({
+                                ...p,
+                                editorPresetId: t.presetId,
+                                comparison: {
+                                  ...p.comparison,
+                                  [p.comparison.active]: structuredClone(t.sound),
+                                },
+                                processing: {
+                                  ...p.processing,
+                                  audition: {
+                                    ...p.processing.audition,
+                                    [p.comparison.active]: structuredClone(
+                                      p.processing.tracks[t.key],
+                                    ),
+                                  },
+                                },
+                              }));
+                              setSelectedTrack(t.key);
+                              setView('instrument');
                             }}
                           >
-                            {instruments.map((i) => (
-                              <option key={i.id} value={i.id}>
-                                {i.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <ChainAssignment
-                          name={t.key}
-                          value={
-                            score.tracks.find((parsed) => parsed.key === t.key)?.chainKey ?? null
-                          }
-                          presets={project.processing.library}
-                          disabled={playback === 'score' || !!score.diagnostics.length}
-                          onChange={(key) =>
-                            change((p) => ({
-                              ...p,
-                              scoreText: setScoreChain(
-                                p.scoreText,
-                                p.instruments.map((i) => i.key),
-                                p.processing.library.map((p) => p.key),
-                                t.key,
-                                key,
-                              ),
-                            }))
-                          }
-                        />
-                        <RangeControl
-                          label={`${t.key} level`}
-                          value={t.level * 100}
-                          min={0}
-                          max={100}
-                          step={1}
-                          unit="%"
-                          onChange={(n) =>
-                            change(
-                              (p) => ({
+                            Load copy into editor
+                            <ArrowRight size={12} />
+                          </button>
+                          <ChainBypass
+                            name={`track ${t.key}`}
+                            chain={project.processing.tracks[t.key]}
+                            onChange={(chain) =>
+                              change((p) => ({
                                 ...p,
-                                tracks: p.tracks.map((track) =>
-                                  track.key === t.key ? { ...track, level: n / 100 } : track,
-                                ),
-                              }),
-                              `track-level:${t.key}`,
-                            )
-                          }
-                        />
-                        <button
-                          className="text-button"
-                          onClick={() => {
-                            resetMacros(t.sound);
-                            change((p) => ({
-                              ...p,
-                              editorPresetId: t.presetId,
-                              comparison: {
-                                ...p.comparison,
-                                [p.comparison.active]: structuredClone(t.sound),
-                              },
-                              processing: {
-                                ...p.processing,
-                                audition: {
-                                  ...p.processing.audition,
-                                  [p.comparison.active]: structuredClone(
-                                    p.processing.tracks[t.key],
-                                  ),
+                                processing: {
+                                  ...p.processing,
+                                  tracks: { ...p.processing.tracks, [t.key]: chain },
                                 },
-                              },
-                            }));
-                            setSelectedTrack(t.key);
-                            setView('instrument');
-                          }}
-                        >
-                          Load copy into editor
-                          <ArrowRight size={12} />
-                        </button>
-                        <ChainBypass
-                          name={`track ${t.key}`}
-                          chain={project.processing.tracks[t.key]}
-                          onChange={(chain) =>
-                            change((p) => ({
-                              ...p,
-                              processing: {
-                                ...p.processing,
-                                tracks: { ...p.processing.tracks, [t.key]: chain },
-                              },
-                            }))
-                          }
-                          onEdit={() => {
-                            setPedalDestination(`track:${t.key}`);
-                            setView('pedalboard');
-                          }}
-                        />
-                        {t.appliedVersion < library.version && (
-                          <span className="footnote">
-                            Library v{library.version} available · this copy keeps v
-                            {t.appliedVersion}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                  <p className="footnote">
-                    Changing an assignment loads a fresh preset copy. Library edits leave existing
-                    track copies intact.
-                  </p>
+                              }))
+                            }
+                            onEdit={() => {
+                              setPedalDestination(`track:${t.key}`);
+                              setView('pedalboard');
+                            }}
+                          />
+                          {t.appliedVersion < library.version && (
+                            <span className="footnote">
+                              Library v{library.version} available · this copy keeps v
+                              {t.appliedVersion}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                    <p className="footnote">
+                      Changing an assignment loads a fresh preset copy. Library edits leave existing
+                      track copies intact.
+                    </p>
+                  </div>
                 </section>
                 {inspectedEvent && (
                   <section className="panel event-inspector">

@@ -1532,7 +1532,28 @@ dd {
   overflow-wrap: anywhere;
 }
 .track-instances {
-  padding: 17px 19px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* The timeline owns this row's height; controls scroll inside their panel. */
+  contain: size;
+}
+.track-instances > .section-title {
+  flex-shrink: 0;
+  padding: 17px 19px 0;
+}
+.track-instances-scroll {
+  flex: 1;
+  min-height: 0;
+  padding: 0 19px 17px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  overscroll-behavior-y: contain;
+}
+.track-instances-scroll:focus-visible {
+  outline: 2px solid var(--tertiary-ink);
+  outline-offset: -2px;
 }
 .track-instance {
   padding: 13px 0;
@@ -2450,6 +2471,10 @@ dd {
   }
   .composition-overview > .panel {
     width: 100%;
+  }
+  .track-instances {
+    contain: none;
+    max-height: 440px;
   }
   .editor-status {
     font-size: 8px;
