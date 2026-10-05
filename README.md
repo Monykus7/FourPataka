@@ -46,7 +46,7 @@ The desktop checks can also target the unpacked production executable by setting
 
 The enlarged score editor and command reference sit side by side. The editor fills the panel down to its status bar. Timeline and independent track sounds sit below; narrow screens stack score, reference, timeline and tracks in that order. Search and command insertion remain next to the editor on desktop.
 
-Command reference is a compact panel with search fixed above its scrollable catalog. It is capped at 560 px on desktop and 460 px on narrow screens. Scroll or Tab through all commands and expanded rules; Space scrolls the focused catalog. Search and category changes return results to the top.
+Expanded command reference matches the score panel height, side by side on desktop and when stacked on narrow screens. Search stays fixed above its scrollable catalog. Scroll or Tab through all commands and expanded rules; Space scrolls the focused catalog. Search and category changes return results to the top.
 
 Timeline event pickers show notes/rests, bar, beat and duration, even in a dense score. Previous/Next step through a track. Each track has one note Tab stop; Left/Right moves between its events and Home/End jumps to its endpoints. Selection inspects the displayed score revision without changing playback position.
 

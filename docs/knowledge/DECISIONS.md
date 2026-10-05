@@ -2,6 +2,14 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Score-height command reference (v0.19.1)
+
+<!-- features: command-reference, composition, appearance, keyboard-workflow -->
+
+The expanded reference now matches the score panel's border-box height. On desktop, size containment prevents the catalog from determining the shared grid row height; the reference stretches alongside the score and its body absorbs remaining space beneath fixed search. When the panels stack, a scoped ResizeObserver mirrors the score's measured border box through a CSS variable, including status wrapping and diagnostics. Observation is removed when Compose unmounts. The desktop row does not use that mirrored height, avoiding a feedback loop that would prevent the score from shrinking after diagnostics disappear. A collapsed reference returns to its header height. Filtering and expanded rules never size the score; search, catalog scrolling/focus, source insertion, independent copies and all audio timing/latency policies retain existing behavior. This is a layout patch, with no roadmap gate change.
+
+Evidence: src/App.tsx, src/styles.css, src/components/CommandReference.tsx, tests/browser/command-reference.spec.ts.
+
 ## Frozen project WAV export (v0.19.0)
 
 <!-- features: wav-export, synthesis, pedals, tracks, storage, desktop -->

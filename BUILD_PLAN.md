@@ -57,6 +57,8 @@ Include the following by the end of stage 5:
 
 ### Following releases
 
+The v0.19.1 layout follow-up makes the expanded command reference match the score panel height while retaining fixed search and local catalog scrolling; no roadmap gate changes.
+
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.

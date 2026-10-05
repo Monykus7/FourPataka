@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-04. Latest release: v0.19.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-04. Latest verified release: v0.19.0; v0.19.1 layout patch verification is in progress. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -348,3 +348,10 @@ The named, keyboard-accessible Export WAV dialog offers PCM16 at 44.1/48 kHz, mo
 Validation for v0.19.0: all 152 unit checks pass across 21 suites. All 106 current browser workflows have passing coverage: 104 passed in the full regression run; after the final ownership fix, all seven source/cleanup/WAV audio proofs pass, including the two added master-order and retired/silent-voice proofs. Continuous phase editing and processed hard Stop also pass against the final engine. All thirteen native workflows pass in the full run against the final packaged 0.19.0 executable, covering WAV bytes/format/save cancellation/invalid-header rejection, the actual Tab-order demonstration, recovery, sign/preset behavior, independent chain copies, delay tails, EQ, physical equipment/cables/dials, Compose, assets/renderer isolation/audio/menus and JSON round trips. Production TypeScript/bundle, formatting, knowledge build/freshness and Windows portable packaging pass. Desktop and 390 px export dialogs were visually reviewed with bounded scrolling and readable controls. Output: release/FourPataka-0.19.0-win-x64.exe. The portable studio is visibly open; its extracted app.asar SHA-256 matches the native-tested bundle. Nine focused checkpoints use Monykus7 and are pushed to origin/master.
 
 This closes the stage 6 automated WAV functional gate for the tested Chromium/Electron workflows: notes/rest duration, owned instruments, pedal order/master processing, latency compensation, release/echo budgets, explicit levels and monitor exclusion have audio/file proofs. It does not close the earlier stage 5 manual screen-reader, physical-listening or other browser/device gates. Stage 7 learning and richer measurement is the next main feature; 32 harmonics, tiny-chamber acoustics and chord-symbol macros remain later stage 8 work.
+
+
+### Matched score/reference height — v0.19.1
+
+Expanded command reference follows the score panel height on desktop and when stacked. CSS size containment prevents its catalog from enlarging the desktop row; a scoped border-box ResizeObserver mirrors the score height only for stacked rows. Search remains fixed over the flexing catalog scroller. Collapse returns the reference to its header height, and filtering/rule expansion cannot enlarge the score. Diagnostic changes, status wrapping and viewport resizing are reflected without a desktop height feedback loop. Audio, WAV export, source authority, independent copies, schema/history and roadmap gates keep their existing policies.
+
+Initial validation: five command-reference workflows pass, including equal heights at 1440/1000/390 px, diagnostics, collapse/reopen, filtering, scroll, focus and source insertion. Wider affected browser workflows and the portable/native patch checks are in progress. v0.19.0's broader unit/audio/106-browser/13-native verification is retained as historical evidence; this patch reruns its affected UI workflows.
