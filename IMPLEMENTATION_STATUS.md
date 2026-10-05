@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-04. v0.18.1 UI patch validation in progress; last verified release: v0.18.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-04. Latest release: v0.18.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -336,4 +336,4 @@ Add dot now sits beside Dots/Draw instead of below the graph. A visible key guid
 
 Command reference caps its total height at 560 px desktop / 460 px narrow screen, around half or less of the expanded catalog's natural height. Search stays outside the named, focusable internal scroller containing destination controls, all cards/rules and the footer. Space scrolls the focused catalog without invoking global Play. Search/category filtering resets catalog scroll while retaining search focus. Source insertion, audio phase/clock/latency, project schema and roadmap gates retain their existing policies.
 
-Validation in progress: sixteen affected browser workflows pass, including visible/accessibly described key guidance, waveform drawing/dots/reset/undo, bounded reference geometry at 1440/390 px, scrolling, fixed search, filtering, source-aware insertion, composition/meter and the full Tab-order demonstration. Browser screenshots were reviewed; native workflows and the final portable build are being verified. The broader audio/unit/native suites were previously verified for v0.18.0; this UI patch reruns affected workflows.
+Validation for v0.18.1: sixteen affected browser workflows pass, including visible/accessibly described key guidance, waveform drawing/dots/reset/undo, bounded reference geometry at 1440/390 px, scrolling, fixed search, filtering, source-aware insertion, composition/meter and the full Tab-order demonstration. Three packaged native workflows pass: the actual Tab-order demonstration with native saving/reload, command-reference menu focus/source insertion/native JSON and local assets/renderer isolation/audio/menu tools. The packaged version is 0.18.1. Waveform guide and compact reference screenshots were visually reviewed at desktop and 390 px widths; the reference is at most 55% of its natural expanded height and neither layout introduces page overflow. Production TypeScript/bundle, formatting, knowledge build/freshness and Windows portable packaging pass. The broader audio/unit/native suites were previously verified for v0.18.0; this UI patch reruns affected workflows. Output: release/FourPataka-0.18.1-win-x64.exe. The portable studio is visibly open and its extracted app.asar SHA-256 matches the native-tested bundle. Four focused patch checkpoints use Monykus7 and are pushed to origin/master. No roadmap gate or musical behavior changes.
