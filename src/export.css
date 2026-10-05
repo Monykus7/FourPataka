@@ -1,0 +1,84 @@
+.wav-dialog {
+  width: min(650px, 94vw);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 24px;
+  background: var(--surface-1);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.wav-dialog::backdrop {
+  background: #080711ba;
+}
+.wav-dialog .panel-header {
+  padding: 0 0 16px;
+}
+.wav-dialog h2 {
+  font-size: 18px;
+}
+.wav-dialog p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 14px 0;
+}
+.wav-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin: 18px 0;
+}
+.wav-options legend {
+  font-size: 12px;
+  color: var(--tertiary-ink);
+  padding: 0 6px;
+}
+.wav-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+.wav-dialog input[type='number'],
+.wav-dialog select {
+  width: 100%;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 8px;
+}
+.wav-warning {
+  color: var(--tertiary-ink);
+  border-left: 3px solid var(--tertiary);
+  padding-left: 12px;
+}
+.wav-level {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.wav-level input[type='number'] {
+  max-width: 150px;
+}
+.wav-dialog .wav-normalize {
+  flex-direction: row;
+  align-items: center;
+  margin-top: 16px;
+}
+.wav-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+@media (max-width: 500px) {
+  .wav-dialog {
+    padding: 16px;
+  }
+  .wav-options {
+    grid-template-columns: 1fr;
+  }
+}

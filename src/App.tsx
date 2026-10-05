@@ -82,6 +82,7 @@ import ChainAssignment from './components/ChainAssignment';
 import ProcessedGraphs from './components/ProcessedGraphs';
 import TrackMaker from './components/TrackMaker';
 import CommandReference from './components/CommandReference';
+import WavExport from './components/WavExport';
 import HarmonicPolarity from './components/HarmonicPolarity';
 import RecoveryDialog from './components/RecoveryDialog';
 import {
@@ -228,6 +229,7 @@ export default function App() {
   const [peak, setPeak] = useState(0);
   const [sampleRate, setSampleRate] = useState(48000);
   const [newPreset, setNewPreset] = useState(false);
+  const [wavProject, setWavProject] = useState<Project | null>(null);
   const [trackMakerOpen, setTrackMakerOpen] = useState(false);
   const [presetLabel, setPresetLabel] = useState('');
   const [presetKey, setPresetKey] = useState('');
@@ -670,6 +672,7 @@ export default function App() {
   menuActions.current = (action) => {
     if (action === 'open') void openNativeProject();
     else if (action === 'save') void exportJson();
+    else if (action === 'wav') setWavProject((existing) => existing ?? structuredClone(project));
     else if (action === 'recovery') openRecovery();
     else if (action === 'undo' || action === 'redo') travel(action);
     else if (
@@ -771,6 +774,13 @@ export default function App() {
           <button className="subtle-button" onClick={exportJson}>
             <ArrowDownToLine size={15} />
             <span>{window.fourpatakaDesktop ? 'Save project' : 'Export JSON'}</span>
+          </button>
+          <button
+            className="subtle-button"
+            onClick={() => setWavProject((existing) => existing ?? structuredClone(project))}
+          >
+            <FileMusic size={15} />
+            <span>Export WAV</span>
           </button>
           <button
             className="subtle-button"
@@ -2201,6 +2211,7 @@ export default function App() {
           }}
         />
       )}
+      {wavProject && <WavExport project={wavProject} onClose={() => setWavProject(null)} />}
       <dialog
         ref={dialog}
         className="preset-dialog"

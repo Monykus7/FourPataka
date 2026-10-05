@@ -6,6 +6,10 @@ declare global {
       openProject?: () => Promise<{ canceled: boolean; text?: string; name?: string }>;
       saveProject?: (text: string, name: string) => Promise<{ canceled: boolean; name?: string }>;
       saveRecovery?: (text: string, name: string) => Promise<{ canceled: boolean; name?: string }>;
+      saveWav?: (
+        buffer: ArrayBuffer,
+        name: string,
+      ) => Promise<{ canceled: boolean; name?: string }>;
       onMenuAction: (callback: (action: string) => void) => () => void;
     };
   }
