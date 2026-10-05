@@ -1,6 +1,54 @@
 import { expect, test } from '@playwright/test';
 import { beginEquipmentDrag, dragEquipment, patchBoard, placePedal } from '../helpers/board';
 
+test('equipment menu arrows, Escape, Tab and keyboard placement preserve useful focus', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).press('Enter');
+  const equipment = page.getByRole('button', { name: 'Equipment', exact: true });
+  await equipment.focus();
+  await equipment.press('ArrowDown');
+  const compressor = page.getByRole('menuitem', { name: 'Compressor', exact: true });
+  await expect(compressor).toBeFocused();
+  await compressor.press('ArrowUp');
+  const cable = page.getByRole('menuitem', { name: 'Patch cable', exact: true });
+  await expect(cable).toBeFocused();
+  await cable.press('Home');
+  await compressor.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  const eq = page.getByRole('menuitem', { name: 'Three-band EQ', exact: true });
+  await expect(eq).toBeFocused();
+  await eq.press('Enter');
+  const slot = page.getByRole('button', { name: 'Place pedal row 1 column 1', exact: true });
+  await expect(slot).toBeFocused();
+  await slot.press('Enter');
+  const grip = page.getByRole('button', { name: 'Move eq 1 on board', exact: true });
+  await expect(grip).toBeFocused();
+  await grip.press('ArrowRight');
+  await expect(page.locator('.compact-pedal.eq')).toHaveCSS('left', '252px');
+  await grip.press('Escape');
+  await expect(equipment).toBeFocused();
+  await equipment.press('ArrowUp');
+  await expect(cable).toBeFocused();
+  await cable.press('Enter');
+  const input = page.getByRole('button', { name: 'Board input output jack', exact: true });
+  await expect(input).toBeFocused();
+  await input.press('Enter');
+  await page.getByRole('button', { name: 'eq 1 input jack', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'eq 1 output jack', exact: true }).press('Enter');
+  await page.getByRole('button', { name: 'Board output input jack', exact: true }).press('Enter');
+  await expect(page.locator('.board-route-status')).toHaveText('1 in signal path');
+  await page.keyboard.press('Escape');
+  await equipment.press('Enter');
+  await compressor.press('Escape');
+  await expect(equipment).toBeFocused();
+  await equipment.press('Enter');
+  await compressor.press('Tab');
+  await expect(page.getByRole('menu', { name: 'Equipment', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Grid pedalboard', exact: true })).toBeFocused();
+});
+
 for (const kind of ['compressor', 'overdrive', 'eq', 'delay'] as const)
   test(`${kind} equipment drags reach the first slot beneath the open menu`, async ({ page }) => {
     await page.goto('/');

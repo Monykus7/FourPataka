@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react';
 import { Cable, GripVertical, Power } from 'lucide-react';
 import {
   BOARD_COLUMNS,
@@ -52,6 +52,10 @@ export default function PedalBoardSurface({
   activeTails: string[];
 }) {
   const canvas = useRef<HTMLDivElement>(null),
+    equipment = useRef<HTMLButtonElement>(null),
+    equipmentMenu = useRef<HTMLDivElement>(null),
+    pendingFocus = useRef<string | null>(null),
+    menuEdge = useRef<'first' | 'last'>('first'),
     move = useRef<Moving | null>(null),
     equipmentFrame = useRef<number | null>(null),
     suppressClick = useRef(false);
@@ -62,6 +66,17 @@ export default function PedalBoardSurface({
   const [pendingDraft, setDraft] = useState<{ from: string | null; point: Point } | null>(null),
     [selectedCable, setSelectedCable] = useState<string | null>(null),
     [notice, setNotice] = useState('');
+  useLayoutEffect(() => {
+    if (!pendingFocus.current) return;
+    canvas.current?.querySelector<HTMLButtonElement>(pendingFocus.current)?.focus();
+    pendingFocus.current = null;
+  });
+  useLayoutEffect(() => {
+    if (!menu) return;
+    const items =
+      equipmentMenu.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+    items?.[menuEdge.current === 'last' ? items.length - 1 : 0]?.focus();
+  }, [menu]);
   const clearEquipmentDrag = () => {
     if (equipmentFrame.current !== null) cancelAnimationFrame(equipmentFrame.current);
     equipmentFrame.current = null;
@@ -120,6 +135,10 @@ export default function PedalBoardSurface({
   const place = (kind: PedalKind, cell: BoardCell) => {
     if (occupied(cell) || chain.pedals.length >= 8) return;
     const pedal = makePedal(kind);
+    // A keyboard placement disables its slot; move focus onto the new pedal
+    // after React commits instead of dropping the user back at the document.
+    if (document.activeElement?.classList.contains('board-slot'))
+      pendingFocus.current = `.compact-pedal:last-of-type .pedal-grip`;
     onChange({
       ...chain,
       pedals: [...chain.pedals, pedal],
@@ -213,6 +232,7 @@ export default function PedalBoardSurface({
       className="physical-board-editor"
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
+          e.preventDefault();
           // Movement is a preview until release; canceling must never create a history entry.
           move.current = null;
           setMoving(null);
@@ -222,25 +242,66 @@ export default function PedalBoardSurface({
           clearEquipmentDrag();
           setSelectedCable(null);
           setNotice('');
+          equipment.current?.focus();
         }
       }}
     >
       <div className="board-tools">
         <div className={`equipment-picker ${equipmentDragging ? 'equipment-dragging' : ''}`}>
           <button
+            ref={equipment}
             className="secondary-button"
             aria-expanded={menu}
             aria-haspopup="menu"
-            onClick={() => setMenu(!menu)}
+            onClick={() => {
+              menuEdge.current = 'first';
+              setMenu(!menu);
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+              e.preventDefault();
+              menuEdge.current = e.key === 'ArrowUp' ? 'last' : 'first';
+              setMenu(true);
+            }}
           >
             Equipment
           </button>
           {menu && (
-            <div className="equipment-menu" role="menu" aria-label="Equipment">
+            <div
+              ref={equipmentMenu}
+              className="equipment-menu"
+              role="menu"
+              aria-label="Equipment"
+              onKeyDown={(e) => {
+                const items = Array.from(
+                  e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'),
+                );
+                const index = items.indexOf(document.activeElement as HTMLButtonElement);
+                const next =
+                  e.key === 'Home'
+                    ? 0
+                    : e.key === 'End'
+                      ? items.length - 1
+                      : e.key === 'ArrowDown'
+                        ? (index + 1) % items.length
+                        : e.key === 'ArrowUp'
+                          ? (index - 1 + items.length) % items.length
+                          : null;
+                if (next !== null) {
+                  e.preventDefault();
+                  items[next]?.focus();
+                }
+                if (e.key === 'Tab') {
+                  setMenu(false);
+                  equipment.current?.focus();
+                }
+              }}
+            >
               {(['compressor', 'overdrive', 'eq', 'delay'] as const).map((kind) => (
                 <button
                   key={kind}
                   role="menuitem"
+                  tabIndex={-1}
                   draggable
                   disabled={chain.pedals.length >= 8}
                   onDragStart={(e) => {
@@ -260,7 +321,8 @@ export default function PedalBoardSurface({
                     setMenu(false);
                     setTool(null);
                   }}
-                  onClick={() => {
+                  onClick={(e) => {
+                    if (e.detail === 0) pendingFocus.current = '.board-slot:not(:disabled)';
                     setTool(kind);
                     setMenu(false);
                     setDraft(null);
@@ -271,7 +333,10 @@ export default function PedalBoardSurface({
               ))}
               <button
                 role="menuitem"
-                onClick={() => {
+                tabIndex={-1}
+                onClick={(e) => {
+                  if (e.detail === 0)
+                    pendingFocus.current = '.board-jack[data-owner=""][data-port="out"]';
                   setTool('cable');
                   setMenu(false);
                   clearEquipmentDrag();
@@ -296,6 +361,7 @@ export default function PedalBoardSurface({
             onClick={() => {
               setTool(null);
               setDraft(null);
+              equipment.current?.focus();
             }}
           >
             Cancel tool
