@@ -1,6 +1,7 @@
 import type { Sound } from '../core/music';
 import { createVoice, holdParameter, type Voice } from './voice';
 export { createVoice } from './voice';
+import { createScoreGraph } from './scoreGraph';
 import type { AuditionPhrase } from '../core/comparison';
 import type { CompiledScore } from '../core/parser';
 import type { TrackInstance } from '../core/project';
@@ -13,7 +14,6 @@ import {
 } from '../core/pedals';
 import {
   createChain,
-  chainLatency,
   measureOversamplingLatency,
   measureCompressorLatency,
   type ChainGraph,
@@ -329,53 +329,23 @@ export class AudioEngine {
     const session = this.begin('score', score.seconds + maxRelease);
     session.phraseSeconds = score.seconds;
     const settings = structuredClone(processing);
-    const master = createChain(
+    const graph = createScoreGraph(
       this.context!,
-      settings?.master ?? emptyChain(),
+      session.gate,
+      tracks,
+      settings,
       this.oversamplingLatency,
       this.compressorLatency,
     );
-    master.output.connect(session.gate);
-    session.chains.set('master', master);
-    session.chainSettings.set('master', chainMusicalSettings(settings?.master ?? emptyChain()));
-    const maxLatency = Math.max(
-      0,
-      ...tracks.map((t) =>
-        chainLatency(
-          settings?.tracks[t.key] ?? emptyChain(),
-          this.oversamplingLatency,
-          this.compressorLatency,
-        ),
-      ),
-    );
-    session.latency = maxLatency + master.latency;
-    // Pad shorter track paths to maxLatency: simultaneous note starts alone
-    // cannot align compressor/oversampling look-ahead before the master mix.
-    session.processingTail = master.tail;
-    const buses = new Map<string, GainNode>();
-    tracks.forEach((t) => {
-      session.originalSounds.set(t.key, structuredClone(t.sound));
-      session.scoreSounds.set(t.key, structuredClone(t.sound));
-      const bus = this.context!.createGain();
-      bus.gain.value = t.level;
-      const chain = settings?.tracks[t.key] ?? emptyChain();
-      const graph = createChain(
-        this.context!,
-        chain,
-        this.oversamplingLatency,
-        this.compressorLatency,
-      );
-      const align = this.context!.createDelay(1);
-      align.delayTime.value = maxLatency - graph.latency;
-      session.processingTail = Math.max(
-        session.processingTail,
-        master.tail + graph.tail + align.delayTime.value,
-      );
-      graph.output.connect(bus).connect(align).connect(master.input);
-      session.chains.set('track:' + t.key, graph);
-      session.chainSettings.set('track:' + t.key, chainMusicalSettings(chain));
-      session.nodes.push(bus, align);
-      buses.set(t.key, graph.input);
+    session.chains = graph.chains;
+    session.chainSettings = graph.settings;
+    session.nodes.push(...graph.nodes);
+    session.latency = graph.latency;
+    session.processingTail = graph.tail;
+    const buses = graph.buses;
+    tracks.forEach((track) => {
+      session.originalSounds.set(track.key, structuredClone(track.sound));
+      session.scoreSounds.set(track.key, structuredClone(track.sound));
     });
     session.duration += session.processingTail;
     const queue = [...score.events].sort((a, b) => a.beat - b.beat);
