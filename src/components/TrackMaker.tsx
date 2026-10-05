@@ -52,7 +52,9 @@ export default function TrackMaker({
       return next;
     });
   useEffect(() => {
-    dialog.current?.showModal();
+    const modal = dialog.current!;
+    modal.showModal();
+    modal.querySelector<HTMLInputElement>('input')?.focus();
   }, []);
   const add = (kind: Row['kind']) =>
     setRows((before) => [
@@ -65,12 +67,22 @@ export default function TrackMaker({
       },
     ]);
   return (
-    <dialog ref={dialog} className="track-maker-dialog" onCancel={onClose} onClose={onClose}>
+    <dialog
+      ref={dialog}
+      className="track-maker-dialog"
+      aria-labelledby="track-maker-title"
+      onCancel={(event) => {
+        event.preventDefault();
+        dialog.current?.close();
+      }}
+      onClose={onClose}
+    >
       <form
         onSubmit={(event) => {
           event.preventDefault();
           try {
             onCreate(key.trim(), instrument, rows.map(expression), chainKey || null);
+            dialog.current?.close();
           } catch (e) {
             setError((e as Error).message);
           }
@@ -78,13 +90,13 @@ export default function TrackMaker({
       >
         <div className="panel-header">
           <div>
-            <h2>Make a track</h2>
+            <h2 id="track-maker-title">Make a track</h2>
           </div>
           <button
             type="button"
             className="icon-button"
             aria-label="Close track maker"
-            onClick={onClose}
+            onClick={() => dialog.current?.close()}
           >
             <X size={18} />
           </button>

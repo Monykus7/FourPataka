@@ -398,8 +398,10 @@ export default function App() {
     };
   }, []);
   useEffect(() => {
-    if (newPreset) dialog.current?.showModal();
-    else dialog.current?.close();
+    if (newPreset) {
+      dialog.current?.showModal();
+      dialog.current?.querySelector<HTMLInputElement>('input')?.focus();
+    } else dialog.current?.close();
   }, [newPreset]);
 
   const stop = () => {
@@ -2201,12 +2203,13 @@ export default function App() {
       <dialog
         ref={dialog}
         className="preset-dialog"
+        aria-labelledby="save-preset-title"
         onCancel={() => setNewPreset(false)}
         onClose={() => setNewPreset(false)}
       >
         <form onSubmit={createPreset}>
           <div className="panel-header">
-            <h2>Save your sound</h2>
+            <h2 id="save-preset-title">Save your sound</h2>
             <button
               className="icon-button"
               type="button"
