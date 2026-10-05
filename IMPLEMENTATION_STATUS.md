@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-04. Latest verified release: v0.19.1; v0.19.2 panel patch verification is in progress. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-05. Latest verified release: v0.19.2. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -365,4 +365,4 @@ Desktop Independent track sounds now follows the timeline's natural row height. 
 
 Phaser, chorus and algorithmic reverb are added to the future pedal roadmap, not implemented. Section 7 records proposed controls, units/ranges, session-relative LFO continuity, intentional phase/delay versus compensation, stability, independent copies, bypass/tail/Stop and shared WAV/native/keyboard proof gates. Space reverb stays separate from the instrument builder's tiny chamber; neither needs IR assets. Stage 7 learning/measurement is still the next main feature.
 
-Initial panel checks pass for matching desktop heights, bounded narrow scrolling, keyboard scrolling without Play, lower-track assignment/undo, unchanged saved settings and empty-score disabled copies. Broader affected browser and packaged native checks are in progress. This patch does not repeat the unchanged DSP/unit suites; v0.19.0 retains its historical 152-unit/106-browser/13-native verification.
+Validation for v0.19.2: all eighteen affected browser workflows pass (seventeen in the regression run and the pedal edit-link workflow on rerun after replacing its obsolete direct-child selector). Coverage includes matching desktop heights, bounded 390 px scrolling, keyboard scrolling without Play, lower-track assignment/undo, unchanged saved settings, empty-score disabled copies, timeline inspection, timing, independent chains, pedal links and playback continuity across tabs. Three packaged native workflows pass against version 0.19.2: the full keyboard studio demonstration, independent score chains through native save/reload, and Compose source assignment/timing/undo with the new matching-height and keyboard-scroll checks. Desktop paired-panel and narrow scroller screenshots were visually reviewed. Production TypeScript/bundle, formatting, knowledge build/freshness and portable packaging pass. This patch does not repeat unchanged DSP/unit suites; v0.19.0 retains its historical 152-unit/106-browser/13-native verification. Output: release/FourPataka-0.19.2-win-x64.exe. The portable app is visibly open; its extracted app.asar SHA-256 matches the native-tested bundle. Four focused patch checkpoints use Monykus7 and are pushed to origin/master. Planned pedals remain unimplemented, and no musical or roadmap gate changes.
