@@ -5,6 +5,7 @@ export interface Voice {
   oscillators: OscillatorNode[];
   readonly end: number;
   update: (sound: Sound, solo?: string) => void;
+  steal: (time: number) => void;
   dispose: () => void;
 }
 interface Source {
@@ -86,6 +87,10 @@ export function createVoice(
       harmonicSources.delete(item);
       const index = oscillators.indexOf(oscillator);
       if (index >= 0) oscillators.splice(index, 1);
+      if (!sources.size && context.currentTime >= end) {
+        envelope.disconnect();
+        trim.disconnect();
+      }
     };
     oscillator.start(at);
     oscillator.stop(end + 0.005);
@@ -158,6 +163,14 @@ export function createVoice(
       trim.gain.setTargetAtTime(dbToGain(next.trim), now, 0.01);
       setSources(next, selection, false);
       current = structuredClone(next);
+    },
+    steal(time) {
+      // Hold the scheduled envelope at the replacement note's audio time, not
+      // AudioParam.value (which describes now during look-ahead/offline setup).
+      envelope.gain.cancelAndHoldAtTime(time);
+      envelope.gain.linearRampToValueAtTime(0, time + 0.01);
+      end = time + 0.01;
+      sources.forEach((s) => s.oscillator.stop(time + 0.015));
     },
     dispose() {
       if (disposed) return;

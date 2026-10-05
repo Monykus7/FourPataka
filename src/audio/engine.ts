@@ -19,7 +19,8 @@ import {
   type ChainGraph,
 } from './effects';
 
-export const VOICE_LIMIT = 32;
+export { VOICE_LIMIT } from './voiceLimit';
+import { admitVoice } from './voiceLimit';
 interface AuditionBranch {
   graph: ChainGraph;
   align: DelayNode;
@@ -139,20 +140,7 @@ export class AudioEngine {
     solo?: string,
     trackKey?: string,
   ) {
-    const now = this.context!.currentTime;
-    session.voices = session.voices.filter((v) => {
-      if (v.end <= now) {
-        v.dispose();
-        return false;
-      }
-      return true;
-    });
-    if (session.voices.length >= VOICE_LIMIT) {
-      const stolen = session.voices.shift()!;
-      holdParameter(stolen.envelope.gain, now);
-      stolen.envelope.gain.linearRampToValueAtTime(0, now + 0.01);
-      setTimeout(stolen.dispose, 20);
-    }
+    session.voices = admitVoice(session.voices, start);
     const voice = createVoice(this.context!, destination, sound, frequency, start, duration, solo);
     session.voices.push(voice);
     if (trackKey) session.voiceTracks.set(voice, trackKey);
