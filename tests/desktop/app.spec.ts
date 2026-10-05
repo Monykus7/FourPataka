@@ -478,6 +478,17 @@ test('packaged pedal dials rotate and support exact keyboard adjustment with und
 test('packaged Compose applies timing and instruments to source with undo', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
+  const trackPanel = page.getByRole('region', { name: 'Independent track sounds', exact: true });
+  await expect
+    .poll(async () =>
+      Math.abs((await timeline.boundingBox())!.height - (await trackPanel.boundingBox())!.height),
+    )
+    .toBeLessThan(1);
+  const controls = page.getByRole('region', { name: 'Track sound controls', exact: true });
+  await controls.press('Space');
+  await expect.poll(() => controls.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   await page.getByRole('combobox', { name: 'Time signature preset' }).selectOption('7/8');
   await page.getByRole('spinbutton', { name: 'Composition tempo' }).fill('96');

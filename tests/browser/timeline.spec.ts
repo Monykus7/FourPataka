@@ -1,5 +1,64 @@
 import { expect, test } from '@playwright/test';
 
+test('track sound controls match the timeline row and remain reachable in a bounded scroller', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toBeVisible();
+  const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
+  const tracks = page.getByRole('region', { name: 'Independent track sounds', exact: true });
+  const controls = page.getByRole('region', { name: 'Track sound controls', exact: true });
+  await expect
+    .poll(async () =>
+      Math.abs((await timeline.boundingBox())!.height - (await tracks.boundingBox())!.height),
+    )
+    .toBeLessThan(1);
+  expect(await controls.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  const original = await page.evaluate(() => localStorage.getItem('fourpataka.project.v1'));
+  await controls.focus();
+  await controls.press('Space');
+  await expect.poll(() => controls.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+  await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
+  await expect(
+    tracks.getByRole('heading', { name: 'Independent track sounds', exact: true }),
+  ).toBeVisible();
+  const bass = tracks.getByRole('combobox', { name: 'Instrument for bass' });
+  await bass.focus();
+  await expect(bass).toBeFocused();
+  await bass.selectOption('triangle');
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
+    'bass using triangle',
+  );
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(bass).toHaveValue('soft-bass');
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('fourpataka.project.v1')))
+    .toBe(original);
+  await tracks.screenshot({ path: '.test-results/track-sounds-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect((await tracks.boundingBox())!.height).toBeLessThanOrEqual(440);
+  await bass.focus();
+  await expect(bass).toBeFocused();
+  expect(await controls.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await tracks.screenshot({ path: '.test-results/track-sounds-mobile.png' });
+  const scoreInput = page.getByRole('textbox', { name: 'Score editor' });
+  await scoreInput.focus();
+  await scoreInput.press('Control+A');
+  await scoreInput.press('Backspace');
+  await expect(tracks.getByRole('combobox', { name: 'Instrument for bass' })).toBeDisabled();
+  await page.setViewportSize({ width: 1440, height: 1040 });
+  await expect
+    .poll(async () =>
+      Math.abs((await timeline.boundingBox())!.height - (await tracks.boundingBox())!.height),
+    )
+    .toBeLessThan(1);
+  await expect(
+    tracks.getByRole('button', { name: 'Edit pedals', exact: true }).first(),
+  ).toBeEnabled();
+});
+
 test('dense timeline has one note Tab stop per track and readable keyboard event inspection', async ({
   page,
 }) => {

@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-04. Latest release: v0.19.1. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-04. Latest verified release: v0.19.1; v0.19.2 panel patch verification is in progress. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -357,3 +357,12 @@ This closes the stage 6 automated WAV functional gate for the tested Chromium/El
 Expanded command reference follows the score panel height on desktop and when stacked. CSS size containment prevents its catalog from enlarging the desktop row; a scoped border-box ResizeObserver mirrors the score height only for stacked rows. Search remains fixed over the flexing catalog scroller. Collapse returns the reference to its header height, and filtering/rule expansion cannot enlarge the score. Diagnostic changes, status wrapping and viewport resizing are reflected without a desktop height feedback loop. Audio, WAV export, source authority, independent copies, schema/history and roadmap gates keep their existing policies.
 
 Validation for v0.19.1: all seventeen affected browser workflows pass. Five command-reference checks include equal heights at 1440/1000/390 px, score diagnostics, collapse/reopen, filtering, local scrolling, focus and source insertion; the other twelve cover composition, meter, responsive design, the actual Tab-order studio demonstration, named dialogs and WAV download/clipping/normalization controls. Three packaged native workflows pass against version 0.19.1: WAV rendering/saving/cancellation, the actual keyboard demonstration with native save/reload, and command-reference menu focus/insertion/native JSON saving. Desktop and 390 px panel screenshots were visually reviewed after the lazy editor loaded; panel bottoms match, search remains fixed and local scrolling is retained. Production TypeScript/bundle, formatting, knowledge build/freshness and portable packaging pass. v0.19.0's broader 152-unit/106-browser/13-native verification remains historical evidence; this UI patch reruns affected workflows without repeating unchanged DSP suites. Output: release/FourPataka-0.19.1-win-x64.exe. The portable app is visibly open and its extracted app.asar SHA-256 matches the native-tested bundle. Four focused patch checkpoints use Monykus7 and are pushed to origin/master. No musical or roadmap gate changes.
+
+
+### Balanced timeline/track controls and future pedals — v0.19.2
+
+Desktop Independent track sounds now follows the timeline's natural row height. A fixed heading sits above a named keyboard-focusable internal scroller containing all master/track assignments, levels, bypass/edit links and independent-copy controls. Size containment keeps those controls from enlarging the grid row. Stacked layouts cap the track panel at 440 px. Space on the scroll region scrolls instead of invoking Play; child controls retain their existing key handling. Empty/invalid scores preserve existing copies with source assignments disabled, as before. Timeline inspection, source authority, grouped history, audio phase/clock/latency, WAV behavior and roadmap gates retain existing policies.
+
+Phaser, chorus and algorithmic reverb are added to the future pedal roadmap, not implemented. Section 7 records proposed controls, units/ranges, session-relative LFO continuity, intentional phase/delay versus compensation, stability, independent copies, bypass/tail/Stop and shared WAV/native/keyboard proof gates. Space reverb stays separate from the instrument builder's tiny chamber; neither needs IR assets. Stage 7 learning/measurement is still the next main feature.
+
+Initial panel checks pass for matching desktop heights, bounded narrow scrolling, keyboard scrolling without Play, lower-track assignment/undo, unchanged saved settings and empty-score disabled copies. Broader affected browser and packaged native checks are in progress. This patch does not repeat the unchanged DSP/unit suites; v0.19.0 retains its historical 152-unit/106-browser/13-native verification.

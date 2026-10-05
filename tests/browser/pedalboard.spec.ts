@@ -108,7 +108,8 @@ test('Compose edit links target the right dedicated chain and tab changes keep a
   ).toBeVisible();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await page
-    .locator('.track-instances > .track-chain-controls')
+    .getByRole('region', { name: 'Track sound controls', exact: true })
+    .locator(':scope > .track-chain-controls')
     .getByRole('button', { name: 'Edit pedals', exact: true })
     .click();
   await expect(
