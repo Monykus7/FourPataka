@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-05. Latest verified release: v0.19.2. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-05. Latest verified release: v0.19.2; v0.19.3 autocomplete patch verification is in progress. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -366,3 +366,10 @@ Desktop Independent track sounds now follows the timeline's natural row height. 
 Phaser, chorus and algorithmic reverb are added to the future pedal roadmap, not implemented. Section 7 records proposed controls, units/ranges, session-relative LFO continuity, intentional phase/delay versus compensation, stability, independent copies, bypass/tail/Stop and shared WAV/native/keyboard proof gates. Space reverb stays separate from the instrument builder's tiny chamber; neither needs IR assets. Stage 7 learning/measurement is still the next main feature.
 
 Validation for v0.19.2: all eighteen affected browser workflows pass (seventeen in the regression run and the pedal edit-link workflow on rerun after replacing its obsolete direct-child selector). Coverage includes matching desktop heights, bounded 390 px scrolling, keyboard scrolling without Play, lower-track assignment/undo, unchanged saved settings, empty-score disabled copies, timeline inspection, timing, independent chains, pedal links and playback continuity across tabs. Three packaged native workflows pass against version 0.19.2: the full keyboard studio demonstration, independent score chains through native save/reload, and Compose source assignment/timing/undo with the new matching-height and keyboard-scroll checks. Desktop paired-panel and narrow scroller screenshots were visually reviewed. Production TypeScript/bundle, formatting, knowledge build/freshness and portable packaging pass. This patch does not repeat unchanged DSP/unit suites; v0.19.0 retains its historical 152-unit/106-browser/13-native verification. Output: release/FourPataka-0.19.2-win-x64.exe. The portable app is visibly open; its extracted app.asar SHA-256 matches the native-tested bundle. Four focused patch checkpoints use Monykus7 and are pushed to origin/master. Planned pedals remain unimplemented, and no musical or roadmap gate changes.
+
+
+### Empty autocomplete shells — v0.19.3
+
+Command autocomplete uses separate blank-field templates instead of reference-card examples. Chord completion inserts `chord:()` with the cursor inside, then fields for optional default octave and duration; voicing has notes/duration fields without a default octave. Existing typed `chord:` is included in the replacement span, avoiding duplicate prefixes. Track completion starts with blank name, instrument and event body, and other command arguments/note/comment fields are blank. Tab/Shift+Tab navigates fields. Explicit meter, duration and saved instrument/pedal choices keep inserting the selected value; autocomplete preference disables both shells and value suggestions. Reference examples, source authority, grouped history, parser diagnostics, independent copies and frozen audio/phase/clock/latency policies remain unchanged. Empty shells must be filled before Play; chord-symbol macros remain planned.
+
+Initial five shell workflows pass; final contextual completion regression, packaged native shell workflow and portable packaging verification are in progress. No musical or roadmap gate changes.

@@ -44,6 +44,8 @@ The desktop checks can also target the unpacked production executable by setting
 
 ## Compose tools
 
+Autocomplete inserts blank command shells. For a chord, accept `chord` to insert `chord:()` with the cursor inside, then enter notes and use Tab / Shift+Tab between notes, default octave and duration. Track completion starts with blank name, instrument and events. Explicit meter and saved preset suggestions insert the selected value; command reference keeps its filled examples.
+
 The enlarged score editor and command reference sit side by side. The editor fills the panel down to its status bar. Timeline and independent track sounds sit below; narrow screens stack score, reference, timeline and tracks in that order. Search and command insertion remain next to the editor on desktop.
 
 Below the score, the Independent track sounds panel matches the timeline height on desktop. Its heading stays visible while master/track assignments, levels, bypass and copy controls scroll inside the panel. Stacked layouts bound this panel at 440 px. Tab through its controls or focus the Track sound controls region and use Space/Page Down to scroll.
