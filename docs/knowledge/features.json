@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
@@ -61,7 +61,7 @@
       "id": "waveform",
       "parent": "sound",
       "title": "Waveform drawing and control points",
-      "summary": "Draw or place dots on an odd waveform half-cycle. Shape-preserving cubic interpolation avoids overshoot; projection produces signed sine coefficients. Reset restores a sine while preserving envelope and trim.",
+      "summary": "Draw or place dots on an odd waveform half-cycle. Shape-preserving cubic interpolation avoids overshoot; projection produces signed sine coefficients. Reset restores a sine while preserving envelope and trim. Add dot samples the current Hermite target at the widest gap midpoint, preserves bounds and inserts an independent anchor (recomputed tangents may refine the curve). Thirty editable anchors remain the cap. Exact inputs and arrows edit dots; keyboard deletion focuses the previous surviving anchor. Space/Enter select without triggering global playback.",
       "paths": [
         "src/core/waveform.ts",
         "src/components/FourierWorkspace.tsx",
@@ -85,7 +85,7 @@
       "id": "pedals",
       "parent": "sound",
       "title": "Pedalboard and processing",
-      "summary": "Compressor, overdrive, three-band EQ and delay have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Delay time is 20–2000 ms with feedback capped at 95%, output trim and linear mix. Pedal/whole-chain bypass closes the delay feed, retains old echoes and restores dry unity. Measured tail indicators bridge echo gaps; finite decay budgets extend cleanup, while Stop disposes buffers. Delay adds no track compensation latency. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Stable library score keys support through/master assignments. Assignment changes load independent copies; unchanged source and library saving preserve local settings. Pedalboard application synchronizes the score while retaining the exact sandbox copy.",
+      "summary": "Compressor, overdrive, three-band EQ and delay have independent audition A/B, track and master boards. Equipment is picked before placement on a 4 by 2 Velcro grid. During drags the menu clears the underlying slots after Chromium captures the drag image; canceled or rejected drops clear transient state without history. Small circular dials live on pedals; the selected-pedal inspector holds exact inputs, sliders and EQ flat reset. Captured placement drags snap and undo in one step without changing audio order. Mouse or keyboard jack connections define a validated serial path; unplugged output is silent unless the board is bypassed. Legacy chains load prewired. Delay time is 20–2000 ms with feedback capped at 95%, output trim and linear mix. Pedal/whole-chain bypass closes the delay feed, retains old echoes and restores dry unity. Measured tail indicators bridge echo gaps; finite decay budgets extend cleanup, while Stop disposes buffers. Delay adds no track compensation latency. Routing changes wait for replay during playback; audition parameters and bypass remain live, score parameters freeze. Stable library score keys support through/master assignments. Assignment changes load independent copies; unchanged source and library saving preserve local settings. Pedalboard application synchronizes the score while retaining the exact sandbox copy. Equipment uses arrow/Home/End focus with disabled-item skipping. Keyboard selection focuses the first free slot or input terminal output jack; placement transfers focus to the new grip. Escape returns to Equipment without stopping audio or adding history. Native drag-image capture behavior remains intact.",
       "paths": [
         "src/core/pedals.ts",
         "src/core/board.ts",
@@ -150,7 +150,7 @@
       "id": "timing",
       "parent": "composition",
       "title": "Tempo, meter and timeline",
-      "summary": "Tempo always counts quarter notes. Project meters support 1–32 over 1/2/4/8/16; 6/8 spans three quarter beats. Partial bars and crossing notes are valid. Timing edits preserve comments and form one undo step; invalid or playing scores guard those controls.",
+      "summary": "Tempo always counts quarter notes. Project meters support 1–32 over 1/2/4/8/16; 6/8 spans three quarter beats. Partial bars and crossing notes are valid. Timing edits preserve comments and form one undo step; invalid or playing scores guard those controls. Timeline pickers show event number, pitch/rest, bar/beat and quarter-beat duration with Previous/Next. One note Tab stop per track supports bounded arrows/Home/End. Live selection announcement and accessible descriptions expose timing without hovering. Dense marks retain positive width; readable selectors provide usable targets. Inspection reads the displayed frozen revision and does not seek, edit source or create musical history.",
       "paths": [
         "src/core/meter.ts",
         "src/core/timeline.ts",
@@ -160,14 +160,15 @@
         "tests/unit/meter.test.ts",
         "tests/unit/timeline.test.ts",
         "tests/unit/scoreTools.test.ts",
-        "tests/browser/meter.spec.ts"
+        "tests/browser/meter.spec.ts",
+        "tests/browser/timeline.spec.ts"
       ]
     },
     {
       "id": "tracks",
       "parent": "composition",
       "title": "Track creation and assignment",
-      "summary": "Track Maker validates note/chord/rest rows, reorders with buttons, previews project-meter length and optionally assigns a saved pedal key. Compose instrument/pedal selectors edit source spans in one undo operation. Changed chain assignments copy templates; unchanged reparsing and library saving preserve independently edited knobs, bypass and cables. Removing a previously applied source directive clears its chain; legacy unassigned boards survive.",
+      "summary": "Track Maker validates note/chord/rest rows, reorders with buttons, previews project-meter length and optionally assigns a saved pedal key. Compose instrument/pedal selectors edit source spans in one undo operation. Changed chain assignments copy templates; unchanged reparsing and library saving preserve independently edited knobs, bypass and cables. Removing a previously applied source directive clears its chain; legacy unassigned boards survive. Track Maker is a named modal with explicit initial input focus and native-close focus restoration on Escape, close and successful submission. Validation errors retain the open dialog.",
       "paths": [
         "src/components/TrackMaker.tsx",
         "tests/browser/composition.spec.ts",
@@ -254,6 +255,25 @@
         "docs/knowledge/",
         "tests/unit/knowledge.test.ts",
         "AGENTS.md"
+      ]
+    },
+    {
+      "id": "keyboard-workflow",
+      "parent": "studio",
+      "title": "Keyboard studio workflow and modal focus",
+      "summary": "v0.18.0 provides keyboard source-dot creation, equipment placement/patching, named editing dialogs and dense event inspection. Child-handled keys do not invoke global shortcuts. A shared browser/portable demonstration walks actual Tab order to edit/save a timbre, copy and compare A/B, create a track, place and cable an EQ, apply an owned chain through source text, play/replay/Stop, save editable JSON and reload independent settings. Automated functional evidence does not certify all assistive technology, physical-device or listening gates. Schema, synthesis, phase/clock continuity, audio latency and source authority retain existing policies.",
+      "paths": [
+        "src/App.tsx",
+        "src/components/FourierWorkspace.tsx",
+        "src/components/PedalBoardSurface.tsx",
+        "src/components/TrackMaker.tsx",
+        "src/components/Timeline.tsx",
+        "tests/helpers/keyboardWorkflow.ts",
+        "tests/browser/keyboard.spec.ts",
+        "tests/browser/fourier.spec.ts",
+        "tests/browser/board.spec.ts",
+        "tests/browser/timeline.spec.ts",
+        "tests/desktop/app.spec.ts"
       ]
     }
   ]

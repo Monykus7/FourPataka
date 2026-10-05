@@ -506,6 +506,8 @@ At narrower widths, stack score, command reference, timeline and track controls 
 
 Use accessible low-level primitives for sliders, menus, dialogs, tooltips, and tabs, with the custom palette. Every knob has a textual value and keyboard operation. Reordering has button/keyboard alternatives.
 
+Implemented for v0.18.0: Add dot inserts an anchor on the current target curve in its widest gap, with exact inputs and deletion focus recovery. Equipment supports arrow/Home/End navigation, skips unavailable items, and transfers keyboard selection to a free slot or board jack; placement focuses the new pedal. Named instrument/track dialogs focus their first field and return to their trigger. Each timeline track offers a readable event picker and Previous/Next, with one note Tab stop and arrow/Home/End inspection. Inspection uses the displayed frozen score revision and never seeks playback or edits source/history. Broader screen-reader, physical-device and listening verification remains open.
+
 Maintain visible focus, avoid color-only states, and honor reduced-motion preferences. Preserve useful timing information while reducing decorative animation. Throttle analyser painting separately from audio scheduling.
 
 ## 11. Audio scheduling and export
@@ -575,6 +577,8 @@ The complete contextual command-reference catalog and source insertion are imple
 Finish keyboard operation, layouts, gain meters, local save recovery, import validation, example presets/projects, and browser/device verification.
 
 Local-save recovery inspection, export and undoable restoration are implemented in v0.17.0. Verification is recorded in IMPLEMENTATION_STATUS.md; this does not close the complete stage 5 release gate.
+
+The v0.18.0 keyboard workflow covers source editing, independent A/B, saved instruments, Track Maker, physical EQ placement/patching, source-authoritative application, play/replay/Stop, editable JSON and reload. Automated browser/portable evidence is recorded separately from remaining manual screen-reader, real-device/browser and physical-listening gates. WAV export remains the next main feature after these release-polish checks.
 
 Gate: the main demonstration works end to end; no required control depends on hover or dragging; text contrast passes; stop/replay and save/reload restore independent settings and bypass states correctly.
 
