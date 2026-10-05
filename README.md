@@ -123,9 +123,19 @@ Durations are `whole`, `half`, `quarter`, `8th`, and `16th`. Pitches use scienti
 
 Changing an assignment loads a fresh independent copy. Later score edits and library saving retain its local knobs, bypass, placement and cables. Removing a previously assigned directive clears that chain. Older projects without directives keep their manually configured boards. Pedalboard application synchronizes assignments when the destination's preset changes and preserves the exact applied copy. JSON carries those edited copies; score text alone carries their template assignments. Running playback keeps its current routing and clock until replay.
 
+## WAV export
+
+Choose **Export WAV** in the toolbar, or **File → Export WAV** (Ctrl+Shift+E) in the desktop app. The panel captures a fixed project snapshot. Choose 48 or 44.1 kHz and stereo or mono; the file uses 16-bit PCM. Current sources are mono, so the stereo mix has matching channels. Render first, review the measured peak, then **Save WAV** to download or choose a native destination.
+
+Export includes applied track sounds, track levels, cable-defined track/master pedals, bypass states and project mix gain. It excludes monitor volume and temporary A/B comparisons, keeps playback running independently, and does not change saved settings or undo history. Invalid scores and scores with no notes must be fixed first. JSON remains the editable project format.
+
+Duration preserves score rests, the maximum release, measured graph latency and 100 ms filter settling, followed by an echo-tail budget: default 5 seconds, adjustable 0–30. A conservative decay estimate warns when later echoes may be cut; capped tails receive a 20 ms end fade, and measured audio at the cap is reported. This estimate is not a claim that every repeat is audible. Bypassed delays start with empty buffers in this fresh project render; live bypass can still retain previously captured echoes.
+
+Clipping never triggers automatic gain compensation. Choose a lower export level (−36…0 dB) or explicitly enable normalization to −1 dBFS before saving an over-range render. Export level affects only the file. A conservative 256 MiB memory estimate includes audio, PCM/transfer copies and scheduled voices; shorten large scores or choose mono/44.1 kHz/a shorter tail when the preflight rejects them. Allocation failures are also reported. Musical output should agree across supported contexts, but browser engines need not create byte-identical WAVs. The shared 32-voice admission policy counts overlap at scheduled note time, including releases, and retires the oldest with a short fade.
+
 ## Current boundary
 
-The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, live processed views and score chain assignments. Stage 3's automated functional behavior is covered; broader composition/polish and real-device gates remain. WAV export and the full measurement panel follow later. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, live processed views and score chain assignments. Stage 3's automated functional behavior is covered; broader composition/polish and real-device gates remain. WAV export is implemented in v0.19.0; the full measurement panel follows next. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 

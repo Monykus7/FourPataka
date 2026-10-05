@@ -57,7 +57,7 @@ Include the following by the end of stage 5:
 
 ### Following releases
 
-Stage 6 adds WAV export. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
+Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -591,6 +591,8 @@ Gate: the main demonstration works end to end; no required control depends on ho
 Add offline rendering, WAV encoding, tail limits, level handling, and export size checks.
 
 Gate: exported notes, duration, applied instruments, effect order, and master processing correspond to playback; releases/echoes are retained within the chosen tail limit; monitor volume does not affect export.
+
+Implemented in v0.19.0: shared score/voice/effect factories, frozen applied copies, PCM16 mono/stereo at 44.1/48 kHz (default 48 kHz stereo), a 5 s default echo budget adjustable 0–30 s, maximum release plus measured graph latency and 100 ms filter settling, conservative truncation warnings with a 20 ms end fade, peak/clipping review, explicit −36…0 dB export level or opt-in −1 dBFS normalization, and a 256 MiB estimated-memory preflight. Browser downloads and origin-checked native WAV saving preserve editable JSON and project history. Automated musical/native proofs pass; final release checks are recorded in IMPLEMENTATION_STATUS.md. Physical listening and other browser/device checks remain open; this does not close the outstanding stage 5 manual gates.
 
 ### Stage 7 — learning and analysis
 

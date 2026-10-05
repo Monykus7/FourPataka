@@ -10,7 +10,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged.
+Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. Chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged. v0.19.0 implements frozen project WAV export with shared synthesis/routing, bounded release/echo tails, peak review and explicit level handling, memory preflight and browser/native saving. Stage 7 learning/measurement follows; stage 5 manual gates remain open.
 
 ### Sound and Fourier interaction
 
@@ -18,13 +18,13 @@ Editable source waveform, signed harmonic sine bank and phase-continuous compari
 
 #### Sine-bank synthesis and voices
 
-Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates.
+Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop.
 
-- Sine-bank synthesis and voices / dependency group 1: [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/music.ts](../../src/core/music.ts), [src/components/HarmonicPolarity.tsx](../../src/components/HarmonicPolarity.tsx), [src/components/SourceGraphs.tsx](../../src/components/SourceGraphs.tsx), [tests/unit/polarity.test.ts](../../tests/unit/polarity.test.ts)
+- Sine-bank synthesis and voices / dependency group 1: [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/music.ts](../../src/core/music.ts), [src/audio/voiceLimit.ts](../../src/audio/voiceLimit.ts), [src/components/HarmonicPolarity.tsx](../../src/components/HarmonicPolarity.tsx), [src/components/SourceGraphs.tsx](../../src/components/SourceGraphs.tsx), [tests/unit/polarity.test.ts](../../tests/unit/polarity.test.ts)
 - Sine-bank synthesis and voices / dependency group 2: [tests/browser/audio.spec.ts](../../tests/browser/audio.spec.ts)
 - Sine-bank synthesis and voices / dependency group 3: [tests/browser/polarity.spec.ts](../../tests/browser/polarity.spec.ts)
 
-Key definitions: [Voice](../../src/audio/voice.ts#L3), [Source](../../src/audio/voice.ts#L10), [TRANSITION](../../src/audio/voice.ts#L15), [holdParameter](../../src/audio/voice.ts#L18), [createVoice](../../src/audio/voice.ts#L27), [source](../../src/audio/voice.ts#L57), [setSources](../../src/audio/voice.ts#L94), [end](../../src/audio/voice.ts#L136).
+Key definitions: [Voice](../../src/audio/voice.ts#L3), [Source](../../src/audio/voice.ts#L11), [TRANSITION](../../src/audio/voice.ts#L16), [holdParameter](../../src/audio/voice.ts#L19), [createVoice](../../src/audio/voice.ts#L28), [source](../../src/audio/voice.ts#L58), [setSources](../../src/audio/voice.ts#L99), [end](../../src/audio/voice.ts#L141).
 
 #### Instrument presets and source thumbnails
 
@@ -34,7 +34,7 @@ Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], atta
 - Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 - Instrument presets and source thumbnails / dependency group 3: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L98), [View](../../src/App.tsx#L100), [readPreferences](../../src/App.tsx#L101), [MiniWave](../../src/App.tsx#L116), [RangeControl](../../src/App.tsx#L151), [App](../../src/App.tsx#L201), [resetMacros](../../src/App.tsx#L307), [changeSound](../../src/App.tsx#L311).
+Key definitions: [ScoreEditor](../../src/App.tsx#L99), [View](../../src/App.tsx#L101), [readPreferences](../../src/App.tsx#L102), [MiniWave](../../src/App.tsx#L117), [RangeControl](../../src/App.tsx#L152), [App](../../src/App.tsx#L202), [resetMacros](../../src/App.tsx#L309), [changeSound](../../src/App.tsx#L313).
 
 #### Up to 32 harmonics (planned)
 
@@ -60,7 +60,7 @@ A/B changes keep the musical clock and active envelopes. Phrase clipping preserv
 - Continuous A/B comparison and scheduling / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx)
 - Continuous A/B comparison and scheduling / dependency group 2: [tests/browser/comparison.spec.ts](../../tests/browser/comparison.spec.ts)
 
-Key definitions: [VOICE_LIMIT](../../src/audio/engine.ts#L22), [AuditionBranch](../../src/audio/engine.ts#L23), [Session](../../src/audio/engine.ts#L30), [AudioEngine](../../src/audio/engine.ts#L54), [AudioEngine.ready](../../src/audio/engine.ts#L68), [AudioEngine.setMonitor](../../src/audio/engine.ts#L93), [AudioEngine.setMix](../../src/audio/engine.ts#L97), [AudioEngine.begin](../../src/audio/engine.ts#L101).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L24), [Session](../../src/audio/engine.ts#L31), [AudioEngine](../../src/audio/engine.ts#L55), [AudioEngine.ready](../../src/audio/engine.ts#L69), [AudioEngine.setMonitor](../../src/audio/engine.ts#L94), [AudioEngine.setMix](../../src/audio/engine.ts#L98), [AudioEngine.begin](../../src/audio/engine.ts#L102), [AudioEngine.voice](../../src/audio/engine.ts#L133).
 
 #### Pedalboard and processing
 
@@ -80,7 +80,7 @@ Line-oriented score text is authoritative. The enlarged score editor fills its p
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L98), [View](../../src/App.tsx#L100), [readPreferences](../../src/App.tsx#L101), [MiniWave](../../src/App.tsx#L116), [RangeControl](../../src/App.tsx#L151), [App](../../src/App.tsx#L201), [resetMacros](../../src/App.tsx#L307), [changeSound](../../src/App.tsx#L311).
+Key definitions: [ScoreEditor](../../src/App.tsx#L99), [View](../../src/App.tsx#L101), [readPreferences](../../src/App.tsx#L102), [MiniWave](../../src/App.tsx#L117), [RangeControl](../../src/App.tsx#L152), [App](../../src/App.tsx#L202), [resetMacros](../../src/App.tsx#L309), [changeSound](../../src/App.tsx#L313).
 
 #### Score parsing and editor
 
@@ -150,7 +150,7 @@ A header Recovery dialog inspects one previous distinct autosave and one unreada
 - Local save recovery inspection and restoration / dependency group 6: [tests/browser/recovery.spec.ts](../../tests/browser/recovery.spec.ts)
 - Local save recovery inspection and restoration / dependency group 7: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L16), [developmentUrl](../../desktop/main.cjs#L17), [trustedUrl](../../desktop/main.cjs#L21), [assertStudio](../../desktop/main.cjs#L30), [action](../../desktop/main.cjs#L39), [createWindow](../../desktop/main.cjs#L43).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
 
 #### Themes and responsive layout
 
@@ -164,14 +164,15 @@ Key definitions: [Theme](../../src/core/themes.ts#L1), [THEMES](../../src/core/t
 
 #### Electron application and native files
 
-Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON.
+Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON. The File WAV menu and separate trusted binary bridge validate bounded PCM headers/lengths before native saving; cancellation retains a ready render.
 
 - Electron application and native files / dependency group 1: [desktop/main.cjs](../../desktop/main.cjs)
 - Electron application and native files / dependency group 2: [desktop/preload.cjs](../../desktop/preload.cjs)
-- Electron application and native files / dependency group 3: [scripts/desktop-dev.mjs](../../scripts/desktop-dev.mjs)
-- Electron application and native files / dependency group 4: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+- Electron application and native files / dependency group 3: [desktop/wav.cjs](../../desktop/wav.cjs)
+- Electron application and native files / dependency group 4: [scripts/desktop-dev.mjs](../../scripts/desktop-dev.mjs)
+- Electron application and native files / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L16), [developmentUrl](../../desktop/main.cjs#L17), [trustedUrl](../../desktop/main.cjs#L21), [assertStudio](../../desktop/main.cjs#L30), [action](../../desktop/main.cjs#L39), [createWindow](../../desktop/main.cjs#L43).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
 
 #### Keyboard studio workflow and modal focus
 
@@ -184,7 +185,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L98), [View](../../src/App.tsx#L100), [readPreferences](../../src/App.tsx#L101), [MiniWave](../../src/App.tsx#L116), [RangeControl](../../src/App.tsx#L151), [App](../../src/App.tsx#L201), [resetMacros](../../src/App.tsx#L307), [changeSound](../../src/App.tsx#L311).
+Key definitions: [ScoreEditor](../../src/App.tsx#L99), [View](../../src/App.tsx#L101), [readPreferences](../../src/App.tsx#L102), [MiniWave](../../src/App.tsx#L117), [RangeControl](../../src/App.tsx#L152), [App](../../src/App.tsx#L202), [resetMacros](../../src/App.tsx#L309), [changeSound](../../src/App.tsx#L313).
 
 ### Maintained project knowledge
 
@@ -193,6 +194,18 @@ Tree-sitter code links, source-linked docs/plans, feature and dependency summari
 - Maintained project knowledge / dependency group 1: [scripts/knowledge/cli.mjs](../../scripts/knowledge/cli.mjs), [scripts/knowledge/graph.mjs](../../scripts/knowledge/graph.mjs), [scripts/knowledge/summaries.mjs](../../scripts/knowledge/summaries.mjs), [scripts/knowledge/semantic.mjs](../../scripts/knowledge/semantic.mjs), [scripts/knowledge/rank.mjs](../../scripts/knowledge/rank.mjs), [scripts/knowledge/context.mjs](../../scripts/knowledge/context.mjs), [scripts/knowledge/extract.mjs](../../scripts/knowledge/extract.mjs), [scripts/knowledge/verify.mjs](../../scripts/knowledge/verify.mjs), [scripts/knowledge/watch.mjs](../../scripts/knowledge/watch.mjs), [tests/unit/knowledge.test.ts](../../tests/unit/knowledge.test.ts)
 
 Key definitions: [root](../../scripts/knowledge/cli.mjs#L10), [option](../../scripts/knowledge/cli.mjs#L12), [TOKENIZER](../../scripts/knowledge/context.mjs#L3), [tokenizer](../../scripts/knowledge/context.mjs#L4), [tokenCount](../../scripts/knowledge/context.mjs#L5), [packContext](../../scripts/knowledge/context.mjs#L6), [concept](../../scripts/knowledge/context.mjs#L17), [boost](../../scripts/knowledge/context.mjs#L21).
+
+### Project mix WAV export
+
+v0.19.0 exports frozen source and applied independent sound/processing copies through shared voice/effect/score graph factories. Cable routing, track/master processing, bypass, levels and project mix are included; monitor and A/B overrides are excluded. PCM16 defaults to 48 kHz stereo with 44.1 kHz/mono alternatives. Duration keeps rests, max release, measured latency and 100 ms settling plus a default 5 s echo budget bounded 0–30 s. Conservative decay warns of possible cutoff, capped tails fade 20 ms and measured cap activity is reported. Peaks and clipping are shown; Save requires a safe explicit export level or opt-in -1 dBFS normalization. Non-finite audio fails and silence stays silent. A 256 MiB conservative memory preflight precedes allocation. Browser downloads and validated native saving preserve JSON, playback and history. Native cancellation retains the render; closing drops background results. Physical listening and other browser/device gates remain open.
+
+- Project mix WAV export / dependency group 1: [desktop/wav.cjs](../../desktop/wav.cjs)
+- Project mix WAV export / dependency group 2: [src/audio/export.ts](../../src/audio/export.ts), [src/core/wav.ts](../../src/core/wav.ts), [src/audio/scoreGraph.ts](../../src/audio/scoreGraph.ts), [src/audio/voiceLimit.ts](../../src/audio/voiceLimit.ts), [src/components/WavExport.tsx](../../src/components/WavExport.tsx), [tests/unit/export.test.ts](../../tests/unit/export.test.ts), [tests/unit/nativeWav.test.ts](../../tests/unit/nativeWav.test.ts), [tests/unit/wav.test.ts](../../tests/unit/wav.test.ts)
+- Project mix WAV export / dependency group 3: [tests/browser/export-audio.spec.ts](../../tests/browser/export-audio.spec.ts)
+- Project mix WAV export / dependency group 4: [tests/browser/export.spec.ts](../../tests/browser/export.spec.ts)
+- Project mix WAV export / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+
+Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L11), [prepareExport](../../src/audio/export.ts#L23), [renderWav](../../src/audio/export.ts#L64), [WavRender](../../src/audio/export.ts#L129), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L56).
 
 
 ## Parser coverage

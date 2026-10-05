@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. WAV export, chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. Chord-symbol macros and broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged. v0.19.0 implements frozen project WAV export with shared synthesis/routing, bounded release/echo tails, peak review and explicit level handling, memory preflight and browser/native saving. Stage 7 learning/measurement follows; stage 5 manual gates remain open.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
@@ -18,7 +18,7 @@
       "id": "synthesis",
       "parent": "sound",
       "title": "Sine-bank synthesis and voices",
-      "summary": "Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates.",
+      "summary": "Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop.",
       "paths": [
         "src/core/music.ts",
         "src/audio/voice.ts",
@@ -26,7 +26,8 @@
         "tests/browser/audio.spec.ts",
         "src/components/HarmonicPolarity.tsx",
         "tests/unit/polarity.test.ts",
-        "tests/browser/polarity.spec.ts"
+        "tests/browser/polarity.spec.ts",
+        "src/audio/voiceLimit.ts"
       ]
     },
     {
@@ -236,13 +237,14 @@
       "id": "desktop",
       "parent": "studio",
       "title": "Electron application and native files",
-      "summary": "Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON.",
+      "summary": "Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON. The File WAV menu and separate trusted binary bridge validate bounded PCM headers/lengths before native saving; cancellation retains a ready render.",
       "paths": [
         "desktop/main.cjs",
         "desktop/preload.cjs",
         "scripts/desktop-dev.mjs",
         "tests/desktop/app.spec.ts",
-        "package.json"
+        "package.json",
+        "desktop/wav.cjs"
       ]
     },
     {
@@ -273,6 +275,27 @@
         "tests/browser/fourier.spec.ts",
         "tests/browser/board.spec.ts",
         "tests/browser/timeline.spec.ts",
+        "tests/desktop/app.spec.ts"
+      ]
+    },
+    {
+      "id": "wav-export",
+      "parent": "project",
+      "title": "Project mix WAV export",
+      "summary": "v0.19.0 exports frozen source and applied independent sound/processing copies through shared voice/effect/score graph factories. Cable routing, track/master processing, bypass, levels and project mix are included; monitor and A/B overrides are excluded. PCM16 defaults to 48 kHz stereo with 44.1 kHz/mono alternatives. Duration keeps rests, max release, measured latency and 100 ms settling plus a default 5 s echo budget bounded 0–30 s. Conservative decay warns of possible cutoff, capped tails fade 20 ms and measured cap activity is reported. Peaks and clipping are shown; Save requires a safe explicit export level or opt-in -1 dBFS normalization. Non-finite audio fails and silence stays silent. A 256 MiB conservative memory preflight precedes allocation. Browser downloads and validated native saving preserve JSON, playback and history. Native cancellation retains the render; closing drops background results. Physical listening and other browser/device gates remain open.",
+      "paths": [
+        "src/audio/export.ts",
+        "src/audio/scoreGraph.ts",
+        "src/audio/voiceLimit.ts",
+        "src/core/wav.ts",
+        "src/components/WavExport.tsx",
+        "src/export.css",
+        "desktop/wav.cjs",
+        "tests/unit/export.test.ts",
+        "tests/unit/wav.test.ts",
+        "tests/unit/nativeWav.test.ts",
+        "tests/browser/export-audio.spec.ts",
+        "tests/browser/export.spec.ts",
         "tests/desktop/app.spec.ts"
       ]
     }

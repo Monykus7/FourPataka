@@ -2,6 +2,18 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
+## Frozen project WAV export (v0.19.0)
+
+<!-- features: wav-export, synthesis, pedals, tracks, storage, desktop -->
+
+Score text is recompiled and reconciled against independent applied copies before the export snapshot is used. Neither saved library templates nor active A/B overrides replace those copies. Live and offline contexts share createScoreGraph, createVoice and createChain, including cable order, unplugged silence, bypass and measured compensation before the master bus. Project mix gain enters the offline graph; monitor gain has no export input. The shared admission policy evaluates overlap at the new note's scheduled audio time, not the scheduling thread's look-ahead clock. It keeps 32 admitted voices including releases and fades the oldest for 10 ms (oscillator stop after 15 ms); cancelAndHoldAtTime anchors its future envelope without using the present AudioParam.value.
+
+PCM16 defaults to 48 kHz stereo, with mono and 44.1 kHz alternatives. End time includes full score/rest duration, maximum configured release, measured total graph latency, 100 ms filter settling, then a 5 s default echo budget adjustable 0–30 s. Routed, enabled delay decay estimates are conservative; a budget below that estimate warns of possible later echoes and applies a 20 ms cap fade. A final-window measurement separately reports signal present at the cap, because silent gaps alone cannot prove that no later repeat exists. Fresh bypassed-delay buffers contain no historic echoes; ordinary live bypass still closes only new input and Stop clears owned buffers.
+
+Float peaks and above-range sample counts are measured before PCM encoding. An explicit −36…0 dB file level or opt-in −1 dBFS normalization is required to save when the resulting peak exceeds unity; project gains are never silently rewritten. Non-finite samples fail. Silence is neither amplified nor given a misleading finite dBFS value. Memory preflight accounts for float rendering, PCM/transfer copies, a fixed graph allowance and conservative per-scheduled-voice cost; estimated totals above 256 MiB fail before rendering. It is not a promise about browser/device RAM. Render/allocation/save errors remain visible. Native saving accepts only bounded, consistent PCM headers from the trusted top-level studio frame and lets the user choose the path. JSON carries editable settings; exporting WAV adds no musical history. Closing during rendering drops the result after the non-abortable OfflineAudioContext finishes; save cancellation keeps it available.
+
+Evidence: src/audio/export.ts, src/audio/scoreGraph.ts, src/audio/voiceLimit.ts, src/audio/voice.ts, src/core/wav.ts, src/components/WavExport.tsx, desktop/wav.cjs, tests/unit/export.test.ts, tests/unit/wav.test.ts, tests/unit/nativeWav.test.ts, tests/browser/export-audio.spec.ts, tests/browser/export.spec.ts, tests/desktop/app.spec.ts. Other browser engines, assistive technology and physical listening remain manual gates.
+
 ## Contextual command reference (v0.15.0)
 
 <!-- features: command-reference, notation, tracks, storage -->
