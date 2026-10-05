@@ -127,13 +127,50 @@ test('instrument completion offers instrument keys only and honors autocomplete 
   await expect(page.locator('.cm-tooltip-autocomplete')).toHaveCount(0);
 });
 
-test('expanded reference stays bounded on narrow screens', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test('compact reference scrolls while search stays reachable on desktop and narrow screens', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const reference = page.getByRole('region', { name: 'Command reference', exact: true });
-  await reference.getByText('through syntax and rules', { exact: true }).click();
-  await reference.getByText('track syntax and rules', { exact: true }).click();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
-  await page.screenshot({ path: '.test-results/command-reference-mobile.png', fullPage: true });
+  const catalog = page.getByRole('region', { name: 'Command catalog', exact: true });
+  const search = reference.getByRole('textbox', { name: 'Search commands', exact: true });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: width === 390 ? 844 : 1040 });
+    await search.fill('');
+    await expect(reference.locator('.command-card')).toHaveCount(11);
+    const size = await reference.evaluate((element) => {
+      const body = element.querySelector('.command-reference-scroll')!;
+      const header = element.querySelector('.commands-header')!;
+      return {
+        height: element.getBoundingClientRect().height,
+        fullHeight: body.scrollHeight + header.getBoundingClientRect().height,
+      };
+    });
+    expect(size.height).toBeLessThanOrEqual(width === 390 ? 460 : 560);
+    expect(size.height).toBeLessThan(size.fullHeight * 0.55);
+    await catalog.focus();
+    await catalog.press('Space');
+    await expect.poll(() => catalog.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+    await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
+    await catalog.press('End');
+    if ((await reference.locator('.command-controls').getAttribute('open')) === null)
+      await reference.getByText('Controls (not score commands)', { exact: true }).click();
+    await expect(reference.locator('.command-controls[open]')).toContainText('monitor volume');
+    const headerBox = (await reference.locator('.commands-header').boundingBox())!;
+    const searchBox = (await search.boundingBox())!;
+    expect(searchBox.y).toBeGreaterThanOrEqual(headerBox.y);
+    expect(searchBox.y + searchBox.height).toBeLessThanOrEqual(headerBox.y + headerBox.height);
+    await search.fill('master warmDrive');
+    await expect(reference.locator('.command-card')).toHaveCount(1);
+    await expect.poll(() => catalog.evaluate((element) => element.scrollTop)).toBe(0);
+    await expect(search).toBeFocused();
+    await search.fill('');
+    await reference.getByText('through syntax and rules', { exact: true }).click();
+    await reference.getByText('track syntax and rules', { exact: true }).click();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+    await page.screenshot({ path: `.test-results/compact-reference-${width}.png`, fullPage: true });
+  }
 });

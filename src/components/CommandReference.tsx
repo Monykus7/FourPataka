@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, Search } from 'lucide-react';
 import { COMMANDS, type CommandDefinition, type CommandGroup } from '../core/commands';
 import {
@@ -36,6 +36,10 @@ export default function CommandReference({
 }: Props) {
   const [search, setSearch] = useState('');
   const [group, setGroup] = useState<CommandGroup | ''>('');
+  const catalog = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    catalog.current?.scrollTo(0, 0);
+  }, [search, group]);
   const cards = COMMANDS.filter(
     (command) =>
       (!group || command.group === group) &&
@@ -68,7 +72,18 @@ export default function CommandReference({
         </label>
       </div>
       {open && (
-        <div id="command-reference-body">
+        <div
+          id="command-reference-body"
+          className="command-reference-scroll"
+          ref={catalog}
+          role="region"
+          aria-label="Command catalog"
+          tabIndex={0}
+          onKeyDown={(event) => {
+            // Space scrolls this focused catalog; it must not invoke global Play.
+            if (event.key === ' ') event.stopPropagation();
+          }}
+        >
           <div className="command-destination">
             <label>
               Track
