@@ -32,6 +32,7 @@ interface Session {
   gate: GainNode;
   nodes: AudioNode[];
   voices: Voice[];
+  ownedVoices: Set<Voice>;
   timer: ReturnType<typeof setInterval> | null;
   start: number;
   duration: number;
@@ -108,6 +109,7 @@ export class AudioEngine {
       gate,
       nodes: [],
       voices: [],
+      ownedVoices: new Set(),
       timer: null,
       cleanup: null,
       start: context.currentTime + 0.05,
@@ -143,6 +145,7 @@ export class AudioEngine {
     session.voices = admitVoice(session.voices, start);
     const voice = createVoice(this.context!, destination, sound, frequency, start, duration, solo);
     session.voices.push(voice);
+    session.ownedVoices.add(voice);
     if (trackKey) session.voiceTracks.set(voice, trackKey);
   }
   private auditionChain(session: Session, chain: Chain, fade = false) {
@@ -431,6 +434,16 @@ export class AudioEngine {
     );
   }
   private sampleTails(session: Session) {
+    // Admission can retire a voice at a future note time. Keep lifecycle
+    // ownership until audio time reaches its end, including silent voices
+    // without an oscillator/onended callback. Stop must own them all too.
+    session.ownedVoices.forEach((voice) => {
+      if (voice.end <= this.context!.currentTime) {
+        voice.dispose();
+        session.ownedVoices.delete(voice);
+      }
+    });
+    session.voices = session.voices.filter((voice) => session.ownedVoices.has(voice));
     // Keep activity memory current even while Compose or Instrument is visible,
     // including rests before the first echo and gaps between long repeats.
     session.chains.forEach((graph) => {
@@ -452,7 +465,8 @@ export class AudioEngine {
       holdParameter(session.gate.gain, now);
       session.gate.gain.linearRampToValueAtTime(0, now + 0.02);
       setTimeout(() => {
-        session.voices.forEach((v) => v.dispose());
+        session.ownedVoices.forEach((v) => v.dispose());
+        session.ownedVoices.clear();
         session.nodes.forEach((n) => n.disconnect());
         session.chains.forEach((chain) => chain.dispose());
         session.disposers.forEach((dispose) => dispose());

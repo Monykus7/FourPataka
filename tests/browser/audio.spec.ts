@@ -1,5 +1,44 @@
 import { expect, test } from '@playwright/test';
 
+test('Stop owns future retired voices and releases silent voices without oscillator callbacks', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { AudioEngine } = await import('/src/audio/' + 'engine.ts');
+    const { mathematicalPreset } = await import('/src/core/' + 'music.ts');
+    const engine = new AudioEngine();
+    const sound = mathematicalPreset('sine');
+    sound.release = 0.01;
+    await engine.auditionPhrase(sound, {
+      tempo: 60,
+      beats: 0.5,
+      events: [{ beat: 0.02, duration: 0.1, notes: [], frequencies: Array(40).fill(440) }],
+    });
+    const voices = [...engine.session.ownedVoices];
+    const admitted = engine.session.voices.length;
+    engine.stop();
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    const leftover = voices.reduce((count: any, voice: any) => count + voice.oscillators.length, 0);
+    sound.harmonics.fill(0);
+    await engine.auditionPhrase(sound, {
+      tempo: 60,
+      beats: 0.5,
+      events: [{ beat: 0, duration: 0.01, notes: [], frequencies: [440] }],
+    });
+    const silentSession = engine.session;
+    // Audio-device startup can lag wall time; wait for cleanup rather than
+    // assuming a 150 ms sleep advances this context by the same amount.
+    for (let i = 0; i < 40 && silentSession.ownedVoices.size; i++)
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    const silentOwned = silentSession.ownedVoices.size;
+    engine.stop();
+    await engine.context.close();
+    return { owned: voices.length, admitted, leftover, silentOwned };
+  });
+  expect(proof).toEqual({ owned: 40, admitted: 32, leftover: 0, silentOwned: 0 });
+});
+
 test('offline source proof: absolute gain, triangle signs, undertone enable, Nyquist, short envelopes', async ({
   page,
 }) => {

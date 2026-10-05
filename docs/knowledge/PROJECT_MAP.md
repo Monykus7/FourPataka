@@ -18,7 +18,7 @@ Editable source waveform, signed harmonic sine bank and phase-continuous compari
 
 #### Sine-bank synthesis and voices
 
-Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop.
+Sixteen signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop. Separate lifecycle ownership includes retired/future and silent voices until cleanup, so Stop disposes every source.
 
 - Sine-bank synthesis and voices / dependency group 1: [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/music.ts](../../src/core/music.ts), [src/audio/voiceLimit.ts](../../src/audio/voiceLimit.ts), [src/components/HarmonicPolarity.tsx](../../src/components/HarmonicPolarity.tsx), [src/components/SourceGraphs.tsx](../../src/components/SourceGraphs.tsx), [tests/unit/polarity.test.ts](../../tests/unit/polarity.test.ts)
 - Sine-bank synthesis and voices / dependency group 2: [tests/browser/audio.spec.ts](../../tests/browser/audio.spec.ts)
@@ -60,7 +60,7 @@ A/B changes keep the musical clock and active envelopes. Phrase clipping preserv
 - Continuous A/B comparison and scheduling / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx)
 - Continuous A/B comparison and scheduling / dependency group 2: [tests/browser/comparison.spec.ts](../../tests/browser/comparison.spec.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L24), [Session](../../src/audio/engine.ts#L31), [AudioEngine](../../src/audio/engine.ts#L55), [AudioEngine.ready](../../src/audio/engine.ts#L69), [AudioEngine.setMonitor](../../src/audio/engine.ts#L94), [AudioEngine.setMix](../../src/audio/engine.ts#L98), [AudioEngine.begin](../../src/audio/engine.ts#L102), [AudioEngine.voice](../../src/audio/engine.ts#L133).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L24), [Session](../../src/audio/engine.ts#L31), [AudioEngine](../../src/audio/engine.ts#L56), [AudioEngine.ready](../../src/audio/engine.ts#L70), [AudioEngine.setMonitor](../../src/audio/engine.ts#L95), [AudioEngine.setMix](../../src/audio/engine.ts#L99), [AudioEngine.begin](../../src/audio/engine.ts#L103), [AudioEngine.voice](../../src/audio/engine.ts#L135).
 
 #### Pedalboard and processing
 
