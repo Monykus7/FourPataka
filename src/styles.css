@@ -1456,6 +1456,22 @@ dd {
   border-radius: 3px;
   overflow: hidden;
 }
+.timeline-navigation {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.timeline-navigation select {
+  min-width: 0;
+  flex: 1;
+  font-size: 11px;
+  width: 100%;
+}
+.timeline-navigation button {
+  min-width: 32px;
+  min-height: 32px;
+}
 .beat-line {
   position: absolute;
   top: 0;
@@ -1471,7 +1487,7 @@ dd {
   background: color-mix(in srgb, var(--accent) 10.98%, transparent);
   color: var(--accent-ink);
   text-align: left;
-  padding: 4px 6px;
+  padding: 4px 0;
   border-radius: 3px;
   overflow: hidden;
   white-space: nowrap;
@@ -1495,6 +1511,10 @@ dd {
   outline: 1px solid var(--text);
   outline-offset: -1px;
 }
+.timeline-event:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
 .playhead {
   position: absolute;
   top: 0;
@@ -1504,6 +1524,12 @@ dd {
 }
 .timeline-panel > .footnote {
   padding: 0 19px 17px;
+}
+.timeline-selection {
+  margin: 0;
+  padding: 0 19px 10px;
+  font: 11px var(--font-mono);
+  overflow-wrap: anywhere;
 }
 .track-instances {
   padding: 17px 19px;
