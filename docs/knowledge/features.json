@@ -124,13 +124,17 @@
       "id": "notation",
       "parent": "composition",
       "title": "Score parsing and editor",
-      "summary": "Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Eleven shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work.",
+      "summary": "Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Eleven shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work. v0.19.3 command autocomplete inserts blank editable shells instead of reference examples: chord notes/octave/duration and track name/instrument/events use Tab/Shift+Tab fields. A typed chord: prefix is replaced once with chord:(). Explicit meter and saved library choices remain values; unfinished shells retain parser diagnostics and block Play. Reference cards keep complete examples; no source/history/copy/audio policy or roadmap gate change.",
       "paths": [
         "src/core/parser.ts",
         "src/components/ScoreEditor.tsx",
         "tests/unit/parser.test.ts",
         "tests/browser/composition.spec.ts",
-        "tests/browser/score-chains.spec.ts"
+        "tests/browser/score-chains.spec.ts",
+        "src/core/commands.ts",
+        "tests/browser/autocomplete.spec.ts",
+        "tests/helpers/autocomplete.ts",
+        "tests/desktop/app.spec.ts"
       ]
     },
     {

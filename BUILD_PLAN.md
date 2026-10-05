@@ -406,6 +406,8 @@ Use CodeMirror 6 for syntax highlighting, diagnostics, hover documentation, sear
 
 Autocomplete has an explicit on/off preference. Turning it off disables suggestions while keeping the command reference available.
 
+Implemented in v0.19.3: autocomplete inserts empty command shells, with Tab/Shift+Tab between their blank fields, instead of reference-example pitches and other chosen values. `chord` inserts `chord:()` with the caret inside; notes, optional default octave and duration are supplied by the user. Track name, instrument and body also start blank. Completion after an existing `chord:` replaces that prefix once. Explicit meter, duration and saved preset choices remain value suggestions, and reference cards keep their complete examples. Incomplete shells retain parser diagnostics and block Play until valid; musical/history/copy policies and roadmap gates are unchanged.
+
 The timeline is initially a view of compiled events. Selecting an event inspects it; editing notes by dragging or writing notation from a piano roll is deferred.
 
 ### Source authority and playback revisions

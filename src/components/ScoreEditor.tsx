@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { basicSetup } from 'codemirror';
 import { Compartment, EditorState, StateEffect, StateField } from '@codemirror/state';
 import { Decoration, EditorView, keymap, type DecorationSet } from '@codemirror/view';
-import { autocompletion } from '@codemirror/autocomplete';
+import { autocompletion, snippetCompletion } from '@codemirror/autocomplete';
 import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { setDiagnostics } from '@codemirror/lint';
 import { tags } from '@lezer/highlight';
@@ -161,18 +161,26 @@ export default function ScoreEditor({
                   })),
                   validFor: /[A-Za-z0-9_]*/,
                 };
-              const word = context.matchBefore(/[A-Za-z0-9_]+/);
+              // Include an already typed colon in the replacement, rather than
+              // inserting a second chord prefix after it.
+              const chord = context.matchBefore(/\bchord:/);
+              const word = chord ?? context.matchBefore(/[A-Za-z0-9_]+/);
               if (!word && !context.explicit) return null;
+              const commands = COMMANDS.filter(
+                (c) => !chord || c.name === 'chord' || c.name === 'voicing',
+              ).map((c) =>
+                snippetCompletion(c.completionTemplate, {
+                  label: c.name,
+                  detail: c.description,
+                  info: `${c.syntax}\n${c.rules}\nFill blank fields; Tab / Shift+Tab moves between them.`,
+                  type: 'keyword',
+                }),
+              );
+              if (chord) return { from: chord.from, options: commands, filter: false };
               return {
                 from: word?.from ?? context.pos,
                 options: [
-                  ...COMMANDS.map((c) => ({
-                    label: c.name,
-                    detail: c.description,
-                    info: `${c.syntax}\n${c.rules}`,
-                    apply: c.snippet,
-                    type: 'keyword',
-                  })),
+                  ...commands,
                   ...Object.keys({ whole: 1, half: 1, quarter: 1, '8th': 1, '16th': 1 }).map(
                     (label) => ({ label, type: 'type' }),
                   ),

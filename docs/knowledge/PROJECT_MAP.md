@@ -89,11 +89,13 @@ Key definitions: [ScoreEditor](../../src/App.tsx#L99), [View](../../src/App.tsx#
 
 #### Score parsing and editor
 
-Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Eleven shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work.
+Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Eleven shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Chord-symbol macros with hover/focus expansion remain later work. v0.19.3 command autocomplete inserts blank editable shells instead of reference examples: chord notes/octave/duration and track name/instrument/events use Tab/Shift+Tab fields. A typed chord: prefix is replaced once with chord:(). Explicit meter and saved library choices remain values; unfinished shells retain parser diagnostics and block Play. Reference cards keep complete examples; no source/history/copy/audio policy or roadmap gate change.
 
 - Score parsing and editor / dependency group 1: [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/core/parser.ts](../../src/core/parser.ts), [tests/unit/parser.test.ts](../../tests/unit/parser.test.ts)
-- Score parsing and editor / dependency group 2: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
-- Score parsing and editor / dependency group 3: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
+- Score parsing and editor / dependency group 2: [src/core/commands.ts](../../src/core/commands.ts)
+- Score parsing and editor / dependency group 3: [tests/browser/autocomplete.spec.ts](../../tests/browser/autocomplete.spec.ts), [tests/helpers/autocomplete.ts](../../tests/helpers/autocomplete.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+- Score parsing and editor / dependency group 4: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
+- Score parsing and editor / dependency group 5: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
 Key definitions: [activeLines](../../src/components/ScoreEditor.tsx#L12), [playbackField](../../src/components/ScoreEditor.tsx#L13), [scoreLanguage](../../src/components/ScoreEditor.tsx#L33), [token](../../src/components/ScoreEditor.tsx#L34), [theme](../../src/components/ScoreEditor.tsx#L49), [colors](../../src/components/ScoreEditor.tsx#L83), [Props](../../src/components/ScoreEditor.tsx#L91), [ScoreEditor](../../src/components/ScoreEditor.tsx#L102).
 

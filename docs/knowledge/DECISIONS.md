@@ -211,3 +211,14 @@ Keyboard functionality must be visible where it is used. In Dots mode, Add dot n
 The command catalog no longer sizes the Compose row to every card and expanded rule. A flex panel caps its total height at 560 px desktop / 460 px narrow screen while leaving its search header outside the body scroller. The body retains all destination controls, command cards, reasons, rules and footer, with a named focusable scroll region and stable scrollbar space. Space on that region uses native scrolling without invoking global Play. Search/category changes reset its scroll synchronously after commit while preserving input focus. Changing contextual instrument/track/pedal selections preserves the same source-aware insertion and copy policy. Musical clocks, phase, latency, source text, project schema and roadmap gates do not change.
 
 Evidence: `src/components/FourierWorkspace.tsx`, `src/components/CommandReference.tsx`, `src/paper.css`, `src/styles.css`, `tests/browser/fourier.spec.ts`, `tests/browser/command-reference.spec.ts`, `tests/helpers/keyboardWorkflow.ts`, `tests/desktop/app.spec.ts`.
+
+
+## Blank command completion shells (v0.19.3)
+
+<!-- features: notation, command-reference, composition -->
+
+Autocomplete is a writing aid: command templates supply syntax and empty fields, never example pitches, octave, duration, track name, preset key or tempo/meter. Shared metadata now keeps a separate completion template and complete reference example. `chord` supplies `chord:()` with the caret inside, then Tab/Shift+Tab traverses notes, optional default octave and duration. `voicing` skips the default-octave field. Track completion supplies empty name/instrument/body fields and surrounding braces. Existing `chord:` is part of the replacement span so accepting a completion cannot duplicate its prefix/colon. Other command arguments and note/comment text start empty. Completion help explains field navigation. Explicit meter, duration and saved-library options still insert the value the user chose; turning autocomplete off disables both command shells and those suggestions.
+
+Shells intentionally start incomplete. The parser continues to report missing arguments/empty chords, and Play remains disabled until source is valid; completing a shell does not infer notes or silently change playback semantics. Reference cards retain complete examples and their source-aware insertion policy. Completion uses the existing authoritative editor changes and grouped musical history; independent copies, frozen playing revisions, phase/clock continuity, latency, storage schema and remaining roadmap gates are unchanged. Chord-symbol macros remain planned.
+
+Evidence: `src/core/commands.ts`, `src/components/ScoreEditor.tsx`, `tests/helpers/autocomplete.ts`, `tests/browser/autocomplete.spec.ts`, `tests/desktop/app.spec.ts`.
