@@ -1,4 +1,19 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
+
+test('keyboard-only instrument, comparison, composition, processing, playback, JSON and reload demonstration', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.goto('/');
+  const saved = await keyboardWorkflow(page);
+  const download = page.waitForEvent('download');
+  await tabTo(page, page.getByRole('button', { name: 'Export JSON', exact: true }));
+  await page.keyboard.press('Enter');
+  const exported = await download;
+  expect(JSON.parse(await readFile((await exported.path())!, 'utf8'))).toEqual(saved);
+});
 
 test('named dialogs focus their first field and return to the trigger on Escape, close and submit', async ({
   page,

@@ -29,6 +29,9 @@ test('keyboard adds waveform anchors up to the limit with independent undo and p
   await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(30);
   const dot = page.getByRole('button', { name: 'Wave point 30', exact: true });
   await dot.focus();
+  await dot.press('Space');
+  await expect(page.locator('.audition-button')).not.toHaveClass(/playing/);
+  await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
   await dot.press('Delete');
   await expect(page.getByRole('button', { name: 'Wave point 29', exact: true })).toBeFocused();
   await expect(add).toBeEnabled();

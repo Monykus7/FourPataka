@@ -325,6 +325,10 @@ export default function FourierWorkspace({
                   onFocus={() => setSelected(i)}
                   onKeyDown={(e) => {
                     if (i === 0 || i === points.length - 1) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelected(i);
+                    }
                     if (e.key.startsWith('Arrow')) {
                       e.preventDefault();
                       movePoint(

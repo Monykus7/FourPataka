@@ -477,6 +477,7 @@ export default function App() {
   }, [project.processing, active, sound, selectedTrack]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
       const target = e.target as HTMLElement;
       if (target.closest('input, textarea, select, [contenteditable="true"], dialog')) return;
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {

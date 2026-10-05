@@ -39,7 +39,11 @@ test('equipment menu arrows, Escape, Tab and keyboard placement preserve useful 
   await page.getByRole('button', { name: 'eq 1 output jack', exact: true }).press('Enter');
   await page.getByRole('button', { name: 'Board output input jack', exact: true }).press('Enter');
   await expect(page.locator('.board-route-status')).toHaveText('1 in signal path');
+  await page.getByRole('button', { name: 'Listen to chain', exact: true }).press('Enter');
+  await expect(page.locator('.audition-button')).toHaveClass(/playing/);
+  await input.focus();
   await page.keyboard.press('Escape');
+  await expect(page.locator('.audition-button')).toHaveClass(/playing/);
   await equipment.press('Enter');
   await compressor.press('Escape');
   await expect(equipment).toBeFocused();
@@ -47,6 +51,34 @@ test('equipment menu arrows, Escape, Tab and keyboard placement preserve useful 
   await compressor.press('Tab');
   await expect(page.getByRole('menu', { name: 'Equipment', exact: true })).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Grid pedalboard', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).press('Enter');
+});
+
+test('full board equipment navigation skips unavailable pedals without trapping focus', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).press('Enter');
+  const equipment = page.getByRole('button', { name: 'Equipment', exact: true });
+  for (let i = 0; i < 8; i++) {
+    await equipment.focus();
+    await equipment.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.board-slot:not(:disabled)').first()).toBeFocused();
+    await page.keyboard.press('Enter');
+  }
+  await equipment.focus();
+  await equipment.press('ArrowDown');
+  const cable = page.getByRole('menuitem', { name: 'Patch cable', exact: true });
+  await expect(cable).toBeFocused();
+  await expect(page.getByRole('menuitem', { name: 'Compressor', exact: true })).toBeDisabled();
+  for (const key of ['ArrowUp', 'ArrowDown', 'Home', 'End']) {
+    await cable.press(key);
+    await expect(cable).toBeFocused();
+  }
+  await cable.press('Escape');
+  await expect(equipment).toBeFocused();
+  await expect(page.locator('.compact-pedal')).toHaveCount(8);
 });
 
 for (const kind of ['compressor', 'overdrive', 'eq', 'delay'] as const)

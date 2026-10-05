@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import packageInfo from '../../package.json' with { type: 'json' };
 import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
+import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
 
 let app: ElectronApplication;
 test.beforeEach(async () => {
@@ -19,6 +20,20 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged keyboard-only studio demonstration saves and reloads independent sounds and processing', async () => {
+  test.setTimeout(120_000);
+  const page = await app.firstWindow();
+  const saved = await keyboardWorkflow(page);
+  const filePath = resolve('.test-results', 'desktop', 'keyboard-workflow.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await tabTo(page, page.getByRole('button', { name: 'Save project', exact: true }));
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved keyboard-workflow');
+  expect(JSON.parse(await readFile(filePath, 'utf8'))).toEqual(saved);
 });
 
 test('native recovery menu exports exact damaged bytes and restores a checkpoint with undo', async () => {

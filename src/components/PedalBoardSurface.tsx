@@ -233,6 +233,7 @@ export default function PedalBoardSurface({
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
           e.preventDefault();
+          e.stopPropagation();
           // Movement is a preview until release; canceling must never create a history entry.
           move.current = null;
           setMoving(null);
