@@ -1576,12 +1576,20 @@ dd {
   max-width: 200px;
 }
 .commands-panel {
-  align-self: start;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
-  max-height: 560px;
+  min-height: 0;
+  /* The score sets the row height; catalog contents must not enlarge it. */
+  contain: size;
+}
+.commands-panel[data-expanded='false'] {
+  align-self: start;
+  contain: none;
+  height: auto;
 }
 .command-reference-scroll {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -2168,6 +2176,9 @@ dd {
   .compose-layout {
     grid-template-columns: 1fr;
   }
+  .commands-panel {
+    height: var(--score-panel-height, 500px);
+  }
   .score-editor {
     flex: none;
     height: 400px;
@@ -2450,9 +2461,6 @@ dd {
   .commands-header {
     flex-wrap: wrap;
     padding: 16px;
-  }
-  .commands-panel {
-    max-height: 460px;
   }
   .search-box {
     width: 100%;

@@ -46,7 +46,7 @@ export default function CommandReference({
       matchesCommand(command, referenceSnippet(command, context), search),
   );
   return (
-    <section className="panel commands-panel" aria-label="Command reference">
+    <section className="panel commands-panel" aria-label="Command reference" data-expanded={open}>
       <div className="commands-header">
         <button
           className="disclosure-button"

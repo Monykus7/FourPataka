@@ -239,8 +239,24 @@ export default function App() {
   const [commandFocusRequest, setCommandFocusRequest] = useState(0);
   const [commandChain, setCommandChain] = useState('warmDrive');
   const fileInput = useRef<HTMLInputElement>(null);
+  const scorePanel = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const engine = useRef(new AudioEngine());
+  useLayoutEffect(() => {
+    const panel = scorePanel.current;
+    if (view !== 'compose' || !panel) return;
+    // Stacked panels occupy different grid rows. Mirror the score's border
+    // box there while desktop CSS stretches the reference in the shared row.
+    const measure = () =>
+      panel.parentElement?.style.setProperty(
+        '--score-panel-height',
+        `${panel.getBoundingClientRect().height}px`,
+      );
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(panel, { box: 'border-box' });
+    return () => observer.disconnect();
+  }, [view]);
   const auditionRequested = useRef(false);
   const editGroup = useRef({ key: '', time: 0 });
   const active = project.comparison.active;
@@ -1472,7 +1488,7 @@ export default function App() {
           {view === 'compose' && (
             <>
               <div className="compose-layout">
-                <section className="panel editor-panel">
+                <section className="panel editor-panel" ref={scorePanel}>
                   <div className="panel-header">
                     <div>
                       <h2>
