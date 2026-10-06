@@ -22,6 +22,17 @@ export async function blockWorkflow(page: Page) {
   await expect(page.getByRole('button', { name: 'Load demo score', exact: true })).toBeEnabled({
     timeout: 10000,
   });
+  await editor.fill('track lead using sine {\nstaccato[ C4 quarter\n] }');
+  await page.getByRole('button', { name: 'Insert note command', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Inspect lead event', exact: true })
+    .selectOption('lead:1');
+  await expect(page.getByRole('status', { name: 'Selected timeline event' })).toContainText('C5');
+  await expect(page.getByRole('status', { name: 'Selected timeline event' })).not.toContainText(
+    'staccato',
+  );
+  await editor.fill(source);
+  await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText('Gmaj7 eighth');

@@ -96,3 +96,16 @@ describe('source-authoritative composition tools', () => {
     ).toThrow();
   });
 });
+
+it('inserts reference events after inline group closers without inheriting articulation or tuplets', () => {
+  for (const group of ['legato', 'staccato', 'triplet', 'tuplet:5:4']) {
+    const source = `track lead using sine {\n${group}[ C4 quarter\n] }`;
+    const updated = insertCommand(source, keys, 'note', 'lead', 'sine');
+    const score = parseScore(updated, keys);
+    expect(score.diagnostics).toEqual([]);
+    expect(score.events.at(-1)).toMatchObject({ duration: 1, notes: ['C5'] });
+    expect(score.events.at(-1)?.articulation).toBeUndefined();
+    expect(score.events.at(-1)?.tuplet).toBeUndefined();
+    expect(score.events[0].legatoToNext).toBeUndefined();
+  }
+});

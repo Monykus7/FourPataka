@@ -162,5 +162,10 @@ export function insertCommand(
   const target = parsed.tracks.find((t) => t.key === targetKey);
   if (!target) throw new Error('Make a track or choose an insertion destination first.');
   const lineStart = text.lastIndexOf('\n', target.bodyTo - 1) + 1;
-  return text.slice(0, lineStart) + `  ${command.snippet}\n` + text.slice(lineStart);
+  // Inline ] } closes the scope before the track brace; insert after those delimiters.
+  const inline = text.slice(lineStart, target.bodyTo).trim().length > 0;
+  const insertion = inline ? target.bodyTo : lineStart;
+  return (
+    text.slice(0, insertion) + `${inline ? '\n' : ''}  ${command.snippet}\n` + text.slice(insertion)
+  );
 }
