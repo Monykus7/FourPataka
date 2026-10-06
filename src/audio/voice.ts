@@ -33,6 +33,7 @@ export function createVoice(
   start: number,
   duration: number,
   solo?: string,
+  releaseLimit?: number,
 ): Voice {
   const envelope = context.createGain();
   const trim = context.createGain();
@@ -40,7 +41,7 @@ export function createVoice(
   envelope.connect(trim);
   trim.connect(destination);
   const noteOff = start + duration;
-  let end = noteOff + sound.release;
+  let end = noteOff + Math.min(sound.release, releaseLimit ?? sound.release);
   let current = structuredClone(sound);
   let disposed = false;
   const oscillators: OscillatorNode[] = [];
@@ -145,7 +146,10 @@ export function createVoice(
       const now = Math.max(start, context.currentTime);
       if (disposed || now >= end) return;
       if (next.attack !== current.attack || next.release !== current.release) {
-        end = Math.max(now + TRANSITION, noteOff + next.release);
+        end = Math.max(
+          now + TRANSITION,
+          noteOff + Math.min(next.release, releaseLimit ?? next.release),
+        );
         holdParameter(envelope.gain, now);
         if (now < noteOff) {
           const level = Math.min(1, duration / next.attack);

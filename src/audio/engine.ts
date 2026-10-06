@@ -1,3 +1,4 @@
+import { playbackTiming } from '../core/articulation';
 import type { Sound } from '../core/music';
 import { createVoice, holdParameter, type Voice } from './voice';
 export { createVoice } from './voice';
@@ -141,9 +142,19 @@ export class AudioEngine {
     duration: number,
     solo?: string,
     trackKey?: string,
+    releaseLimit?: number,
   ) {
     session.voices = admitVoice(session.voices, start);
-    const voice = createVoice(this.context!, destination, sound, frequency, start, duration, solo);
+    const voice = createVoice(
+      this.context!,
+      destination,
+      sound,
+      frequency,
+      start,
+      duration,
+      solo,
+      releaseLimit,
+    );
     session.voices.push(voice);
     session.ownedVoices.add(voice);
     if (trackKey) session.voiceTracks.set(voice, trackKey);
@@ -254,8 +265,10 @@ export class AudioEngine {
             session.auditionSound!,
             f,
             session.start + (event.beat * 60) / frozen.tempo,
-            (event.duration * 60) / frozen.tempo,
+            playbackTiming(event, frozen.tempo).duration,
             session.solo,
+            undefined,
+            playbackTiming(event, frozen.tempo).releaseLimit,
           ),
         );
       }
@@ -358,9 +371,10 @@ export class AudioEngine {
             session.scoreSounds.get(event.track)!,
             f,
             session.start + (event.beat * 60) / score.tempo,
-            (event.duration * 60) / score.tempo,
+            playbackTiming(event, score.tempo).duration,
             undefined,
             event.track,
+            playbackTiming(event, score.tempo).releaseLimit,
           ),
         );
       }

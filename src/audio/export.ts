@@ -1,3 +1,4 @@
+import { playbackTiming } from '../core/articulation';
 import { parseScore } from '../core/parser';
 import { reconcileTracks, type Project } from '../core/project';
 import { boardRoute } from '../core/board';
@@ -97,7 +98,9 @@ export async function renderWav(project: Project, options: WavOptions) {
           track.sound,
           frequency,
           start,
-          (event.duration * 60) / plan.score.tempo,
+          playbackTiming(event, plan.score.tempo).duration,
+          undefined,
+          playbackTiming(event, plan.score.tempo).releaseLimit,
         );
         active.push(voice);
         all.push(voice);

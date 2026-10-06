@@ -18,7 +18,10 @@ export const DEFAULT_MATERIAL: ComparisonMaterial = {
 export interface AuditionPhrase {
   tempo: number;
   beats: number;
-  events: Pick<ScoreEvent, 'beat' | 'duration' | 'notes' | 'frequencies'>[];
+  events: Pick<
+    ScoreEvent,
+    'beat' | 'duration' | 'notes' | 'frequencies' | 'articulation' | 'gateDuration' | 'legatoToNext'
+  >[];
 }
 // Musical material is independent of A/B sounds. Clip boundary-crossing notes,
 // preserve rests, and start both snapshots at the same zero-based phrase origin.
@@ -49,8 +52,16 @@ export function comparisonPhrase(
       return {
         beat: start - material.fromBeat,
         duration: Math.min(e.beat + e.duration, end) - start,
+        ...(e.articulation ? { articulation: e.articulation } : {}),
+        ...(e.gateDuration !== undefined
+          ? { gateDuration: Math.max(0, Math.min(e.beat + e.gateDuration, end) - start) }
+          : {}),
+        ...(e.legatoToNext && e.beat + e.duration < end ? { legatoToNext: true } : {}),
         notes: [...e.notes],
-        frequencies: [...e.frequencies],
+        frequencies:
+          e.gateDuration !== undefined && start >= e.beat + e.gateDuration
+            ? []
+            : [...e.frequencies],
       };
     });
   return { tempo: score.tempo, beats: end - material.fromBeat, events };
