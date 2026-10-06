@@ -1578,8 +1578,8 @@ export default function App() {
                       </h2>
                     </div>
                     <div className="editor-options">
-                      <label>
-                        Beside score
+                      <label className="score-panel-choice">
+                        Show beside score
                         <select
                           aria-label="Panel beside score"
                           value={preferences.composeSide}
@@ -1593,6 +1593,7 @@ export default function App() {
                           <option value="reference">Command reference</option>
                           <option value="timeline">Timeline</option>
                         </select>
+                        <ArrowRight className="score-panel-arrow" size={18} aria-hidden="true" />
                       </label>
                       <button
                         className="secondary-button"

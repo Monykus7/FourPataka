@@ -1,3 +1,4 @@
+import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 import { ideWorkflow } from '../helpers/ide';
 import { blockWorkflow } from '../helpers/blocks';
 import { demoWorkflow } from '../helpers/demo';
@@ -269,6 +270,7 @@ test('native command reference focuses search and saves contextual instrument an
         .evaluate((input) => document.activeElement === input),
     )
     .toBe(true);
+  await referenceSearchWorkflow(page);
   await reference.getByRole('combobox', { name: 'Command insertion track' }).selectOption('bass');
   await reference
     .getByRole('combobox', { name: 'Command instrument', exact: true })

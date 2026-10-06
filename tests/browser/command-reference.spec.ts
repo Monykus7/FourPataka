@@ -1,4 +1,13 @@
 import { expect, test } from '@playwright/test';
+import { referenceSearchWorkflow } from '../helpers/referenceSearch';
+
+test('command-name searches exclude incidental rule mentions and clear back to the full catalog', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await referenceSearchWorkflow(page);
+});
 
 test('reference previews match selected keys and instrument assignment preserves other tracks with undo', async ({
   page,
@@ -138,6 +147,12 @@ test('reference matches the score height while search stays reachable on desktop
   const search = reference.getByRole('textbox', { name: 'Search commands', exact: true });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1040 });
+    await expect(page.locator('.score-panel-choice')).toContainText('Show beside score');
+    const arrow = page.locator('.score-panel-arrow');
+    await expect(arrow).toBeVisible();
+    expect(await arrow.evaluate((el) => getComputedStyle(el).transform)).toBe(
+      width === 390 ? 'matrix(0, 1, -1, 0, 0, 0)' : 'none',
+    );
     await search.fill('');
     await expect(reference.locator('.command-card')).toHaveCount(20);
     await expect

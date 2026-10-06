@@ -1362,6 +1362,10 @@ dd {
   font-size: 9px;
   color: var(--text-muted);
 }
+.score-panel-arrow {
+  flex-shrink: 0;
+  color: var(--accent);
+}
 .score-editor {
   /* The editor owns any extra row height; never leave it below the status bar. */
   flex: 1;
@@ -2196,6 +2200,9 @@ dd {
   }
   .compose-layout {
     grid-template-columns: 1fr;
+  }
+  .score-panel-arrow {
+    transform: rotate(90deg);
   }
   .commands-panel {
     height: var(--score-panel-height, 500px);
