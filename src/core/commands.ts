@@ -154,7 +154,7 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: 'tuplet:${}:${}[\n	${}\n]',
     syntax: 'tuplet:<N>:<M>[\n  <events>\n]',
     rules:
-      'N is 2–32; M is 1–32. Multiply the written duration by M/N. Put the same modifier on each event in the group; no group-count inference or nested tuplets. Timing accumulates as fractions before scheduling.',
+      'N is 2–32; M is 1–32. Multiply the written duration by M/N. All events between [ and ] share the scale, including rests and mixed durations. Nested tuplet ratios multiply; group event count is not inferred or enforced. Timing accumulates as fractions before scheduling.',
   },
   {
     name: 'dotted',

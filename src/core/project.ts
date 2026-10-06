@@ -58,52 +58,69 @@ time 3/4 at 15
 time 4/4 at 21
 
 track melody using brightReed {
-  // Bar 1: three eighth-note triplets fill one quarter beat.
-  C5 8th triplet legato
-  D5 8th triplet legato
-  E5 8th triplet
-  G5 quarter staccato
+  // Bar 1: a connected triplet group fills one quarter beat.
+  legato[
+    triplet[
+      C5 eighth
+      D5 eighth
+      E5 eighth
+    ]
+  ]
+  staccato[ G5 quarter ]
   chord:Cmaj7@4 quarter
   rest 8th
-  E5 8th staccato
+  staccato[ E5 8th ]
 
   // Bar 2: dotted and double-dotted rhythm.
-  F5 quarter. legato
-  E5 8th legato
-  D5 quarter.. staccato
+  legato[
+    F5 quarter.
+    E5 8th
+  ]
+  staccato[ D5 quarter.. ]
   C5 16th
 
   // Bar 3, 7/8: five sixteenths in the time of four.
-  E5 16th tuplet:5:4 legato
-  F5 16th tuplet:5:4 legato
-  G5 16th tuplet:5:4 legato
-  A5 16th tuplet:5:4 legato
-  G5 16th tuplet:5:4
-  chord:Fmaj7@4 quarter.
-  G5 8th staccato
+  legato[
+    tuplet:5:4[
+      E5 16th
+      F5 16th
+      G5 16th
+      A5 16th
+      G5 16th
+    ]
+  ]
+  Fmaj7@4 quarter.
+  staccato[ G5 8th ]
   rest 8th
 
   // Bar 4, 7/8: explicit voicing alongside chord symbols.
-  chord:(G4 B4 D5) quarter staccato
-  A5 8th legato
-  G5 8th legato
-  F5 quarter legato
-  E5 8th
+  staccato[ chord:(G4 B4 D5) quarter ]
+  legato[
+    A5 8th
+    G5 8th
+    F5 quarter
+    E5 8th
+  ]
 
   // Bar 5, 3/4: short accents after a held chord.
   chord:G7@3 half
   rest 8th
-  D5 16th staccato
-  G5 32nd staccato
-  A5 32nd legato
-
-  // Bar 6: connected melody and a compact 64th-note flourish.
-  B5 quarter legato
-  A5 quarter legato
-  G5 8th. legato
-  E5 64th staccato
-  F5 64th staccato
-  G5 32nd staccato
+  staccato[
+    D5 16th
+    G5 32nd
+  ]
+  legato[
+    A5 32nd
+    // Bar 6: a connected phrase can cross a bar line.
+    B5 quarter
+    A5 quarter
+    G5 8th.
+  ]
+  staccato[
+    E5 64th
+    F5 64th
+    G5 32nd
+  ]
 
   // Bar 7, 4/4: resolve, then leave space for the release.
   chord:C6@4 half.
@@ -112,8 +129,10 @@ track melody using brightReed {
 
 track bass using softBass {
   // Bars 1–2, 4/4.
-  C3 quarter staccato
-  G2 quarter staccato
+  staccato[
+    C3 quarter
+    G2 quarter
+  ]
   C3 half
   F2 half
   G2 quarter.
@@ -130,9 +149,11 @@ track bass using softBass {
   // Bars 5–6, 3/4.
   G2 half
   D3 quarter
-  G2 quarter staccato
-  B2 quarter legato
-  D3 quarter
+  staccato[ G2 quarter ]
+  legato[
+    B2 quarter
+    D3 quarter
+  ]
 
   // Bar 7, 4/4.
   C3 half.
