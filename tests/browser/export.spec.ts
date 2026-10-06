@@ -58,7 +58,7 @@ test('clipping is reported and saving requires an explicit lower level or normal
     const p = JSON.parse(localStorage.getItem('fourpataka.project.v1')!);
     p.scoreText =
       'tempo 120\ntrack melody using brightReed {\n chord:(A A A A A A A A)4 quarter\n}';
-    p.tracks[0].sound.harmonics = [1, ...Array(15).fill(0)];
+    p.tracks[0].sound.harmonics = [1, ...Array(31).fill(0)];
     p.tracks[0].sound.trim = 0;
     p.tracks[0].level = 1;
     p.mixGain = 1;

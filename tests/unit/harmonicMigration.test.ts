@@ -17,9 +17,15 @@ it('migrates schema 1 with silent upper partials and independent owned copies', 
   }
   old.tracks[0].sound.harmonics[5] = 0.37;
   old.comparison.A.polarity[15] = -1;
+  old.tracks[0].sound.waveformPoints = [
+    { x: 0, y: 0 },
+    { x: 0.5, y: 0.8 },
+    { x: 1, y: 0 },
+  ];
   const restored = importProject(JSON.stringify(old));
   expect(restored.schemaVersion).toBe(2);
   expect(restored.scoreText).toBe(old.scoreText);
+  expect(restored.tracks[0].sound.waveformPoints).toEqual(old.tracks[0].sound.waveformPoints);
   expect(restored.tracks[0].sound.harmonics.slice(0, 16)).toEqual(old.tracks[0].sound.harmonics);
   expect(restored.tracks[0].sound.harmonics.slice(16)).toEqual(Array(16).fill(0));
   expect(restored.comparison.A.polarity.slice(0, 16)).toEqual(old.comparison.A.polarity);

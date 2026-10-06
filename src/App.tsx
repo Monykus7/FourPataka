@@ -2031,8 +2031,8 @@ export default function App() {
               <div className="learn-note">
                 <BookOpen size={18} />
                 <p>
-                  FourPataka starts with finite Fourier approximations. Sixteen partials suggest a
-                  shape; they don’t reproduce an ideal discontinuity or an acoustic instrument
+                  FourPataka starts with finite Fourier approximations. Thirty-two partials suggest
+                  a shape; they don’t reproduce an ideal discontinuity or an acoustic instrument
                   exactly.
                 </p>
               </div>

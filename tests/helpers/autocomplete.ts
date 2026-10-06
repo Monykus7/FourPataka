@@ -17,7 +17,10 @@ export async function completeCommand(page: Page, text: string, label: string, u
   await editor.press('Control+Space');
   await page
     .locator('.cm-tooltip-autocomplete')
-    .getByRole('option', { name: new RegExp(`^${label}`) })
+    .getByRole('option')
+    .filter({
+      has: page.locator('.cm-completionLabel').filter({ hasText: new RegExp(`^${label}$`) }),
+    })
     .click();
   return editor;
 }

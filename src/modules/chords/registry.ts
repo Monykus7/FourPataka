@@ -7,6 +7,7 @@ export function createChordShapeRegistry(definitions: readonly ChordShape[]): Ch
   const shapes = definitions.map((definition) => {
     if (
       !/^[a-z][a-z0-9-]*:[a-z][a-z0-9-]*$/.test(definition.id) ||
+      definition.id.length > 128 ||
       ids.has(definition.id) ||
       definition.apiVersion !== CHORD_SHAPE_API_VERSION ||
       !definition.label.trim() ||

@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import packageInfo from '../../package.json' with { type: 'json' };
 import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
 import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
+import { synthesisNotationWorkflow } from '../helpers/synthesisNotation';
 import { chordShellWorkflow } from '../helpers/autocomplete';
 
 let app: ElectronApplication;
@@ -21,6 +22,10 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged upper-bank editing and chord note previews', async () => {
+  await synthesisNotationWorkflow(await app.firstWindow());
 });
 
 test('packaged autocomplete inserts an empty chord shell with keyboard fields and playable user notes', async () => {
