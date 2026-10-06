@@ -130,7 +130,7 @@ Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal
 - Score parsing and editor / dependency group 4: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
 - Score parsing and editor / dependency group 5: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
-Key definitions: [SymbolPreview](../../src/components/ScoreEditor.tsx#L22), [updateChords](../../src/components/ScoreEditor.tsx#L23), [chordField](../../src/components/ScoreEditor.tsx#L24), [chordTooltip](../../src/components/ScoreEditor.tsx#L33), [cursorChord](../../src/components/ScoreEditor.tsx#L48), [chordPreviews](../../src/components/ScoreEditor.tsx#L53), [activeLines](../../src/components/ScoreEditor.tsx#L67), [playbackField](../../src/components/ScoreEditor.tsx#L68).
+Key definitions: [SymbolPreview](../../src/components/ScoreEditor.tsx#L33), [updateChords](../../src/components/ScoreEditor.tsx#L34), [chordField](../../src/components/ScoreEditor.tsx#L35), [chordTooltip](../../src/components/ScoreEditor.tsx#L44), [cursorChord](../../src/components/ScoreEditor.tsx#L59), [chordPreviews](../../src/components/ScoreEditor.tsx#L64), [activeLines](../../src/components/ScoreEditor.tsx#L78), [playbackField](../../src/components/ScoreEditor.tsx#L79).
 
 #### Contextual command reference
 

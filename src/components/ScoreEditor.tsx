@@ -1,6 +1,7 @@
+import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useRef } from 'react';
 import { basicSetup } from 'codemirror';
-import { Compartment, EditorState, StateEffect, StateField } from '@codemirror/state';
+import { Compartment, EditorState, StateEffect, StateField, Prec } from '@codemirror/state';
 import {
   Decoration,
   EditorView,
@@ -10,8 +11,18 @@ import {
   type Tooltip,
   type DecorationSet,
 } from '@codemirror/view';
-import { autocompletion, snippetCompletion } from '@codemirror/autocomplete';
-import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
+import {
+  autocompletion,
+  snippetCompletion,
+  nextSnippetField,
+  prevSnippetField,
+} from '@codemirror/autocomplete';
+import {
+  StreamLanguage,
+  syntaxHighlighting,
+  HighlightStyle,
+  indentUnit,
+} from '@codemirror/language';
 import { setDiagnostics } from '@codemirror/lint';
 import { tags } from '@lezer/highlight';
 import { COMMANDS, type ScoreEvent, type Diagnostic } from '../core/parser';
@@ -94,7 +105,7 @@ const scoreLanguage = StreamLanguage.define({
     }
     if (
       stream.match(
-        /\b(?:tempo|time|track|using|through|master|chord|rest|at|triplet|tuplet|staccato|legato)\b/,
+        /\b(?:tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|at|triplet|tuplet|staccato|legato)\b/,
       )
     )
       return 'keyword';
@@ -260,7 +271,7 @@ export default function ScoreEditor({
                 snippetCompletion(c.completionTemplate, {
                   label: c.name,
                   detail: c.description,
-                  info: `${c.syntax}\n${c.rules}\nFill blank fields; Tab / Shift+Tab moves between them.`,
+                  info: `${c.syntax}\n${c.rules}\nFill blank fields; F2 / Shift+F2 moves between fields. Tab indents; Ctrl+M toggles Tab focus navigation.`,
                   type: 'keyword',
                 }),
               );
@@ -287,6 +298,16 @@ export default function ScoreEditor({
       state: EditorState.create({
         doc: value,
         extensions: [
+          EditorState.tabSize.of(2),
+          indentUnit.of('  '),
+          // Override snippet-field Tab navigation too: indentation always wins in the IDE.
+          Prec.highest(
+            keymap.of([
+              indentWithTab,
+              { key: 'F2', run: nextSnippetField },
+              { key: 'Shift-F2', run: prevSnippetField },
+            ]),
+          ),
           keymap.of([
             {
               key: 'Mod-z',
