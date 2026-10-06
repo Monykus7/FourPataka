@@ -40,4 +40,4 @@ Do not access another track's mutable state or replace the host clock. Settings 
 
 The first independent example should be a small utility processor with easy numeric expectations. It must work through one module registration without new kind branches in host DSP, menus, validation or export. Keep example-only equipment out of the default build unless it is intentionally promoted.
 
-Phaser, chorus and algorithmic reverb are future users of these contracts, not implementations delivered by this guide. Their modulation/stability/bypass and finite-tail requirements remain in [BUILD_PLAN.md section 7](../../BUILD_PLAN.md#7-planned-pedal-expansion--phaser-chorus-and-reverb).
+Phaser, chorus and algorithmic reverb are future users of these contracts, not implementations delivered by this guide. Their modulation/stability/bypass and finite-tail requirements remain in [BUILD_PLAN.md section 7](../../BUILD_PLAN.md#7-pedalboard-and-audio-routing).

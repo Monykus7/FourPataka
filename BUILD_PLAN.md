@@ -1,6 +1,6 @@
 # FourPataka — Fourier Music Studio build plan
 
-Updated: 2026-10-03
+Updated: 2026-10-05
 Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
@@ -8,6 +8,8 @@ This is the authoritative project plan. It consolidates the expanded plan from `
 ## 1. Product and learning goal
 
 Build a personal studio, available in the browser and as a desktop application, for shaping instruments with Fourier harmonics and optional undertones, processing them through a visible pedalboard, and composing with readable note and chord commands. Mathematical changes should be easy to hear and inspect.
+
+The long-term goal now includes an open-source project that other people can extend with pedals, instruments and other features. Modularity is a major program split into six separately releasable milestones, M1–M6, in section 14. It must have contributor-facing contracts, tutorials, runnable examples and compatibility proofs; directory cleanup alone is insufficient. M1 is the next major foundation work, ahead of new feature expansions.
 
 The central loop is:
 
@@ -36,6 +38,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Add instrument acoustics later inside the Instrument builder: a wet/dry algorithmic "tiny room" representing the instrument's chamber. It must work without impulse-response (IR) files.
 - Expand the Instrument builder to support up to 32 signed harmonics in a later update, preserving existing 16-harmonic sounds and making piano/brass-inspired timbres a design target.
 - Add phaser, chorus and algorithmic reverb pedals later, using the existing cable board, independent copies and shared live/offline processing. The reverb pedal is separate from instrument-body acoustics.
+- Prepare for open-source contributions through separately gated module-contract, pedal, instrument-preset, synthesis-engine, feature-module and publication-readiness milestones. Built-ins and contributed modules use the same contracts; documentation and runnable examples are required deliverables.
 
 Other defaults in this document are proposed implementation choices. They should be tuned in the audio proof without changing these confirmed behaviors.
 
@@ -61,6 +64,8 @@ Include the following by the end of stage 5:
 The v0.19.1 layout follow-up makes the expanded command reference match the score panel height while retaining fixed search and local catalog scrolling; no roadmap gate changes.
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
+
+Current priority: modularity M1 contracts/compatibility, followed by M2 pedal modules and M3 instrument preset modules. Stage 7 remains the next music-feature item and can resume against the landed boundaries without waiting for every later module category. New pedals/presets should use their registries once available. M4/M5/M6 are independent follow-on milestones; they do not require one enormous rewrite or a runtime plugin installer.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -298,7 +303,7 @@ Use a linear dry/wet blend initially: dry gain = 1−mix, wet gain = mix, with m
 
 ### Planned pedal expansion — phaser, chorus and reverb
 
-Status: requested and planned, not implemented. Keep the current stage 7 learning/measurement priority; implement these as a later pedal expansion with one verified effect per release. Proposed order is phaser, chorus, then reverb. Tune the algorithm, ranges and defaults in a numeric/listening proof before shipping; proposed ranges below are not current controls.
+Status: requested and planned, not implemented. Complete the relevant modularity foundation/registry gates first; stage 7 remains the next music-feature item. Implement these as a later pedal expansion through the M2 contract, with one verified effect per release. Proposed order is phaser, chorus, then reverb. Tune the algorithm, ranges and defaults in a numeric/listening proof before shipping; proposed ranges below are not current controls.
 
 - **Phaser:** a modulated all-pass cascade producing moving notches when blended with dry audio. Proposed controls: rate 0.05–5 Hz, depth 0–100%, center 100–4000 Hz, four/six/eight stages, bounded feedback 0–85%, output trim and mix. Select any feedback/cycle-breaking delay deliberately and verify it rather than assuming a direct feedback loop works. Frequency-dependent all-pass phase is the effect; do not compensate it away as scheduling latency. Document any actual look-ahead/algorithmic latency separately. Smooth frequency/rate/depth changes while retaining the session-relative LFO phase; stage changes are topology changes.
 - **Chorus:** one or two short modulated delay voices, initially without feedback. Proposed controls: rate 0.05–5 Hz, base delay 5–30 ms, modulation depth 0–10 ms, output trim and mix. Limit excursion to keep every delay at least 1 ms; reject/clamp combinations consistently in UI, import and audio. Modulated delay is intentional musical timing, distinct from processing compensation. Use a session-relative LFO phase reference in live/offline rendering, retain phase for live parameter edits, and verify pitch movement, dry unity and a finite tail bounded by maximum delay. Stereo widening can follow the initial mono-compatible implementation.
@@ -601,7 +606,7 @@ Finish keyboard operation, layouts, gain meters, local save recovery, import val
 
 Local-save recovery inspection, export and undoable restoration are implemented in v0.17.0. Verification is recorded in IMPLEMENTATION_STATUS.md; this does not close the complete stage 5 release gate.
 
-The v0.18.0 keyboard workflow covers source editing, independent A/B, saved instruments, Track Maker, physical EQ placement/patching, source-authoritative application, play/replay/Stop, editable JSON and reload. Automated browser/portable evidence is recorded separately from remaining manual screen-reader, real-device/browser and physical-listening gates. WAV export remains the next main feature after these release-polish checks.
+The v0.18.0 keyboard workflow covers source editing, independent A/B, saved instruments, Track Maker, physical EQ placement/patching, source-authoritative application, play/replay/Stop, editable JSON and reload. Automated browser/portable evidence is recorded separately from remaining manual screen-reader, real-device/browser and physical-listening gates. This work preceded stage 6 WAV export, implemented in v0.19.0 below.
 
 Gate: the main demonstration works end to end; no required control depends on hover or dragging; text contrast passes; stop/replay and save/reload restore independent settings and bypass states correctly.
 
@@ -615,13 +620,15 @@ Implemented in v0.19.0: shared score/voice/effect factories, frozen applied copi
 
 ### Stage 7 — learning and analysis
 
+Still planned. Modularity M1 is now the next major foundation milestone; learning/analysis remains the next music-feature item after the initial module boundaries. This priority change does not close stage 7 or any remaining stage 5 gate.
+
 Add guided experiments and the secondary analysis panel with clearly defined source/output metrics.
 
 Gate: loading an experiment is undoable; metric units/reference/window are visible; silence produces no misleading numeric values; computed descriptors agree with simple known test signals.
 
 ### Stage 8 and later — advanced synthesis and notation
 
-Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the existing independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber and retain the current stage 7 main-feature priority.
+Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. Modularity M1 is the next foundation milestone; stage 7 remains the next music-feature item.
 
 Requested instrument-builder follow-up: expand the current 16-harmonic bank to support up to 32 harmonics, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
@@ -657,8 +664,68 @@ Use focused verification for meaningful risks:
 - Offline/live model agreement, release/tail duration, and export level handling.
 - Keyboard operation, readable layout, and the chosen palette's contrast.
 
-The first implementation work remains the audio proof. After its gate passes, proceed through this single roadmap.
+Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M1, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
 
 Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
 
 Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongside implementation work. Tree-sitter symbols and document/plan sections link into an editorial feature hierarchy with dependency communities. Local semantic seeds, graph neighborhoods, personalized PageRank and a complete-context token budget provide task context. Keep behavioral summaries and decisions current, explain dense code invariants, and regenerate/check the map before completing changes; see [knowledge usage](docs/knowledge/USAGE.md) and `AGENTS.md`.
+
+## 14. Modularity and open-source contributions
+
+Requested major program on 2026-10-05, explicitly split into multiple milestones. All M1–M6 are planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The current application remains v0.19.3; this planning work does not implement a registry, SDK, new project schema, loader or publishing change.
+
+Detailed contributor guides: [index](docs/extensions/README.md), [architecture](docs/extensions/ARCHITECTURE.md), [pedals](docs/extensions/PEDALS.md), [instruments](docs/extensions/INSTRUMENTS.md), [feature modules](docs/extensions/FEATURE_MODULES.md), [compatibility](docs/extensions/COMPATIBILITY.md) and [contribution workflow](CONTRIBUTING.md).
+
+### M1 — contracts, registry foundation and compatibility baseline
+
+Dependency: current verified audio/project foundation. This is the next major implementation milestone.
+
+Deliver typed module definitions, explicit assembly/registry validation, stable namespaced IDs, API/data-version rules, parameter descriptors/units, pure data validation/defaults and public-versus-private import boundaries. Separate data/audio contracts from React and native adapters. Preserve the current schema; capture schema-v1/copy/latency/tail/WAV fixtures and define future unavailable-module preservation before new persisted types ship. Route one existing built-in pedal's metadata through the foundation as a narrow vertical slice; do not claim a complete pedal API yet.
+
+Gate: deterministic duplicate/incompatible-definition failures; valid defaults/descriptors; no import cycle; documented public contract/build registration; existing project sound, source, ownership, clock, latency and export behavior preserved by affected unit/browser/native proofs. Ship a buildable registration example and compatibility matrix. The next checkpoint is this thin registry slice, not a full rewrite of App.tsx or all DSP.
+
+### M2 — complete pedal modules and contributor example
+
+Dependency: M1. Separately release the pedal contribution API.
+
+Move compressor, overdrive, EQ and delay definitions/factories behind the same contract. Derive equipment, drag acceptance, controls/labels/reset, validation, true latency and export tail/resource estimates from definitions rather than host kind switches. Retain cable routing, copy/application scope, score freezing and existing measured processor behavior. Implement any envelope/schema migration and unavailable-pedal preservation needed before saving new contributed kinds.
+
+Gate: an independent small utility pedal is added by one module directory and explicit assembly entry without new branches in host DSP, parser, menus, project validation or WAV estimation. Built-ins and that example pass common live/offline, sample-rate, gain/mix, measured latency, bypass/tails/Stop, resource, copy/migration and mouse/keyboard/native/JSON tests. Publish a clean-checkout pedal tutorial, parameter/lifecycle reference, troubleshooting and tested example. New phaser/chorus/reverb work uses this interface after M2; these effects are not part of M2's required delivery.
+
+### M3 — modular Fourier instrument presets
+
+Dependency: M1; can follow M2 without depending on M4. Separately release the preset contribution API.
+
+Register the current factory presets and an independent example timbre through pure factories and immutable metadata. Separate module identity from project preset ID/key/template version. Populate new libraries deliberately; preserve customized templates, applied tracks and A/B. Existing Fourier synthesis remains the engine, with its current 16-harmonic schema until the separate bank expansion lands.
+
+Gate: adding the example requires one module/assembly entry and no root/parser/voice special case. Discovery, source previews, save/Apply/Apply to all, comparison, undo, reload/import/native JSON and WAV preserve gain, coefficients, signs, independent copies and phase/clock. Publish a tested preset tutorial, supported schema/units and factory-upgrade guidance. This milestone does not claim new engines, 32 harmonics or chamber acoustics.
+
+### M4 — synthesis engine and instrument capability contracts
+
+Dependency: M1 and M3; a separate larger synthesis milestone.
+
+Wrap the Fourier engine in a host-scheduled voice contract before adding an independent minimal engine example. Define validated engine settings, deterministic randomness where needed, note/release/end metadata, resource budgets, retirement/disposal and shared live/offline factories. Declare Fourier inspector/dot/solo capabilities honestly; do not force arbitrary engines into a sine-coefficient editor. Preserve current envelope, trim, voice admission and source/output policies. Implement engine-data migration/unavailable-engine handling before persisting it.
+
+Gate: the independent engine can audition, compare, play a source track, stop/replay, save/reload and export through public contracts without new scheduler branches. Prove reference pitches, sample rates, updates/phase, envelope/retirement, CPU/memory limits, repeatable offline output and complete cleanup. Publish the engine tutorial, capability/lifecycle reference, migration cases and runnable example. Planned realism features remain separately scoped.
+
+### M5 — optional feature modules and host workflow services
+
+Dependency: M1; reuse M2/M3 services when touching pedals/presets. Engine-specific panels additionally depend on M4; generic learning/analysis panels do not.
+
+Extract narrow domain workflow hooks/services from App.tsx and add explicit registration for optional panels, experiments and command metadata. Host actions own source-span changes, independent copies, undo, frozen revisions, measurement subscriptions, dialogs/focus and native requests. Keep parser semantics reviewed and separate; a metadata extension is not arbitrary new grammar. Preserve project-data versus global-preference separation and missing-feature data.
+
+Gate: migrate one existing learning/analysis view and add an independent feature example without a new root-view switch or leaked listeners/audio state. Verify source/history/copy behavior, units/window/silence, keyboard/narrow/theme/focus and native menu flows as applicable. Publish a tested feature tutorial, host-service API, placement/capability and saved-settings guidance. The broader frontend redesign stays separate from contract extraction.
+
+### M6 — open-source readiness and supported contributor release
+
+Dependency: M1–M3 for the first pedal/preset contributor release. Publish M4/M5 interfaces only when their own gates pass; M6 need not delay useful pedal/preset contributions while they are in progress.
+
+Obtain the owner's license decision and review dependency/asset attribution before accepting third-party code or declaring an open-source release. Add the approved license/attributions, contribution licensing and conduct/security/reporting/review guidance. Document maintainership, support/platform matrix, version/deprecation policy, release responsibility and a reproducible browser/Windows-native/portable CI path. Resolve licensing early in M1; M6 verifies completion rather than defer the question until publication.
+
+Gate: a clean checkout builds the supported examples and runs the relevant contract/migration/browser/native/package checks in CI; docs identify implemented APIs and limitations; a contributor can follow a tutorial without private imports or undocumented host edits. Source and built artifacts contain required notices and exclude private project/model/test caches. Changes to repository visibility, package publication and external installation remain explicit later actions, not automatic effects of this plan.
+
+### Milestone discipline and sequencing
+
+Each milestone ends in a separately reviewable usable release with updated tutorials, examples, contract checks, compatibility fixtures, status/knowledge summaries and roughly eight useful focused commits pushed under the configured identity. Open the verified portable application after an x.x.0 implementation release. Documentation/planning work alone does not bump the application version or mark a runtime milestone complete.
+
+Default start: M1 → M2 → M3. Useful pedal/preset contributions and stage 7 learning can proceed against those landed boundaries while M4/M5 are independently scheduled; do not require all six milestones before contributors can do anything. Existing manual release gates remain open. Runtime plugin loading, marketplace/discovery, automatic upgrades, remote code and native capability expansion require separately approved future designs.
