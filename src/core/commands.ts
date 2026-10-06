@@ -99,7 +99,7 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: '${} ${}',
     syntax: '<A–G>[#|b]<octave> <duration>',
     rules:
-      'Octave is required. C4 is middle C; A4 is 440 Hz. Accidentals must resolve within C0–B8. Durations: whole = 4, half = 2, quarter = 1, 8th = 0.5, 16th = 0.25 quarter-note beats.',
+      'Octave is required. C4 is middle C; A4 is 440 Hz. Accidentals must resolve within C0–B8. Durations: whole = 4, half = 2, quarter = 1, 8th = 0.5, 16th = 0.25, 32nd = 0.125, 64th = 0.0625 quarter-note beats. Dots and tuplets scale these durations.',
   },
   {
     name: 'chord',

@@ -46,8 +46,18 @@ export function prepareExport(
   const voices = score.events.reduce((count, event) => count + event.frequencies.length, 0);
   // Preserve score rests, releases and processing latency. A small settling
   // allowance covers non-delay filter state even when the echo budget is zero.
+  const soundingSeconds = score.events.reduce(
+    (end, event) =>
+      event.frequencies.length
+        ? Math.max(
+            end,
+            (event.beat * 60) / score.tempo + playbackTiming(event, score.tempo).duration,
+          )
+        : end,
+    score.seconds,
+  );
   const size = exportSize(
-    score.seconds + release + latency + 0.1 + options.tailSeconds,
+    soundingSeconds + release + latency + 0.1 + options.tailSeconds,
     voices,
     options,
   );

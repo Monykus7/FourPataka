@@ -10,6 +10,9 @@ test('time completion inserts a supported meter and respects the autocomplete sw
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   await editor.fill('time 6/');
   await editor.press('Control+Space');
+  // CodeMirror guards newly opened suggestions against accidental pointer acceptance.
+  await expect(page.locator('.cm-tooltip-autocomplete')).toBeVisible();
+  await page.waitForTimeout(100);
   await page.locator('.cm-tooltip-autocomplete').getByRole('option', { name: /6\/8/ }).click();
   await expect(editor).toHaveText('time 6/8');
   await page.getByRole('switch', { name: 'Autocomplete', exact: true }).click();
@@ -92,7 +95,7 @@ test('track maker uses project meter and reorders events with buttons at narrow 
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.getByRole('button', { name: 'Make a track', exact: true }).click();
   const maker = page.getByRole('dialog');
-  await expect(maker.locator('.maker-phrase-heading')).toContainText('1.33 bars in 6/8');
+  await expect(maker.locator('.maker-phrase-heading')).toContainText('4 quarter beats · 6/8');
   await maker.getByRole('button', { name: 'Move event 3 up' }).click();
   await expect(maker.getByRole('textbox', { name: 'Event 2 pitches' })).toHaveValue('G4');
   await maker.getByRole('button', { name: 'Move event 1 down' }).click();

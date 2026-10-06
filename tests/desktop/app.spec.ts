@@ -1,3 +1,4 @@
+import { rhythmWorkflow } from '../helpers/rhythm';
 import { expect, test, _electron as electron, type ElectronApplication } from '@playwright/test';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -22,6 +23,25 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged articulation tuplets and meter changes survive native saving', async () => {
+  const page = await app.firstWindow();
+  await rhythmWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'rhythm.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved rhythm.fourpataka.json');
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toContain('time 7/8 at 4');
+  expect(saved.scoreText).toContain('tuplet:5:4 legato');
+  await page.reload();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
+    'tuplet:5:4 legato',
+  );
 });
 
 test('packaged upper-bank editing and chord note previews', async () => {

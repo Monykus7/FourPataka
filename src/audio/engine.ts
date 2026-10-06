@@ -42,6 +42,7 @@ interface Session {
   auditionSound: Sound | null;
   solo?: string;
   phraseSeconds: number;
+  soundingSeconds: number;
   chains: Map<string, ChainGraph>;
   chainSettings: Map<string, string>;
   latency: number;
@@ -118,6 +119,7 @@ export class AudioEngine {
       mode,
       auditionSound: null,
       phraseSeconds: 0,
+      soundingSeconds: 0,
       chains: new Map(),
       chainSettings: new Map(),
       latency: 0,
@@ -247,7 +249,17 @@ export class AudioEngine {
     session.chainSettings.set('audition', chainMusicalSettings(chain));
     session.solo = solo;
     session.phraseSeconds = (phrase.beats * 60) / phrase.tempo;
-    session.duration = session.phraseSeconds + snapshot.release + session.processingTail;
+    session.soundingSeconds = phrase.events.reduce(
+      (end, event) =>
+        event.frequencies.length
+          ? Math.max(
+              end,
+              (event.beat * 60) / phrase.tempo + playbackTiming(event, phrase.tempo).duration,
+            )
+          : end,
+      session.phraseSeconds,
+    );
+    session.duration = session.soundingSeconds + snapshot.release + session.processingTail;
     const frozen = structuredClone(phrase);
     let cursor = 0;
     const schedule = () => {
@@ -284,7 +296,7 @@ export class AudioEngine {
     session.solo = solo;
     session.voices.forEach((v) => v.update(sound, solo));
     session.duration = Math.max(
-      session.phraseSeconds + sound.release + session.processingTail,
+      session.soundingSeconds + sound.release + session.processingTail,
       ...session.voices.map((v) => v.end - session.start + session.processingTail),
     );
   }
@@ -317,7 +329,7 @@ export class AudioEngine {
     update(trackKey, sound);
     session.duration = Math.max(
       session.duration,
-      session.phraseSeconds + sound.release + session.processingTail,
+      session.soundingSeconds + sound.release + session.processingTail,
       ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
     );
   }
@@ -330,7 +342,19 @@ export class AudioEngine {
     if (revision !== this.revision) return;
     const tracks = structuredClone(instances);
     const maxRelease = Math.max(0, ...tracks.map((t) => t.sound.release));
-    const session = this.begin('score', score.seconds + maxRelease);
+    // A prior legato voice may outlast a tiny final event; keep the written clock separate.
+    const soundingSeconds = score.events.reduce(
+      (end, event) =>
+        event.frequencies.length
+          ? Math.max(
+              end,
+              (event.beat * 60) / score.tempo + playbackTiming(event, score.tempo).duration,
+            )
+          : end,
+      score.seconds,
+    );
+    const session = this.begin('score', soundingSeconds + maxRelease);
+    session.soundingSeconds = soundingSeconds;
     session.phraseSeconds = score.seconds;
     const settings = structuredClone(processing);
     const graph = createScoreGraph(
@@ -443,7 +467,7 @@ export class AudioEngine {
     session.processingTail = Math.max(session.processingTail, remaining);
     session.duration = Math.max(
       session.duration,
-      session.phraseSeconds + (session.auditionSound?.release ?? 0) + session.processingTail,
+      session.soundingSeconds + (session.auditionSound?.release ?? 0) + session.processingTail,
       ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
     );
   }

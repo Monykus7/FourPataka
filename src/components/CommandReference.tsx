@@ -193,8 +193,9 @@ export default function CommandReference({
             <p className="command-empty">No matching commands. Try another search or category.</p>
           )}
           <div className="commands-footer">
-            Durations: whole = 4 · half = 2 · quarter = 1 · 8th = ½ · 16th = ¼ quarter-note beats.
-            Global directives belong outside tracks; using/through belong in track headers.
+            Durations: whole = 4 · half = 2 · quarter = 1 · 8th = ½ · 16th = ¼ · 32nd = ⅛ · 64th =
+            ¹⁄₁₆ quarter-note beats. Global directives belong outside tracks; using/through belong
+            in track headers.
             <details className="command-controls">
               <summary>Controls (not score commands)</summary>
               <p>

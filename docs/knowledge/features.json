@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. Broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged. v0.19.0 implements frozen project WAV export with shared synthesis/routing, bounded release/echo tails, peak review and explicit level handling, memory preflight and browser/native saving. Stage 7 learning/measurement follows; stage 5 manual gates remain open. v0.19.1 makes the expanded reference match the score panel height across responsive layouts, with fixed search and local scrolling; no musical or gate change. v0.19.2 bounds track sound controls to the timeline row with a fixed heading and keyboard scrolling; phaser, chorus and algorithmic reverb are planned future pedals. v0.20.0 implements extensible chord symbols and a 32-harmonic bank ahead of general modularity. Following this pilot, the next foundation: the planned six-milestone modular open-source contributor program begins with M1 contracts/compatibility; learning/analysis remains the next music-feature item after initial boundaries.",
+      "summary": "Personal Fourier music studio. Source score text owns composition; independent sound and pedal copies preserve experiments. v0.14.0 connects saved pedal keys to track through and global master directives, Compose selectors, Track Maker and contextual autocomplete. Compact physical boards implement compressor, overdrive, EQ and delay with real serial cables. Delay bypass preserves echoes; Stop clears buffers. Broader release/device gates remain planned. v0.14.1 places command reference beside an enlarged score editor, with timeline and track controls below. v0.15.0 completes the contextual command-reference functional item; stage 4/5 recovery, broader accessibility and real-device gates remain. v0.16.0 adds working harmonic sign controls and a distinct Soft bass factory preset, with conservative library-only migration. v0.17.0 completes local-save recovery inspection/export/undoable restoration; broader accessibility/device and demonstration gates remain open. v0.18.0 adds keyboard dot insertion, focus-safe equipment/dialogs, dense timeline inspection and a full Tab-order studio demonstration; manual screen-reader, real-device and listening gates remain. v0.18.1 improves waveform keyboard discoverability and halves the command-reference panel with persistent search and internal scrolling; musical behavior and roadmap gates are unchanged. v0.19.0 implements frozen project WAV export with shared synthesis/routing, bounded release/echo tails, peak review and explicit level handling, memory preflight and browser/native saving. Stage 7 learning/measurement follows; stage 5 manual gates remain open. v0.19.1 makes the expanded reference match the score panel height across responsive layouts, with fixed search and local scrolling; no musical or gate change. v0.19.2 bounds track sound controls to the timeline row with a fixed heading and keyboard scrolling; phaser, chorus and algorithmic reverb are planned future pedals. v0.20.0 implements extensible chord symbols and a 32-harmonic bank ahead of general modularity. Following this pilot, the next foundation: the planned six-milestone modular open-source contributor program begins with M1 contracts/compatibility; learning/analysis remains the next music-feature item after initial boundaries. The subsequent rhythm release adds staccato/legato gates, dotted and N:M event durations, and global in-score meter changes; general modularity remains planned.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
@@ -403,6 +403,32 @@
       "title": "Phaser, chorus and algorithmic reverb (planned)",
       "summary": "Requested, planned and not implemented. Later stage 8 sequence proposes phaser (all-pass notches, rate/depth/center/stages/bounded feedback), chorus (short modulated delay voices, rate/base delay/depth, initially no feedback), then algorithmic reverb (generated reflections and bounded damped network, pre-delay/-60 dB decay/size/damping). All include explicit output/mix, compact dials/inspector, cable-defined order, independent library/A-B/track/master settings and shared playback/WAV factories. Modulation preserves session-relative clock/LFO continuity; intentional phase/delay is distinct from measured processing latency. Reverb is an IR-free track/master space effect separate from instrument-body chamber acoustics. Future gates include dry/mix gain, extrema stability, finite tails/cap warnings, bypass versus Stop, copy/import/undo/native/keyboard/export and physical listening. Old projects stay unchanged with effects absent. Current stage 7 learning/measurement priority remains.",
       "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
+    },
+    {
+      "id": "rhythm",
+      "parent": "composition",
+      "title": "Articulation, tuplets and score meter changes",
+      "summary": "Implemented rhythm extension: exact rational quarter-beat accumulation supports whole through 64th, one/two dots, per-event triplet or tuplet:N:M (N 2–32, M 1–32). Optional staccato halves the gate and caps release at 30ms or a quarter of event seconds; optional legato overlaps the following sounding event by at most 30ms/10% duration with independent attacks. Rests and track/phrase ends break legato. Global time meter at beat directives (up to 64) change all tracks on preceding-meter bar boundaries, preserving tempo, written spacing, source spans and continuous bar numbering. Compose and Track Maker edit source in grouped history; editor modifier suggestions and 18 command cards document real grammar. Live, comparison and WAV share timing; sounding extent includes overlaps independently of the written clock, with bounded tails and Stop. No envelope carry, glide, nested/group tuplets, per-track meters, runtime grammar plugins or general M1 completion.",
+      "paths": [
+        "src/core/rhythm.ts",
+        "src/core/articulation.ts",
+        "src/core/parser.ts",
+        "src/core/meter.ts",
+        "src/core/timeline.ts",
+        "src/core/comparison.ts",
+        "src/audio/engine.ts",
+        "src/audio/voice.ts",
+        "src/audio/export.ts",
+        "src/components/CompositionSettings.tsx",
+        "src/components/TrackMaker.tsx",
+        "src/components/ScoreEditor.tsx",
+        "tests/unit/rhythmPlayback.test.ts",
+        "tests/browser/rhythm.spec.ts",
+        "tests/helpers/rhythm.ts",
+        "docs/RHYTHM.md",
+        "BUILD_PLAN.md",
+        "IMPLEMENTATION_STATUS.md"
+      ]
     }
   ]
 }
