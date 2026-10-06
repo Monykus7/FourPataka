@@ -44,7 +44,7 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: 'time ${} at ${}',
     syntax: 'time <meter> at <quarterBeatOffset>',
     rules:
-      'Outside track blocks; applies to every track. Position is zero-based quarter-note beats and must be a distinct bar boundary in the preceding meter. Bar numbers continue; tempo, event lengths and notes crossing the change stay intact. Up to 64 changes; the reference inserts at the next available boundary.',
+      'Outside track blocks; applies to every track. Position accepts numeric +, -, *, / and parentheses, with multiplication before addition. It is zero-based quarter-note beats and must be a distinct bar boundary in the preceding meter. Bar numbers continue; tempo, event lengths and notes crossing the change stay intact. Up to 64 changes; the reference inserts at the next available boundary.',
   },
   {
     name: 'master',
@@ -188,6 +188,28 @@ export const COMMANDS: readonly CommandDefinition[] = [
     syntax: 'legato[\n  <events>\n]',
     rules:
       'Extends the gate into the next sounding event by up to 30 ms or 10% of this event length. Each note keeps its own attack. Only connects events in the same legato[ ... ] scope. No overlap into a rest, beyond ], or beyond a track/phrase ending. This is connected articulation; envelope-carrying slurs and portamento remain future work.',
+  },
+  {
+    name: 'repeat',
+    group: 'Structure',
+    scope: 'track',
+    description: 'Repeat a section sequentially in this track',
+    snippet: 'repeat 3 {\n  C4 quarter\n  rest bar\n}',
+    completionTemplate: 'repeat ${} {\n\t${}\n}',
+    syntax: 'repeat [count] {\n  <events>\n}',
+    rules:
+      'Count is total plays (1–128); omitted count means two plays. Repeat blocks nest up to 16 levels. Bracket groups must close within their repeat. Expansion is capped at 10,000 events and 100,000 token visits; source spans stay original. Bar rests are recalculated each pass.',
+  },
+  {
+    name: 'rest-bar',
+    group: 'Events',
+    scope: 'track',
+    description: 'Rest until the next bar boundary',
+    snippet: 'rest bar',
+    completionTemplate: 'rest bar',
+    syntax: 'rest bar | rest till end of bar',
+    rules:
+      'Uses the active global meter at this track position. At a bar boundary it rests a full bar. This alignment command is not rescaled by enclosing tuplets; ordinary rest durations still are. Works inside repeats.',
   },
   {
     name: 'rest',
