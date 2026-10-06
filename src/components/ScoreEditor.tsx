@@ -16,6 +16,7 @@ import { setDiagnostics } from '@codemirror/lint';
 import { tags } from '@lezer/highlight';
 import { COMMANDS, type ScoreEvent, type Diagnostic } from '../core/parser';
 import { CHORD_SHAPES } from '../modules/chords';
+import { DURATIONS } from '../core/music';
 import { COMMON_METERS } from '../core/meter';
 
 type SymbolPreview = NonNullable<ScoreEvent['chordSymbol']>;
@@ -91,8 +92,13 @@ const scoreLanguage = StreamLanguage.define({
       stream.skipToEnd();
       return 'comment';
     }
-    if (stream.match(/\b(?:tempo|time|track|using|through|master|chord|rest)\b/)) return 'keyword';
-    if (stream.match(/\b(?:whole|half|quarter|8th|16th)\b/)) return 'typeName';
+    if (
+      stream.match(
+        /\b(?:tempo|time|track|using|through|master|chord|rest|at|triplet|tuplet|staccato|legato)\b/,
+      )
+    )
+      return 'keyword';
+    if (stream.match(/\b(?:whole|half|quarter|8th|16th|32nd|64th)\b/)) return 'typeName';
     if (stream.match(/[A-G][#b]?[0-8]?\b/)) return 'atom';
     if (stream.match(/\d+(?:\.\d+)?/)) return 'number';
     if (stream.match(/[{}():]/)) return 'punctuation';
@@ -217,6 +223,26 @@ export default function ScoreEditor({
                   })),
                   validFor: /[A-Za-z0-9_]*/,
                 };
+              const prefix = line.text.slice(0, context.pos - line.from);
+              const modifier =
+                /\s(?:whole|half|quarter|8th|16th|32nd|64th)\.{0,2}\s+(?:(triplet|tuplet:\d+:\d+)\s+)?([A-Za-z]*)$/.exec(
+                  prefix,
+                );
+              if (modifier)
+                return {
+                  from: context.pos - modifier[2].length,
+                  options: [
+                    ...(!modifier[1]
+                      ? [
+                          { label: 'triplet', type: 'keyword' },
+                          snippetCompletion('tuplet:${}:${}', { label: 'tuplet', type: 'keyword' }),
+                        ]
+                      : []),
+                    { label: 'staccato', type: 'keyword' },
+                    { label: 'legato', type: 'keyword' },
+                  ],
+                  validFor: /[A-Za-z]*/,
+                };
               const symbol = /\bchord:\s*[A-G][#b]?([A-Za-z0-9#+-]*)$/.exec(
                 line.text.slice(0, context.pos - line.from),
               );
@@ -251,9 +277,7 @@ export default function ScoreEditor({
                 from: word?.from ?? context.pos,
                 options: [
                   ...commands,
-                  ...Object.keys({ whole: 1, half: 1, quarter: 1, '8th': 1, '16th': 1 }).map(
-                    (label) => ({ label, type: 'type' }),
-                  ),
+                  ...Object.keys(DURATIONS).map((label) => ({ label, type: 'type' })),
                   ...presetKeys.map((label) => ({
                     label,
                     type: 'variable',

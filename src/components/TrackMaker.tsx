@@ -2,19 +2,30 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Music2, Plus, Trash2, X } from 'lucide-react';
 import { DURATIONS } from '../core/music';
 import { parseScore } from '../core/parser';
-import { measureLength, measurePosition, meterLabel, type TimeSignature } from '../core/meter';
+import { measurePositionAt, meterLabel, type MeterChange, type TimeSignature } from '../core/meter';
 import type { InstrumentPreset } from '../core/project';
 import type { ChainPreset } from '../core/pedals';
 
-type Row = { id: number; kind: 'note' | 'chord' | 'rest'; notes: string; duration: string };
+type Row = {
+  id: number;
+  kind: 'note' | 'chord' | 'rest';
+  notes: string;
+  duration: string;
+  dots?: string;
+  rhythm?: string;
+  articulation?: string;
+  tupletNotes?: string;
+  tupletTime?: string;
+};
 const expression = (row: Row) =>
-  `${row.kind === 'rest' ? 'rest' : row.kind === 'chord' ? `chord:(${row.notes.trim()})` : row.notes.trim()} ${row.duration}`;
+  `${row.kind === 'rest' ? 'rest' : row.kind === 'chord' ? `chord:(${row.notes.trim()})` : row.notes.trim()} ${row.duration}${row.dots ?? ''}${row.rhythm ? ` ${row.rhythm === 'custom' ? `tuplet:${row.tupletNotes ?? '3'}:${row.tupletTime ?? '2'}` : row.rhythm}` : ''}${row.kind !== 'rest' && row.articulation ? ` ${row.articulation}` : ''}`;
 export default function TrackMaker({
   initialKey,
   instruments,
   chains,
   instrumentKey,
   meter,
+  meterChanges = [],
   onCreate,
   onClose,
 }: {
@@ -23,6 +34,7 @@ export default function TrackMaker({
   chains: ChainPreset[];
   instrumentKey: string;
   meter: TimeSignature;
+  meterChanges?: MeterChange[];
   onCreate: (key: string, instrument: string, events: string[], chain: string | null) => void;
   onClose: () => void;
 }) {
@@ -39,7 +51,7 @@ export default function TrackMaker({
   const [error, setError] = useState('');
   const text = `track ${key} using ${instrument}${chainKey ? ` through ${chainKey}` : ''} {\n${rows.map((row) => `  ${expression(row)}`).join('\n')}\n}`;
   const preview = parseScore(
-    `time ${meterLabel(meter)}\n${text}`,
+    `time ${meterLabel(meter)}\n${meterChanges.map((change) => `time ${meterLabel(change.meter)} at ${change.beat}\n`).join('')}${text}`,
     instruments.map((i) => i.key),
     chains.map((p) => p.key),
   );
@@ -146,8 +158,9 @@ export default function TrackMaker({
         <div className="maker-phrase-heading">
           <h3>Events</h3>
           <span>
-            {(preview.beats / measureLength(meter)).toFixed(2)} bars in {meterLabel(meter)} ·{' '}
-            {preview.beats} quarter beats
+            {preview.beats.toLocaleString(undefined, { maximumFractionDigits: 6 })} quarter beats ·{' '}
+            {meterLabel(meter)}
+            {meterChanges.length ? ' with meter changes' : ''}
           </span>
         </div>
         <div className="maker-rows">
@@ -155,17 +168,7 @@ export default function TrackMaker({
             <div className="maker-row" key={row.id}>
               <span
                 className="maker-row-number"
-                title={`Bar ${
-                  measurePosition(
-                    rows.slice(0, index).reduce((sum, r) => sum + DURATIONS[r.duration], 0),
-                    meter,
-                  ).bar
-                } · beat ${
-                  measurePosition(
-                    rows.slice(0, index).reduce((sum, r) => sum + DURATIONS[r.duration], 0),
-                    meter,
-                  ).beat
-                }`}
+                title={`Bar ${measurePositionAt(preview.tracks[0]?.events[index]?.beat ?? 0, meter, meterChanges).bar} · beat ${measurePositionAt(preview.tracks[0]?.events[index]?.beat ?? 0, meter, meterChanges).beat}`}
               >
                 {index + 1}
               </span>
@@ -231,6 +234,71 @@ export default function TrackMaker({
                 >
                   <Trash2 size={15} />
                 </button>
+              </div>
+              <div className="maker-rhythm-controls">
+                <label>
+                  Dots
+                  <select
+                    aria-label={`Event ${index + 1} dots`}
+                    value={row.dots ?? ''}
+                    onChange={(e) => update(row.id, { dots: e.target.value })}
+                  >
+                    <option value="">None</option>
+                    <option value=".">Dotted</option>
+                    <option value="..">Double dotted</option>
+                  </select>
+                </label>
+                <label>
+                  Rhythm
+                  <select
+                    aria-label={`Event ${index + 1} rhythm`}
+                    value={row.rhythm ?? ''}
+                    onChange={(e) => update(row.id, { rhythm: e.target.value })}
+                  >
+                    <option value="">Straight</option>
+                    <option value="triplet">Triplet 3:2</option>
+                    <option value="custom">Tuplet N:M</option>
+                  </select>
+                </label>
+                {row.rhythm === 'custom' && (
+                  <>
+                    <label>
+                      Notes
+                      <input
+                        aria-label={`Event ${index + 1} tuplet notes`}
+                        type="number"
+                        min="2"
+                        max="32"
+                        value={row.tupletNotes ?? '3'}
+                        onChange={(e) => update(row.id, { tupletNotes: e.target.value })}
+                      />
+                    </label>
+                    <label>
+                      In time of
+                      <input
+                        aria-label={`Event ${index + 1} tuplet time`}
+                        type="number"
+                        min="1"
+                        max="32"
+                        value={row.tupletTime ?? '2'}
+                        onChange={(e) => update(row.id, { tupletTime: e.target.value })}
+                      />
+                    </label>
+                  </>
+                )}
+                <label>
+                  Articulation
+                  <select
+                    aria-label={`Event ${index + 1} articulation`}
+                    disabled={row.kind === 'rest'}
+                    value={row.kind === 'rest' ? '' : (row.articulation ?? '')}
+                    onChange={(e) => update(row.id, { articulation: e.target.value })}
+                  >
+                    <option value="">Normal</option>
+                    <option value="staccato">Staccato</option>
+                    <option value="legato">Legato</option>
+                  </select>
+                </label>
               </div>
             </div>
           ))}

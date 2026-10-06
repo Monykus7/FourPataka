@@ -917,3 +917,22 @@
     display: none;
   }
 }
+
+.maker-rhythm-controls {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.maker-rhythm-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.maker-rhythm-controls input {
+  width: 70px;
+}
