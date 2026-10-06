@@ -19,7 +19,8 @@
         "docs/knowledge/DECISIONS.md",
         "CONTRIBUTING.md",
         "docs/extensions/PEDALS.md",
-        "docs/extensions/INSTRUMENTS.md"
+        "docs/extensions/INSTRUMENTS.md",
+        "docs/extensions/FEATURE_MODULES.md"
       ]
     },
     {
