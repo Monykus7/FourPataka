@@ -17,7 +17,18 @@ export async function ideWorkflow(page: Page) {
   await page
     .getByRole('combobox', { name: 'Panel beside score', exact: true })
     .selectOption('timeline');
-  const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
+  const reference = page.getByRole('region', { name: 'Command reference', exact: true });
+  await reference.locator('.disclosure-button').click();
+  expect(
+    (await page
+      .getByRole('region', { name: 'Independent track sounds', exact: true })
+      .boundingBox())!.height,
+  ).toBeGreaterThanOrEqual(360);
+  expect(
+    (await page.getByRole('region', { name: 'Track sound controls', exact: true }).boundingBox())!
+      .height,
+  ).toBeGreaterThan(240);
+  await reference.locator('.disclosure-button').click();
   await page
     .getByRole('combobox', { name: 'Inspect lead event', exact: true })
     .selectOption('lead:4');

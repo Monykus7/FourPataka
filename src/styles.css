@@ -2668,3 +2668,8 @@ dd {
   padding: 6px;
   font-size: 10px;
 }
+
+/* A folded lower reference must not shrink track controls to its heading height. */
+.composition-overview:has(> .commands-panel) > .track-instances {
+  min-height: 360px;
+}

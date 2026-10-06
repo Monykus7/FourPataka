@@ -309,6 +309,9 @@ test('native command reference focuses search and saves contextual instrument an
 test('native score chain assignments preserve independent copies through file save and reload', async () => {
   const page = await app.firstWindow();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const initialPresetId = await page
+    .getByRole('combobox', { name: 'Instrument for melody', exact: true })
+    .inputValue();
   await page
     .getByRole('combobox', { name: 'Pedal chain for melody', exact: true })
     .selectOption('warmDrive');
@@ -334,7 +337,9 @@ test('native score chain assignments preserve independent copies through file sa
     'Saved chain-assignments.fourpataka.json',
   );
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.scoreText).toContain('track melody using brightReed through warmDrive');
+  const initialKey = saved.instruments.find((preset: any) => preset.id === initialPresetId).key;
+  expect(saved.scoreText).toContain(`track melody using ${initialKey} through warmDrive`);
+  expect(saved.tracks.find((track: any) => track.key === 'melody').presetId).toBe(initialPresetId);
   expect(saved.processing.tracks.melody).toMatchObject({
     assignmentKey: 'warmDrive',
     presetId: 'warm-drive',
@@ -547,13 +552,10 @@ test('packaged Compose applies timing and instruments to source with undo', asyn
   await expect.poll(() => controls.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
-  // Initial-meter edits need a fixture without the demo's scheduled bar boundaries.
-  await editor.fill(
-    'tempo 120\ntime 4/4\ntrack melody using brightReed {\n C5 whole\n}\ntrack bass using softBass {\n C3 whole\n}',
-  );
-  const source = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText,
-  );
+  // Use exact fixture source; autosave intentionally settles after the editing gesture.
+  const source =
+    'tempo 120\ntime 4/4\ntrack melody using brightReed {\n C5 whole\n}\ntrack bass using softBass {\n C3 whole\n}';
+  await editor.fill(source);
   await editor.click();
   await editor.fill(source.replace('time 4/4', 'time 7/8').replace('tempo 120', 'tempo 96'));
   await expect(editor).toContainText('time 7/8');

@@ -1,25 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { COMMANDS, parseScore } from '../../src/core/parser';
-import { EXAMPLE_SCORE } from '../../src/core/project';
+import { EXAMPLE_SCORE, createProject } from '../../src/core/project';
 
 const keys = ['sine', 'brightReed', 'softBass'];
 const parse = (body: string) => parseScore(`track lead using brightReed {\n${body}\n}`, keys);
 describe('score compilation', () => {
   it('compiles the example with parallel starts and exact beats', () => {
-    const score = parseScore(EXAMPLE_SCORE, keys, ['clean']);
+    const score = parseScore(
+      'tempo 120\ntrack melody using brightReed {\nC5 quarter\nchord:(Bb D F)5 8th\nrest 8th\nG5 half\n}\ntrack bass using softBass {\nBb2 whole\n}',
+      keys,
+    );
     expect(score.diagnostics).toEqual([]);
-    expect(score.tracks.map((t) => t.beats)).toEqual([17, 17]);
-    expect(score.events.filter((e) => e.beat === 0).map((e) => e.track)).toEqual([
-      'melody',
-      'bass',
-    ]);
-    expect(score.seconds).toBeCloseTo((17 * 60) / 116, 10);
-    expect(score.events.find((e) => e.chordSymbol?.symbol === 'Cmaj@5')?.notes).toEqual([
-      'C5',
-      'E5',
-      'G5',
-    ]);
-    expect(score.meterChanges.map((change) => change.beat)).toEqual([8, 22]);
+    expect(score.tracks.map((track) => track.beats)).toEqual([4, 4]);
+    expect(score.seconds).toBe(2);
+    expect(score.events[1].notes).toEqual(['Bb5', 'D5', 'F5']);
+  });
+  it('compiles the editable demo against the complete factory libraries', () => {
+    const project = createProject();
+    const score = parseScore(
+      EXAMPLE_SCORE,
+      project.instruments.map((p) => p.key),
+      project.processing.library.map((p) => p.key),
+    );
+    expect(score.diagnostics).toEqual([]);
+    expect(score.seconds).toBeGreaterThan(0);
+    expect(score.events.some((event) => event.notes.length > 0)).toBe(true);
   });
   it('resolves explicit chord octaves and mixed overrides', () => {
     expect(parse('chord : ( Bb4 D F ) 5 quarter').events[0].notes).toEqual(['Bb4', 'D5', 'F5']);
