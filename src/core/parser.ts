@@ -230,7 +230,7 @@ export function parseScore(
       return;
     }
     const event =
-      /^(.*?)\s+(whole|half|quarter|8th|16th|32nd|64th)(\.{0,2})(?:\s+(triplet|tuplet:\d+:\d+))?(?:\s+(staccato|legato))?$/.exec(
+      /^(.*?)\s+(whole|half|quarter|eighth|8th|16th|32nd|64th)(\.{0,2})(?:\s+(triplet|tuplet:\d+:\d+))?(?:\s+(staccato|legato))?$/.exec(
         line,
       );
     if (!event) {
@@ -250,12 +250,16 @@ export function parseScore(
       if (expression === 'rest' && articulation)
         throw new Error('Rests cannot have staccato or legato articulation.');
       if (expression === 'rest') notes = [];
-      else if (/^chord\b/.test(expression)) {
+      else if (
+        /^chord\b/.test(expression) ||
+        (!/^[A-G][#b]?[0-8]$/.test(expression) && /^[A-G][#b]?\S+/.test(expression))
+      ) {
         const symbolic = /^chord\s*:\s*([^()\s]+)$/.exec(expression);
-        if (symbolic) {
-          const expansion = expandChordSymbol(symbolic[1], chordShapes);
-          const symbolFrom = from + expression.lastIndexOf(symbolic[1]);
-          chordSymbol = { ...expansion, from: symbolFrom, to: symbolFrom + symbolic[1].length };
+        const symbol = symbolic?.[1] ?? (!/^chord\b/.test(expression) ? expression : undefined);
+        if (symbol) {
+          const expansion = expandChordSymbol(symbol, chordShapes);
+          const symbolFrom = from + expression.lastIndexOf(symbol);
+          chordSymbol = { ...expansion, from: symbolFrom, to: symbolFrom + symbol.length };
           notes = expansion.notes;
         } else {
           const chord = /^chord\s*:\s*\(\s*([^)]*?)\s*\)\s*([0-8])?$/.exec(expression);

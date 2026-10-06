@@ -24,10 +24,10 @@ export const beatValue = (value: BeatFraction) =>
   Number(value.numerator) / Number(value.denominator);
 
 export function parseDuration(token: string, modifier?: string): WrittenDuration {
-  const match = /^(whole|half|quarter|8th|16th|32nd|64th)(\.{0,2})$/.exec(token);
+  const match = /^(whole|half|quarter|eighth|8th|16th|32nd|64th)(\.{0,2})$/.exec(token);
   if (!match)
     throw new Error('Use whole, half, quarter, 8th, 16th, 32nd or 64th, optionally dotted.');
-  const base = DURATIONS[match[1]];
+  const base = DURATIONS[match[1] === 'eighth' ? '8th' : match[1]];
   const dots = match[2].length;
   let beats = fraction(BigInt(Math.round(base * 16)), 16n);
   if (dots)

@@ -54,3 +54,15 @@ it('diagnoses missing or unmatched brackets at their source and recovers at trac
     ),
   ).toBe(true);
 });
+
+it('accepts the requested block example and preserves bare-chord expansion spans', () => {
+  const body = 'staccato[\nF5 quarter\nGmaj7 eighth\n]';
+  const score = parse(body);
+  expect(score.diagnostics).toEqual([]);
+  expect(score.beats).toBe(1.5);
+  expect(score.events.map((e) => e.gateDuration)).toEqual([0.5, 0.25]);
+  expect(score.events[1].notes).toEqual(['G4', 'B4', 'D5', 'F#5']);
+  expect(score.events[1].chordSymbol?.symbol).toBe('Gmaj7');
+  expect(parse('G quarter').diagnostics.length).toBeGreaterThan(0);
+  expect(parse('legato[\nGmaj7@3 eighth. triplet\nchord:Cmaj7 quarter\n]').beats).toBe(1.5);
+});
