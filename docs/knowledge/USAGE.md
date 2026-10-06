@@ -38,3 +38,5 @@ The optional watcher refreshes the graph/map after edits to code, docs, plans or
 The hierarchy is editorial at project/domain/feature level; dependency subcommunities are connected components of the syntax-derived import graph within each feature. Summaries combine maintained behavior with generated file/symbol evidence. They are not automatically generated LLM prose or Leiden communities. Semantic seeds reserve both feature concepts and concrete sources before graph expansion and personalized PageRank.
 
 `.knowledge-cache/` stores parser records, graph data, model files and vectors, and is ignored by Git. Parser/config versions and content hashes invalidate stale data; deleted files disappear on refresh. The index excludes dependencies, releases, model caches and generated output. Syntax recovery warnings appear in the map; Tree-sitter does not replace TypeScript validation or resolve dynamic JavaScript precisely.
+
+Local editor/agent instructions are excluded from the index and watcher, including nested copies. They stay ignored and local; public workflow belongs in this guide so rebuilding the tracked map cannot publish private instructions.

@@ -317,3 +317,10 @@ Variable swing is planned, not implemented. Proposed units express the long subd
 Show beside score is anchored to the right of the score header, outside the lower action row. The theme-colored right/down arrow and persisted layout preference remain. This changes only layout, with no source/history/audio/schema/ownership behavior change.
 
 The user requests another milestone after shared-file Compose track tabs: source-owned, track-scoped named sections (A/B/etc.), reusable in repeats, with a tail cut measured in n quarter-note beats and a different ending on that invocation. Plan exact fractional mid-event shortening without a new attack, positional bar-rest recompilation before cutting, explicit resulting duration, source provenance at definitions/calls, scoped rename/history and bounded cycle-safe expansion. Syntax remains provisional; section/play commands are not implemented. This is separate from both the next track-tab milestone and variable swing, and keeps a single canonical score file. See BUILD_PLAN.md section17 and docs/SCORE_WORKSPACE_PLAN.md. No broader modularity/manual gate closes.
+
+
+## Keep local tooling instructions private (2026-10-06)
+
+<!-- features: knowledge -->
+
+The owner explicitly requests root .cursor/ and AGENTS.md be ignored/untracked and removed from reachable repository history. Keep local copies, exclude editor/agent instructions from extraction/watch (including nested copies), and keep public contributor workflow in docs/knowledge/USAGE.md. File ignore alone does not remove tracked or historical versions. Back up the original Git history in ignored local storage, filter in an isolated clone, verify unchanged non-target trees and author metadata, and push only the rewritten existing primary branch with an explicit old-tip lease. Preserve concurrent remote updates by refusing a stale lease. This is repository/tooling work, not an application release or completed musical/modularity gate. Hosted dangling objects/caches and external clones are outside a branch rewrite's reach.

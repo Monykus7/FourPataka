@@ -356,13 +356,8 @@
       "id": "knowledge",
       "parent": "project",
       "title": "Maintained project knowledge",
-      "summary": "Tree-sitter code links, source-linked docs/plans, feature and dependency summaries, local embedding seeds and personalized PageRank produce bounded context. Refresh hashes after changes and maintain behavioral summaries alongside implementation.",
-      "paths": [
-        "scripts/knowledge/",
-        "docs/knowledge/",
-        "tests/unit/knowledge.test.ts",
-        "AGENTS.md"
-      ]
+      "summary": "Tree-sitter code links, source-linked docs/plans, feature and dependency summaries, local embedding seeds and personalized PageRank produce bounded context. Refresh hashes after changes and maintain behavioral summaries alongside implementation. Local editor/agent rules are ignored by Git and excluded from extraction/watch, so their text cannot flow into the tracked map. Public workflow guidance lives in docs/knowledge/USAGE.md.",
+      "paths": ["scripts/knowledge/", "docs/knowledge/", "tests/unit/knowledge.test.ts"]
     },
     {
       "id": "keyboard-workflow",

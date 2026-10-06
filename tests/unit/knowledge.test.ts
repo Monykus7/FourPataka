@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { extractCode, extractDocument } from '../../scripts/knowledge/extract.mjs';
-import { connectCode, validateFeatures } from '../../scripts/knowledge/graph.mjs';
+import { connectCode, validateFeatures, sourceFiles } from '../../scripts/knowledge/graph.mjs';
 import { neighborhood, personalizedPageRank } from '../../scripts/knowledge/rank.mjs';
 import { addSummaries, projectMap } from '../../scripts/knowledge/summaries.mjs';
 import { packContext, tokenCount } from '../../scripts/knowledge/context.mjs';
@@ -36,7 +36,18 @@ describe('project knowledge extraction', () => {
         path.join(root, 'src/main.ts'),
         "import { before } from './helper';\nexport function run() { return before(); }",
       );
+      await fs.mkdir(path.join(root, 'docs/.cursor'), { recursive: true });
+      await fs.writeFile(
+        path.join(root, 'AGENTS.md'),
+        '# Local-only instructions\nPRIVATE_SENTINEL',
+      );
+      await fs.writeFile(path.join(root, 'docs/AGENTS.md'), '# Nested local instructions');
+      await fs.writeFile(path.join(root, 'docs/.cursor/private.md'), '# Private editor rules');
+      expect(await sourceFiles(root)).not.toContain('AGENTS.md');
+      expect(await sourceFiles(root)).not.toContain('docs/AGENTS.md');
+      expect(await sourceFiles(root)).not.toContain('docs/.cursor/private.md');
       const original = await buildGraph(root);
+      expect(JSON.stringify(original)).not.toContain('PRIVATE_SENTINEL');
       expect(original.nodes.find((n) => n.id === 'feature:root').line).toBe(4);
       expect(original.nodes.some((n) => n.name === 'before')).toBe(true);
       expect((await buildGraph(root)).fingerprint).toBe(original.fingerprint);
@@ -70,6 +81,9 @@ describe('project knowledge extraction', () => {
     expect(shouldRebuild('.knowledge-cache/graph.json')).toBe(false);
     expect(shouldRebuild('node_modules/module/file.js')).toBe(false);
     expect(shouldRebuild('.git/config')).toBe(false);
+    expect(shouldRebuild('AGENTS.md')).toBe(false);
+    expect(shouldRebuild('docs\\AGENTS.md')).toBe(false);
+    expect(shouldRebuild('docs/.cursor/private.md')).toBe(false);
   });
   it('enforces the whole-context token budget with Unicode, citations and oversized queries', () => {
     const graph = {

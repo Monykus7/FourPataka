@@ -6,12 +6,19 @@ import { codeFile, extractCode, extractDocument, hash } from './extract.mjs';
 export const GRAPH_VERSION = 1;
 export const CACHE = '.knowledge-cache';
 const roots = ['src', 'desktop', 'tests', 'scripts', 'docs'];
+export const privateToolingPath = (file) =>
+  file
+    .replaceAll('\\', '/')
+    .split('/')
+    .some((part) => part === '.cursor' || part === 'AGENTS.md');
 export async function sourceFiles(root) {
   const files = [];
   async function visit(relative) {
     for (const entry of await fs.readdir(path.join(root, relative), { withFileTypes: true })) {
       if (entry.isSymbolicLink()) continue;
       const file = path.posix.join(relative, entry.name);
+      // Local rules must not be copied into the tracked map through extraction.
+      if (privateToolingPath(file)) continue;
       if (entry.isDirectory()) await visit(file);
       else if (
         /\.(?:tsx?|[cm]?js|css|md|json)$/.test(file) &&
@@ -23,7 +30,7 @@ export async function sourceFiles(root) {
   for (const directory of roots) await visit(directory);
   for (const file of await fs.readdir(root))
     if (
-      /\.md$/.test(file) ||
+      (!privateToolingPath(file) && /\.md$/.test(file)) ||
       [
         'package.json',
         'tsconfig.json',

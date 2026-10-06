@@ -2,11 +2,12 @@ import { watch } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildGraph } from './graph.mjs';
+import { buildGraph, privateToolingPath } from './graph.mjs';
 import { addSummaries, projectMap } from './summaries.mjs';
 
 export function shouldRebuild(file) {
   const normalized = file.replaceAll('\\', '/');
+  if (privateToolingPath(normalized)) return false;
   if (normalized === 'docs/knowledge/PROJECT_MAP.md') return false;
   return (
     /^(src|desktop|tests|scripts|docs)\/.+\.(tsx?|[cm]?js|css|md|json)$/.test(normalized) ||
