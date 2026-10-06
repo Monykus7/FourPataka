@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-06. Latest verified release: v0.23.1. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-06. Latest verified release: v0.23.2. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -431,8 +431,8 @@ Variable swing is planned in section16: proposed long-subdivision percentage, ei
 Verified: six focused reference unit checks, eight affected browser workflows and two packaged native workflows, production TypeScript/bundle, formatting, knowledge build/check and portable packaging. Search checks exclude incidental mentions and restore all cards when cleared; existing rule/key searches, insertion, assignment/undo, playback, IDE indentation and preference reload remain covered. Desktop/390 px screenshots show the right/down arrow and no horizontal overflow. The native-tested app.asar SHA-256 is BC30A4734B58465C0D28703F9D9B720F910C25C9F9FD547CAA8B019FA8E1DD08. The portable application was opened visibly and its extracted app.asar matches that native-tested hash. Four focused checkpoints use Monykus7 and are pushed to origin/master. Unchanged DSP suites are not repeated; v0.23.0 verification remains historical evidence. The portable remains unsigned with the existing default icon, and manual listening/device/screen-reader gates remain open.
 
 
-### Right-aligned selector and named section milestone — v0.23.2 work
+### Right-aligned selector and named section milestone — v0.23.2
 
-Show beside score is now right-aligned in the score header, above the action row; the responsive arrow, choice persistence and canonical score/history/audio remain. Two affected browser workflows and production build pass, including right-edge positioning at desktop/390 px, matching panel heights and source/playback/preference preservation. Native layout and portable verification are pending for this patch; v0.23.1 validation is historical evidence.
+Show beside score is now right-aligned in the score header, above the action row; the responsive arrow, choice persistence and canonical score/history/audio remain. Verified: two affected browser workflows and one packaged native IDE workflow, production build, formatting, knowledge build/check and portable packaging. Checks cover right-edge positioning at desktop/390 px, matching panel heights, folded controls, source/playback/indentation and preference preservation. Desktop/narrow screenshots were reviewed without horizontal overflow. The tested app.asar SHA-256 is D3B030C51A5C6AA3D851B647DE488FEE4DBA06A9834207DCDE8601DE87A143CC. The portable was opened visibly and its extracted app.asar matches that native-tested hash. Four focused patch commits use Monykus7 and are pushed to origin/master. No unchanged DSP/unit suites are repeated; v0.23.1 validation is historical evidence.
 
 Added a separate planned Compose milestone after shared-file track tabs: track-scoped A/B/etc. section labels, reusable references/repeats, invocation-local tail trimming in n quarter-note beats and replacement endings of explicitly resolved duration. The plan covers exact/fractional/mid-event cuts, positional bar rests, articulation boundaries, source provenance, scoped rename/undo, cycle/work limits, single-file persistence and shared live/WAV/comparison continuity. No section command, reference expansion or trimming is implemented yet. BUILD_PLAN.md section17 and docs/SCORE_WORKSPACE_PLAN.md contain the gates; track tabs remain next, and swing/general modularity/manual physical gates remain open. User demo edits are preserved outside this patch's commits.
