@@ -114,7 +114,12 @@ test('legacy autosave migrates silently and schema-2 upper edits survive reload'
     project.comparison.A.harmonics[0] = 0.37;
     return JSON.stringify(project);
   });
-  await page.evaluate((fixture) => localStorage.setItem('fourpataka.project.v1', fixture), fixture);
+  await page.addInitScript((fixture) => {
+    if (!sessionStorage.getItem('legacy-fixture-loaded')) {
+      localStorage.setItem('fourpataka.project.v1', fixture);
+      sessionStorage.setItem('legacy-fixture-loaded', '1');
+    }
+  }, fixture);
   await page.reload();
   await expect(
     page.getByRole('spinbutton', { name: 'H1 exact magnitude', exact: true }),

@@ -114,7 +114,13 @@ app.whenReady().then(() => {
     if (typeof text !== 'string' || Buffer.byteLength(text, 'utf8') > 2_000_000)
       throw new Error('Invalid project or project exceeds 2 MB.');
     const project = JSON.parse(text);
-    if (!project || project.schemaVersion !== 1 || typeof project.scoreText !== 'string')
+    // The renderer validates musical data; this origin-checked file bridge
+    // accepts both the legacy bank and the current 32-partial document envelope.
+    if (
+      !project ||
+      ![1, 2].includes(project.schemaVersion) ||
+      typeof project.scoreText !== 'string'
+    )
       throw new Error('Invalid FourPataka project.');
     const basename =
       (typeof name === 'string' ? name : 'FourPataka')

@@ -188,6 +188,9 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   await expect(sign).toHaveText('−');
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(sign).toHaveText('+');
+  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
+  await page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }).fill('.42');
+  await page.getByRole('button', { name: 'H32 inverted polarity', exact: true }).click();
   const savePath = resolve('.test-results', 'desktop', 'harmonic-sign.fourpataka.json');
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });
@@ -197,10 +200,21 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
     'Saved harmonic-sign.fourpataka.json',
   );
   let saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.schemaVersion).toBe(2);
+  expect(saved.comparison.A.harmonics).toHaveLength(32);
+  expect(saved.comparison.A.harmonics[31]).toBe(0.42);
+  expect(saved.comparison.A.polarity[31]).toBe(-1);
   expect(saved.comparison.A.polarity[2]).toBe(1);
   expect(saved.instruments.find((p: any) => p.key === 'triangle').sound.polarity[2]).toBe(-1);
   await page.reload();
   await expect(sign).toHaveText('+');
+  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
+  await expect(
+    page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }),
+  ).toHaveValue('0.42');
+  await expect(
+    page.getByRole('button', { name: 'H32 inverted polarity', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Soft bass softBass', exact: true }).click();
   await page.getByRole('button', { name: 'H2', exact: true }).click();
   await expect(page.getByRole('spinbutton', { name: 'H2 exact magnitude' })).toHaveValue('0.22');
