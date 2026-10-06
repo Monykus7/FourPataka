@@ -157,7 +157,7 @@ These are finite approximations. Avoid promising that thirty-two terms reproduce
 
 ### Implemented expansion — 32 harmonics
 
-Status: implemented by the v0.20.0 synthesis/notation pilot; release verification is in progress. The signed bank is H1–H32, with H32 at 32f₀. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+Status: implemented by the v0.20.0 synthesis/notation pilot; release verification passes in the tested browser/Windows workflows (see IMPLEMENTATION_STATUS.md for exact scope and remaining manual gates). The signed bank is H1–H32, with H32 at 32f₀. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
 
 Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
 
@@ -730,6 +730,6 @@ Each milestone ends in a separately reviewable usable release with updated tutor
 
 Default start: M1 → M2 → M3. Useful pedal/preset contributions and stage 7 learning can proceed against those landed boundaries while M4/M5 are independently scheduled; do not require all six milestones before contributors can do anything. Existing manual release gates remain open. Runtime plugin loading, marketplace/discovery, automatic upgrades, remote code and native capability expansion require separately approved future designs.
 
-### Active synthesis/notation pilot
+### Implemented synthesis/notation pilot — v0.20.0
 
-User-selected next release: extensible chord shapes plus 32 harmonics. Implement the bundled chord contract and example, predictable root-position symbol expansion (default octave 4, @octave override), editor hover/keyboard previews, and 16-to-32 migration preserving existing coefficients and owned copies. Verify shared live/WAV behavior and portable workflows. General M1–M6 gates remain open; this pilot precedes their default sequence and provides a notation contribution boundary for testing.
+User-selected release implements extensible chord shapes plus 32 harmonics: bundled API-v1 chord contract/example, predictable root-position symbol expansion (default octave 4, @octave override), editor hover/keyboard previews and schema-1 to schema-2 migration preserving existing coefficients and owned copies. Shared live/WAV behavior, affected browser workflows, native saving and portable packaging are verified with the limits recorded in IMPLEMENTATION_STATUS.md. General M1–M6 gates remain open; this pilot precedes their default sequence and provides a notation contribution boundary for testing.

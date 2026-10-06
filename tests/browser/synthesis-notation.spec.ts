@@ -139,3 +139,22 @@ test('legacy autosave migrates silently and schema-2 upper edits survive reload'
   await page.getByRole('button', { name: /^Show H17–H32/ }).click();
   await expect(upper).toHaveValue('0.43');
 });
+
+test('narrow chord previews wrap inside the viewport without changing source', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const source = 'track test using sine {\n chord:Cmaj13#11@3 quarter\n}';
+  await editor.fill(source);
+  await editor.press('Control+End');
+  await editor.press('ArrowUp');
+  await editor.press('Home');
+  for (let i = 0; i < 9; i++) await editor.press('ArrowRight');
+  const tooltip = page.locator('.chord-expansion');
+  await expect(tooltip).toContainText('F#4 · A4');
+  const box = (await tooltip.boundingBox())!;
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width).toBeLessThanOrEqual(390);
+  await expect(editor).toHaveText(source, { useInnerText: true });
+});

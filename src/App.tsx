@@ -1018,7 +1018,7 @@ export default function App() {
                     <span className="small-label">MAGNITUDE 0—1</span>
                   </div>
                   <button
-                    className="disclosure"
+                    className="secondary-button"
                     aria-expanded={upperHarmonicsOpen}
                     onClick={() => setUpperHarmonicsOpen(!upperHarmonicsOpen)}
                   >

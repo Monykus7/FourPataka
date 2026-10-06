@@ -39,6 +39,8 @@ const chordTooltip = (chord: SymbolPreview): Tooltip => ({
     dom.setAttribute('role', 'status');
     dom.textContent = `${chord.symbol} · ${chord.shapeLabel}: ${chord.notes.join(' · ')}`;
     dom.style.padding = '8px 12px';
+    dom.style.maxWidth = 'min(480px, calc(100vw - 48px))';
+    dom.style.whiteSpace = 'normal';
     return { dom };
   },
 });
