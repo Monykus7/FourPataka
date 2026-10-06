@@ -102,6 +102,17 @@ export const COMMANDS: readonly CommandDefinition[] = [
       'All notes start together, up to 32 notes. The trailing octave applies to notes without one: (Bb D F)5 means Bb5 D5 F5, not an automatic ascending voicing. Explicit note octaves override it.',
   },
   {
+    name: 'chord-symbol',
+    group: 'Events',
+    scope: 'track',
+    description: 'Registered chord shape in ascending root position',
+    snippet: 'chord:Cmaj13#11@4 quarter',
+    completionTemplate: 'chord:${}@${} ${}',
+    syntax: 'chord:<root><shape>[@<octave>] <duration>',
+    rules:
+      'Root A–G with optional # or b. Default root octave: 4; @3 overrides it. Full ascending compound intervals, without omissions or inversions. Hover or move the cursor into the symbol to inspect notes. Shape aliases are case-sensitive; contributors can register bundled shapes. Unknown shapes and pitches outside C0–B8 are errors.',
+  },
+  {
     name: 'voicing',
     group: 'Events',
     scope: 'track',
@@ -110,7 +121,7 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: 'chord:(${}) ${}',
     syntax: 'chord:(<notes with octaves>) <duration>',
     rules:
-      'Each note supplies its own octave, so no trailing octave is needed. Mixed explicit/default octaves are also accepted. Chord-symbol macros such as Cmaj13#11 are not supported yet.',
+      'Each note supplies its own octave, so no trailing octave is needed. Mixed explicit/default octaves are also accepted.',
   },
   {
     name: 'rest',

@@ -80,7 +80,7 @@ export default function FourierWorkspace({
     const next = structuredClone(points);
     next[index] = {
       x: clamp(x, points[index - 1].x + 0.005, points[index + 1].x - 0.005),
-      y: clamp(y, -16, 16),
+      y: clamp(y, -32, 32),
     };
     applyPoints(next, sound, group);
   }
@@ -94,7 +94,7 @@ export default function FourierWorkspace({
     if (!active) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = clamp(((e.clientX - rect.left) / rect.width) * 2, 0, 1);
-    const y = clamp((1.2 - ((e.clientY - rect.top) / rect.height) * 2.4) * active.scale, -16, 16);
+    const y = clamp((1.2 - ((e.clientY - rect.top) / rect.height) * 2.4) * active.scale, -32, 32);
     if (active.points) {
       const index = active.index;
       active.points[index] = {
@@ -205,8 +205,8 @@ export default function FourierWorkspace({
                       H{i + 1}: {(value * sound.polarity[i]).toFixed(3)}
                     </title>
                     <line
-                      x1={8 + i * 15}
-                      x2={8 + i * 15}
+                      x1={4 + (i + 0.5) * (232 / sound.harmonics.length)}
+                      x2={4 + (i + 0.5) * (232 / sound.harmonics.length)}
                       y1="75"
                       y2={75 - value * sound.polarity[i] * 65}
                       stroke={
@@ -216,12 +216,12 @@ export default function FourierWorkspace({
                             ? 'var(--secondary)'
                             : 'var(--accent)'
                       }
-                      strokeWidth="6"
+                      strokeWidth="4"
                     />
                   </g>
                 ))}
               </svg>
-              <p className="footnote">H1–H16 · signed coefficients ±1</p>
+              <p className="footnote">H1–H32 · signed coefficients ±1</p>
               <button className="text-button" onClick={() => setMode('harmonics')}>
                 Edit harmonics
               </button>
@@ -420,8 +420,8 @@ export default function FourierWorkspace({
                 <input
                   type="number"
                   aria-label="Selected dot amplitude"
-                  min="-16"
-                  max="16"
+                  min="-32"
+                  max="32"
                   step=".05"
                   value={Number(point.y.toFixed(3))}
                   onChange={(e) => {
@@ -448,7 +448,7 @@ export default function FourierWorkspace({
           </p>
           {mode === 'waveform' && (
             <div className="wave-legend">
-              <span>Orange · 16-harmonic sound</span>
+              <span>Orange · 32-harmonic sound</span>
               <span>Coral · target curve</span>
               <span>Pink · dots</span>
             </div>

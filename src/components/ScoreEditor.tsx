@@ -1,13 +1,65 @@
 import { useEffect, useRef } from 'react';
 import { basicSetup } from 'codemirror';
 import { Compartment, EditorState, StateEffect, StateField } from '@codemirror/state';
-import { Decoration, EditorView, keymap, type DecorationSet } from '@codemirror/view';
+import {
+  Decoration,
+  EditorView,
+  keymap,
+  hoverTooltip,
+  showTooltip,
+  type Tooltip,
+  type DecorationSet,
+} from '@codemirror/view';
 import { autocompletion, snippetCompletion } from '@codemirror/autocomplete';
 import { StreamLanguage, syntaxHighlighting, HighlightStyle } from '@codemirror/language';
 import { setDiagnostics } from '@codemirror/lint';
 import { tags } from '@lezer/highlight';
-import { COMMANDS, type Diagnostic } from '../core/parser';
+import { COMMANDS, type ScoreEvent, type Diagnostic } from '../core/parser';
+import { CHORD_SHAPES } from '../modules/chords';
 import { COMMON_METERS } from '../core/meter';
+
+type SymbolPreview = NonNullable<ScoreEvent['chordSymbol']>;
+const updateChords = StateEffect.define<SymbolPreview[]>();
+const chordField = StateField.define<SymbolPreview[]>({
+  create: () => [],
+  update: (value, transaction) => {
+    // Old source spans must never annotate a newly edited document.
+    if (transaction.docChanged) value = [];
+    for (const effect of transaction.effects) if (effect.is(updateChords)) value = effect.value;
+    return value;
+  },
+});
+const chordTooltip = (chord: SymbolPreview): Tooltip => ({
+  pos: chord.from,
+  end: chord.to,
+  above: true,
+  create: () => {
+    const dom = document.createElement('div');
+    dom.className = 'chord-expansion';
+    dom.setAttribute('role', 'status');
+    dom.textContent = `${chord.symbol} · ${chord.shapeLabel}: ${chord.notes.join(' · ')}`;
+    dom.style.padding = '8px 12px';
+    return { dom };
+  },
+});
+const cursorChord = (state: EditorState) =>
+  state.field(chordField).find((chord) => {
+    const selection = state.selection.main;
+    return selection.from >= chord.from && selection.to <= chord.to;
+  });
+const chordPreviews = [
+  chordField,
+  showTooltip.compute(['selection', chordField], (state) => {
+    const chord = cursorChord(state);
+    return chord ? chordTooltip(chord) : null;
+  }),
+  hoverTooltip((view, position) => {
+    const chord = view.state
+      .field(chordField)
+      .find((chord) => position >= chord.from && position <= chord.to);
+    return chord && cursorChord(view.state) !== chord ? chordTooltip(chord) : null;
+  }),
+];
 
 const activeLines = StateEffect.define<number[]>();
 const playbackField = StateField.define<DecorationSet>({
@@ -92,6 +144,7 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   diagnostics: Diagnostic[];
+  chords: SymbolPreview[];
   autocomplete: boolean;
   presetKeys: string[];
   chainKeys: string[];
@@ -103,6 +156,7 @@ export default function ScoreEditor({
   value,
   onChange,
   diagnostics,
+  chords,
   autocomplete,
   presetKeys,
   chainKeys,
@@ -161,13 +215,27 @@ export default function ScoreEditor({
                   })),
                   validFor: /[A-Za-z0-9_]*/,
                 };
+              const symbol = /\bchord:\s*[A-G][#b]?([A-Za-z0-9#+-]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (symbol)
+                return {
+                  from: context.pos - symbol[1].length,
+                  options: CHORD_SHAPES.shapes.flatMap((shape) =>
+                    shape.aliases
+                      .filter(Boolean)
+                      .map((label) => ({ label, type: 'constant', detail: shape.label })),
+                  ),
+                  validFor: /[A-Za-z0-9#+-]*/,
+                };
               // Include an already typed colon in the replacement, rather than
               // inserting a second chord prefix after it.
               const chord = context.matchBefore(/\bchord:/);
               const word = chord ?? context.matchBefore(/[A-Za-z0-9_]+/);
               if (!word && !context.explicit) return null;
               const commands = COMMANDS.filter(
-                (c) => !chord || c.name === 'chord' || c.name === 'voicing',
+                (c) =>
+                  !chord || c.name === 'chord' || c.name === 'voicing' || c.name === 'chord-symbol',
               ).map((c) =>
                 snippetCompletion(c.completionTemplate, {
                   label: c.name,
@@ -229,6 +297,7 @@ export default function ScoreEditor({
           syntaxHighlighting(colors),
           theme,
           playbackField,
+          chordPreviews,
           completion.current.of(completionExtension()),
           EditorView.contentAttributes.of({ 'aria-label': 'Score editor', spellcheck: 'false' }),
           EditorView.updateListener.of((update) => {
@@ -262,6 +331,9 @@ export default function ScoreEditor({
         ),
       );
   }, [diagnostics, value]);
+  useEffect(() => {
+    view.current?.dispatch({ effects: updateChords.of(chords) });
+  }, [chords, value]);
   useEffect(() => {
     view.current?.dispatch({ effects: completion.current.reconfigure(completionExtension()) });
   }, [autocomplete, presetKeys.join('|'), chainKeys.join('|')]);
