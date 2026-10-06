@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-06. Latest verified release: v0.23.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-06. Latest verified release: v0.23.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -420,7 +420,7 @@ Implemented arithmetic meter-change positions (single * multiplication, conventi
 Verified: 186 unit tests, 35 distinct affected browser checks across runs, production build, formatting and knowledge build/check. Browser proofs cover IDE timing/undo, frozen playing revisions, repeat/rest playback and WAV timing, Tab focus/indentation and F2 fields, preference reload, demo/WAV, reference, dense timeline and A/B phase/clock continuity. All 19 packaged native workflows passed across the full run plus two corrected legacy checks; after the final folded-reference layout correction, the two affected native IDE/demo workflows passed again on final contents. Demo checks read EXAMPLE_SCORE directly rather than fixed notes/durations. Desktop layout mirrors the score/adjacent timeline at 667 px in the reviewed viewport, narrow layout has no horizontal overflow at 390 px, and folded lower reference retains usable track-control height. The final portable was opened and checked against native-tested app.asar SHA-256 `210913150A4EDB5F50329C31B98D7CA84BB30AFCA2CE5847D8E02319E34731F2`. Exact quarter-beat/source/copy/frozen clock/phase/latency/tail invariants and remaining modularity/manual physical gates are retained.
 
 
-### Reference lookup and score follow-up plans — v0.23.1 work
+### Reference lookup and score follow-up plans — v0.23.1
 
 Implemented command-name-first filtering: exact names show one card, partial names constrain results, spaced/hyphenated names and trailing openers resolve, named extra terms still require matching rules/keys. General rules/units/library-key searches and category filtering remain. Show beside score now has a theme-colored right/down arrow matching the responsive panel direction. No musical source, project schema, ownership, phase/clock, timing, latency or tail behavior changes.
 
@@ -428,4 +428,4 @@ The 2026-10-06 user choice makes shared-file instrument track tabs the next appl
 
 Variable swing is planned in section16: proposed long-subdivision percentage, eighth/sixteenth grids, optional track overrides and one shared performed-timing map preserving written beats/bar endpoints and live/WAV/comparison continuity. Bounds/syntax/edge policies remain proposals until the timing proof. No swing command is implemented. Neither plan closes modularity/manual device/listening/accessibility gates. The user's uncommitted demo edits in src/core/project.ts are preserved and excluded from patch commits.
 
-Validation in progress: six focused reference unit checks, eight affected browser workflows and production build pass. Native layout, lookup and portable verification will be recorded once completed; prior v0.23.0 checks remain historical evidence.
+Verified: six focused reference unit checks, eight affected browser workflows and two packaged native workflows, production TypeScript/bundle, formatting, knowledge build/check and portable packaging. Search checks exclude incidental mentions and restore all cards when cleared; existing rule/key searches, insertion, assignment/undo, playback, IDE indentation and preference reload remain covered. Desktop/390 px screenshots show the right/down arrow and no horizontal overflow. The native-tested app.asar SHA-256 is BC30A4734B58465C0D28703F9D9B720F910C25C9F9FD547CAA8B019FA8E1DD08. The portable application was opened visibly and its extracted app.asar matches that native-tested hash. Four focused checkpoints use Monykus7 and are pushed to origin/master. Unchanged DSP suites are not repeated; v0.23.0 verification remains historical evidence. The portable remains unsigned with the existing default icon, and manual listening/device/screen-reader gates remain open.
