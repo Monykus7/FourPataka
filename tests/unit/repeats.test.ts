@@ -41,3 +41,7 @@ it('recomputes rest bar within repeats and honors global meter directives below 
   expect(parse('triplet[ C4 eighth\nrest till end of bar ]').beats).toBe(4);
   expect(parse('rest bar').beats).toBe(4);
 });
+
+it('reports an invalid repeated source section once instead of once per iteration', () => {
+  expect(parse('repeat 128 { C9 quarter }').diagnostics).toHaveLength(1);
+});

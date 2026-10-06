@@ -404,6 +404,7 @@ export function parseScore(
         const outer = [...blocks];
         // Recompile each pass: rest-to-bar alignment is position dependent; source spans stay original.
         for (let pass = 0; pass < count && !exhausted; pass++) {
+          const errorsBefore = result.diagnostics.length;
           visit(i + 1, close, depth + 1);
           if (
             blocks.length !== outer.length ||
@@ -412,6 +413,8 @@ export function parseScore(
             error('Bracket groups must close within the repeat block where they opened.');
             blocks.splice(0, blocks.length, ...outer);
           }
+          // Invalid source should report once, rather than duplicate its errors per play.
+          if (result.diagnostics.length > errorsBefore) break;
         }
       }
       i = close;

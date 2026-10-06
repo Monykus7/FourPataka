@@ -32,7 +32,7 @@ export const MY_SHAPE: ChordShape = {
 
 Degree spelling uses natural notes and single accidentals. Where a double accidental is required, the current pitch grammar uses an enharmonic single-accidental equivalent. The complete voicing must resolve inside C0–B8 or parsing fails; notes are never silently dropped. Existing explicit `chord:(Bb D F)5` syntax keeps its original same-octave meaning.
 
-Hover over a symbol or place the keyboard cursor inside it to see the compiled notes. Inspection does not change score text/history. Completion inserts `chord:@ ` with empty root/shape, octave and duration fields; Tab moves between fields. An explicitly chosen shape suggestion replaces only the suffix. Playback, timeline, comparison phrases and WAV consume the parser's ordinary expanded note events.
+Hover over a symbol or place the keyboard cursor inside it to see the compiled notes. Inspection does not change score text/history. Completion inserts `chord:@ ` with empty root/shape, octave and duration fields; F2/Shift+F2 move between fields; Tab indents. An explicitly chosen shape suggestion replaces only the suffix. Playback, timeline, comparison phrases and WAV consume the parser's ordinary expanded note events.
 
 ## Compatibility and limits
 
