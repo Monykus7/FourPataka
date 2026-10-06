@@ -1,5 +1,6 @@
 import { SCORE_KEY, pitch } from './music';
 import { beatExpression } from './beatExpression';
+import { scoreTiming, restToBar } from './scoreTiming';
 import { lexScore, type ScoreToken } from './scoreLexer';
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
@@ -98,7 +99,11 @@ export function parseScore(
       });
     blocks.length = 0;
   };
-  lexScore(text).forEach((token) => {
+  const tokens = lexScore(text);
+  // Read global timing first so directives below tracks also govern positional bar rests.
+  const timing = scoreTiming(tokens);
+  let exhausted = false;
+  const consumeToken = (token: ScoreToken) => {
     const { text: line, from, to } = token;
     const error = (message: string, start = from, end = to) =>
       result.diagnostics.push({
@@ -241,29 +246,43 @@ export function parseScore(
         );
       return;
     }
+    const barRest = /^rest\s+(?:bar|till end of bar)$/.test(line);
     const event =
       /^(.*?)\s+(whole|half|quarter|eighth|8th|16th|32nd|64th)(\.{0,2})(?:\s+(triplet|tuplet:\d+:\d+))?(?:\s+(staccato|legato))?$/.exec(
         line,
       );
-    if (!event) {
+    if (!event && !barRest) {
       error(
         'Expected a note, chord, or rest followed by a duration, optional triplet/tuplet:N:M and staccato/legato.',
       );
       return;
     }
-    const [, expression, word, dots, modifier, suffixArticulation] = event;
+    const [, expression, word, dots, modifier, suffixArticulation] = event ?? [
+      '',
+      'rest',
+      'quarter',
+      '',
+      undefined,
+      undefined,
+    ];
     const block = [...blocks].reverse().find((scope) => scope.articulation);
     const articulation =
       expression === 'rest' ? suffixArticulation : (suffixArticulation ?? block?.articulation);
     let notes: string[] = [];
     let chordSymbol: ScoreEvent['chordSymbol'];
     try {
-      const written = parseDuration(word + dots, modifier);
+      const written = barRest
+        ? {
+            beats: restToBar(positions.get(current.key) ?? fraction(0n, 1n), timing),
+            duration: 0,
+            tuplet: undefined as ReturnType<typeof parseDuration>['tuplet'],
+          }
+        : parseDuration(word + dots, modifier);
       // Each enclosing tuplet contributes an exact scale; articulation scopes are independent.
       let ratioNotes = BigInt(written.tuplet?.notes ?? 1);
       let ratioTime = BigInt(written.tuplet?.inTimeOf ?? 1);
       for (const scope of blocks)
-        if (scope.ratio) {
+        if (scope.ratio && !barRest) {
           written.beats = fraction(
             written.beats.numerator * scope.ratio.numerator,
             written.beats.denominator * scope.ratio.denominator,
@@ -274,7 +293,7 @@ export function parseScore(
       written.duration = beatValue(written.beats);
       const combinedRatio = fraction(ratioTime, ratioNotes);
       // Keep display metadata finite by reducing nested ratios before numeric conversion.
-      if (blocks.some((scope) => scope.ratio))
+      if (!barRest && blocks.some((scope) => scope.ratio))
         written.tuplet = {
           notes: Number(combinedRatio.denominator),
           inTimeOf: Number(combinedRatio.numerator),
@@ -313,6 +332,11 @@ export function parseScore(
         }
       } else notes = [expression];
       const frequencies = notes.map((note) => pitch(note).frequency);
+      if (result.events.length >= 10000) {
+        error('A compiled score may contain at most 10,000 events.');
+        exhausted = true;
+        return;
+      }
       const compiled: ScoreEvent = {
         id: `${current.key}:${current.events.length}`,
         track: current.key,
@@ -343,7 +367,57 @@ export function parseScore(
     } catch (e) {
       error((e as Error).message);
     }
-  });
+  };
+  let visits = 0;
+  const visit = (start: number, end: number, depth: number) => {
+    for (let i = start; i < end && !exhausted; i++) {
+      const token = tokens[i];
+      const error = (message: string) =>
+        result.diagnostics.push({ from: token.from, to: token.to, line: token.line, message });
+      if (++visits > 100000) {
+        error('Repeat expansion exceeds 100,000 token visits.');
+        exhausted = true;
+        break;
+      }
+      if (token.kind !== 'repeat-open') {
+        consumeToken(token);
+        continue;
+      }
+      let balance = 1,
+        close = i + 1;
+      for (; close < end; close++) {
+        if (tokens[close].kind === 'repeat-open') balance++;
+        if (tokens[close].kind === 'brace-close') {
+          balance--;
+          if (balance === 0) break;
+        }
+      }
+      if (close >= end) {
+        error('Repeat block is missing its closing }.');
+        break;
+      }
+      const count = token.repeatCount!;
+      if (!current) error('Repeat blocks belong inside a track.');
+      else if (depth >= 16 || !Number.isInteger(count) || count < 1 || count > 128)
+        error('Repeat count must be 1–128, with at most 16 nested repeat levels.');
+      else {
+        const outer = [...blocks];
+        // Recompile each pass: rest-to-bar alignment is position dependent; source spans stay original.
+        for (let pass = 0; pass < count && !exhausted; pass++) {
+          visit(i + 1, close, depth + 1);
+          if (
+            blocks.length !== outer.length ||
+            blocks.some((block, index) => block !== outer[index])
+          ) {
+            error('Bracket groups must close within the repeat block where they opened.');
+            blocks.splice(0, blocks.length, ...outer);
+          }
+        }
+      }
+      i = close;
+    }
+  };
+  visit(0, tokens.length, 0);
   reportUnclosed();
   if (current)
     result.diagnostics.push({

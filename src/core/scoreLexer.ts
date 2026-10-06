@@ -1,13 +1,21 @@
 import type { Articulation } from './articulation';
 
 export interface ScoreToken {
-  kind: 'text' | 'articulation-open' | 'tuplet-open' | 'block-close' | 'bracket-open';
+  kind:
+    | 'text'
+    | 'articulation-open'
+    | 'tuplet-open'
+    | 'repeat-open'
+    | 'brace-close'
+    | 'block-close'
+    | 'bracket-open';
   text: string;
   from: number;
   to: number;
   line: number;
   articulation?: Articulation;
   modifier?: string;
+  repeatCount?: number;
 }
 
 export function lexScore(text: string): ScoreToken[] {
@@ -22,6 +30,7 @@ export function lexScore(text: string): ScoreToken[] {
       kind: ScoreToken['kind'],
       articulation?: Articulation,
       modifier?: string,
+      repeatCount?: number,
     ) => {
       const value = source.slice(start, end);
       const trimmed = value.trim();
@@ -35,11 +44,12 @@ export function lexScore(text: string): ScoreToken[] {
         line: index + 1,
         ...(articulation ? { articulation } : {}),
         ...(modifier ? { modifier } : {}),
+        ...(repeatCount !== undefined ? { repeatCount } : {}),
       });
     };
     let cursor = 0;
     for (const match of source.matchAll(
-      /\b(staccato|legato)\s*\[|\b(triplet|tuplet:\d+:\d+)\s*\[|[\[\]]/g,
+      /\b(staccato|legato)\s*\[|\b(triplet|tuplet:\d+:\d+)\s*\[|\b(repeat)(?:\s+(\d+))?\s*\{|[\[\]}]/g,
     )) {
       emit(cursor, match.index!, 'text');
       emit(
@@ -47,13 +57,18 @@ export function lexScore(text: string): ScoreToken[] {
         match.index! + match[0].length,
         match[1]
           ? 'articulation-open'
-          : match[2]
-            ? 'tuplet-open'
-            : match[0] === ']'
-              ? 'block-close'
-              : 'bracket-open',
+          : match[3]
+            ? 'repeat-open'
+            : match[0] === '}'
+              ? 'brace-close'
+              : match[2]
+                ? 'tuplet-open'
+                : match[0] === ']'
+                  ? 'block-close'
+                  : 'bracket-open',
         match[1] as Articulation | undefined,
         match[2],
+        match[3] ? Number(match[4] ?? 2) : undefined,
       );
       cursor = match.index! + match[0].length;
     }
