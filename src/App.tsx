@@ -1577,24 +1577,24 @@ export default function App() {
                         Score <span className="tag">.fourier</span>
                       </h2>
                     </div>
+                    <label className="score-panel-choice">
+                      Show beside score
+                      <select
+                        aria-label="Panel beside score"
+                        value={preferences.composeSide}
+                        onChange={(event) =>
+                          setPreferences((p) => ({
+                            ...p,
+                            composeSide: event.target.value as 'reference' | 'timeline',
+                          }))
+                        }
+                      >
+                        <option value="reference">Command reference</option>
+                        <option value="timeline">Timeline</option>
+                      </select>
+                      <ArrowRight className="score-panel-arrow" size={18} aria-hidden="true" />
+                    </label>
                     <div className="editor-options">
-                      <label className="score-panel-choice">
-                        Show beside score
-                        <select
-                          aria-label="Panel beside score"
-                          value={preferences.composeSide}
-                          onChange={(event) =>
-                            setPreferences((p) => ({
-                              ...p,
-                              composeSide: event.target.value as 'reference' | 'timeline',
-                            }))
-                          }
-                        >
-                          <option value="reference">Command reference</option>
-                          <option value="timeline">Timeline</option>
-                        </select>
-                        <ArrowRight className="score-panel-arrow" size={18} aria-hidden="true" />
-                      </label>
                       <button
                         className="secondary-button"
                         disabled={playback === 'score'}

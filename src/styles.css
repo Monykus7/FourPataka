@@ -1355,12 +1355,19 @@ dd {
 .editor-panel .panel-header {
   padding: 17px 21px;
 }
-.editor-options label {
+.editor-options label,
+.score-panel-choice {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 9px;
   color: var(--text-muted);
+}
+.score-panel-choice {
+  margin-left: auto;
+}
+.editor-panel .editor-options {
+  flex-basis: 100%;
 }
 .score-panel-arrow {
   flex-shrink: 0;
@@ -2464,7 +2471,8 @@ dd {
   .compose-layout {
     gap: 15px;
   }
-  .editor-options label {
+  .editor-options label,
+  .score-panel-choice {
     font-size: 8px;
   }
   .score-editor {
@@ -2670,7 +2678,8 @@ dd {
 .composition-overview > .commands-panel[data-expanded='true'] {
   height: 500px;
 }
-.editor-options select {
+.editor-options select,
+.score-panel-choice select {
   max-width: 160px;
   padding: 6px;
   font-size: 10px;

@@ -148,6 +148,9 @@ test('reference matches the score height while search stays reachable on desktop
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1040 });
     await expect(page.locator('.score-panel-choice')).toContainText('Show beside score');
+    const header = (await page.locator('.editor-panel .panel-header').boundingBox())!;
+    const choice = (await page.locator('.score-panel-choice').boundingBox())!;
+    expect(header.x + header.width - (choice.x + choice.width)).toBeLessThan(25);
     const arrow = page.locator('.score-panel-arrow');
     await expect(arrow).toBeVisible();
     expect(await arrow.evaluate((el) => getComputedStyle(el).transform)).toBe(

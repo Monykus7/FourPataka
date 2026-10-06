@@ -2,6 +2,9 @@ import { expect, type Page } from '@playwright/test';
 export async function ideWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const header = (await page.locator('.editor-panel .panel-header').boundingBox())!;
+  const choice = (await page.locator('.score-panel-choice').boundingBox())!;
+  expect(header.x + header.width - (choice.x + choice.width)).toBeLessThan(25);
   const saved = () =>
     page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText);
   await expect(page.getByRole('button', { name: 'Apply timing', exact: true })).toHaveCount(0);
