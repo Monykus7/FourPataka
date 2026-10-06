@@ -1,3 +1,5 @@
+export const HARMONIC_COUNT = 32;
+export const LEGACY_HARMONIC_COUNT = 16;
 export const DURATIONS: Record<string, number> = {
   whole: 4,
   half: 2,
@@ -51,14 +53,16 @@ export function setHarmonicPolarity(
 }
 export function mathematicalPreset(kind: WavePreset): Sound {
   return {
-    harmonics: Array.from({ length: 16 }, (_, i) => {
+    harmonics: Array.from({ length: HARMONIC_COUNT }, (_, i) => {
       const h = i + 1;
       if (kind === 'sine') return i === 0 ? 1 : 0;
       if (kind === 'saw') return 1 / h;
       if (h % 2 === 0) return 0;
       return kind === 'square' ? 1 / h : 1 / h ** 2;
     }),
-    polarity: Array.from({ length: 16 }, (_, i) => (kind === 'triangle' && i % 4 === 2 ? -1 : 1)),
+    polarity: Array.from({ length: HARMONIC_COUNT }, (_, i) =>
+      kind === 'triangle' && i % 4 === 2 ? -1 : 1,
+    ),
     undertones: [0, 0, 0, 0, 0],
     undertonesEnabled: false,
     attack: 0.015,
@@ -125,6 +129,7 @@ export interface Macros {
 }
 export const NEUTRAL_MACROS: Macros = { falloff: 0, brightness: 0, oddEven: 0, subWeight: 1 };
 export function transform(baseline: Sound, m: Macros): Sound {
+  // Retain the H16 brightness reference so migrated lower-bank timbres stay identical.
   return {
     ...structuredClone(baseline),
     harmonics: baseline.harmonics.map((b, i) =>

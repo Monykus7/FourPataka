@@ -101,7 +101,7 @@ export function createVoice(
     const effective = components(next, frequency, context.sampleRate).filter(
       (p) => p.available && (!selection || p.label === selection),
     );
-    const coefficients = new Array<number>(17).fill(0);
+    const coefficients = new Array<number>(next.harmonics.length + 1).fill(0);
     effective
       .filter((p) => p.kind === 'harmonic')
       .forEach((p) => (coefficients[p.index + 1] = p.magnitude * p.polarity));

@@ -41,11 +41,11 @@ describe('source coefficient model', () => {
   it('truly disables undertones and lengthens the active-bank source window', () => {
     const sound = mathematicalPreset('sine');
     sound.undertones[0] = 0.5;
-    expect(components(sound, 440)[16].magnitude).toBe(0);
+    expect(components(sound, 440)[32].magnitude).toBe(0);
     sound.undertonesEnabled = true;
     const c = components(sound, 440);
-    expect(c[16].frequency).toBe(220);
-    expect(c[17].frequency).toBeCloseTo(146.666667);
+    expect(c[32].frequency).toBe(220);
+    expect(c[33].frequency).toBeCloseTo(146.666667);
     expect(sourceSamples(sound, 440).seconds).toBeCloseTo(6 / 440);
   });
   it('returns meaningful descriptors and a silence state', () => {

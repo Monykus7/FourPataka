@@ -27,7 +27,7 @@ it('keeps zero-magnitude partials silent while saving their chosen sign and reje
   expect(next.harmonics[1]).toBe(0);
   expect(sourceSamples(next, 440)).toEqual(sourceSamples(original, 440));
   expect(setHarmonicPolarity(next, 1, -1)).toBe(next);
-  expect(() => setHarmonicPolarity(original, 16, -1)).toThrow('existing');
+  expect(() => setHarmonicPolarity(original, 32, -1)).toThrow('existing');
   expect(() => setHarmonicPolarity(original, -1, -1)).toThrow('existing');
   expect(() => setHarmonicPolarity(original, 1, 0 as -1)).toThrow('Polarity');
 });

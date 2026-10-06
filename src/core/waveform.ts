@@ -1,7 +1,7 @@
-import { clamp, type Sound } from './music';
+import { HARMONIC_COUNT, clamp, type Sound } from './music';
 
 // A half-cycle defines an odd periodic waveform, matching our signed sine bank.
-export function waveformCoefficients(halfCycle: readonly number[], count = 16) {
+export function waveformCoefficients(halfCycle: readonly number[], count = HARMONIC_COUNT) {
   const intervals = halfCycle.length - 1;
   if (intervals < 2 || halfCycle.some((v) => !Number.isFinite(v)))
     throw new Error('A waveform needs at least three finite samples.');
@@ -39,7 +39,10 @@ export interface WavePoint {
   y: number;
 }
 
-export function validateWavePoints(points: unknown): asserts points is WavePoint[] {
+export function validateWavePoints(
+  points: unknown,
+  maxAmplitude = HARMONIC_COUNT,
+): asserts points is WavePoint[] {
   if (!Array.isArray(points) || points.length < 3 || points.length > 32)
     throw new Error('Waveform requires 3–32 points.');
   points.forEach((point, i) => {
@@ -49,7 +52,7 @@ export function validateWavePoints(points: unknown): asserts points is WavePoint
       !Number.isFinite(point.y) ||
       point.x < 0 ||
       point.x > 1 ||
-      Math.abs(point.y) > 16 ||
+      Math.abs(point.y) > maxAmplitude ||
       (i > 0 && point.x - points[i - 1].x < 0.005 - 1e-10)
     )
       throw new Error('Invalid waveform point position or amplitude.');
@@ -133,7 +136,10 @@ export function resetWaveform(sound: Sound): Sound {
 
 export function keepMatchingWavePoints(sound: Sound): Sound {
   if (!sound.waveformPoints) return sound;
-  const projected = waveformCoefficients(waveformFromPoints(sound.waveformPoints));
+  const projected = waveformCoefficients(
+    waveformFromPoints(sound.waveformPoints),
+    sound.harmonics.length,
+  );
   if (projected.every((v, i) => Math.abs(v - sound.harmonics[i] * sound.polarity[i]) < 1e-8))
     return sound;
   const { waveformPoints: _points, ...rest } = sound;

@@ -44,7 +44,7 @@ it('inserts an independent anchor on the curve in the widest gap, preserving bou
   expect(next.at(-1)).toEqual({ x: 1, y: 0 });
 });
 it('projects silence and bounds coefficients without normalizing the entire sound', () => {
-  expect(waveformCoefficients([0, 0, 0])).toEqual(Array(16).fill(0));
+  expect(waveformCoefficients([0, 0, 0])).toEqual(Array(32).fill(0));
   expect(
     waveformCoefficients(
       Array.from({ length: 257 }, (_, i) => 4 * Math.sin((Math.PI * i) / 256)),
@@ -91,8 +91,8 @@ it('saves independent point geometry and resets only the harmonic bank', () => {
   points[1].y = 0;
   expect(edited.waveformPoints![1].y).toBe(1);
   const reset = resetWaveform(edited);
-  expect(reset.harmonics).toEqual([1, ...Array(15).fill(0)]);
-  expect(reset.polarity).toEqual(Array(16).fill(1));
+  expect(reset.harmonics).toEqual([1, ...Array(31).fill(0)]);
+  expect(reset.polarity).toEqual(Array(32).fill(1));
   expect(reset.undertones).toEqual(source.undertones);
   expect(reset.undertonesEnabled).toBe(true);
   expect(reset.trim).toBe(source.trim);
