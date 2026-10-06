@@ -71,7 +71,7 @@ Instrument-builder acoustics is a requested later feature, detailed in section 5
 
 The 32-harmonic bank expansion is also queued under stage 8, ahead of richer instrument-realism controls. The initial H1–H16 release boundary remains historical/current scope; it is not the planned long-term limit.
 
-Keep repeat blocks, dotted notes, tuplets, time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
+Dotted notes and per-event N:M tuplets are implemented by the v0.21.0 rhythm extension. Keep repeat blocks, time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
 
 Accounts, collaboration, and a backend are unnecessary for the planned local studio.
 
@@ -634,7 +634,7 @@ The 32-harmonic bank is implemented by the synthesis/notation pilot, with the mi
 
 Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 
-Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
+Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, nested/group tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 
 Registered chord-symbol macros such as `chord:Cmaj13#11` are implemented by the synthesis/notation pilot, with hover and keyboard-cursor note previews, default root octave 4, @octave override, bounded ascending root-position shapes and shared explicit-note playback. See [the implemented contributor contract](docs/extensions/CHORD_SHAPES.md). Inversions, slash bass, automatic omissions and arbitrary alteration grammar remain future work.
 
@@ -733,3 +733,10 @@ Default start: M1 → M2 → M3. Useful pedal/preset contributions and stage 7 l
 ### Implemented synthesis/notation pilot — v0.20.0
 
 User-selected release implements extensible chord shapes plus 32 harmonics: bundled API-v1 chord contract/example, predictable root-position symbol expansion (default octave 4, @octave override), editor hover/keyboard previews and schema-1 to schema-2 migration preserving existing coefficients and owned copies. Shared live/WAV behavior, affected browser workflows, native saving and portable packaging are verified with the limits recorded in IMPLEMENTATION_STATUS.md. General M1–M6 gates remain open; this pilot precedes their default sequence and provides a notation contribution boundary for testing.
+
+
+### Implemented rhythm extension — v0.21.0 release candidate
+
+User-selected connected-note legato retains independent attacks, with a short bounded overlap. Staccato halves gates and caps releases; written clocks remain unchanged. Whole through 64th durations accept one/two dots and per-event triplet or custom N:M modifiers, accumulating exact fractions. Global meter-change directives apply on preceding-meter boundaries, retain continuous bar numbering and freeze with playing revisions. Compose, Track Maker, timeline, reference and autocomplete expose these forms through authoritative source and grouped undo.
+
+Acceptance: parser/fraction/gate/phrase-boundary unit checks; browser source controls, undo, narrow/keyboard workflow, actual voice gates and live/WAV numeric parity; native save/reload and portable startup. Verification is recorded in IMPLEMENTATION_STATUS.md. Ties, envelope-sharing slurs, glide, nested/group tuplets, additive beat grouping and per-track meters remain future notation work. This extension does not complete general modularity M1–M6 or manual device/listening gates. See [rhythm syntax and behavior](docs/RHYTHM.md).
