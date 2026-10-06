@@ -9,7 +9,7 @@ This is the authoritative project plan. It consolidates the expanded plan from `
 
 Build a personal studio, available in the browser and as a desktop application, for shaping instruments with Fourier harmonics and optional undertones, processing them through a visible pedalboard, and composing with readable note and chord commands. Mathematical changes should be easy to hear and inspect.
 
-The long-term goal now includes an open-source project that other people can extend with pedals, instruments and other features. Modularity is a major program split into six separately releasable milestones, M1–M6, in section 14. It must have contributor-facing contracts, tutorials, runnable examples and compatibility proofs; directory cleanup alone is insufficient. M1 is the next major foundation work, ahead of new feature expansions.
+The long-term goal now includes an open-source project that other people can extend with pedals, instruments and other features. Modularity is a major program split into six separately releasable milestones, M1–M6, in section 14. It must have contributor-facing contracts, tutorials, runnable examples and compatibility proofs; directory cleanup alone is insufficient. M1 remains the next module-foundation work. The 2026-10-06 request schedules shared-file track tabs as the next application milestone; see section 15.
 
 The central loop is:
 
@@ -65,7 +65,7 @@ The v0.19.1 layout follow-up makes the expanded command reference match the scor
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
-Current priority: modularity M1 contracts/compatibility, followed by M2 pedal modules and M3 instrument preset modules. Stage 7 remains the next music-feature item and can resume against the landed boundaries without waiting for every later module category. New pedals/presets should use their registries once available. M4/M5/M6 are independent follow-on milestones; they do not require one enormous rewrite or a runtime plugin installer.
+Current application priority (2026-10-06): shared-file track tabs (section 15). Modularity M1 contracts/compatibility remains the next module foundation, followed by M2 pedal modules and M3 instrument preset modules. Stage 7 remains the next music-feature item and can resume against the landed boundaries without waiting for every later module category. New pedals/presets should use their registries once available. M4/M5/M6 are independent follow-on milestones; they do not require one enormous rewrite or a runtime plugin installer.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -755,3 +755,18 @@ Articulation uses staccato[...] / legato[...] scopes; grouped triplet[...] / tup
 ### IDE composition follow-up — v0.23.0
 
 Implemented arithmetic meter-change positions, repeat blocks and meter-aware bar rests; preserved the user-authored demo. Timing form removed in favor of source. Tab indents, F2 moves snippet fields, Ctrl+M toggles focus navigation. Timeline/reference can trade adjacent and lower positions via persisted preference. Resource/source/clock/copy/live-WAV and responsive/native checks are recorded in IMPLEMENTATION_STATUS.md. Modularity and manual gates remain open.
+
+
+## 15. Shared-file score track tabs — next application milestone
+
+Requested and explicitly scheduled as the next milestone on 2026-10-06; planned, not implemented. Provide an All score view plus virtual melody/bass/etc. tabs for instrument tracks, all backed by the existing single scoreText. These are editor views, not separate saved files or independent text copies. Shared tempo, meter changes and master routing remain visible/editable through the full-score view. Every Play, comparison, save and WAV export still compiles the whole score.
+
+Deliver a revision-aware source-span adapter before the tab UI. Track edits must replace only the current track span, preserving every other track, shared directives, comments, line endings and ordering. Adding/renaming/deleting tabs edits actual track blocks as one undoable operation, using existing assignment/copy rules; selecting a tab is only editor state. Handle duplicate keys, malformed/unclosed blocks and stale spans visibly, with a safe full-score fallback. Preserve selection/scroll per tab, translate diagnostics/hover/highlights to canonical offsets, and retain frozen playing revisions. Do not key ownership solely by a visual tab index or create hidden copies of instrument/pedal state.
+
+Gate: exact-source isolation tests; interleaved global directives and nested repeat/bracket cases; cross-tab grouped undo/redo; track creation/rename/removal and independent sound/pedal copies; diagnostics and keyboard navigation; autosave/reload/native JSON round-trip as one file; whole-score playback/comparison/WAV continuity; desktop/narrow/portable checks. Document source-view services for future M5 modules without claiming the general feature-module contract is already implemented. Aim for eight focused commits and open the verified x.x.0 portable release. Detailed phases: [score workspace plan](docs/SCORE_WORKSPACE_PLAN.md#shared-file-track-tabs).
+
+## 16. Variable swing — planned follow-up
+
+Requested on 2026-10-06; no swing command or timing warp currently exists. Add a variable long/short timing ratio rather than a single triplet toggle. Proposed amount is the first subdivision's percentage of the pair: 50% straight, about 66.7% triplet feel, with the supported bounds decided during the audio proof. Support eighth-note pairs first, then sixteenth-note pairs and per-track overrides. Source syntax is a proposal until the parser milestone, not an accepted command today.
+
+Keep exact written beats, bar/meter boundaries, repeat expansion and source spans authoritative. Derive performed onsets/ends once in a shared timing layer for live, phrase comparison and WAV; do not compound swing on every repeat or A/B switch. Define incomplete pairs at rests/meter boundaries, chords, nested tuplets, dots and legato/staccato before implementation. Tempo stays quarter-note BPM, independent source/copy ownership and latency alignment remain, and Stop clears tails. Gates and proposed policies: [score workspace plan](docs/SCORE_WORKSPACE_PLAN.md#variable-swing).

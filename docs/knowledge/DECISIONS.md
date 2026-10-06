@@ -297,3 +297,14 @@ repeat N {...} uses total plays (default2, count1–128, nesting16). Each iterat
 User-authored EXAMPLE_SCORE is preserved with only the stray final brace repaired: two17-beat tracks, sine through clean and softBass, changes at8/22. Tests of ownership use stable fixtures rather than overwrite that composition. Explicit Load demo restores only missing required factory instrument/chain keys, with collision-free IDs; existing customized libraries and owned copies remain. Broader physical listening/device and modularity gates remain open.
 
 A folded lower command reference retains a 360 px minimum track-control panel instead of shrinking the controls to its header. Demo validation reads EXAMPLE_SCORE directly, while domain/ownership checks use stable fixtures so authored notes and durations are not constrained by unrelated tests.
+
+
+## Focused command lookup and score follow-ups (v0.23.1)
+
+<!-- features: command-reference, composition, track-tabs, swing -->
+
+Resolve an exact command name before broad reference prose; partial names show matching names first. Hyphenated card names also accept spaces, and a trailing command opener such as staccato[ or chord: resolves its name. Named multi-term searches stay within that command and require all remaining terms to match; rules/units/selected-key searches remain available when no name matches. Category filters still apply, and clearing search restores all twenty cards. The score panel selector reads Show beside score and has a theme-colored arrow that points right in columns and down in stacked layouts. No score/history/audio/schema change.
+
+The user explicitly chose shared-file virtual track tabs as the next application milestone on 2026-10-06. This is the next application priority, ahead of resuming module-foundation M1; M1 remains the next modularity milestone. All score plus per-track source views must edit one canonical scoreText and preserve global directives, spans, history and owned copies; no independent physical files or hidden text copies. The source adapter and integration gates are planned in docs/SCORE_WORKSPACE_PLAN.md and BUILD_PLAN.md section 15.
+
+Variable swing is planned, not implemented. Proposed units express the long subdivision's percentage of a fixed pair (50% straight, about66.7% 2:1); bounds/syntax/scope require the timing proof. Written rational beats remain authoritative, and a shared performed-timing map must preserve pair/bar endpoints, frozen clocks, A/B phase and live/WAV alignment. Tuplet/boundary/articulation policies are proposals with explicit gates in the score workspace plan. No general module, audio or manual release gate closes in this UI/planning patch. The user's working demo changes remain outside this patch's commits.

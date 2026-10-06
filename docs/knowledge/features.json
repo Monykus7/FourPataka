@@ -198,8 +198,13 @@
       "id": "composition",
       "parent": "project",
       "title": "Composition studio",
-      "summary": "Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration.",
-      "paths": ["src/App.tsx", "src/styles.css", "tests/browser/timeline.spec.ts"]
+      "summary": "Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration. v0.23.1 Show beside score has a directional arrow (right in columns, down when stacked). Shared-file track tabs are the explicitly selected next application milestone; swing remains a planned follow-up.",
+      "paths": [
+        "src/App.tsx",
+        "src/styles.css",
+        "tests/browser/timeline.spec.ts",
+        "docs/SCORE_WORKSPACE_PLAN.md"
+      ]
     },
     {
       "id": "notation",
@@ -233,7 +238,7 @@
       "id": "command-reference",
       "parent": "composition",
       "title": "Contextual command reference",
-      "summary": "Twelve scoped cards show the selected instrument/pedal keys, unique new-track snippets, syntax/rules and insertion destinations. Search matches all terms across syntax, rules and selected keys; categories filter the catalog. Using edits only the selected track instrument span, preserving notes/comments/routing and independent copy semantics. Compiled tracks prevent stale destinations on an empty score; globals/first-track creation remain available. Invalid/playing scores block insertion while details stay readable by keyboard. Native menu focuses search after DOM commit. Functional reference work is implemented; local recovery follows in v0.17.0 and keyboard workflow polish in v0.18.0. Broader assistive-technology and real-device/listening gates remain. v0.19.1 matches expanded reference height to the score panel. Desktop size containment keeps the catalog from sizing the grid row; a scoped border-box observer mirrors score height in stacked layouts, including diagnostics. Collapse returns to header height. Search stays above the named focusable catalog scroller; Space scrolls without global Play, and filtering returns results to the top without stealing search focus. All cards, rules, destination controls and source insertion remain available.",
+      "summary": "Twenty scoped cards show the selected instrument/pedal keys, unique new-track snippets, syntax/rules and insertion destinations. v0.23.1 exact/partial command-name lookup takes priority over incidental rule mentions, accepting spaced names and trailing openers. Named multi-term queries remain scoped; rules/units/selected keys still match all terms when no name matches. Categories filter results; clearing restores all twenty cards. Using edits only the selected track instrument span, preserving notes/comments/routing and independent copy semantics. Compiled tracks prevent stale destinations on an empty score; globals/first-track creation remain available. Invalid/playing scores block insertion while details stay readable by keyboard. Native menu focuses search after DOM commit. Functional reference work is implemented; local recovery follows in v0.17.0 and keyboard workflow polish in v0.18.0. Broader assistive-technology and real-device/listening gates remain. v0.19.1 matches expanded reference height to the score panel. Desktop size containment keeps the catalog from sizing the grid row; a scoped border-box observer mirrors score height in stacked layouts, including diagnostics. Collapse returns to header height. Search stays above the named focusable catalog scroller; Space scrolls without global Play, and filtering returns results to the top without stealing search focus. All cards, rules, destination controls and source insertion remain available.",
       "paths": [
         "src/core/commands.ts",
         "src/core/commandReference.ts",
@@ -242,7 +247,8 @@
         "tests/unit/commandReference.test.ts",
         "tests/browser/command-reference.spec.ts",
         "src/App.tsx",
-        "src/styles.css"
+        "src/styles.css",
+        "tests/helpers/referenceSearch.ts"
       ]
     },
     {
@@ -441,6 +447,20 @@
         "tests/helpers/ide.ts",
         "tests/browser/ide.spec.ts"
       ]
+    },
+    {
+      "id": "track-tabs",
+      "parent": "composition",
+      "title": "Shared-file score track tabs — planned next milestone",
+      "summary": "User-selected next application milestone on 2026-10-06, before resuming modularity M1. Planned All score and virtual per-track editor tabs backed by one canonical scoreText. Revision-aware source spans preserve globals/comments/CRLF, diagnostics, cross-tab history and owned sound/pedal copies. One-file save/export and whole-score frozen playback/comparison/WAV remain. No tab implementation yet; source adapter, UI/operations and browser/native/portable gates are explicit.",
+      "paths": ["docs/SCORE_WORKSPACE_PLAN.md", "BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md"]
+    },
+    {
+      "id": "swing",
+      "parent": "composition",
+      "title": "Variable swing — planned",
+      "summary": "Planned variable eighth/sixteenth swing, with proposed long-subdivision share units (50% straight, about66.7% 2:1). Bounds/syntax/scope are provisional; no runtime swing command exists. Written rational beats and fixed pair/bar endpoints remain; shared performance timing for live/WAV/comparison must avoid drift and preserve frozen clocks, phase, latency, copies and finite tails. Tuplets/chords/rests/dots/articulation/repeats and odd-meter boundaries require explicit proof and manual listening.",
+      "paths": ["docs/SCORE_WORKSPACE_PLAN.md", "BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md"]
     }
   ]
 }
