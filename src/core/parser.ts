@@ -1,4 +1,5 @@
 import { SCORE_KEY, pitch } from './music';
+import { lexScore, type ScoreToken } from './scoreLexer';
 import { addBeats, beatValue, parseDuration, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
 import {
@@ -78,27 +79,51 @@ export function parseScore(
     beats: 0,
     seconds: 0,
   };
-  let offset = 0;
   let current: ScoreTrack | null = null;
   const globals = new Set<string>();
   const tracks = new Set<string>();
   const positions = new Map<string, BeatFraction>();
   const lines = text.split('\n');
-  lines.forEach((raw, index) => {
-    const withoutComment = raw.split('//')[0];
-    const line = withoutComment.trim();
-    const from = offset + (line ? withoutComment.indexOf(line) : 0);
-    const to = from + line.length;
-    offset += raw.length + 1;
+  const blocks: (ScoreToken & { id: number })[] = [];
+  const eventBlocks = new WeakMap<ScoreEvent, number>();
+  let blockId = 0;
+  const reportUnclosed = () => {
+    for (const block of blocks)
+      result.diagnostics.push({
+        from: block.from,
+        to: block.to,
+        line: block.line,
+        message: `${block.articulation} block is missing its closing ].`,
+      });
+    blocks.length = 0;
+  };
+  lexScore(text).forEach((token) => {
+    const { text: line, from, to } = token;
     const error = (message: string, start = from, end = to) =>
       result.diagnostics.push({
         from: start,
         to: Math.max(start + 1, end),
-        line: index + 1,
+        line: token.line,
         message,
       });
+    if (token.kind === 'articulation-open') {
+      if (!current) error('Articulation blocks belong inside a track.');
+      else if (blocks.length >= 64) error('Articulation blocks may nest at most 64 levels.');
+      else blocks.push({ ...token, id: ++blockId });
+      return;
+    }
+    if (token.kind === 'articulation-close') {
+      if (!blocks.length) error('Unexpected closing ]; open staccato[ or legato[ first.');
+      else blocks.pop();
+      return;
+    }
+    if (token.kind === 'bracket-open') {
+      error('Use staccato[ or legato[ to open an articulation block.');
+      return;
+    }
     if (!line) return;
     if (line === '}') {
+      reportUnclosed();
       if (!current) error('Unexpected closing brace.');
       else current.bodyTo = from;
       current = null;
@@ -120,7 +145,7 @@ export function parseScore(
             meter: parseMeter(meterChange[1]),
             from,
             to,
-            line: index + 1,
+            line: token.line,
           });
         } catch (e) {
           error((e as Error).message);
@@ -214,7 +239,10 @@ export function parseScore(
       );
       return;
     }
-    const [, expression, word, dots, modifier, articulation] = event;
+    const [, expression, word, dots, modifier, suffixArticulation] = event;
+    const block = blocks.at(-1);
+    const articulation =
+      expression === 'rest' ? suffixArticulation : (suffixArticulation ?? block?.articulation);
     let notes: string[] = [];
     let chordSymbol: ScoreEvent['chordSymbol'];
     try {
@@ -257,12 +285,14 @@ export function parseScore(
         frequencies,
         from,
         to,
-        line: index + 1,
+        line: token.line,
         ...(chordSymbol ? { chordSymbol } : {}),
         ...(written.tuplet ? { tuplet: written.tuplet } : {}),
         ...(articulation ? { articulation: articulation as Articulation } : {}),
         ...(articulation === 'staccato' ? { gateDuration: written.duration / 2 } : {}),
       };
+      // Scope identity prevents a legato gate from leaking past ] or into a nested block.
+      if (block) eventBlocks.set(compiled, block.id);
       current.events.push(compiled);
       result.events.push(compiled);
       // Rational accumulation makes three triplets close exactly at the beat;
@@ -277,6 +307,7 @@ export function parseScore(
       error((e as Error).message);
     }
   });
+  reportUnclosed();
   if (current)
     result.diagnostics.push({
       from: Math.max(0, text.length - 1),
@@ -293,7 +324,11 @@ export function parseScore(
     });
   for (const track of result.tracks)
     track.events.forEach((event, i) => {
-      if (event.articulation === 'legato' && track.events[i + 1]?.notes.length)
+      if (
+        event.articulation === 'legato' &&
+        track.events[i + 1]?.notes.length &&
+        eventBlocks.get(event) === eventBlocks.get(track.events[i + 1])
+      )
         event.legatoToNext = true;
     });
   const requestedChanges = result.meterChanges.sort((a, b) => a.beat - b.beat);
