@@ -1,4 +1,4 @@
-import { mathematicalPreset, type Sound } from './music';
+import { LEGACY_HARMONIC_COUNT, mathematicalPreset, type Sound } from './music';
 
 export function softBassPreset(): Sound {
   const sound = mathematicalPreset('sine');
@@ -14,7 +14,15 @@ export function softBassPreset(): Sound {
 }
 
 export function legacySoftBassPreset(): Sound {
-  return { ...mathematicalPreset('triangle'), attack: 0.03, release: 0.35 };
+  const sound = mathematicalPreset('triangle');
+  // Recognize only the historical 16-partial template after zero-padding migration.
+  return {
+    ...sound,
+    harmonics: sound.harmonics.map((v, i) => (i < LEGACY_HARMONIC_COUNT ? v : 0)),
+    polarity: sound.polarity.map((v, i) => (i < LEGACY_HARMONIC_COUNT ? v : 1)),
+    attack: 0.03,
+    release: 0.35,
+  };
 }
 
 interface Template {

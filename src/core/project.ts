@@ -6,7 +6,14 @@ import {
   type ChainInstance,
 } from './pedals';
 import { validateWavePoints } from './waveform';
-import { mathematicalPreset, pitch, SCORE_KEY, type Sound } from './music';
+import {
+  HARMONIC_COUNT,
+  LEGACY_HARMONIC_COUNT,
+  mathematicalPreset,
+  pitch,
+  SCORE_KEY,
+  type Sound,
+} from './music';
 import { parseScore, type CompiledScore } from './parser';
 import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
 import { setScoreChain } from './scoreTools';
@@ -28,7 +35,7 @@ export interface TrackInstance {
 }
 export interface Project {
   processing: Processing;
-  schemaVersion: 1;
+  schemaVersion: 2;
   id: string;
   name: string;
   scoreText: string;
@@ -61,7 +68,7 @@ export function createProject(): Project {
   ];
   const project: Project = {
     processing: defaultProcessing(),
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: crypto.randomUUID(),
     name: 'Untitled session',
     scoreText: EXAMPLE_SCORE,
@@ -218,13 +225,13 @@ function stringValue(value: unknown, label: string, max = 100): asserts value is
   if (typeof value !== 'string' || value.length === 0 || value.length > max)
     throw new Error(`Invalid ${label}.`);
 }
-export function validateSound(value: unknown): asserts value is Sound {
+export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts value is Sound {
   record(value);
-  if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints);
+  if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints, count);
   for (const [name, size] of [
-    ['harmonics', 16],
+    ['harmonics', count],
     ['undertones', 5],
-    ['polarity', 16],
+    ['polarity', count],
   ] as const) {
     const array = value[name];
     if (!Array.isArray(array) || array.length !== size)
@@ -249,10 +256,17 @@ export function importProject(text: string): Project {
   if (text.length > 2_000_000) throw new Error('Project file is too large (maximum 2 MB).');
   const data: unknown = JSON.parse(text);
   record(data);
-  if (data.schemaVersion !== 1)
+  if (data.schemaVersion !== 1 && data.schemaVersion !== 2)
     throw new Error(
-      `Unsupported project version ${String(data.schemaVersion)}. This studio supports version 1.`,
+      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1 and 2.`,
     );
+  const sourceCount = data.schemaVersion === 1 ? LEGACY_HARMONIC_COUNT : HARMONIC_COUNT;
+  // Pad owned copies independently. Migration never regenerates their timbres.
+  const migrateSound = (sound: Sound): Sound => ({
+    ...structuredClone(sound),
+    harmonics: [...sound.harmonics, ...Array(HARMONIC_COUNT - sourceCount).fill(0)],
+    polarity: [...sound.polarity, ...Array(HARMONIC_COUNT - sourceCount).fill(1)],
+  });
   stringValue(data.id, 'project ID');
   stringValue(data.name, 'project name');
   if (typeof data.scoreText !== 'string' || data.scoreText.length > 200_000)
@@ -273,7 +287,7 @@ export function importProject(text: string): Project {
     keys.add(p.key);
     numeric(p.version, 1, 1_000_000, 'preset version');
     if (!Number.isInteger(p.version)) throw new Error('Preset version must be an integer.');
-    validateSound(p.sound);
+    validateSound(p.sound, sourceCount);
   });
   if (!Array.isArray(data.tracks) || data.tracks.length > 128)
     throw new Error('Invalid track instances.');
@@ -286,7 +300,7 @@ export function importProject(text: string): Project {
     trackKeys.add(t.key);
     numeric(t.appliedVersion, 1, 1_000_000, 'applied preset version');
     if (!Number.isInteger(t.appliedVersion)) throw new Error('Applied version must be an integer.');
-    validateSound(t.sound);
+    validateSound(t.sound, sourceCount);
     numeric(t.level, 0, 1, 'track level');
   });
   if (!ids.has(data.editorPresetId as string))
@@ -294,8 +308,8 @@ export function importProject(text: string): Project {
   record(data.comparison);
   if (data.comparison.active !== 'A' && data.comparison.active !== 'B')
     throw new Error('Invalid comparison selection.');
-  validateSound(data.comparison.A);
-  validateSound(data.comparison.B);
+  validateSound(data.comparison.A, sourceCount);
+  validateSound(data.comparison.B, sourceCount);
   const material = data.comparisonMaterial ?? structuredClone(DEFAULT_MATERIAL);
   record(material);
   if (!['note', 'chord', 'phrase'].includes(material.kind as string))
@@ -314,7 +328,7 @@ export function importProject(text: string): Project {
   const project = data as unknown as Project;
   const clean: Project = {
     processing: importProcessing(data.processing),
-    schemaVersion: 1,
+    schemaVersion: 2,
     id: project.id,
     name: project.name,
     scoreText: project.scoreText,
@@ -329,8 +343,8 @@ export function importProject(text: string): Project {
     },
     comparison: {
       active: project.comparison.active,
-      A: structuredClone(project.comparison.A),
-      B: structuredClone(project.comparison.B),
+      A: migrateSound(project.comparison.A),
+      B: migrateSound(project.comparison.B),
     },
     instruments: project.instruments.map((p) =>
       upgradeSoftBassTemplate({
@@ -338,14 +352,14 @@ export function importProject(text: string): Project {
         key: p.key,
         label: p.label,
         version: p.version,
-        sound: structuredClone(p.sound),
+        sound: migrateSound(p.sound),
       }),
     ),
     tracks: project.tracks.map((t) => ({
       key: t.key,
       presetId: t.presetId,
       appliedVersion: t.appliedVersion,
-      sound: structuredClone(t.sound),
+      sound: migrateSound(t.sound),
       level: t.level,
     })),
   };
