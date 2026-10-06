@@ -8,6 +8,18 @@
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
+      "id": "modularity",
+      "parent": "project",
+      "title": "Modular open-source contributor program (planned)",
+      "summary": "Major requested program, planned and not implemented, split into separately releasable M1 contracts/compatibility, M2 pedals, M3 presets, M4 engines, M5 features and M6 open-source readiness. M1 is the next major workstream before new feature expansions: source-reviewed bundled module registries and versioned contracts for pedals, Fourier instrument presets, later synthesis engines and feature panels/commands. Built-ins use contributor contracts; one folder plus explicit assembly registration replaces scattered switches. Preserve source authority, owned copies, session phase/clock, measured seconds-based latency, finite tails/Stop and shared live/WAV factories. Distinguish namespaced module IDs, score keys, API and data versions; retain unavailable-module data without silently changing sound. Contributor tutorials, runnable examples, contract checks, migration fixtures, owner-approved licensing/attributions and repeatable CI are acceptance gates. No runtime plugin loader, SDK, registry, schema change or publication is implemented by this planning task.",
+      "paths": [
+        "docs/extensions/ARCHITECTURE.md",
+        "BUILD_PLAN.md",
+        "IMPLEMENTATION_STATUS.md",
+        "docs/knowledge/DECISIONS.md"
+      ]
+    },
+    {
       "id": "sound",
       "parent": "project",
       "title": "Sound and Fourier interaction",
