@@ -7,7 +7,11 @@ export async function demoWorkflow(page: Page) {
   await editor.fill(original);
   await page.getByRole('button', { name: 'Load demo score', exact: true }).click();
   await expect(editor).toContainText('time 3/4 at 15');
-  await expect(editor).toContainText('tuplet:5:4 legato');
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toContain('tuplet:5:4[');
   await expect(page.getByRole('region', { name: 'Timeline', exact: true })).toContainText('7/8');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect
@@ -21,7 +25,7 @@ export async function demoWorkflow(page: Page) {
     .poll(() =>
       page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
     )
-    .toContain('64th staccato');
+    .toContain('E5 64th');
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Load demo score', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Load demo score', exact: true })).toBeEnabled({
@@ -29,7 +33,5 @@ export async function demoWorkflow(page: Page) {
   });
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
-    'tuplet:5:4 legato',
-  );
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText('triplet[');
 }

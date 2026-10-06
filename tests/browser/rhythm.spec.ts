@@ -17,12 +17,12 @@ test('articulation audio gates match WAV and keep fractionally timed onsets', as
     const { createProject, reconcileTracks } = await import('/src/core/' + 'project.ts');
     const { renderWav } = await import('/src/audio/' + 'export.ts');
     const score = parseScore(
-      'tempo 60\ntime 4/4\ntrack lead using sine {\n A4 quarter staccato\n rest quarter\n A4 quarter legato\n A4 quarter\n}',
+      'tempo 60\ntime 4/4\ntrack lead using sine {\n staccato[ A4 quarter ]\n rest quarter\n legato[\n A4 quarter\n A4 quarter\n ]\n}',
       ['sine'],
     );
     let project = createProject();
     project.scoreText =
-      'tempo 60\ntime 4/4\ntrack lead using sine {\n A4 quarter staccato\n rest quarter\n A4 quarter legato\n A4 quarter\n}';
+      'tempo 60\ntime 4/4\ntrack lead using sine {\n staccato[ A4 quarter ]\n rest quarter\n legato[\n A4 quarter\n A4 quarter\n ]\n}';
     project = reconcileTracks(project, score);
     project.tracks[0].sound.trim = 0;
     project.tracks[0].level = 0.25;
@@ -81,17 +81,21 @@ test('articulation audio gates match WAV and keep fractionally timed onsets', as
   expect(proof.difference).toBeLessThan(0.0001);
 });
 
-test('duration modifier autocomplete inserts only the selected modifier', async ({ page }) => {
+test('group autocomplete inserts an empty triplet block', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
-  await editor.fill('C4 8th tri');
+  await editor.fill('tri');
   await editor.press('Control+Space');
   // CodeMirror guards newly opened suggestions against accidental pointer acceptance.
   await expect(page.locator('.cm-tooltip-autocomplete')).toBeVisible();
   await page.waitForTimeout(100);
-  await page.getByRole('option', { name: 'triplet', exact: true }).click();
-  await expect(editor).toHaveText('C4 8th triplet');
+  await page.getByRole('option', { name: /^triplet/ }).click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toMatch(/^triplet\[\n\s*\n\]$/);
 });
 
 test('live scheduler uses articulation gates and retains overlap beyond a tiny final note', async ({
@@ -102,7 +106,7 @@ test('live scheduler uses articulation gates and retains overlap beyond a tiny f
     const { AudioEngine } = await import('/src/audio/' + 'engine.ts');
     const { parseScore } = await import('/src/core/' + 'parser.ts');
     const { createProject, reconcileTracks } = await import('/src/core/' + 'project.ts');
-    const source = 'tempo 60\ntrack lead using sine {\n A4 quarter staccato\n}';
+    const source = 'tempo 60\ntrack lead using sine {\n staccato[ A4 quarter ]\n}';
     const score = parseScore(source, ['sine']);
     let project = createProject();
     project.scoreText = source;
@@ -114,7 +118,7 @@ test('live scheduler uses articulation gates and retains overlap beyond a tiny f
     const gateEnd = first.voices[0].end - first.start;
     engine.stop();
     const shortScore = parseScore(
-      'tempo 300\ntrack lead using sine {\n A4 quarter legato\n A4 64th\n}',
+      'tempo 300\ntrack lead using sine {\n legato[\n A4 quarter\n A4 64th\n ]\n}',
       ['sine'],
     );
     project.tracks[0].sound.release = 0.01;

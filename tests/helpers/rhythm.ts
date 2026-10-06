@@ -3,7 +3,7 @@ export async function rhythmWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   const source =
-    'time 4/4\ntrack lead using sine {\n C4 whole\n C4 8th triplet staccato\n D4 8th triplet legato\n E4 8th triplet\n}';
+    'time 4/4\ntrack lead using sine {\n C4 whole\n staccato[ triplet[ C4 8th ] ]\n legato[\n triplet[\n D4 8th\n E4 8th\n ]\n ]\n}';
   await editor.fill(source);
   await page.getByRole('textbox', { name: 'Meter change signature', exact: true }).fill('7/8');
   await page.getByRole('spinbutton', { name: 'Meter change position', exact: true }).fill('4');
@@ -36,10 +36,18 @@ export async function rhythmWorkflow(page: Page) {
     .getByRole('combobox', { name: 'Event 2 articulation', exact: true })
     .selectOption('legato');
   await page.getByRole('combobox', { name: 'Event 3 dots', exact: true }).selectOption('.');
-  await expect(page.locator('.maker-preview')).toContainText('C4 quarter triplet staccato');
-  await expect(page.locator('.maker-preview')).toContainText('E4 quarter tuplet:5:4 legato');
+  await expect(page.locator('.maker-preview')).toContainText('staccato[');
+  await expect(page.locator('.maker-preview')).toContainText('triplet[');
+  await expect(page.locator('.maker-preview')).toContainText('C4 quarter');
+  await expect(page.locator('.maker-preview')).toContainText('legato[');
+  await expect(page.locator('.maker-preview')).toContainText('tuplet:5:4[');
+  await expect(page.locator('.maker-preview')).toContainText('E4 quarter');
   await expect(page.locator('.maker-preview')).toContainText('G4 half.');
   await page.getByRole('button', { name: 'Add track', exact: true }).click();
-  await expect(editor).toContainText('tuplet:5:4 legato');
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toContain('tuplet:5:4[');
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
 }

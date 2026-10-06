@@ -1,3 +1,4 @@
+import { blockWorkflow } from '../helpers/blocks';
 import { demoWorkflow } from '../helpers/demo';
 import { rhythmWorkflow } from '../helpers/rhythm';
 import { expect, test, _electron as electron, type ElectronApplication } from '@playwright/test';
@@ -37,12 +38,15 @@ test('packaged articulation tuplets and meter changes survive native saving', as
   await expect(page.locator('.toast[role=status]')).toContainText('Saved rhythm.fourpataka.json');
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
   expect(saved.scoreText).toContain('time 7/8 at 4');
-  expect(saved.scoreText).toContain('tuplet:5:4 legato');
+  expect(saved.scoreText).toContain('tuplet:5:4[');
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
-    'tuplet:5:4 legato',
-  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toContain('tuplet:5:4[');
+  await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
 });
 
 test('packaged upper-bank editing and chord note previews', async () => {
@@ -291,9 +295,14 @@ test('native command reference focuses search and saves contextual instrument an
   expect(saved.processing.tracks.bass.assignmentKey).toBe('cleanGlue');
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText(
-    'track bass using triangle through cleanGlue',
-  );
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toContain('track bass using triangle through cleanGlue');
+  await expect(
+    page.getByRole('combobox', { name: 'Instrument for bass', exact: true }),
+  ).toHaveValue('triangle');
 });
 
 test('native score chain assignments preserve independent copies through file save and reload', async () => {
@@ -704,4 +713,8 @@ test('native project dialogs round-trip a project, preserve canceled operations,
 
 test('packaged demo score loads with undo plays and survives autosave reload', async () => {
   await demoWorkflow(await app.firstWindow());
+});
+
+test('packaged articulation and grouped tuplet blocks play and preserve saved source', async () => {
+  await blockWorkflow(await app.firstWindow());
 });

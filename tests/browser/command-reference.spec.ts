@@ -22,20 +22,21 @@ test('reference previews match selected keys and instrument assignment preserves
     reference.getByRole('button', { name: 'Insert through command', exact: true }),
   ).toContainText('Track: bass');
   const editor = page.getByRole('textbox', { name: 'Score editor' });
-  const before = await editor.innerText();
+  // CodeMirror renders only visible lines; source authority is the saved project.
+  const readSource = () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText);
+  const before = await readSource();
   await reference.getByRole('button', { name: 'Insert using command', exact: true }).focus();
   await reference.getByRole('button', { name: 'Insert using command', exact: true }).press('Enter');
-  await expect
-    .poll(() => editor.innerText())
-    .toBe(before.replace('bass using softBass', 'bass using triangle'));
+  await expect.poll(readSource).toBe(before.replace('bass using softBass', 'bass using triangle'));
   await expect(
     page.getByRole('combobox', { name: 'Instrument for bass', exact: true }),
   ).toHaveValue('triangle');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect.poll(() => editor.innerText()).toBe(before);
+  await expect.poll(readSource).toBe(before);
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await reference.getByRole('button', { name: 'Insert track command', exact: true }).click();
-  await expect(editor).toContainText('track lead using triangle');
+  await expect.poll(readSource).toContain('track lead using triangle');
   await expect(
     reference.getByRole('button', { name: 'Insert track command', exact: true }),
   ).toContainText('track lead2 using triangle');
