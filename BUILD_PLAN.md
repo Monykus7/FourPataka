@@ -634,7 +634,7 @@ The 32-harmonic bank is implemented by the synthesis/notation pilot, with the mi
 
 Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 
-Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, nested/group tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
+Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan,  inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 
 Registered chord-symbol macros such as `chord:Cmaj13#11` are implemented by the synthesis/notation pilot, with hover and keyboard-cursor note previews, default root octave 4, @octave override, bounded ascending root-position shapes and shared explicit-note playback. See [the implemented contributor contract](docs/extensions/CHORD_SHAPES.md). Inversions, slash bass, automatic omissions and arbitrary alteration grammar remain future work.
 
@@ -739,9 +739,14 @@ User-selected release implements extensible chord shapes plus 32 harmonics: bund
 
 User-selected connected-note legato retains independent attacks, with a short bounded overlap. Staccato halves gates and caps releases; written clocks remain unchanged. Whole through 64th durations accept one/two dots and per-event triplet or custom N:M modifiers, accumulating exact fractions. Global meter-change directives apply on preceding-meter boundaries, retain continuous bar numbering and freeze with playing revisions. Compose, Track Maker, timeline, reference and autocomplete expose these forms through authoritative source and grouped undo.
 
-Acceptance: parser/fraction/gate/phrase-boundary unit checks; browser source controls, undo, narrow/keyboard workflow, actual voice gates and live/WAV numeric parity; native save/reload and portable startup. Verification is recorded in IMPLEMENTATION_STATUS.md. Ties, envelope-sharing slurs, glide, nested/group tuplets, additive beat grouping and per-track meters remain future notation work. This extension does not complete general modularity M1–M6 or manual device/listening gates. See [rhythm syntax and behavior](docs/RHYTHM.md).
+Acceptance: parser/fraction/gate/phrase-boundary unit checks; browser source controls, undo, narrow/keyboard workflow, actual voice gates and live/WAV numeric parity; native save/reload and portable startup. Verification is recorded in IMPLEMENTATION_STATUS.md. Ties, envelope-sharing slurs, glide,  additive beat grouping and per-track meters remain future notation work. This extension does not complete general modularity M1–M6 or manual device/listening gates. See [rhythm syntax and behavior](docs/RHYTHM.md).
 
 
 ### Compose demonstration follow-up — v0.21.1
 
 The starter score demonstrates the implemented rhythm release with seven aligned bars and two independent tracks, 4/4→7/8→3/4→4/4, dots, per-event triplets/5:4 tuplets, short durations, articulation, symbols and explicit voicings. Load demo score is undoable and does not automatically migrate existing saved songs. This demonstration changes no feature gate or general modularity milestone. Validation is recorded in IMPLEMENTATION_STATUS.md.
+
+
+### Bracketed notation — v0.22.0
+
+Articulation uses staccato[...] / legato[...] scopes; grouped triplet[...] / tuplet:N:M[...] scales all enclosed events including rests, with nested exact rational scales. Brackets retain source offsets and diagnostics, legato stops at scope ends, and rests break connections. Track Maker/reference/autocomplete and the editable EXAMPLE_SCORE demo use groups. Bare named-quality chord symbols and eighth alias support the requested example; suffix syntax stays compatible. General modularity, true shared-envelope slurs, glide and manual physical gates remain open. Current verification is recorded in IMPLEMENTATION_STATUS.md.

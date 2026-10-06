@@ -267,3 +267,16 @@ Global `time 7/8 at 8` changes meter at a zero-based quarter-beat offset. Sort/v
 Fresh projects start with a seven-bar, two-track, 25-quarter-beat demo at 116 BPM. Both tracks align at 4/4→7/8→3/4→4/4 changes at beats 8/15/21. Comments identify triplet and 5:4 runs, dots, short notes, staccato/legato, explicit voicing and registered chord-symbol examples. No new parser/audio grammar or schema is introduced.
 
 Existing saved scores remain authoritative. Compose's explicit Load demo score operation replaces source in one undo step, disabled during score playback; it preserves customized library entries, A/B and matching owned track sounds. Missing demo keys are restored from factories; restored IDs cannot collide with renamed user entries. Undo restores exact previous text and data; reload persists the selected score. Demo sound therefore follows the user's retained preset/copy settings, not a hidden factory reset. Default-level offline output must remain finite and unclipped.
+
+
+## Bracketed articulation and tuplets (v0.22.0 implementation)
+
+<!-- features: rhythm, notation, timing, comparison, composition -->
+
+A source-span lexer splits articulation/tuplet openers and closing square-bracket tokens from line-oriented events, retaining original offsets and line numbers before comments/CRLF trimming. Blocks belong inside tracks, may nest up to 64 levels and diagnose unmatched/missing brackets at their original source. Track/EOF recovery clears scopes; a broken block cannot leak to the next track. Event and chord-symbol spans exclude brackets. Normal event lines still occupy one line; openers/closers can sit beside an event.
+
+Innermost articulation scopes determine inherited staccato/legato on sounding events; rests remain silent and break connected gates. Parser-private scope identity prevents legato leaking past ] or into a nested articulation scope; an enclosing tuplet does not change that identity. Independent attacks and previous bounded gate/release behavior remain. Legacy explicit suffixes are accepted for saved projects and override inherited articulation locally, without escaping the enclosing scope. No source migration or saved-format change is needed.
+
+Every tuplet scope multiplies exact rational duration by M/N; nested scales and legacy per-event ratios multiply. All notes/chords/rests inside inherit the scale, mixed durations are legal, and group cardinality is not inferred/enforced. Track Maker writes adjacent matching settings as groups with articulation outermost, allowing a connected phrase to cross tuplet-ratio changes. Reference and autocomplete write new blank block shells. `eighth` aliases `8th`. Bare named-quality symbols (Gmaj7, Fm@3) use the existing registry/default octave/hover expansion; numeric-looking pitch tokens remain pitches, so C9 stays an octave error and numeric chord qualities require chord:.
+
+The editable bundled demo remains EXAMPLE_SCORE in src/core/project.ts, now using grouped articulation/tuplets with unchanged 25-quarter-beat aligned tracks and meter map. Existing saved songs are retained until explicit undoable Load demo. Shared voice factories, phase/A-B clock, owned copies, measured latency, WAV resource bounds and finite tails/Stop remain. True shared-envelope slurs, glide, general modularity and manual device/listening gates stay open.
