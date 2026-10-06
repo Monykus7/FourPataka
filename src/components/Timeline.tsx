@@ -1,4 +1,4 @@
-import { measurePosition, meterLabel } from '../core/meter';
+import { measurePositionAt, meterLabel } from '../core/meter';
 import type { CompiledScore, ScoreEvent } from '../core/parser';
 import { timelineGrid } from '../core/timeline';
 
@@ -17,24 +17,27 @@ export default function Timeline({
   selectedEvent: ScoreEvent | null;
   onSelect: (event: ScoreEvent) => void;
 }) {
-  const grid = timelineGrid(score.beats, score.meter);
+  const grid = timelineGrid(score.beats, score.meter, score.meterChanges);
   const percent = (value: number) => `${(value / grid.extent) * 100}%`;
   const inspected = score.events.find((event) => event.id === selectedEvent?.id);
   const timing = (event: ScoreEvent) => {
-    const position = measurePosition(event.beat, score.meter);
-    return `Bar ${position.bar} · beat ${position.beat} · ${event.duration} quarter beats`;
+    const position = measurePositionAt(event.beat, score.meter, score.meterChanges);
+    return `Bar ${position.bar} · beat ${position.beat} · ${event.duration.toLocaleString(undefined, { maximumFractionDigits: 6 })} quarter beats${event.tuplet ? ` · ${event.tuplet.notes}:${event.tuplet.inTimeOf}` : ''}${event.articulation ? ` · ${event.articulation}` : ''}`;
   };
   return (
     <section className="panel timeline-panel" aria-label="Timeline">
       <div className="panel-header">
         <h2>Timeline</h2>
-        <span className="tag">{meterLabel(score.meter)}</span>
+        <span className="tag">
+          {meterLabel(measurePositionAt(beat, score.meter, score.meterChanges).meter)}
+        </span>
       </div>
       <div className="timeline">
         <div className="timeline-ruler">
-          {grid.bars.map(({ bar, beat }) => (
+          {grid.bars.map(({ bar, beat, meter }) => (
             <span key={bar} style={{ left: percent(beat) }}>
               BAR {bar}
+              {meter ? ` · ${meterLabel(meter)}` : ''}
             </span>
           ))}
         </div>

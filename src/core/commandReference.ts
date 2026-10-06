@@ -1,6 +1,7 @@
 import { type CommandDefinition } from './commands';
 
 export interface ReferenceContext {
+  meterChangeBeat?: number;
   instrumentKey: string;
   chainKey: string;
   newTrackKey: string;
@@ -11,6 +12,8 @@ export interface ReferenceContext {
 
 export function referenceSnippet(command: CommandDefinition, context: ReferenceContext) {
   switch (command.name) {
+    case 'meter-change':
+      return `time 7/8 at ${context.meterChangeBeat ?? 4}`;
     case 'track':
       return `track ${context.newTrackKey} using ${context.instrumentKey} {\n  C5 quarter\n}`;
     case 'using':

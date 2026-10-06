@@ -33,7 +33,18 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: 'time ${}',
     syntax: 'time <numerator>/<denominator>',
     rules:
-      'One global directive outside tracks. Default: 4/4. A 6/8 bar spans three quarter notes. Partial bars and notes crossing bar lines are valid.',
+      'One initial global directive outside tracks. Default: 4/4. Scheduled changes use time <meter> at <quarterBeatOffset>. A 6/8 bar spans three quarter notes. Partial bars and notes crossing bar lines are valid.',
+  },
+  {
+    name: 'meter-change',
+    group: 'Timing',
+    scope: 'project',
+    description: 'Change the global meter at a score position',
+    snippet: 'time 7/8 at 4',
+    completionTemplate: 'time ${} at ${}',
+    syntax: 'time <meter> at <quarterBeatOffset>',
+    rules:
+      'Outside track blocks; applies to every track. Position is zero-based quarter-note beats and must be a distinct bar boundary in the preceding meter. Bar numbers continue; tempo, event lengths and notes crossing the change stay intact. Up to 64 changes; the reference inserts at the next available boundary.',
   },
   {
     name: 'master',
@@ -122,6 +133,61 @@ export const COMMANDS: readonly CommandDefinition[] = [
     syntax: 'chord:(<notes with octaves>) <duration>',
     rules:
       'Each note supplies its own octave, so no trailing octave is needed. Mixed explicit/default octaves are also accepted.',
+  },
+  {
+    name: 'triplet',
+    group: 'Events',
+    scope: 'track',
+    description: 'Three written values in the time of two',
+    snippet: 'C4 8th triplet',
+    completionTemplate: '${} ${} triplet',
+    syntax: '<event> <duration> triplet [articulation]',
+    rules:
+      'Each duration is multiplied by 2/3. Three eighth triplets occupy one quarter beat. Applies to notes, chords and rests; it is a per-event timing modifier, not an enclosing group.',
+  },
+  {
+    name: 'tuplet',
+    group: 'Events',
+    scope: 'track',
+    description: 'N values in the time of M',
+    snippet: 'C4 16th tuplet:5:4',
+    completionTemplate: '${} ${} tuplet:${}:${}',
+    syntax: '<event> <duration> tuplet:<N>:<M> [articulation]',
+    rules:
+      'N is 2–32; M is 1–32. Multiply the written duration by M/N. Put the same modifier on each event in the group; no group-count inference or nested tuplets. Timing accumulates as fractions before scheduling.',
+  },
+  {
+    name: 'dotted',
+    group: 'Events',
+    scope: 'track',
+    description: 'Extend a written duration',
+    snippet: 'C4 quarter.',
+    completionTemplate: '${} ${}.',
+    syntax: '<event> <duration>[.|..] [tuplet] [articulation]',
+    rules:
+      'One dot multiplies duration by 3/2; two dots by 7/4. Durations include whole, half, quarter, 8th, 16th, 32nd and 64th. Dot scaling precedes tuplet scaling.',
+  },
+  {
+    name: 'staccato',
+    group: 'Events',
+    scope: 'track',
+    description: 'Short gate without changing event spacing',
+    snippet: 'C4 quarter staccato',
+    completionTemplate: '${} ${} staccato',
+    syntax: '<note or chord> <duration> [tuplet] staccato',
+    rules:
+      'Gate is half the event length. Release is capped at 30 ms or one quarter of the event length, whichever is shorter; the next event keeps its written onset. Rests cannot have articulation. Applies equally to score, phrase comparison and WAV.',
+  },
+  {
+    name: 'legato',
+    group: 'Events',
+    scope: 'track',
+    description: 'Connect to the next sounding event',
+    snippet: 'C4 quarter legato',
+    completionTemplate: '${} ${} legato',
+    syntax: '<note or chord> <duration> [tuplet] legato',
+    rules:
+      'Extends the gate into the next sounding event by up to 30 ms or 10% of this event length. Each note keeps its own attack. No overlap into a rest or beyond a track/phrase ending. This is connected articulation; envelope-carrying slurs and portamento remain future work.',
   },
   {
     name: 'rest',

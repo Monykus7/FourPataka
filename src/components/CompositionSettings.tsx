@@ -1,17 +1,26 @@
 import { useEffect, useState } from 'react';
-import { COMMON_METERS, meterLabel, type TimeSignature } from '../core/meter';
+import { COMMON_METERS, meterLabel, type MeterChange, type TimeSignature } from '../core/meter';
 
 export default function CompositionSettings({
+  meterChanges,
+  nextChangeBeat,
+  onAddChange,
   tempo,
   meter,
   disabled,
   onApply,
 }: {
+  meterChanges: MeterChange[];
+  nextChangeBeat: number;
+  onAddChange: (meter: string, beat: string) => void;
   tempo: number;
   meter: TimeSignature;
   disabled: boolean;
   onApply: (tempo: string, meter: string) => void;
 }) {
+  const [changeMeter, setChangeMeter] = useState('7/8');
+  const [changeBeat, setChangeBeat] = useState(String(nextChangeBeat));
+  useEffect(() => setChangeBeat(String(nextChangeBeat)), [nextChangeBeat]);
   const [bpm, setBpm] = useState(String(tempo));
   const [numerator, setNumerator] = useState(String(meter.numerator));
   const [denominator, setDenominator] = useState(String(meter.denominator));
@@ -98,6 +107,42 @@ export default function CompositionSettings({
         <button className="secondary-button" type="submit" disabled={!dirty}>
           Apply timing
         </button>
+      </fieldset>
+      <fieldset disabled={disabled}>
+        <label>
+          Change to
+          <input
+            aria-label="Meter change signature"
+            value={changeMeter}
+            onChange={(e) => setChangeMeter(e.target.value)}
+          />
+        </label>
+        <label>
+          At quarter-beat offset
+          <input
+            aria-label="Meter change position"
+            type="number"
+            min="0"
+            max="1000000"
+            step="any"
+            value={changeBeat}
+            onChange={(e) => setChangeBeat(e.target.value)}
+          />
+        </label>
+        <button
+          className="secondary-button"
+          type="button"
+          onClick={() => onAddChange(changeMeter, changeBeat)}
+        >
+          Add meter change
+        </button>
+        {meterChanges.length > 0 && (
+          <span className="footnote">
+            {meterChanges
+              .map((change) => `${meterLabel(change.meter)} at ${change.beat}`)
+              .join(' · ')}
+          </span>
+        )}
       </fieldset>
       <p className="footnote">
         {disabled

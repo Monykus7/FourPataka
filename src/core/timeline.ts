@@ -1,19 +1,42 @@
-import { measureLength, meterPulse, type TimeSignature } from './meter';
+import {
+  measureLength,
+  meterPulse,
+  meterSegments,
+  type MeterChange,
+  type TimeSignature,
+} from './meter';
 
-// Bound visual density independently of score length; playback retains every event.
-export function timelineGrid(beats: number, meter: TimeSignature) {
-  const barLength = measureLength(meter);
-  const extent = Math.max(beats, barLength);
-  const barCount = Math.ceil(extent / barLength);
-  const barStride = Math.max(1, Math.ceil(barCount / 64));
-  const bars = Array.from({ length: Math.ceil(barCount / barStride) }, (_, i) => ({
-    bar: i * barStride + 1,
-    beat: i * barStride * barLength,
-  }));
-  const pulse = meterPulse(meter);
+// Thin across the entire meter map, never allocate every bar of a long score.
+export function timelineGrid(
+  beats: number,
+  meter: TimeSignature,
+  changes: readonly MeterChange[] = [],
+) {
+  const extent = Math.max(beats, measureLength(meter));
+  const segments = meterSegments(meter, changes).filter((segment) => segment.beat < extent);
+  const counts = segments.map((segment, i) =>
+    Math.ceil(((segments[i + 1]?.beat ?? extent) - segment.beat) / measureLength(segment.meter)),
+  );
+  const stride = Math.max(1, Math.ceil(counts.reduce((sum, count) => sum + count, 0) / 64));
+  const bars: { bar: number; beat: number; meter?: TimeSignature }[] = [];
+  segments.forEach((segment, i) => {
+    const length = measureLength(segment.meter);
+    bars.push({ bar: segment.bar, beat: segment.beat, ...(i ? { meter: segment.meter } : {}) });
+    const first = Math.ceil(segment.bar / stride) * stride + 1;
+    for (let bar = first; bar < segment.bar + counts[i]; bar += stride)
+      bars.push({ bar, beat: segment.beat + (bar - segment.bar) * length });
+  });
+  const pulseCounts = segments.map((segment, i) =>
+    Math.ceil(((segments[i + 1]?.beat ?? extent) - segment.beat) / meterPulse(segment.meter)),
+  );
   const pulses =
-    extent / pulse > 256
+    pulseCounts.reduce((sum, count) => sum + count, 0) > 256
       ? []
-      : Array.from({ length: Math.ceil(extent / pulse) }, (_, i) => i * pulse);
+      : segments.flatMap((segment, i) =>
+          Array.from(
+            { length: pulseCounts[i] },
+            (_, j) => segment.beat + j * meterPulse(segment.meter),
+          ),
+        );
   return { extent, bars, pulses };
 }

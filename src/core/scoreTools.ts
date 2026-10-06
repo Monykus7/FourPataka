@@ -1,5 +1,21 @@
 import { SCORE_KEY } from './music';
 import { COMMANDS, parseScore } from './parser';
+import { nextMeterBoundary } from './meter';
+
+export function addMeterChange(
+  text: string,
+  keys: string[],
+  chainKeys: string[],
+  meter: string,
+  beat: string,
+) {
+  assertEditable(text, keys, chainKeys);
+  if (!meter || !beat || /\s/.test(meter + beat))
+    throw new Error('Provide a meter and quarter-beat position.');
+  const next = `${text.trimEnd()}\n\ntime ${meter} at ${beat}\n`;
+  assertEditable(next, keys, chainKeys);
+  return next;
+}
 
 export function nextTrackKey(text: string, instrumentKeys: string[], prefix = 'lead') {
   const keys = new Set(parseScore(text, instrumentKeys).tracks.map((t) => t.key));
@@ -135,6 +151,14 @@ export function insertCommand(
   if (name === 'tempo' || name === 'time') {
     return setScoreDirective(text, instrumentKeys, name, command.snippet.split(' ')[1], chainKeys);
   }
+  if (name === 'meter-change')
+    return addMeterChange(
+      text,
+      instrumentKeys,
+      chainKeys,
+      '7/8',
+      String(nextMeterBoundary(parsed.beats, parsed.meter, parsed.meterChanges)),
+    );
   const target = parsed.tracks.find((t) => t.key === targetKey);
   if (!target) throw new Error('Make a track or choose an insertion destination first.');
   const lineStart = text.lastIndexOf('\n', target.bodyTo - 1) + 1;

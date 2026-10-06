@@ -60,6 +60,15 @@ export function parseMeter(value: string): TimeSignature {
 export const meterLabel = (meter: TimeSignature) => `${meter.numerator}/${meter.denominator}`;
 export const meterPulse = (meter: TimeSignature) => 4 / meter.denominator;
 export const measureLength = (meter: TimeSignature) => meter.numerator * meterPulse(meter);
+export function nextMeterBoundary(
+  beats: number,
+  initial: TimeSignature,
+  changes: readonly MeterChange[] = [],
+) {
+  const last = changes.at(-1) ?? { beat: 0, meter: initial };
+  const length = measureLength(last.meter);
+  return last.beat + Math.max(1, Math.ceil((beats - last.beat) / length)) * length;
+}
 export function measurePosition(quarterBeats: number, meter: TimeSignature) {
   const length = measureLength(meter);
   return {

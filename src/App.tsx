@@ -1,5 +1,5 @@
 import CompositionSettings from './components/CompositionSettings';
-import { measurePosition, meterLabel } from './core/meter';
+import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
 import {
@@ -90,6 +90,7 @@ import {
   insertCommand,
   nextTrackKey,
   setScoreDirective,
+  addMeterChange,
   setScoreChain,
 } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
@@ -1548,6 +1549,24 @@ export default function App() {
                   </div>
                   <CompositionSettings
                     tempo={score.tempo}
+                    meterChanges={score.meterChanges}
+                    nextChangeBeat={nextMeterBoundary(score.beats, score.meter, score.meterChanges)}
+                    onAddChange={(meter, beat) => {
+                      try {
+                        change((p) => ({
+                          ...p,
+                          scoreText: addMeterChange(
+                            p.scoreText,
+                            instruments.map((i) => i.key),
+                            chainKeys,
+                            meter,
+                            beat,
+                          ),
+                        }));
+                      } catch (e) {
+                        setToast((e as Error).message);
+                      }
+                    }}
                     meter={score.meter}
                     disabled={
                       playback === 'score' ||
@@ -1628,6 +1647,11 @@ export default function App() {
                     chainKey: chainKeys.includes(commandChain)
                       ? commandChain
                       : (chainKeys[0] ?? ''),
+                    meterChangeBeat: nextMeterBoundary(
+                      score.beats,
+                      score.meter,
+                      score.meterChanges,
+                    ),
                     newTrackKey: nextTrackKey(
                       project.scoreText,
                       instruments.map((i) => i.key),
@@ -1877,8 +1901,22 @@ export default function App() {
                       <div>
                         <dt>Start</dt>
                         <dd>
-                          Bar {measurePosition(inspectedEvent.beat, timelineScore.meter).bar} · beat{' '}
-                          {measurePosition(inspectedEvent.beat, timelineScore.meter).beat}
+                          Bar{' '}
+                          {
+                            measurePositionAt(
+                              inspectedEvent.beat,
+                              timelineScore.meter,
+                              timelineScore.meterChanges,
+                            ).bar
+                          }{' '}
+                          · beat{' '}
+                          {
+                            measurePositionAt(
+                              inspectedEvent.beat,
+                              timelineScore.meter,
+                              timelineScore.meterChanges,
+                            ).beat
+                          }
                         </dd>
                       </div>
                       <div>
@@ -2093,7 +2131,13 @@ export default function App() {
             <span>
               {timelineScore.tempo} <small>BPM</small>
               <span className="footer-separator">/</span>
-              {meterLabel(timelineScore.meter)}
+              {meterLabel(
+                measurePositionAt(
+                  (elapsed * timelineScore.tempo) / 60,
+                  timelineScore.meter,
+                  timelineScore.meterChanges,
+                ).meter,
+              )}
             </span>
           </div>
         </div>
@@ -2323,6 +2367,7 @@ export default function App() {
       {trackMakerOpen && (
         <TrackMaker
           meter={score.meter}
+          meterChanges={score.meterChanges}
           initialKey={nextTrackKey(
             project.scoreText,
             instruments.map((i) => i.key),
