@@ -53,8 +53,8 @@ export const PREFERENCES_KEY = 'fourpataka.preferences.v1';
 export const EXAMPLE_SCORE = `// Rhythm demo: quarter-note tempo stays constant through meter changes.
 tempo 116
 time 4/4
-time 7/8 at 8
-time 1/2 at 22
+time 7/8 at 4*2
+time 1/2 at 4*2 + 7*2
 
 track melody using sine through clean{
   //Bar 1
@@ -64,22 +64,24 @@ track melody using sine through clean{
   staccato[chord:(G6 D6)  quarter.]
 
   // Bar 2
-  legato[
+  staccato[
     G5 quarter.
     G5 8th
     F#5 8th
     Gmaj7@5 8th
   ]
-  legato[D5 quarter..]
-  rest 16th
+  legato[
+    D5 quarter..
+    rest 16th
 
   // Bar 3
-  legato[
     tuplet:4:3[
-      F5 8th
-      A5 8th
-      C5 8th
-      A5 8th
+      repeat  {
+        F5 16th
+        A5 16th
+        C5 16th
+        E5 16th
+      }
     ]
   ]
   Fmaj7@4 quarter
@@ -93,7 +95,6 @@ track melody using sine through clean{
     G5 8th
     Eb5 8th
   ]
-  // Bar 5
   E5 half
 }
 
@@ -122,7 +123,8 @@ track bass using softBass {
      Bb2 8th 
    ]
    C2 half
-}`;
+}
+`;
 export function createProject(): Project {
   const bright = mathematicalPreset('square');
   bright.harmonics = bright.harmonics.map((m, i) => (i === 0 ? 1 : m * 0.78));
