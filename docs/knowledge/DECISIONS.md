@@ -239,3 +239,11 @@ Current integration evidence: src/core/pedals.ts, src/audio/effects.ts, src/audi
 <!-- features: notation, modularity -->
 
 Chord API v1 defines immutable namespaced IDs, exact case-sensitive aliases and bounded ascending degree/semitone pairs. Explicit reviewed assembly registers built-ins and an open-fifth example. The parser expands symbols once into ordinary note events, retaining symbol identity/source spans. Default root octave is 4; @octave overrides it. Compound degrees preserve musical spelling when representable by the existing single-accidental pitch grammar; double accidentals use equivalent pitches. Unknown shapes and out-of-range voicings produce diagnostics rather than substitute sounds. This does not implement a general plugin loader or complete the broader modularity milestones.
+
+## 32-partial source and schema-2 ownership
+
+<!-- features: harmonic-expansion, waveform, comparison, instrument-presets, project -->
+
+The Fourier bank and projection default are 32. Fresh mathematical presets evaluate their formulas through H32. PeriodicWave allocation follows the current bank; phase-aligned updates and voice admission are unchanged. Nyquist filtering retains saved coefficients. Waveform dot amplitudes now permit ±32; the independent 30-editable-anchor cap is unchanged. Mini-spectrum spacing fits all 32 bars. Lower H1–H16 controls remain primary, with a layout-only expandable upper bank and visible active count.
+
+Schema 2 is the current project format. Schema 1 validates exactly 16 values and pads each independent sound with 16 zeros and positive signs; points/envelope/trim/undertones/source remain unchanged. The recognizable old Soft bass template is compared against its padded historical coefficients; owned applied copies do not upgrade. Autosave/recovery storage keys retain their historical v1 names so old saves remain discoverable. Macro brightness keeps its H16 denominator 15, preserving lower-bank response and extending the same slope above H16. No hidden normalization or new latency is introduced. General module compatibility and tiny-room acoustics remain planned.

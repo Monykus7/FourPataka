@@ -2,12 +2,13 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Status on 2026-10-05: plans/guides added; M1–M6 are all not started. Current application: v0.19.3. Public module registries, SDK, missing-module preservation, runnable module examples and contributor CI are future deliverables. Source contributions can use the existing integration recipes today; the proposed directories/interfaces are not available imports.
+Status on 2026-10-05: plans/guides added; M1–M6 are all not started. The synthesis/notation pilot implements a narrow chord-shape API-v1 registry and bundled example ahead of general M1. General category registries, SDK, missing-module preservation and contributor CI remain future deliverables. Source contributions can use the existing integration recipes today; the proposed directories/interfaces are not available imports.
 
 ## Start here
 
 Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source contribution and verification workflow. The [authoritative milestone plan](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions) defines dependencies and acceptance gates; [implementation status](../../IMPLEMENTATION_STATUS.md) distinguishes plans from delivered behavior.
 
+- [Chord shapes](CHORD_SHAPES.md): implemented API-v1 registry, root-position symbols and runnable source example.
 - [Architecture](ARCHITECTURE.md): current integration seams, proposed host/module boundaries, public contracts and bundled-source strategy.
 - [Pedals](PEDALS.md): current source recipe, planned M2 module recipe, parameters, live/offline DSP, latency, tails and proof requirements.
 - [Instruments](INSTRUMENTS.md): current Fourier preset recipe, planned M3 presets and separate M4 engine/capability contract.

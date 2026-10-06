@@ -137,7 +137,7 @@ Current implementation: H1 is the reference note at f₀. H2–H16 are its overt
 For an instrument without phase controls, the source model is:
 
 ```text
-x(t) = Σ[h = 1…16] p[h] × a[h] × sin(2π h f₀ t)
+x(t) = Σ[h = 1…32] p[h] × a[h] × sin(2π h f₀ t)
      + enabled × Σ[d = 2…6] u[d] × sin(2π (f₀/d) t)
 ```
 
@@ -153,11 +153,11 @@ Seed presets with relative Fourier coefficients:
 
 For v0.16.0, only an exactly recognized, untouched version-1 factory Soft bass library template upgrades to version 2. Renamed, customized and saved templates remain unchanged. Existing applied tracks and A/B snapshots retain their independent sound and version. Load the updated library preset and Apply explicitly to change those copies.
 
-These are finite approximations. Avoid promising that sixteen terms reproduce an ideal discontinuous waveform or a real acoustic instrument. Instrument-inspired examples can be labeled as approximations.
+These are finite approximations. Avoid promising that thirty-two terms reproduce an ideal discontinuous waveform or a real acoustic instrument. Instrument-inspired examples can be labeled as approximations.
 
-### Planned expansion — up to 32 harmonics
+### Implemented expansion — 32 harmonics
 
-Status: requested, deferred, and not implemented. Extend the signed sine bank to H1–H32, with H32 at 32f₀. The source sum above will run to 32 when this feature ships; it remains 16 in the current v0.17.0 release. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
+Status: implemented by the v0.20.0 synthesis/notation pilot; release verification is in progress. The signed bank is H1–H32, with H32 at 32f₀. Thirty-two harmonics per voice is distinct from the current 32 simultaneous-voice limit.
 
 Keep H1–H16 easy to reach and expose H17–H32 as an expandable second bank with exact values, polarity, keyboard adjustment and partial solo. Collapsing a bank is only a layout preference: it must not mute or discard coefficients, and nonzero upper harmonics must remain visibly indicated. Use responsive banks rather than squeezing 32 controls into the existing row.
 
@@ -167,7 +167,7 @@ Update synthesis coefficient allocation, mathematical preset generation, coeffic
 
 Continue excluding components at or above half the active context sample rate from playback and effective source inspection, while retaining their saved coefficients and marking them unavailable. The upper bank will therefore have fewer playable harmonics at high pitches. Preserve explicit trim and disabled automatic normalization; extra coefficients must not trigger hidden loudness compensation.
 
-Future implementation gate: old projects reproduce their original sound after migration; H17/H32 edits, polarity, solo, waveform projection and graphs agree below Nyquist; out-of-band components do not alias; all 32 values survive preset application, independent copies, A/B, undo and JSON round-trip. Verify continuous live edits/comparison, polyphonic resource/performance bounds, narrow-screen/keyboard operation and browser/portable/offline consistency.
+Verification gate: old projects reproduce their original sound after migration; H17/H32 edits, polarity, solo, waveform projection and graphs agree below Nyquist; out-of-band components do not alias; all 32 values survive preset application, independent copies, A/B, undo and JSON round-trip. Verify continuous live edits/comparison, polyphonic resource/performance bounds, narrow-screen/keyboard operation and browser/portable/offline consistency.
 
 Piano and brass are instrument-inspired targets, not guaranteed by the harmonic-count increase. Keep per-partial attack/decay, excitation/dynamic brightness and piano-string inharmonicity as separate later synthesis work alongside chamber acoustics. Piano string stiffness and brass brightness variation motivate those follow-ups: [piano inharmonicity study](https://doi.org/10.1051/aacus/2021002), [Julius O. Smith's FM brass discussion](https://www.dsprelated.com/freebooks/sasp/FM_Brass.html).
 
@@ -630,13 +630,13 @@ Gate: loading an experiment is undoable; metric units/reference/window are visib
 
 Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. Modularity M1 is the next foundation milestone; stage 7 remains the next music-feature item.
 
-Requested instrument-builder follow-up: expand the current 16-harmonic bank to support up to 32 harmonics, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
+The 32-harmonic bank is implemented by the synthesis/notation pilot, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
 Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 
 Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan, tuplets, inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 
-Music IDE follow-up requested after the main features: chord-symbol macros such as `chord:Cmaj13#11`, with their expanded notes shown on hover and keyboard focus. Implement the voicing/octave policy, supported symbol grammar, expansion diagnostics, and equivalent explicit-note playback together. Prioritize comparison and pedal routing first.
+Registered chord-symbol macros such as `chord:Cmaj13#11` are implemented by the synthesis/notation pilot, with hover and keyboard-cursor note previews, default root octave 4, @octave override, bounded ascending root-position shapes and shared explicit-note playback. See [the implemented contributor contract](docs/extensions/CHORD_SHAPES.md). Inversions, slash bass, automatic omissions and arbitrary alteration grammar remain future work.
 
 For repeat and other expansions, retain source mappings from generated events to useful score locations. Add features according to how clearly they connect sound, Fourier structure, and composition.
 
@@ -696,7 +696,7 @@ Gate: an independent small utility pedal is added by one module directory and ex
 
 Dependency: M1; can follow M2 without depending on M4. Separately release the preset contribution API.
 
-Register the current factory presets and an independent example timbre through pure factories and immutable metadata. Separate module identity from project preset ID/key/template version. Populate new libraries deliberately; preserve customized templates, applied tracks and A/B. Existing Fourier synthesis remains the engine, with its current 16-harmonic schema until the separate bank expansion lands.
+Register the current factory presets and an independent example timbre through pure factories and immutable metadata. Separate module identity from project preset ID/key/template version. Populate new libraries deliberately; preserve customized templates, applied tracks and A/B. Existing Fourier synthesis remains the engine, with its 32-harmonic schema 2 and schema-1 zero-padding migration.
 
 Gate: adding the example requires one module/assembly entry and no root/parser/voice special case. Discovery, source previews, save/Apply/Apply to all, comparison, undo, reload/import/native JSON and WAV preserve gain, coefficients, signs, independent copies and phase/clock. Publish a tested preset tutorial, supported schema/units and factory-upgrade guidance. This milestone does not claim new engines, 32 harmonics or chamber acoustics.
 

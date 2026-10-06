@@ -1,6 +1,6 @@
 # Module identity, project compatibility and lifecycle
 
-Status: required contracts for M1 and subsequent module milestones, planned and not implemented. Current imports accept project schema 1, validate the known pedal kinds and fixed Fourier `Sound`, and reject unsupported schemas/kinds. The preservation workflow below is a new milestone requirement, not current behavior.
+Status: required contracts for M1 and subsequent module milestones, planned and not implemented. Current imports accept project schemas 1 and 2; schema 1 preserves all original 16 coefficients/signs and appends silent upper partials independently. Imports validate the known pedal kinds and fixed Fourier `Sound`, and reject unsupported schemas/kinds. The preservation workflow below is a new milestone requirement, not current behavior.
 
 ## Keep identities and versions separate
 

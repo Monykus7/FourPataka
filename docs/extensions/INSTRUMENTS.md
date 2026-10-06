@@ -5,13 +5,13 @@ Status: Fourier presets can be contributed through current source changes. Prese
 ## Current Fourier preset contribution
 
 1. Construct a fresh `Sound` using [music.ts](../../src/core/music.ts), with a timbre factory where appropriate in [instrumentPresets.ts](../../src/core/instrumentPresets.ts). Existing mathematical presets are useful starting points; do not mutate a shared template.
-2. Supply exactly 16 harmonic magnitudes, 16 signs and five undertone magnitudes today. Magnitudes are 0–1; signs are +1/-1 even for silent partials. Undertones have a separate enable flag. Attack/release are seconds and output trim is dB.
+2. Supply exactly 32 harmonic magnitudes, 32 signs and five undertone magnitudes today. Magnitudes are 0–1; signs are +1/-1 even for silent partials. Undertones have a separate enable flag. Attack/release are seconds and output trim is dB.
 3. Validate against `validateSound` in [project.ts](../../src/core/project.ts): attack 0.005–2 s, release 0.01–3 s and trim -36–0 dB. Optional waveform points must pass their own validator. These are current limits, not a future module schema.
 4. Add the factory template to `createProject` with unique ID, score key, label, version and fresh sound data. `using` keys start with a letter and contain letters, digits or underscores; do not put a namespaced module ID in score text.
 5. Check thumbnail/source inspection, saving, copying, Apply/Apply to all, Track Maker, command reference, completion and live/WAV playback. Saving a template does not reapply it to existing tracks.
 6. Document gain/reference choices and add numerical and copy/import/keyboard proofs. Updating a factory preset must not overwrite customized templates, A/B or owned track sounds. The current conservative Soft bass upgrade is an example of this ownership policy.
 
-The current engine uses signed sine coefficients, optional undertones, a shared envelope and explicit trim. Nyquist exclusions depend on pitch and sample rate; preserve saved coefficients even when a partial cannot currently play. Source thumbnails may scale for display, but audio does not normalize coefficients automatically. The 32-harmonic expansion and tiny-chamber acoustics remain separate planned features, not capabilities a preset contributor can enable by changing an array length.
+The current engine uses signed sine coefficients, optional undertones, a shared envelope and explicit trim. Nyquist exclusions depend on pitch and sample rate; preserve saved coefficients even when a partial cannot currently play. Source thumbnails may scale for display, but audio does not normalize coefficients automatically. The bank now supports 32 harmonics in project schema 2; schema-1 imports are zero-padded. Tiny-chamber acoustics and other engines remain planned.
 
 ## Planned M3 preset module recipe
 

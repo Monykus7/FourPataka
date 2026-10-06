@@ -2,7 +2,7 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-Open-source extensibility is now a major planned program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. Registries/SDK and an open-source license are not yet delivered; application behavior remains v0.19.3.
+Open-source extensibility is now a major planned program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. The synthesis/notation pilot adds the first implemented [chord-shape contribution contract](docs/extensions/CHORD_SHAPES.md) and 32 harmonics. General pedal/preset/engine/feature registries, SDK and an open-source license remain planned.
 
 ## Run locally
 
@@ -86,7 +86,7 @@ The source graphs use the first sounding note in the selected material as a labe
 
 ## The first playable slice
 
-- H1–H16 with exact values, signed triangle coefficients, source waveform/spectrum, and a linked partial inspector.
+- H1–H32 with exact values, signed triangle coefficients, source waveform/spectrum, and a linked partial inspector.
 - Five optional undertones, disabled independently of their saved magnitudes; partial solo bypasses the full source mix.
 - Explicit output trim, shared attack/release envelope, Nyquist exclusion, chord audition, 32-voice cap, and a fading Stop.
 - Independent A/B instrument snapshots with shared note/chord/phrase replay. Copying either side is a deep copy.
@@ -141,7 +141,7 @@ Clipping never triggers automatic gain compensation. Choose a lower export level
 
 ## Current boundary
 
-The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, live processed views and score chain assignments. Stage 3's automated functional behavior is covered; broader composition/polish and real-device gates remain. WAV export is implemented in v0.19.0; the full measurement panel follows next. Chord-symbol macros such as `chord:Cmaj13#11` and hover/focus note expansion are recorded for the later music IDE work.
+The instrument/comparison foundation and pedalboard are implemented: compressor, overdrive, three-band EQ, delay, independent audition/track/master chains, presets, bypass, live processed views and score chain assignments. Stage 3's automated functional behavior is covered; broader composition/polish and real-device gates remain. WAV export is implemented in v0.19.0; the full measurement panel follows next. Chord-symbol macros such as `chord:Cmaj13#11` now use registered ascending root-position shapes, root octave 4 by default and `@3` to override it. Hover or move the cursor into the symbol to inspect expanded notes. See the [chord-shape guide](docs/extensions/CHORD_SHAPES.md).
 
 The voice cap is a provisional conservative limit, not a mobile performance guarantee. Numeric audio proofs run in desktop Chromium; physical listening and real mobile/Safari/Firefox checks remain pending.
 
@@ -153,9 +153,9 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the authoritative roadmap and [IMPLEMENTA
 
 In Instrument, use **Harmonics** or **Waveform** to choose the large editor. The other representation stays visible in a smaller preview. Use the **+ / −** button beneath each harmonic to flip its sign. The selected partial inspector also offers an explicit **Sign** selector and signed coefficient. Sign is independent of magnitude: a zero-strength harmonic stays silent and remembers its sign for later edits. Each sign change is separately undoable.
 
-Choose **Dots** (default) or **Draw** in the waveform editor. Click in the left half to add a dot, drag an existing dot, or use its position/amplitude fields. Arrow keys adjust the focused dot and Delete removes it; the Remove dot button also works. Fixed zero endpoints plus up to 30 editable dots define a smooth, shape-preserving cubic curve. The curve passes through its anchors without overshooting their amplitudes. Draw mode retains freehand strokes. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H16; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the coral dashed curve is the target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
+Choose **Dots** (default) or **Draw** in the waveform editor. Click in the left half to add a dot, drag an existing dot, or use its position/amplitude fields. Arrow keys adjust the focused dot and Delete removes it; the Remove dot button also works. Fixed zero endpoints plus up to 30 editable dots define a smooth, shape-preserving cubic curve. The curve passes through its anchors without overshooting their amplitudes. Draw mode retains freehand strokes. The right half is its odd reflection, matching the current signed sine-only synthesis model. A sampled Fourier sine projection recovers H1–H32; each coefficient is limited to ±1. The orange curve is the playable reconstruction and the coral dashed curve is the target, so sharp shapes may differ from their finite approximation. This editor shows one untrimmed harmonic cycle; undertones, trim, envelope, and Nyquist filtering remain separate.
 
-Both editing tools update the current A/B sound and live audition. Each stroke or dot drag is one undo operation, even when moving slowly. **Reset waveform to sine** restores H1 = 1 and H2–H16 = 0, and resets polarity, while keeping trim, envelope, and undertones. The reset can be undone. Dot geometry travels with saved sounds and projects, A/B copies, and undo/redo. Harmonic or macro edits discard a stale dot layout and seed fresh anchors from the edited sound; level/envelope edits retain it. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.
+Both editing tools update the current A/B sound and live audition. Each stroke or dot drag is one undo operation, even when moving slowly. **Reset waveform to sine** restores H1 = 1 and H2–H32 = 0, and resets polarity, while keeping trim, envelope, and undertones. The reset can be undone. Dot geometry travels with saved sounds and projects, A/B copies, and undo/redo. Harmonic or macro edits discard a stale dot layout and seed fresh anchors from the edited sound; level/envelope edits retain it. Save/apply and project autosave work as before. Drawing does not add arbitrary phase, cosine terms, or DC offset.
 
 
 
@@ -195,3 +195,5 @@ Themes are bundled for offline desktop use and saved as a local preference along
 
 [Project map](docs/knowledge/PROJECT_MAP.md) links code symbols, behavioral decisions and roadmap features. [Usage](docs/knowledge/USAGE.md) describes local semantic retrieval, personalized PageRank and fixed context token budgets. Run `npm run knowledge:build` and `npm run knowledge:check` after changes; update feature summaries and decisions alongside implementation. `npm run knowledge:watch` can refresh derived documentation during a working session.
 
+
+Project schema 2 uses 32 harmonics. Schema 1 imports preserve all original 16 coefficients/signs and add silent upper partials independently to libraries, tracks and A/B. Autosave keys stay stable; old waveform geometry is retained without reprojection. Older applications do not support schema 2. H1–H16 remain the primary controls; Show H17–H32 opens the second bank and reports active upper partials even while collapsed.

@@ -48,3 +48,5 @@ Each supported module category must ship a clean-checkout tutorial, a small runn
 ## Open-source readiness
 
 An open-source license has not yet been added to this repository. Owner selection of a license, dependency/asset attribution, contributor licensing guidance, review expectations, conduct/security reporting guidance and CI/release responsibility are explicit milestones, not claims made by this guide. Resolve the licensing policy before inviting licensed third-party code or publishing an open-source release. This planning change does not select a license, publish a package, change repository visibility or install external modules.
+
+The synthesis/notation pilot delivers the first narrow [chord-shape contribution API](docs/extensions/CHORD_SHAPES.md), including a bundled open-fifth example and shared parser/registry tests. This is available now; the general M1–M6 category APIs described above remain planned.

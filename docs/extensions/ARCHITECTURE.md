@@ -1,6 +1,6 @@
 # Modular FourPataka architecture
 
-Status: major requested program of six separate milestones, planned and not implemented. The current application is v0.19.3. These are design requirements, not an available plugin SDK. The milestone sequence and acceptance gates are in [BUILD_PLAN.md](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
+Status: major requested program of six separate milestones, planned and not implemented. The synthesis/notation pilot implements a narrow [chord-shape contract](CHORD_SHAPES.md) ahead of this general program. These are design requirements, not an available plugin SDK. The milestone sequence and acceptance gates are in [BUILD_PLAN.md](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
 
 ## Intended contributor experience
 
@@ -15,7 +15,7 @@ Start with reviewed TypeScript modules bundled from source. An installed-package
 - [PedalBoardSurface.tsx](../../src/components/PedalBoardSurface.tsx) lists equipment and accepts drag payload kinds explicitly. [PedalControls.tsx](../../src/components/PedalControls.tsx) uses shared controls but special-cases EQ labels/reset.
 - [export.ts](../../src/audio/export.ts) has a delay-specific routed-tail estimate. [scoreGraph.ts](../../src/audio/scoreGraph.ts) shares routing between playback and export and aligns track processing latency before the master chain.
 - [project.ts](../../src/core/project.ts) creates the factory instrument library, validates a fixed `Sound` and owns preset/application reconciliation. [instrumentPresets.ts](../../src/core/instrumentPresets.ts) supplies Soft bass and its conservative template upgrade.
-- [music.ts](../../src/core/music.ts), [voice.ts](../../src/audio/voice.ts) and [waveform.ts](../../src/core/waveform.ts) implement the current 16-harmonic Fourier model. Adding a named preset is different from adding a new synthesis engine.
+- [music.ts](../../src/core/music.ts), [voice.ts](../../src/audio/voice.ts) and [waveform.ts](../../src/core/waveform.ts) implement the current 32-harmonic Fourier model. Adding a named preset is different from adding a new synthesis engine.
 - [App.tsx](../../src/App.tsx) combines project state, workflows and views. [commands.ts](../../src/core/commands.ts) separates documentation metadata from parser semantics, including blank autocomplete templates.
 
 These seams must be migrated incrementally. Existing shared factories, independent copies and phase/clock policies are foundations to preserve, not implementations to discard.
