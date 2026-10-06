@@ -7,3 +7,7 @@ dist/
 .electron-cache/
 release/
 .knowledge-cache/
+
+# Local editor and agent instructions stay on this machine.
+/.cursor/
+/AGENTS.md
