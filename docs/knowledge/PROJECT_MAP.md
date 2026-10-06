@@ -113,7 +113,7 @@ Requested, planned and not implemented. Later stage 8 sequence proposes phaser (
 
 ### Composition studio
 
-Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration. v0.23.1 Show beside score has a directional arrow (right in columns, down when stacked). Shared-file track tabs are the explicitly selected next application milestone; swing remains a planned follow-up.
+Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration. v0.23.1 Show beside score has a directional arrow (right in columns, down when stacked). Shared-file track tabs are the explicitly selected next application milestone; swing remains a planned follow-up. v0.23.2 anchors the selector at the right edge of the header, above the action row. Named sections/repeats with beat-based alternate endings are a separate planned follow-on milestone.
 
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
@@ -175,11 +175,15 @@ Key definitions: [AuditionBranch](../../src/audio/engine.ts#L25), [Session](../.
 
 #### Shared-file score track tabs — planned next milestone
 
-User-selected next application milestone on 2026-10-06, before resuming modularity M1. Planned All score and virtual per-track editor tabs backed by one canonical scoreText. Revision-aware source spans preserve globals/comments/CRLF, diagnostics, cross-tab history and owned sound/pedal copies. One-file save/export and whole-score frozen playback/comparison/WAV remain. No tab implementation yet; source adapter, UI/operations and browser/native/portable gates are explicit.
+User-selected next application milestone on 2026-10-06, before resuming modularity M1. Planned All score and virtual per-track editor tabs backed by one canonical scoreText. Revision-aware source spans preserve globals/comments/CRLF, diagnostics, cross-tab history and owned sound/pedal copies. One-file save/export and whole-score frozen playback/comparison/WAV remain. No tab implementation yet; source adapter, UI/operations and browser/native/portable gates are explicit. Named section navigation/reuse and alternate endings are a separate milestone after tabs, not part of their initial gate.
 
 #### Variable swing — planned
 
 Planned variable eighth/sixteenth swing, with proposed long-subdivision share units (50% straight, about66.7% 2:1). Bounds/syntax/scope are provisional; no runtime swing command exists. Written rational beats and fixed pair/bar endpoints remain; shared performance timing for live/WAV/comparison must avoid drift and preserve frozen clocks, phase, latency, copies and finite tails. Tuplets/chords/rests/dots/articulation/repeats and odd-meter boundaries require explicit proof and manual listening.
+
+#### Named sections and alternate endings — planned milestone
+
+Requested 2026-10-06 as a separate Compose milestone after shared-file track tabs. Planned source-owned track-scoped A/B/etc. labels, references/repeats and invocation-local tail trimming in n quarter-note beats with replacement endings. Exact fractional cuts shorten spanning events without a new attack, recompute articulation/gates and resolve positional rests before cutting; ending length may differ. One canonical source retains definition/call spans, scoped rename/history, copies and frozen live/WAV/A-B phase/clock. Undefined/duplicate/cyclic references and expansion work require bounded diagnostics. Section/play spellings are provisional, not working commands.
 
 ### Project state and desktop studio
 

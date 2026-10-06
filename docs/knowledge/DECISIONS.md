@@ -308,3 +308,12 @@ Resolve an exact command name before broad reference prose; partial names show m
 The user explicitly chose shared-file virtual track tabs as the next application milestone on 2026-10-06. This is the next application priority, ahead of resuming module-foundation M1; M1 remains the next modularity milestone. All score plus per-track source views must edit one canonical scoreText and preserve global directives, spans, history and owned copies; no independent physical files or hidden text copies. The source adapter and integration gates are planned in docs/SCORE_WORKSPACE_PLAN.md and BUILD_PLAN.md section 15.
 
 Variable swing is planned, not implemented. Proposed units express the long subdivision's percentage of a fixed pair (50% straight, about66.7% 2:1); bounds/syntax/scope require the timing proof. Written rational beats remain authoritative, and a shared performed-timing map must preserve pair/bar endpoints, frozen clocks, A/B phase and live/WAV alignment. Tuplet/boundary/articulation policies are proposals with explicit gates in the score workspace plan. No general module, audio or manual release gate closes in this UI/planning patch. The user's working demo changes remain outside this patch's commits.
+
+
+## Right-aligned panel selector and named music sections (v0.23.2)
+
+<!-- features: composition, track-tabs, named-sections -->
+
+Show beside score is anchored to the right of the score header, outside the lower action row. The theme-colored right/down arrow and persisted layout preference remain. This changes only layout, with no source/history/audio/schema/ownership behavior change.
+
+The user requests another milestone after shared-file Compose track tabs: source-owned, track-scoped named sections (A/B/etc.), reusable in repeats, with a tail cut measured in n quarter-note beats and a different ending on that invocation. Plan exact fractional mid-event shortening without a new attack, positional bar-rest recompilation before cutting, explicit resulting duration, source provenance at definitions/calls, scoped rename/history and bounded cycle-safe expansion. Syntax remains provisional; section/play commands are not implemented. This is separate from both the next track-tab milestone and variable swing, and keeps a single canonical score file. See BUILD_PLAN.md section17 and docs/SCORE_WORKSPACE_PLAN.md. No broader modularity/manual gate closes.
