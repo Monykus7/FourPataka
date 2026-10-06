@@ -61,6 +61,7 @@ import { parseScore, type CompiledScore, type ScoreEvent } from './core/parser';
 import {
   applyPreset,
   createProject,
+  withExampleScore,
   importProject,
   PREFERENCES_KEY,
   reconcileTracks,
@@ -1518,6 +1519,14 @@ export default function App() {
                       </h2>
                     </div>
                     <div className="editor-options">
+                      <button
+                        className="secondary-button"
+                        disabled={playback === 'score'}
+                        title="Replace score text with the rhythm demo; Undo restores your score."
+                        onClick={() => change(withExampleScore)}
+                      >
+                        Load demo score
+                      </button>
                       <button
                         className="primary-button"
                         disabled={

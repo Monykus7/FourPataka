@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyPreset,
+  withExampleScore,
   createProject,
   importProject,
   reconcileTracks,
@@ -228,4 +229,27 @@ it('round-trips point geometry and rejects malformed optional editor data', () =
   p.comparison.A.waveformPoints[1].y = 1;
   p.comparison.A.waveformPoints[1].x = 0;
   expect(() => importProject(JSON.stringify(p))).toThrow();
+});
+
+it('loads the demo without replacing customized library entries or colliding restored preset IDs', () => {
+  const project = createProject();
+  const reed = project.instruments.find((preset) => preset.key === 'brightReed')!;
+  reed.key = 'myReed';
+  reed.sound.trim = -23;
+  project.scoreText = 'track custom using myReed {\n C4 quarter\n}';
+  const before = structuredClone(project);
+  const loaded = reparse(withExampleScore(project));
+  expect(project).toEqual(before);
+  expect(loaded.instruments.find((preset) => preset.key === 'myReed')).toEqual(reed);
+  expect(new Set(loaded.instruments.map((preset) => preset.id)).size).toBe(
+    loaded.instruments.length,
+  );
+  expect(
+    parseScore(
+      loaded.scoreText,
+      loaded.instruments.map((preset) => preset.key),
+    ).diagnostics,
+  ).toEqual([]);
+  expect(importProject(JSON.stringify(loaded))).toEqual(loaded);
+  expect(loaded.comparison).toEqual(before.comparison);
 });

@@ -50,7 +50,94 @@ export const STORAGE_KEY = 'fourpataka.project.v1';
 export const RECOVERY_KEY = 'fourpataka.project.recovery.v1';
 export const UNREADABLE_KEY = 'fourpataka.project.unreadable.v1';
 export const PREFERENCES_KEY = 'fourpataka.preferences.v1';
-export const EXAMPLE_SCORE = `// Example score\ntempo 120\ntime 4/4\n\ntrack melody using brightReed {\n  C5 quarter\n  chord:(Bb D F)5 8th\n  rest 8th\n  G5 half\n}\n\ntrack bass using softBass {\n  Bb2 half\n  F2 half\n}`;
+export const EXAMPLE_SCORE = `// Rhythm demo: quarter-note tempo stays constant through meter changes.
+tempo 116
+time 4/4
+time 7/8 at 8
+time 3/4 at 15
+time 4/4 at 21
+
+track melody using brightReed {
+  // Bar 1: three eighth-note triplets fill one quarter beat.
+  C5 8th triplet legato
+  D5 8th triplet legato
+  E5 8th triplet
+  G5 quarter staccato
+  chord:Cmaj7@4 quarter
+  rest 8th
+  E5 8th staccato
+
+  // Bar 2: dotted and double-dotted rhythm.
+  F5 quarter. legato
+  E5 8th legato
+  D5 quarter.. staccato
+  C5 16th
+
+  // Bar 3, 7/8: five sixteenths in the time of four.
+  E5 16th tuplet:5:4 legato
+  F5 16th tuplet:5:4 legato
+  G5 16th tuplet:5:4 legato
+  A5 16th tuplet:5:4 legato
+  G5 16th tuplet:5:4
+  chord:Fmaj7@4 quarter.
+  G5 8th staccato
+  rest 8th
+
+  // Bar 4, 7/8: explicit voicing alongside chord symbols.
+  chord:(G4 B4 D5) quarter staccato
+  A5 8th legato
+  G5 8th legato
+  F5 quarter legato
+  E5 8th
+
+  // Bar 5, 3/4: short accents after a held chord.
+  chord:G7@3 half
+  rest 8th
+  D5 16th staccato
+  G5 32nd staccato
+  A5 32nd legato
+
+  // Bar 6: connected melody and a compact 64th-note flourish.
+  B5 quarter legato
+  A5 quarter legato
+  G5 8th. legato
+  E5 64th staccato
+  F5 64th staccato
+  G5 32nd staccato
+
+  // Bar 7, 4/4: resolve, then leave space for the release.
+  chord:C6@4 half.
+  rest quarter
+}
+
+track bass using softBass {
+  // Bars 1–2, 4/4.
+  C3 quarter staccato
+  G2 quarter staccato
+  C3 half
+  F2 half
+  G2 quarter.
+  rest 8th
+
+  // Bars 3–4, 7/8.
+  F2 quarter.
+  C3 quarter
+  F2 quarter
+  G2 quarter
+  D3 quarter
+  G2 quarter.
+
+  // Bars 5–6, 3/4.
+  G2 half
+  D3 quarter
+  G2 quarter staccato
+  B2 quarter legato
+  D3 quarter
+
+  // Bar 7, 4/4.
+  C3 half.
+  rest quarter
+}`;
 export function createProject(): Project {
   const bright = mathematicalPreset('square');
   bright.harmonics = bright.harmonics.map((m, i) => (i === 0 ? 1 : m * 0.78));
@@ -371,4 +458,33 @@ export function importProject(text: string): Project {
       clean.processing.library.map((p) => p.key),
     ),
   );
+}
+
+export function withExampleScore(project: Project): Project {
+  // Restore only missing demo keys; owned sounds and user library edits stay independent.
+  const defaults = createProject();
+  const keys = new Set(
+    defaults.tracks.map(
+      (track) => defaults.instruments.find((preset) => preset.id === track.presetId)!.key,
+    ),
+  );
+  return {
+    ...project,
+    scoreText: EXAMPLE_SCORE,
+    instruments: [
+      ...project.instruments,
+      ...defaults.instruments
+        .filter(
+          (preset) =>
+            keys.has(preset.key) &&
+            !project.instruments.some((existing) => existing.key === preset.key),
+        )
+        .map((preset) => ({
+          ...preset,
+          id: project.instruments.some((existing) => existing.id === preset.id)
+            ? crypto.randomUUID()
+            : preset.id,
+        })),
+    ],
+  };
 }

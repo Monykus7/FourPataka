@@ -62,7 +62,7 @@ Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], atta
 - Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 - Instrument presets and source thumbnails / dependency group 3: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L100), [View](../../src/App.tsx#L102), [readPreferences](../../src/App.tsx#L103), [MiniWave](../../src/App.tsx#L118), [RangeControl](../../src/App.tsx#L153), [App](../../src/App.tsx#L203), [measure](../../src/App.tsx#L252), [resetMacros](../../src/App.tsx#L327).
+Key definitions: [ScoreEditor](../../src/App.tsx#L101), [View](../../src/App.tsx#L103), [readPreferences](../../src/App.tsx#L104), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
 
 #### 32-harmonic Fourier bank
 
@@ -118,7 +118,7 @@ Line-oriented score text is authoritative. The enlarged score editor fills its p
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L100), [View](../../src/App.tsx#L102), [readPreferences](../../src/App.tsx#L103), [MiniWave](../../src/App.tsx#L118), [RangeControl](../../src/App.tsx#L153), [App](../../src/App.tsx#L203), [measure](../../src/App.tsx#L252), [resetMacros](../../src/App.tsx#L327).
+Key definitions: [ScoreEditor](../../src/App.tsx#L101), [View](../../src/App.tsx#L103), [readPreferences](../../src/App.tsx#L104), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
 
 #### Score parsing and editor
 
@@ -139,7 +139,7 @@ Twelve scoped cards show the selected instrument/pedal keys, unique new-track sn
 - Contextual command reference / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts)
 - Contextual command reference / dependency group 2: [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L100), [View](../../src/App.tsx#L102), [readPreferences](../../src/App.tsx#L103), [MiniWave](../../src/App.tsx#L118), [RangeControl](../../src/App.tsx#L153), [App](../../src/App.tsx#L203), [measure](../../src/App.tsx#L252), [resetMacros](../../src/App.tsx#L327).
+Key definitions: [ScoreEditor](../../src/App.tsx#L101), [View](../../src/App.tsx#L103), [readPreferences](../../src/App.tsx#L104), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
 
 #### Tempo, meter and timeline
 
@@ -164,10 +164,11 @@ Key definitions: [ChainAssignment](../../src/components/ChainAssignment.tsx#L3),
 
 #### Articulation, tuplets and score meter changes
 
-Implemented rhythm extension: exact rational quarter-beat accumulation supports whole through 64th, one/two dots, per-event triplet or tuplet:N:M (N 2–32, M 1–32). Optional staccato halves the gate and caps release at 30ms or a quarter of event seconds; optional legato overlaps the following sounding event by at most 30ms/10% duration with independent attacks. Rests and track/phrase ends break legato. Global time meter at beat directives (up to 64) change all tracks on preceding-meter bar boundaries, preserving tempo, written spacing, source spans and continuous bar numbering. Compose and Track Maker edit source in grouped history; editor modifier suggestions and 18 command cards document real grammar. Live, comparison and WAV share timing; sounding extent includes overlaps independently of the written clock, with bounded tails and Stop. No envelope carry, glide, nested/group tuplets, per-track meters, runtime grammar plugins or general M1 completion.
+Implemented rhythm extension: exact rational quarter-beat accumulation supports whole through 64th, one/two dots, per-event triplet or tuplet:N:M (N 2–32, M 1–32). Optional staccato halves the gate and caps release at 30ms or a quarter of event seconds; optional legato overlaps the following sounding event by at most 30ms/10% duration with independent attacks. Rests and track/phrase ends break legato. Global time meter at beat directives (up to 64) change all tracks on preceding-meter bar boundaries, preserving tempo, written spacing, source spans and continuous bar numbering. Compose and Track Maker edit source in grouped history; editor modifier suggestions and 18 command cards document real grammar. Live, comparison and WAV share timing; sounding extent includes overlaps independently of the written clock, with bounded tails and Stop. No envelope carry, glide, nested/group tuplets, per-track meters, runtime grammar plugins or general M1 completion. v0.21.1 starter/demo score exercises seven synchronized bars, triplets, 5:4 tuplets, dots/double dots, 32nd/64th notes, staccato/legato, explicit voicings and chord symbols, with 4/4 to 7/8 to 3/4 to 4/4 at offsets 8/15/21. Load demo score is an explicit undoable source replacement; existing autosaves do not silently upgrade, customized libraries/owned sounds remain, and only missing demo instrument keys are restored with unique IDs.
 
 - Articulation, tuplets and score meter changes / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/articulation.ts](../../src/core/articulation.ts), [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/core/parser.ts](../../src/core/parser.ts), [src/audio/export.ts](../../src/audio/export.ts), [tests/unit/rhythmPlayback.test.ts](../../tests/unit/rhythmPlayback.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/components/TrackMaker.tsx](../../src/components/TrackMaker.tsx), [src/core/rhythm.ts](../../src/core/rhythm.ts), [src/core/meter.ts](../../src/core/meter.ts), [src/components/CompositionSettings.tsx](../../src/components/CompositionSettings.tsx), [src/core/timeline.ts](../../src/core/timeline.ts)
-- Articulation, tuplets and score meter changes / dependency group 2: [tests/browser/rhythm.spec.ts](../../tests/browser/rhythm.spec.ts), [tests/helpers/rhythm.ts](../../tests/helpers/rhythm.ts)
+- Articulation, tuplets and score meter changes / dependency group 2: [tests/browser/demo.spec.ts](../../tests/browser/demo.spec.ts), [tests/helpers/demo.ts](../../tests/helpers/demo.ts)
+- Articulation, tuplets and score meter changes / dependency group 3: [tests/browser/rhythm.spec.ts](../../tests/browser/rhythm.spec.ts), [tests/helpers/rhythm.ts](../../tests/helpers/rhythm.ts)
 
 Key definitions: [AuditionBranch](../../src/audio/engine.ts#L25), [Session](../../src/audio/engine.ts#L32), [AudioEngine](../../src/audio/engine.ts#L58), [AudioEngine.ready](../../src/audio/engine.ts#L72), [AudioEngine.setMonitor](../../src/audio/engine.ts#L97), [AudioEngine.setMix](../../src/audio/engine.ts#L101), [AudioEngine.begin](../../src/audio/engine.ts#L105), [AudioEngine.voice](../../src/audio/engine.ts#L138).
 
@@ -233,7 +234,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreEditor](../../src/App.tsx#L100), [View](../../src/App.tsx#L102), [readPreferences](../../src/App.tsx#L103), [MiniWave](../../src/App.tsx#L118), [RangeControl](../../src/App.tsx#L153), [App](../../src/App.tsx#L203), [measure](../../src/App.tsx#L252), [resetMacros](../../src/App.tsx#L327).
+Key definitions: [ScoreEditor](../../src/App.tsx#L101), [View](../../src/App.tsx#L103), [readPreferences](../../src/App.tsx#L104), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
 
 ### Maintained project knowledge
 

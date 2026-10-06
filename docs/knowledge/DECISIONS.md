@@ -258,3 +258,12 @@ Written duration remains the source clock in quarter-note beats. Parser position
 Staccato gates half the written duration and caps release to min(instrument release, 30 ms, one-quarter event seconds). User-selected legato extends the gate by min(30 ms, 10% event seconds) only into a following sounding event on that track; attacks remain independent. Rests, track ends and selected-phrase boundaries stop the overlap. A comparison clip after an expired staccato gate is silent. Shared timing drives live, comparison and WAV voices. Sounding extent accounts for overlaps separately from written progress so a tiny final note cannot truncate a prior overlapping voice; all existing finite release/effect tails, voice admission, phase rotation, latency compensation and Stop cleanup remain.
 
 Global `time 7/8 at 8` changes meter at a zero-based quarter-beat offset. Sort/validate at most 64 changes against preceding-meter bar boundaries; duplicates and off-boundary changes are diagnostics. Meter affects guides and bar numbers, not note spacing or tempo. Running score snapshots freeze the complete map. Compose additions and Track Maker rows write authoritative source in one undo operation, preserving owned sound/pedal copies. Grid thinning retains each meter change while bounding ordinary labels and pulses. General module contracts, nested/group tuplets, ties/slurs/envelope carry, glide and per-track meters remain planned.
+
+
+## Compose rhythm demonstration (v0.21.1)
+
+<!-- features: rhythm, composition, storage -->
+
+Fresh projects start with a seven-bar, two-track, 25-quarter-beat demo at 116 BPM. Both tracks align at 4/4→7/8→3/4→4/4 changes at beats 8/15/21. Comments identify triplet and 5:4 runs, dots, short notes, staccato/legato, explicit voicing and registered chord-symbol examples. No new parser/audio grammar or schema is introduced.
+
+Existing saved scores remain authoritative. Compose's explicit Load demo score operation replaces source in one undo step, disabled during score playback; it preserves customized library entries, A/B and matching owned track sounds. Missing demo keys are restored from factories; restored IDs cannot collide with renamed user entries. Undo restores exact previous text and data; reload persists the selected score. Demo sound therefore follows the user's retained preset/copy settings, not a hidden factory reset. Default-level offline output must remain finite and unclipped.

@@ -740,3 +740,8 @@ User-selected release implements extensible chord shapes plus 32 harmonics: bund
 User-selected connected-note legato retains independent attacks, with a short bounded overlap. Staccato halves gates and caps releases; written clocks remain unchanged. Whole through 64th durations accept one/two dots and per-event triplet or custom N:M modifiers, accumulating exact fractions. Global meter-change directives apply on preceding-meter boundaries, retain continuous bar numbering and freeze with playing revisions. Compose, Track Maker, timeline, reference and autocomplete expose these forms through authoritative source and grouped undo.
 
 Acceptance: parser/fraction/gate/phrase-boundary unit checks; browser source controls, undo, narrow/keyboard workflow, actual voice gates and live/WAV numeric parity; native save/reload and portable startup. Verification is recorded in IMPLEMENTATION_STATUS.md. Ties, envelope-sharing slurs, glide, nested/group tuplets, additive beat grouping and per-track meters remain future notation work. This extension does not complete general modularity M1–M6 or manual device/listening gates. See [rhythm syntax and behavior](docs/RHYTHM.md).
+
+
+### Compose demonstration follow-up — v0.21.1
+
+The starter score demonstrates the implemented rhythm release with seven aligned bars and two independent tracks, 4/4→7/8→3/4→4/4, dots, per-event triplets/5:4 tuplets, short durations, articulation, symbols and explicit voicings. Load demo score is undoable and does not automatically migrate existing saved songs. This demonstration changes no feature gate or general modularity milestone. Validation is recorded in IMPLEMENTATION_STATUS.md.

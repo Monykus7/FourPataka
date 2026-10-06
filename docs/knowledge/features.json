@@ -408,7 +408,7 @@
       "id": "rhythm",
       "parent": "composition",
       "title": "Articulation, tuplets and score meter changes",
-      "summary": "Implemented rhythm extension: exact rational quarter-beat accumulation supports whole through 64th, one/two dots, per-event triplet or tuplet:N:M (N 2–32, M 1–32). Optional staccato halves the gate and caps release at 30ms or a quarter of event seconds; optional legato overlaps the following sounding event by at most 30ms/10% duration with independent attacks. Rests and track/phrase ends break legato. Global time meter at beat directives (up to 64) change all tracks on preceding-meter bar boundaries, preserving tempo, written spacing, source spans and continuous bar numbering. Compose and Track Maker edit source in grouped history; editor modifier suggestions and 18 command cards document real grammar. Live, comparison and WAV share timing; sounding extent includes overlaps independently of the written clock, with bounded tails and Stop. No envelope carry, glide, nested/group tuplets, per-track meters, runtime grammar plugins or general M1 completion.",
+      "summary": "Implemented rhythm extension: exact rational quarter-beat accumulation supports whole through 64th, one/two dots, per-event triplet or tuplet:N:M (N 2–32, M 1–32). Optional staccato halves the gate and caps release at 30ms or a quarter of event seconds; optional legato overlaps the following sounding event by at most 30ms/10% duration with independent attacks. Rests and track/phrase ends break legato. Global time meter at beat directives (up to 64) change all tracks on preceding-meter bar boundaries, preserving tempo, written spacing, source spans and continuous bar numbering. Compose and Track Maker edit source in grouped history; editor modifier suggestions and 18 command cards document real grammar. Live, comparison and WAV share timing; sounding extent includes overlaps independently of the written clock, with bounded tails and Stop. No envelope carry, glide, nested/group tuplets, per-track meters, runtime grammar plugins or general M1 completion. v0.21.1 starter/demo score exercises seven synchronized bars, triplets, 5:4 tuplets, dots/double dots, 32nd/64th notes, staccato/legato, explicit voicings and chord symbols, with 4/4 to 7/8 to 3/4 to 4/4 at offsets 8/15/21. Load demo score is an explicit undoable source replacement; existing autosaves do not silently upgrade, customized libraries/owned sounds remain, and only missing demo instrument keys are restored with unique IDs.",
       "paths": [
         "src/core/rhythm.ts",
         "src/core/articulation.ts",
@@ -427,7 +427,9 @@
         "tests/helpers/rhythm.ts",
         "docs/RHYTHM.md",
         "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md"
+        "IMPLEMENTATION_STATUS.md",
+        "tests/helpers/demo.ts",
+        "tests/browser/demo.spec.ts"
       ]
     }
   ]

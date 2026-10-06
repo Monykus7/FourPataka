@@ -1,3 +1,4 @@
+import { demoWorkflow } from '../helpers/demo';
 import { rhythmWorkflow } from '../helpers/rhythm';
 import { expect, test, _electron as electron, type ElectronApplication } from '@playwright/test';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -695,4 +696,8 @@ test('native project dialogs round-trip a project, preserve canceled operations,
     }
   });
   expect(rejected).toBe(true);
+});
+
+test('packaged demo score loads with undo plays and survives autosave reload', async () => {
+  await demoWorkflow(await app.firstWindow());
 });

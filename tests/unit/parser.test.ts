@@ -8,13 +8,19 @@ describe('score compilation', () => {
   it('compiles the example with parallel starts and exact beats', () => {
     const score = parseScore(EXAMPLE_SCORE, keys);
     expect(score.diagnostics).toEqual([]);
-    expect(score.tracks.map((t) => t.beats)).toEqual([4, 4]);
+    expect(score.tracks.map((t) => t.beats)).toEqual([25, 25]);
     expect(score.events.filter((e) => e.beat === 0).map((e) => e.track)).toEqual([
       'melody',
       'bass',
     ]);
-    expect(score.seconds).toBe(2);
-    expect(score.events[1].notes).toEqual(['Bb5', 'D5', 'F5']);
+    expect(score.seconds).toBeCloseTo((25 * 60) / 116, 10);
+    expect(score.events.find((e) => e.chordSymbol?.symbol === 'Cmaj7@4')?.notes).toEqual([
+      'C4',
+      'E4',
+      'G4',
+      'B4',
+    ]);
+    expect(score.meterChanges.map((change) => change.beat)).toEqual([8, 15, 21]);
   });
   it('resolves explicit chord octaves and mixed overrides', () => {
     expect(parse('chord : ( Bb4 D F ) 5 quarter').events[0].notes).toEqual(['Bb4', 'D5', 'F5']);

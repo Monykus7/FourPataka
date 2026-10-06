@@ -298,8 +298,13 @@
 .workspace-footer {
   font-size: 9px;
 }
+.editor-panel .panel-header {
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .editor-options {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 15px;
 }
