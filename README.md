@@ -1,6 +1,8 @@
 # FourPataka
 
-Personal Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
+Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
+
+Open-source extensibility is now a major planned program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. Registries/SDK and an open-source license are not yet delivered; application behavior remains v0.19.3.
 
 ## Run locally
 
@@ -27,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The portable build is `release/FourPataka-0.18.1-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned personal prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.19.3-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
