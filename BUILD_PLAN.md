@@ -672,7 +672,7 @@ Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongs
 
 ## 14. Modularity and open-source contributions
 
-Requested major program on 2026-10-05, explicitly split into multiple milestones. All M1–M6 are planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The current application remains v0.19.3; this planning work does not implement a registry, SDK, new project schema, loader or publishing change.
+Requested major program on 2026-10-05, explicitly split into multiple milestones. All M1–M6 are planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
 
 Detailed contributor guides: [index](docs/extensions/README.md), [architecture](docs/extensions/ARCHITECTURE.md), [pedals](docs/extensions/PEDALS.md), [instruments](docs/extensions/INSTRUMENTS.md), [feature modules](docs/extensions/FEATURE_MODULES.md), [compatibility](docs/extensions/COMPATIBILITY.md) and [contribution workflow](CONTRIBUTING.md).
 
@@ -735,7 +735,7 @@ Default start: M1 → M2 → M3. Useful pedal/preset contributions and stage 7 l
 User-selected release implements extensible chord shapes plus 32 harmonics: bundled API-v1 chord contract/example, predictable root-position symbol expansion (default octave 4, @octave override), editor hover/keyboard previews and schema-1 to schema-2 migration preserving existing coefficients and owned copies. Shared live/WAV behavior, affected browser workflows, native saving and portable packaging are verified with the limits recorded in IMPLEMENTATION_STATUS.md. General M1–M6 gates remain open; this pilot precedes their default sequence and provides a notation contribution boundary for testing.
 
 
-### Implemented rhythm extension — v0.21.0 release candidate
+### Implemented rhythm extension — v0.21.0
 
 User-selected connected-note legato retains independent attacks, with a short bounded overlap. Staccato halves gates and caps releases; written clocks remain unchanged. Whole through 64th durations accept one/two dots and per-event triplet or custom N:M modifiers, accumulating exact fractions. Global meter-change directives apply on preceding-meter boundaries, retain continuous bar numbering and freeze with playing revisions. Compose, Track Maker, timeline, reference and autocomplete expose these forms through authoritative source and grouped undo.
 

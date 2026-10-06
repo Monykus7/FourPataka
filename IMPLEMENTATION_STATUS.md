@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-05. Latest verified release: v0.20.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-05. Latest verified release: v0.21.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -392,8 +392,8 @@ Implemented registered chord shapes and a 32-harmonic bank, requested ahead of t
 Release artifact: `release/FourPataka-0.20.0-win-x64.exe`. Final native-tested app.asar SHA-256: `D7052E93C30299C8A7EC2E823C80F5FD68A4A3365860579161D08D17EE1EB706`. Browser snapshots review both 16-control banks and wrapped note previews. Older application versions do not read schema 2; importing schema 1 into this release is supported. Physical listening, manual screen-reader and other browser/device gates remain open. Piano/brass realism, chamber acoustics, inversions/slash bass and the general M1–M6 modularity program remain separate planned work.
 
 
-### Rhythm and playback articulation — v0.21.0 release candidate
+### Rhythm and playback articulation — v0.21.0
 
 Implemented: staccato half gates with bounded releases; connected-note legato with independent attacks and bounded overlap; 32nd/64th, dotted and double-dotted durations; exact per-event triplets and N:M tuplets; global bar-boundary meter changes with continuous bar numbers. Compose controls, Track Maker, timeline inspection, syntax highlighting, empty tuplet completion fields and eighteen reference cards expose the grammar. Source owns timing; snapshots, independent sound/pedal copies, schema 2, phase continuity, latency and finite tails/Stop remain intact. Comparison clipping honors gates and phrase ends. Shared live/offline timing preserves sounding overlaps independently of written progress.
 
-Current verification: 170 unit tests and production build pass. Affected browser controls, keyboard-only workflow, comparison, reference, autocomplete and WAV checks pass, with final live scheduling and native/package verification pending. This entry will be finalized after the release checks. True slurs/ties/glide, grouped/nested tuplets, additive/per-track meters, general modularity and physical device/listening checks remain open.
+Verified: 170 unit tests, 33 distinct affected browser checks across runs, all 16 packaged native checks, production build, formatting and knowledge build/check. Browser numeric proofs confirm staccato gaps, long-release caps, independent legato attacks, shared voice/WAV sample parity, live scheduling beyond a tiny final note and Stop cleanup. Native checks cover rhythm save/reload, keyboard-only studio use, JSON/WAV, menus, copy ownership, connected pedals and renderer isolation. Desktop and 390-pixel visual review shows wrapped controls without horizontal overflow. The unsigned portable v0.21.0 package was built and opened; its extracted app.asar is checked against the native-tested package hash `15C5755825E2DD8F8C21BCAC0F953D10127DF199E3CB7DB56AE0054201F6D517`. True slurs/ties/glide, grouped/nested tuplets, additive/per-track meters, general modularity and physical device/listening checks remain open.

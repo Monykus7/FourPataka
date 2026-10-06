@@ -234,7 +234,7 @@ The host retains score authority, independent library/A-B/track/master data copi
 
 Current integration evidence: src/core/pedals.ts, src/audio/effects.ts, src/audio/export.ts, src/audio/scoreGraph.ts, src/core/project.ts, src/core/instrumentPresets.ts, src/core/music.ts, src/audio/voice.ts, src/components/PedalBoardSurface.tsx, src/components/PedalControls.tsx, src/App.tsx.
 
-## Registered chord-shape pilot (in progress)
+## Registered chord-shape pilot (implemented v0.20.0)
 
 <!-- features: notation, modularity -->
 
