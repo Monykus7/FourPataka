@@ -6,6 +6,8 @@ export const DURATIONS: Record<string, number> = {
   quarter: 1,
   '8th': 0.5,
   '16th': 0.25,
+  '32nd': 0.125,
+  '64th': 0.0625,
 };
 export const SCORE_KEY = /^[A-Za-z][A-Za-z0-9_]*$/;
 export const clamp = (n: number, low: number, high: number) => Math.min(high, Math.max(low, n));
