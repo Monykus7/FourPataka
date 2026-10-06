@@ -4,7 +4,7 @@ import { COMMANDS, type CommandDefinition, type CommandGroup } from '../core/com
 import {
   insertionDestination,
   insertionReason,
-  matchesCommand,
+  searchCommands,
   referenceSnippet,
   type ReferenceContext,
 } from '../core/commandReference';
@@ -40,10 +40,8 @@ export default function CommandReference({
   useLayoutEffect(() => {
     catalog.current?.scrollTo(0, 0);
   }, [search, group]);
-  const cards = COMMANDS.filter(
-    (command) =>
-      (!group || command.group === group) &&
-      matchesCommand(command, referenceSnippet(command, context), search),
+  const cards = searchCommands(search, context).filter(
+    (command) => !group || command.group === group,
   );
   return (
     <section className="panel commands-panel" aria-label="Command reference" data-expanded={open}>

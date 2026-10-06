@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { COMMANDS } from '../../src/core/commands';
-import { insertionReason, referenceSnippet, matchesCommand } from '../../src/core/commandReference';
+import {
+  insertionReason,
+  referenceSnippet,
+  matchesCommand,
+  searchCommands,
+} from '../../src/core/commandReference';
 import { insertCommand, setScoreInstrument } from '../../src/core/scoreTools';
 import { parseScore } from '../../src/core/parser';
 
@@ -19,6 +24,45 @@ const context = {
 const command = (name: string) => COMMANDS.find((item) => item.name === name)!;
 
 describe('contextual command reference', () => {
+  it('looks up command names without incidental mentions in other rules', () => {
+    for (const name of [
+      'time',
+      'tempo',
+      'track',
+      'rest',
+      'chord',
+      'legato',
+      'staccato',
+      'tuplet',
+      'repeat',
+    ]) {
+      expect(
+        searchCommands(name, context).map((card) => card.name),
+        name,
+      ).toEqual([name]);
+    }
+    expect(searchCommands('  STACCATO[', context).map((card) => card.name)).toEqual(['staccato']);
+    expect(searchCommands('rest bar', context).map((card) => card.name)).toEqual(['rest-bar']);
+    expect(searchCommands('chord:', context).map((card) => card.name)).toEqual(['chord']);
+    expect(searchCommands('chord symbol', context).map((card) => card.name)).toEqual([
+      'chord-symbol',
+    ]);
+    expect(searchCommands('leg', context).map((card) => card.name)).toEqual(['legato']);
+    expect(searchCommands('chord s', context).map((card) => card.name)).toEqual(['chord-symbol']);
+  });
+  it('retains rule/key searches and constrains named queries before applying extra terms', () => {
+    expect(searchCommands('master bodyChain', context).map((card) => card.name)).toEqual([
+      'master',
+    ]);
+    expect(searchCommands('master missing', context)).toEqual([]);
+    expect(searchCommands('duration 0.25', context).map((card) => card.name)).toContain('note');
+    expect(searchCommands('bodyChain', context).map((card) => card.name)).toEqual([
+      'master',
+      'through',
+    ]);
+    expect(searchCommands('', context)).toEqual(COMMANDS);
+    expect(searchCommands('nonsense command', context)).toEqual([]);
+  });
   it('inserts every card with a custom-only library and shows matching routing/new-track examples', () => {
     for (const card of COMMANDS) {
       const inserted = insertCommand(

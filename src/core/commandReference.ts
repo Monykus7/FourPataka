@@ -1,4 +1,4 @@
-import { type CommandDefinition } from './commands';
+import { COMMANDS, type CommandDefinition } from './commands';
 
 export interface ReferenceContext {
   meterChangeBeat?: number;
@@ -49,4 +49,26 @@ export function matchesCommand(command: CommandDefinition, snippet: string, quer
   const text =
     `${command.name} ${command.group} ${command.description} ${command.syntax} ${command.rules} ${snippet}`.toLowerCase();
   return terms.every((term) => text.includes(term));
+}
+
+export function searchCommands(query: string, context: ReferenceContext) {
+  const nameQuery = query
+    .trim()
+    .toLowerCase()
+    .replace(/[:[{}]+$/, '')
+    .replace(/-/g, ' ')
+    .replace(/\s+/g, ' ');
+  if (!nameQuery) return COMMANDS;
+  const nameOf = (command: CommandDefinition) => command.name.replace(/-/g, ' ');
+  // Resolve names before prose: rules often mention other commands as restrictions.
+  const exact = COMMANDS.filter((command) => nameOf(command) === nameQuery);
+  if (exact.length) return exact;
+  const prefixes = COMMANDS.filter((command) => nameOf(command).startsWith(nameQuery));
+  if (prefixes.length) return prefixes;
+  const firstTerm = nameQuery.split(/\s+/)[0];
+  const named = COMMANDS.filter((command) => nameOf(command) === firstTerm);
+  const candidates = named.length ? named : COMMANDS;
+  return candidates.filter((command) =>
+    matchesCommand(command, referenceSnippet(command, context), query),
+  );
 }
