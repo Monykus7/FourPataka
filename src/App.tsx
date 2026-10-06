@@ -1,4 +1,3 @@
-import CompositionSettings from './components/CompositionSettings';
 import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
@@ -86,14 +85,7 @@ import CommandReference from './components/CommandReference';
 import WavExport from './components/WavExport';
 import HarmonicPolarity from './components/HarmonicPolarity';
 import RecoveryDialog from './components/RecoveryDialog';
-import {
-  appendTrack,
-  insertCommand,
-  nextTrackKey,
-  setScoreDirective,
-  addMeterChange,
-  setScoreChain,
-} from './core/scoreTools';
+import { appendTrack, insertCommand, nextTrackKey, setScoreChain } from './core/scoreTools';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
@@ -106,6 +98,8 @@ function readPreferences() {
     const saved = JSON.parse(localStorage.getItem(PREFERENCES_KEY) ?? '{}');
     return {
       autocomplete: saved.autocomplete !== false,
+      composeSide:
+        saved.composeSide === 'timeline' ? ('timeline' as const) : ('reference' as const),
       theme: resolveTheme(saved.theme).id,
       monitor:
         typeof saved.monitor === 'number' && Number.isFinite(saved.monitor)
@@ -113,7 +107,12 @@ function readPreferences() {
           : 0.35,
     };
   } catch {
-    return { autocomplete: true, monitor: 0.35, theme: 'original' };
+    return {
+      autocomplete: true,
+      composeSide: 'reference' as 'reference' | 'timeline',
+      monitor: 0.35,
+      theme: 'original',
+    };
   }
 }
 function MiniWave({ kind, sound }: { kind: string; sound?: Sound }) {
@@ -724,6 +723,66 @@ export default function App() {
     [],
   );
 
+  const referencePanel = (
+    <CommandReference
+      open={commandsOpen}
+      onOpen={setCommandsOpen}
+      context={{
+        instrumentKey: instruments.some((i) => i.key === commandInstrument)
+          ? commandInstrument
+          : preset.key,
+        chainKey: chainKeys.includes(commandChain) ? commandChain : (chainKeys[0] ?? ''),
+        meterChangeBeat: nextMeterBoundary(score.beats, score.meter, score.meterChanges),
+        newTrackKey: nextTrackKey(
+          project.scoreText,
+          instruments.map((i) => i.key),
+        ),
+        targetKey:
+          score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '',
+        playing: playback === 'score',
+        invalid: score.diagnostics.some((d) => d.message !== 'Add a track to start composing.'),
+      }}
+      tracks={score.tracks.map((t) => t.key)}
+      instruments={instruments}
+      chains={project.processing.library}
+      onTrack={setSelectedTrack}
+      onInstrument={setCommandInstrument}
+      onChain={setCommandChain}
+      onInsert={(command) => {
+        try {
+          const targetKey =
+            score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '';
+          const text = insertCommand(
+            project.scoreText,
+            instruments.map((i) => i.key),
+            command.name,
+            targetKey,
+            instruments.some((i) => i.key === commandInstrument) ? commandInstrument : preset.key,
+            chainKeys,
+            chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
+          );
+          change((p) => ({ ...p, scoreText: text }));
+          setToast(
+            command.scope === 'track'
+              ? `Inserted ${command.name} into ${targetKey}.`
+              : `Inserted ${command.name}.`,
+          );
+        } catch (error) {
+          setToast((error as Error).message);
+        }
+      }}
+    />
+  );
+  const timelinePanel = (
+    <Timeline
+      score={timelineScore}
+      beat={beat}
+      playing={playback === 'score'}
+      activeEvents={activeEvents}
+      selectedEvent={selectedEvent}
+      onSelect={setSelectedEvent}
+    />
+  );
   return (
     <div className="app-shell">
       <header className="topbar">
@@ -1519,6 +1578,22 @@ export default function App() {
                       </h2>
                     </div>
                     <div className="editor-options">
+                      <label>
+                        Beside score
+                        <select
+                          aria-label="Panel beside score"
+                          value={preferences.composeSide}
+                          onChange={(event) =>
+                            setPreferences((p) => ({
+                              ...p,
+                              composeSide: event.target.value as 'reference' | 'timeline',
+                            }))
+                          }
+                        >
+                          <option value="reference">Command reference</option>
+                          <option value="timeline">Timeline</option>
+                        </select>
+                      </label>
                       <button
                         className="secondary-button"
                         disabled={playback === 'score'}
@@ -1556,45 +1631,6 @@ export default function App() {
                       </label>
                     </div>
                   </div>
-                  <CompositionSettings
-                    tempo={score.tempo}
-                    meterChanges={score.meterChanges}
-                    nextChangeBeat={nextMeterBoundary(score.beats, score.meter, score.meterChanges)}
-                    onAddChange={(meter, beat) => {
-                      try {
-                        change((p) => ({
-                          ...p,
-                          scoreText: addMeterChange(
-                            p.scoreText,
-                            instruments.map((i) => i.key),
-                            chainKeys,
-                            meter,
-                            beat,
-                          ),
-                        }));
-                      } catch (e) {
-                        setToast((e as Error).message);
-                      }
-                    }}
-                    meter={score.meter}
-                    disabled={
-                      playback === 'score' ||
-                      score.diagnostics.some((d) => d.message !== 'Add a track to start composing.')
-                    }
-                    onApply={(tempo, meter) => {
-                      try {
-                        const keys = instruments.map((i) => i.key);
-                        let text = project.scoreText;
-                        if (Number(tempo) !== score.tempo)
-                          text = setScoreDirective(text, keys, 'tempo', tempo, chainKeys);
-                        if (meter !== meterLabel(score.meter))
-                          text = setScoreDirective(text, keys, 'time', meter, chainKeys);
-                        change((p) => ({ ...p, scoreText: text }));
-                      } catch (e) {
-                        setToast((e as Error).message);
-                      }
-                    }}
-                  />
                   <Suspense fallback={<div className="editor-loading">Opening score editor…</div>}>
                     <ScoreEditor
                       value={project.scoreText}
@@ -1646,78 +1682,10 @@ export default function App() {
                     </div>
                   )}
                 </section>
-                <CommandReference
-                  open={commandsOpen}
-                  onOpen={setCommandsOpen}
-                  context={{
-                    instrumentKey: instruments.some((i) => i.key === commandInstrument)
-                      ? commandInstrument
-                      : preset.key,
-                    chainKey: chainKeys.includes(commandChain)
-                      ? commandChain
-                      : (chainKeys[0] ?? ''),
-                    meterChangeBeat: nextMeterBoundary(
-                      score.beats,
-                      score.meter,
-                      score.meterChanges,
-                    ),
-                    newTrackKey: nextTrackKey(
-                      project.scoreText,
-                      instruments.map((i) => i.key),
-                    ),
-                    targetKey:
-                      score.tracks.find((t) => t.key === selectedTrack)?.key ??
-                      score.tracks[0]?.key ??
-                      '',
-                    playing: playback === 'score',
-                    invalid: score.diagnostics.some(
-                      (d) => d.message !== 'Add a track to start composing.',
-                    ),
-                  }}
-                  tracks={score.tracks.map((t) => t.key)}
-                  instruments={instruments}
-                  chains={project.processing.library}
-                  onTrack={setSelectedTrack}
-                  onInstrument={setCommandInstrument}
-                  onChain={setCommandChain}
-                  onInsert={(command) => {
-                    try {
-                      const targetKey =
-                        score.tracks.find((t) => t.key === selectedTrack)?.key ??
-                        score.tracks[0]?.key ??
-                        '';
-                      const text = insertCommand(
-                        project.scoreText,
-                        instruments.map((i) => i.key),
-                        command.name,
-                        targetKey,
-                        instruments.some((i) => i.key === commandInstrument)
-                          ? commandInstrument
-                          : preset.key,
-                        chainKeys,
-                        chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
-                      );
-                      change((p) => ({ ...p, scoreText: text }));
-                      setToast(
-                        command.scope === 'track'
-                          ? `Inserted ${command.name} into ${targetKey}.`
-                          : `Inserted ${command.name}.`,
-                      );
-                    } catch (error) {
-                      setToast((error as Error).message);
-                    }
-                  }}
-                />
+                {preferences.composeSide === 'timeline' ? timelinePanel : referencePanel}
               </div>
               <div className="composition-overview">
-                <Timeline
-                  score={timelineScore}
-                  beat={beat}
-                  playing={playback === 'score'}
-                  activeEvents={activeEvents}
-                  selectedEvent={selectedEvent}
-                  onSelect={setSelectedEvent}
-                />
+                {preferences.composeSide === 'timeline' ? referencePanel : timelinePanel}
                 <section className="panel track-instances" aria-label="Independent track sounds">
                   <div className="section-title">
                     <h3>Independent track sounds</h3>

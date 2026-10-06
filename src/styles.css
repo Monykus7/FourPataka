@@ -2653,3 +2653,18 @@ dd {
     justify-content: flex-end;
   }
 }
+
+.compose-layout > .timeline-panel {
+  height: var(--score-panel-height, 600px);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+.composition-overview > .commands-panel[data-expanded='true'] {
+  height: 500px;
+}
+.editor-options select {
+  max-width: 160px;
+  padding: 6px;
+  font-size: 10px;
+}
