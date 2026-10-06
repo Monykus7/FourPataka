@@ -1,4 +1,5 @@
 import { SCORE_KEY, pitch } from './music';
+import { beatExpression } from './beatExpression';
 import { lexScore, type ScoreToken } from './scoreLexer';
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
@@ -141,10 +142,10 @@ export function parseScore(
       return;
     }
     if (!current) {
-      const meterChange = /^time\s+(\S+)\s+at\s+(\S+)$/.exec(line);
+      const meterChange = /^time\s+(\S+)\s+at\s+(.+)$/.exec(line);
       if (meterChange) {
         try {
-          const beat = Number(meterChange[2]);
+          const beat = beatValue(beatExpression(meterChange[2]));
           if (!Number.isFinite(beat) || beat <= 0 || beat > 1_000_000)
             throw new Error(
               'Meter-change position must be greater than 0 and at most 1,000,000 quarter beats.',

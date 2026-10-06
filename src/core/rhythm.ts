@@ -11,7 +11,12 @@ export interface WrittenDuration {
 }
 const gcd = (a: bigint, b: bigint): bigint => (b === 0n ? a : gcd(b, a % b));
 export function fraction(numerator: bigint, denominator: bigint): BeatFraction {
-  const divisor = gcd(numerator, denominator);
+  if (!denominator) throw new Error('Cannot divide by zero.');
+  if (denominator < 0n) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+  const divisor = gcd(numerator < 0n ? -numerator : numerator, denominator);
   return { numerator: numerator / divisor, denominator: denominator / divisor };
 }
 export function addBeats(a: BeatFraction, b: BeatFraction): BeatFraction {
