@@ -16,7 +16,8 @@
         "docs/extensions/ARCHITECTURE.md",
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
-        "docs/knowledge/DECISIONS.md"
+        "docs/knowledge/DECISIONS.md",
+        "CONTRIBUTING.md"
       ]
     },
     {
