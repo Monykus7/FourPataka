@@ -1,3 +1,4 @@
+import { ideWorkflow } from '../helpers/ide';
 import { blockWorkflow } from '../helpers/blocks';
 import { demoWorkflow } from '../helpers/demo';
 import { rhythmWorkflow } from '../helpers/rhythm';
@@ -550,9 +551,11 @@ test('packaged Compose applies timing and instruments to source with undo', asyn
   await editor.fill(
     'tempo 120\ntime 4/4\ntrack melody using brightReed {\n C5 whole\n}\ntrack bass using softBass {\n C3 whole\n}',
   );
-  await page.getByRole('combobox', { name: 'Time signature preset' }).selectOption('7/8');
-  await page.getByRole('spinbutton', { name: 'Composition tempo' }).fill('96');
-  await page.getByRole('button', { name: 'Apply timing' }).click();
+  const source = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText,
+  );
+  await editor.click();
+  await editor.fill(source.replace('time 4/4', 'time 7/8').replace('tempo 120', 'tempo 96'));
   await expect(editor).toContainText('time 7/8');
   await expect(editor).toContainText('tempo 96');
   await expect(page.locator('.timeline-panel .tag')).toHaveText('7/8');
@@ -717,4 +720,8 @@ test('packaged demo score loads with undo plays and survives autosave reload', a
 
 test('packaged articulation and grouped tuplet blocks play and preserve saved source', async () => {
   await blockWorkflow(await app.firstWindow());
+});
+
+test('packaged IDE indent repeat bar rests and adjacent panel preference', async () => {
+  await ideWorkflow(await app.firstWindow());
 });

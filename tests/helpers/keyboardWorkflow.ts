@@ -5,6 +5,12 @@ export async function tabTo(page: Page, target: Locator) {
   await expect(target).toBeVisible();
   for (let i = 0; i < 220; i++) {
     if (await target.evaluate((element) => element === document.activeElement)) return;
+    if (
+      await page.evaluate(
+        () => document.activeElement?.getAttribute('aria-label') === 'Score editor',
+      )
+    )
+      await page.keyboard.press('Control+m');
     await page.keyboard.press('Tab');
   }
   throw new Error(

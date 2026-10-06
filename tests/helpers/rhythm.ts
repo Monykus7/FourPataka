@@ -5,9 +5,8 @@ export async function rhythmWorkflow(page: Page) {
   const source =
     'time 4/4\ntrack lead using sine {\n C4 whole\n staccato[ triplet[ C4 8th ] ]\n legato[\n triplet[\n D4 8th\n E4 8th\n ]\n ]\n}';
   await editor.fill(source);
-  await page.getByRole('textbox', { name: 'Meter change signature', exact: true }).fill('7/8');
-  await page.getByRole('spinbutton', { name: 'Meter change position', exact: true }).fill('4');
-  await page.getByRole('button', { name: 'Add meter change', exact: true }).click();
+  await editor.click();
+  await editor.fill(source.replace('time 4/4', 'time 4/4\ntime 7/8 at 4'));
   await expect(editor).toContainText('time 7/8 at 4');
   const timeline = page.getByRole('region', { name: 'Timeline', exact: true });
   await expect(timeline).toContainText('7/8');

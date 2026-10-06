@@ -453,9 +453,35 @@ export function withExampleScore(project: Project): Project {
       (track) => defaults.instruments.find((preset) => preset.id === track.presetId)!.key,
     ),
   );
+  const demo = parseScore(
+    defaults.scoreText,
+    defaults.instruments.map((p) => p.key),
+    defaults.processing.library.map((p) => p.key),
+  );
+  const chainKeys = new Set(
+    [demo.master?.key, ...demo.tracks.map((track) => track.chainKey)].filter(Boolean),
+  );
   return {
     ...project,
     scoreText: EXAMPLE_SCORE,
+    processing: {
+      ...project.processing,
+      library: [
+        ...project.processing.library,
+        ...defaults.processing.library
+          .filter(
+            (preset) =>
+              chainKeys.has(preset.key) &&
+              !project.processing.library.some((existing) => existing.key === preset.key),
+          )
+          .map((preset) => ({
+            ...preset,
+            id: project.processing.library.some((existing) => existing.id === preset.id)
+              ? crypto.randomUUID()
+              : preset.id,
+          })),
+      ],
+    },
     instruments: [
       ...project.instruments,
       ...defaults.instruments

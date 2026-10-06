@@ -1,12 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { comparisonPhrase, DEFAULT_MATERIAL } from '../../src/core/comparison';
-import { createProject, importProject } from '../../src/core/project';
+import { createProject, importProject, reconcileTracks } from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
 
-const project = createProject();
+let project = createProject();
 // Keep clipping expectations independent of the evolving starter song.
 project.scoreText =
   'tempo 120\ntrack melody using brightReed {\n C5 quarter\n chord:(Bb D F)5 8th\n rest 8th\n G5 half\n}\ntrack bass using softBass {\n Bb2 half\n F2 half\n}';
+project = reconcileTracks(
+  project,
+  parseScore(
+    project.scoreText,
+    project.instruments.map((p) => p.key),
+    project.processing.library.map((p) => p.key),
+  ),
+);
 const score = parseScore(
   project.scoreText,
   project.instruments.map((i) => i.key),

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyPreset,
   withExampleScore,
-  createProject,
+  createProject as createStarterProject,
   importProject,
   reconcileTracks,
   updateProcessingAssignments,
@@ -11,6 +11,20 @@ import { parseScore } from '../../src/core/parser';
 import { mathematicalPreset } from '../../src/core/music';
 import { makePedal } from '../../src/core/pedals';
 
+// Ownership tests use a stable fixture independent of the user-editable demo.
+const createProject = () => {
+  const project = createStarterProject();
+  const scoreText =
+    'tempo 120\ntime 4/4\ntrack melody using brightReed {\n C5 whole\n}\ntrack bass using softBass {\n C3 whole\n}';
+  return reconcileTracks(
+    { ...project, scoreText, tracks: [], processing: { ...project.processing, tracks: {} } },
+    parseScore(
+      scoreText,
+      project.instruments.map((p) => p.key),
+      project.processing.library.map((p) => p.key),
+    ),
+  );
+};
 const reparse = (project: ReturnType<typeof createProject>) =>
   reconcileTracks(
     project,
@@ -233,7 +247,7 @@ it('round-trips point geometry and rejects malformed optional editor data', () =
 
 it('loads the demo without replacing customized library entries or colliding restored preset IDs', () => {
   const project = createProject();
-  const reed = project.instruments.find((preset) => preset.key === 'brightReed')!;
+  const reed = project.instruments.find((preset) => preset.key === 'sine')!;
   reed.key = 'myReed';
   reed.sound.trim = -23;
   project.scoreText = 'track custom using myReed {\n C4 quarter\n}';
@@ -248,8 +262,21 @@ it('loads the demo without replacing customized library entries or colliding res
     parseScore(
       loaded.scoreText,
       loaded.instruments.map((preset) => preset.key),
+      loaded.processing.library.map((preset) => preset.key),
     ).diagnostics,
   ).toEqual([]);
   expect(importProject(JSON.stringify(loaded))).toEqual(loaded);
   expect(loaded.comparison).toEqual(before.comparison);
+});
+
+it('restores a missing demo chain key while preserving a renamed library chain and unique IDs', () => {
+  const project = createStarterProject();
+  const chain = project.processing.library.find((preset) => preset.key === 'clean')!;
+  chain.key = 'personalClean';
+  const loaded = reparse(withExampleScore(project));
+  expect(loaded.processing.library.find((p) => p.key === 'personalClean')).toEqual(chain);
+  expect(new Set(loaded.processing.library.map((p) => p.id)).size).toBe(
+    loaded.processing.library.length,
+  );
+  expect(importProject(JSON.stringify(loaded))).toEqual(loaded);
 });

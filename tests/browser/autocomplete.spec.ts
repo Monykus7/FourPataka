@@ -18,24 +18,24 @@ test('voicing completion accepts user-selected pitches and duration without a de
   const editor = await completeCommand(page, 'voic', 'voicing');
   await expect(editor).toHaveText('chord:() ');
   await page.keyboard.insertText('D4 F#4 A4');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('quarter');
   await expect(editor).toHaveText('chord:(D4 F#4 A4) quarter');
 });
 
-test('track completion leaves name, instrument and events blank and Tab reaches each field', async ({
+test('track completion leaves name, instrument and events blank and F2 reaches each field', async ({
   page,
 }) => {
   const editor = await completeCommand(page, 'tra', 'track');
   await expect(editor).toHaveText('track  using  {\n  \n}');
   await page.keyboard.insertText('myLead');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('sine');
-  await editor.press('Shift+Tab');
+  await editor.press('Shift+F2');
   await expect(editor).toBeFocused();
   await page.keyboard.insertText('solo');
-  await editor.press('Tab');
-  await editor.press('Tab');
+  await editor.press('F2');
+  await editor.press('F2');
   await page.keyboard.insertText('D4 half');
   await expect(editor).toHaveText('track solo using sine {\n  D4 half\n}', { useInnerText: true });
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
@@ -61,7 +61,7 @@ test('command shells leave arguments blank while explicit meter and preset choic
   const note = await completeCommand(page, 'not', 'note');
   await expect(note).toHaveText(' ');
   await page.keyboard.insertText('G#3');
-  await note.press('Tab');
+  await note.press('F2');
   await page.keyboard.insertText('8th');
   await expect(note).toHaveText('G#3 8th');
   const editor = page.getByRole('textbox', { name: 'Score editor' });

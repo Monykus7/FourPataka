@@ -31,9 +31,9 @@ export async function chordShellWorkflow(page: Page, prefix: string) {
   await expect(editor).toHaveText(source.replace(prefix, 'chord:() '), { useInnerText: true });
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeDisabled();
   await page.keyboard.insertText('D F# A');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('4');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('half');
   await expect(editor).toHaveText(source.replace(prefix, 'chord:(D F# A)4 half'), {
     useInnerText: true,
