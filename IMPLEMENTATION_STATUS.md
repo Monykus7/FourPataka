@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-05. Latest verified release: v0.21.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-05. Latest verified release: v0.21.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -397,3 +397,10 @@ Release artifact: `release/FourPataka-0.20.0-win-x64.exe`. Final native-tested a
 Implemented: staccato half gates with bounded releases; connected-note legato with independent attacks and bounded overlap; 32nd/64th, dotted and double-dotted durations; exact per-event triplets and N:M tuplets; global bar-boundary meter changes with continuous bar numbers. Compose controls, Track Maker, timeline inspection, syntax highlighting, empty tuplet completion fields and eighteen reference cards expose the grammar. Source owns timing; snapshots, independent sound/pedal copies, schema 2, phase continuity, latency and finite tails/Stop remain intact. Comparison clipping honors gates and phrase ends. Shared live/offline timing preserves sounding overlaps independently of written progress.
 
 Verified: 170 unit tests, 33 distinct affected browser checks across runs, all 16 packaged native checks, production build, formatting and knowledge build/check. Browser numeric proofs confirm staccato gaps, long-release caps, independent legato attacks, shared voice/WAV sample parity, live scheduling beyond a tiny final note and Stop cleanup. Native checks cover rhythm save/reload, keyboard-only studio use, JSON/WAV, menus, copy ownership, connected pedals and renderer isolation. Desktop and 390-pixel visual review shows wrapped controls without horizontal overflow. The unsigned portable v0.21.0 package was built and opened; its extracted app.asar is checked against the native-tested package hash `15C5755825E2DD8F8C21BCAC0F953D10127DF199E3CB7DB56AE0054201F6D517`. True slurs/ties/glide, grouped/nested tuplets, additive/per-track meters, general modularity and physical device/listening checks remain open.
+
+
+### Compose rhythm demonstration — v0.21.1
+
+The fresh-project score is a commented seven-bar, two-track demonstration at 116 BPM: triplets, 5:4 tuplets, dots/double dots, 32nd/64th accents, staccato/legato, chord symbols, explicit voicings and global 4/4→7/8→3/4→4/4 changes at beats 8/15/21. Both tracks total exactly 25 quarter beats. Existing saved source is preserved until the explicit Load demo score action; loading is one undo operation, retains customized libraries/owned sounds and restores only missing demo keys with collision-free IDs.
+
+Verification: 171 unit checks, production build, eight distinct affected browser checks across runs (demo load/undo/redo/full playback/reload, unclipped finite default WAV, rhythm/live cleanup and keyboard workflows), four focused packaged native checks (demo playback/reload, timing/instrument undo, keyboard studio and native WAV saving), formatting and knowledge build/check. Desktop/narrow visual review confirms wrapped header controls and no horizontal overflow at 390 pixels. Portable contents are checked against native-tested app.asar SHA-256 `1A1E902058F4AF0A690241217120C3C050D62FFCFF21319A95D05F8641FA244B`. This patch adds no grammar/schema, changes no broader milestone gates, and does not close physical listening/device checks.

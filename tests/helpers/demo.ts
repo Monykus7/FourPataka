@@ -16,7 +16,12 @@ export async function demoWorkflow(page: Page) {
     )
     .toBe(original);
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
-  await expect(editor).toContainText('64th staccato');
+  // CodeMirror virtualizes off-screen lines; inspect authoritative source for the final flourish.
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toContain('64th staccato');
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Load demo score', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Load demo score', exact: true })).toBeEnabled({

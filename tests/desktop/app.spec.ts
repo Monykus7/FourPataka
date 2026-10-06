@@ -537,6 +537,10 @@ test('packaged Compose applies timing and instruments to source with undo', asyn
   await expect.poll(() => controls.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeVisible();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
+  // Initial-meter edits need a fixture without the demo's scheduled bar boundaries.
+  await editor.fill(
+    'tempo 120\ntime 4/4\ntrack melody using brightReed {\n C5 whole\n}\ntrack bass using softBass {\n C3 whole\n}',
+  );
   await page.getByRole('combobox', { name: 'Time signature preset' }).selectOption('7/8');
   await page.getByRole('spinbutton', { name: 'Composition tempo' }).fill('96');
   await page.getByRole('button', { name: 'Apply timing' }).click();
