@@ -1,5 +1,7 @@
 import { DURATIONS, SCORE_KEY, pitch } from './music';
 import { DEFAULT_METER, parseMeter, type TimeSignature } from './meter';
+import { expandChordSymbol, type ChordExpansion } from './chordSymbols';
+import { CHORD_SHAPES, type ChordShapeRegistry } from '../modules/chords';
 
 export interface Diagnostic {
   from: number;
@@ -8,6 +10,7 @@ export interface Diagnostic {
   message: string;
 }
 export interface ScoreEvent {
+  chordSymbol?: ChordExpansion & { from: number; to: number };
   id: string;
   track: string;
   beat: number;
@@ -48,6 +51,7 @@ export function parseScore(
   text: string,
   instrumentKeys: string[],
   chainKeys: string[] = [],
+  chordShapes: ChordShapeRegistry = CHORD_SHAPES,
 ): CompiledScore {
   const result: CompiledScore = {
     tempo: 120,
@@ -170,24 +174,33 @@ export function parseScore(
     }
     const [, expression, word] = event;
     let notes: string[] = [];
+    let chordSymbol: ScoreEvent['chordSymbol'];
     try {
       if (expression === 'rest') notes = [];
       else if (/^chord\b/.test(expression)) {
-        const chord = /^chord\s*:\s*\(\s*([^)]*?)\s*\)\s*([0-8])?$/.exec(expression);
-        if (!chord || !chord[1].trim())
-          throw new Error('Use chord:(Bb D F)5 or chord:(Bb4 D5 F5). Chords cannot be empty.');
-        notes = chord[1]
-          .trim()
-          .split(/\s+/)
-          .map((note) => {
-            if (/^[A-G][#b]?$/.test(note)) {
-              if (!chord[2])
-                throw new Error(`“${note}” needs an octave or a trailing chord octave.`);
-              return note + chord[2];
-            }
-            return note;
-          });
-        if (notes.length > 32) throw new Error('A chord may contain at most 32 notes.');
+        const symbolic = /^chord\s*:\s*([^()\s]+)$/.exec(expression);
+        if (symbolic) {
+          const expansion = expandChordSymbol(symbolic[1], chordShapes);
+          const symbolFrom = from + expression.lastIndexOf(symbolic[1]);
+          chordSymbol = { ...expansion, from: symbolFrom, to: symbolFrom + symbolic[1].length };
+          notes = expansion.notes;
+        } else {
+          const chord = /^chord\s*:\s*\(\s*([^)]*?)\s*\)\s*([0-8])?$/.exec(expression);
+          if (!chord || !chord[1].trim())
+            throw new Error('Use chord:(Bb D F)5 or chord:(Bb4 D5 F5). Chords cannot be empty.');
+          notes = chord[1]
+            .trim()
+            .split(/\s+/)
+            .map((note) => {
+              if (/^[A-G][#b]?$/.test(note)) {
+                if (!chord[2])
+                  throw new Error(`“${note}” needs an octave or a trailing chord octave.`);
+                return note + chord[2];
+              }
+              return note;
+            });
+          if (notes.length > 32) throw new Error('A chord may contain at most 32 notes.');
+        }
       } else notes = [expression];
       const frequencies = notes.map((note) => pitch(note).frequency);
       const compiled: ScoreEvent = {
@@ -200,6 +213,7 @@ export function parseScore(
         from,
         to,
         line: index + 1,
+        ...(chordSymbol ? { chordSymbol } : {}),
       };
       current.events.push(compiled);
       result.events.push(compiled);

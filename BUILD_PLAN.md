@@ -729,3 +729,7 @@ Gate: a clean checkout builds the supported examples and runs the relevant contr
 Each milestone ends in a separately reviewable usable release with updated tutorials, examples, contract checks, compatibility fixtures, status/knowledge summaries and roughly eight useful focused commits pushed under the configured identity. Open the verified portable application after an x.x.0 implementation release. Documentation/planning work alone does not bump the application version or mark a runtime milestone complete.
 
 Default start: M1 → M2 → M3. Useful pedal/preset contributions and stage 7 learning can proceed against those landed boundaries while M4/M5 are independently scheduled; do not require all six milestones before contributors can do anything. Existing manual release gates remain open. Runtime plugin loading, marketplace/discovery, automatic upgrades, remote code and native capability expansion require separately approved future designs.
+
+### Active synthesis/notation pilot
+
+User-selected next release: extensible chord shapes plus 32 harmonics. Implement the bundled chord contract and example, predictable root-position symbol expansion (default octave 4, @octave override), editor hover/keyboard previews, and 16-to-32 migration preserving existing coefficients and owned copies. Verify shared live/WAV behavior and portable workflows. General M1–M6 gates remain open; this pilot precedes their default sequence and provides a notation contribution boundary for testing.
