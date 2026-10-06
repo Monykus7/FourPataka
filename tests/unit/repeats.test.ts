@@ -45,3 +45,14 @@ it('recomputes rest bar within repeats and honors global meter directives below 
 it('reports an invalid repeated source section once instead of once per iteration', () => {
   expect(parse('repeat 128 { C9 quarter }').diagnostics).toHaveLength(1);
 });
+
+it('keeps existing instrument and pedal keys named repeat valid in track headers', () => {
+  const score = parseScore(
+    'track lead using repeat through repeat{\nC4 quarter\n}',
+    ['repeat'],
+    ['repeat'],
+  );
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks[0].instrumentKey).toBe('repeat');
+  expect(score.tracks[0].chainKey).toBe('repeat');
+});

@@ -47,6 +47,12 @@ export function lexScore(text: string): ScoreToken[] {
         ...(repeatCount !== undefined ? { repeatCount } : {}),
       });
     };
+    // A preset/chain may legally be named repeat; a complete header owns its identifiers.
+    if (/^track\s+\S+\s+using\s+\S+(?:\s+through\s+\S+)?\s*\{$/.test(source.trim())) {
+      emit(0, source.length, 'text');
+      offset += raw.length + 1;
+      return;
+    }
     let cursor = 0;
     for (const match of source.matchAll(
       /\b(staccato|legato)\s*\[|\b(triplet|tuplet:\d+:\d+)\s*\[|\b(repeat)(?:\s+(\d+))?\s*\{|[\[\]}]/g,
