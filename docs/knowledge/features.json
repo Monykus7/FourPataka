@@ -17,7 +17,8 @@
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
         "docs/knowledge/DECISIONS.md",
-        "CONTRIBUTING.md"
+        "CONTRIBUTING.md",
+        "docs/extensions/PEDALS.md"
       ]
     },
     {
