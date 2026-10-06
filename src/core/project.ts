@@ -54,110 +54,74 @@ export const EXAMPLE_SCORE = `// Rhythm demo: quarter-note tempo stays constant 
 tempo 116
 time 4/4
 time 7/8 at 8
-time 3/4 at 15
-time 4/4 at 21
+time 1/2 at 22
 
-track melody using brightReed {
-  // Bar 1: a connected triplet group fills one quarter beat.
-  legato[
-    triplet[
-      C5 eighth
-      D5 eighth
-      E5 eighth
-    ]
-  ]
-  staccato[ G5 quarter ]
-  chord:Cmaj7@4 quarter
+track melody using sine through clean{
+  //Bar 1
+  staccato[ Cmaj@5 quarter ]
+  chord:Bdim7@5 quarter
   rest 8th
-  staccato[ E5 8th ]
+  staccato[chord:(G6 D6)  quarter.]
 
-  // Bar 2: dotted and double-dotted rhythm.
+  // Bar 2
   legato[
-    F5 quarter.
-    E5 8th
+    G5 quarter.
+    G5 8th
+    F#5 8th
+    Gmaj7@5 8th
   ]
-  staccato[ D5 quarter.. ]
-  C5 16th
+  legato[D5 quarter..]
+  rest 16th
 
-  // Bar 3, 7/8: five sixteenths in the time of four.
+  // Bar 3
   legato[
-    tuplet:5:4[
-      E5 16th
-      F5 16th
-      G5 16th
-      A5 16th
-      G5 16th
+    tuplet:4:3[
+      F5 8th
+      A5 8th
+      C5 8th
+      A5 8th
     ]
   ]
-  Fmaj7@4 quarter.
+  Fmaj7@4 quarter
   staccato[ G5 8th ]
   rest 8th
 
-  // Bar 4, 7/8: explicit voicing alongside chord symbols.
+  // Bar 4
   staccato[ chord:(G4 B4 D5) quarter ]
   legato[
     A5 8th
     G5 8th
-    F5 quarter
-    E5 8th
+    Eb5 8th
   ]
-
-  // Bar 5, 3/4: short accents after a held chord.
-  chord:G7@3 half
-  rest 8th
-  staccato[
-    D5 16th
-    G5 32nd
-  ]
-  legato[
-    A5 32nd
-    // Bar 6: a connected phrase can cross a bar line.
-    B5 quarter
-    A5 quarter
-    G5 8th.
-  ]
-  staccato[
-    E5 64th
-    F5 64th
-    G5 32nd
-  ]
-
-  // Bar 7, 4/4: resolve, then leave space for the release.
-  chord:C6@4 half.
-  rest quarter
+  // Bar 5
+  E5 half
 }
 
 track bass using softBass {
   // Bars 1–2, 4/4.
   staccato[
     C3 quarter
-    G2 quarter
+    F3 quarter
   ]
-  C3 half
-  F2 half
-  G2 quarter.
-  rest 8th
+  legato[
+    A3 half
+    G3 half
+    staccato[F#3 8th]
+    G3 quarter.
+  ]
 
   // Bars 3–4, 7/8.
-  F2 quarter.
-  C3 quarter
-  F2 quarter
-  G2 quarter
-  D3 quarter
-  G2 quarter.
-
-  // Bars 5–6, 3/4.
-  G2 half
-  D3 quarter
-  staccato[ G2 quarter ]
-  legato[
-    B2 quarter
-    D3 quarter
-  ]
-
-  // Bar 7, 4/4.
-  C3 half.
-  rest quarter
+   C2 quarter
+   F2 quarter
+   E2 quarter.
+   C2 quarter
+   Eb2 quarter
+   staccato[
+     D2 8th 
+     C2 8th 
+     Bb2 8th 
+   ]
+   C2 half
 }`;
 export function createProject(): Project {
   const bright = mathematicalPreset('square');
