@@ -68,3 +68,16 @@ it('accepts the requested block example and preserves bare-chord expansion spans
   expect(parse('C9 quarter').diagnostics.length).toBeGreaterThan(0);
   expect(parse('legato[\nGmaj7@3 eighth. triplet\nchord:Cmaj7 quarter\n]').beats).toBe(1.5);
 });
+
+it('scales grouped triplets, chords and rests exactly and keeps articulation across nested tuplets', () => {
+  const score = parse(
+    'legato[\ntriplet[\n C4 eighth\n Gmaj7 eighth\n D4 eighth\n]\nE4 quarter\n]\nF4 quarter',
+  );
+  expect(score.diagnostics).toEqual([]);
+  expect(score.events.map((e) => e.beat)).toEqual([0, 1 / 3, 2 / 3, 1, 2]);
+  expect(score.events[2].legatoToNext).toBe(true);
+  expect(score.events[3].legatoToNext).toBeUndefined();
+  expect(parse('tuplet:5:4[\nrest quarter\nC4 quarter\n]').beats).toBe(1.6);
+  expect(parse('triplet[\ntuplet:5:4[ C4 eighth ]\n]').events[0].duration).toBeCloseTo(4 / 15, 12);
+  expect(parse('tuplet:1:0[ C4 eighth ]').diagnostics.length).toBeGreaterThan(0);
+});

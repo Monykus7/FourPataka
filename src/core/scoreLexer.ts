@@ -1,12 +1,13 @@
 import type { Articulation } from './articulation';
 
 export interface ScoreToken {
-  kind: 'text' | 'articulation-open' | 'articulation-close' | 'bracket-open';
+  kind: 'text' | 'articulation-open' | 'tuplet-open' | 'articulation-close' | 'bracket-open';
   text: string;
   from: number;
   to: number;
   line: number;
   articulation?: Articulation;
+  modifier?: string;
 }
 
 export function lexScore(text: string): ScoreToken[] {
@@ -20,6 +21,7 @@ export function lexScore(text: string): ScoreToken[] {
       end: number,
       kind: ScoreToken['kind'],
       articulation?: Articulation,
+      modifier?: string,
     ) => {
       const value = source.slice(start, end);
       const trimmed = value.trim();
@@ -32,16 +34,26 @@ export function lexScore(text: string): ScoreToken[] {
         to: from + trimmed.length,
         line: index + 1,
         ...(articulation ? { articulation } : {}),
+        ...(modifier ? { modifier } : {}),
       });
     };
     let cursor = 0;
-    for (const match of source.matchAll(/\b(staccato|legato)\s*\[|[\[\]]/g)) {
+    for (const match of source.matchAll(
+      /\b(staccato|legato)\s*\[|\b(triplet|tuplet:\d+:\d+)\s*\[|[\[\]]/g,
+    )) {
       emit(cursor, match.index!, 'text');
       emit(
         match.index!,
         match.index! + match[0].length,
-        match[1] ? 'articulation-open' : match[0] === ']' ? 'articulation-close' : 'bracket-open',
+        match[1]
+          ? 'articulation-open'
+          : match[2]
+            ? 'tuplet-open'
+            : match[0] === ']'
+              ? 'articulation-close'
+              : 'bracket-open',
         match[1] as Articulation | undefined,
+        match[2],
       );
       cursor = match.index! + match[0].length;
     }

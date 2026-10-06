@@ -1,6 +1,6 @@
 import { SCORE_KEY, pitch } from './music';
 import { lexScore, type ScoreToken } from './scoreLexer';
-import { addBeats, beatValue, parseDuration, type BeatFraction } from './rhythm';
+import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
 import {
   DEFAULT_METER,
@@ -84,7 +84,7 @@ export function parseScore(
   const tracks = new Set<string>();
   const positions = new Map<string, BeatFraction>();
   const lines = text.split('\n');
-  const blocks: (ScoreToken & { id: number })[] = [];
+  const blocks: (ScoreToken & { id: number; ratio?: BeatFraction })[] = [];
   const eventBlocks = new WeakMap<ScoreEvent, number>();
   let blockId = 0;
   const reportUnclosed = () => {
@@ -93,7 +93,7 @@ export function parseScore(
         from: block.from,
         to: block.to,
         line: block.line,
-        message: `${block.articulation} block is missing its closing ].`,
+        message: `${block.articulation ?? block.modifier} block is missing its closing ].`,
       });
     blocks.length = 0;
   };
@@ -106,19 +106,30 @@ export function parseScore(
         line: token.line,
         message,
       });
-    if (token.kind === 'articulation-open') {
-      if (!current) error('Articulation blocks belong inside a track.');
-      else if (blocks.length >= 64) error('Articulation blocks may nest at most 64 levels.');
-      else blocks.push({ ...token, id: ++blockId });
+    if (token.kind === 'articulation-open' || token.kind === 'tuplet-open') {
+      if (!current) error('Articulation and tuplet blocks belong inside a track.');
+      else if (blocks.length >= 64) error('Score blocks may nest at most 64 levels.');
+      else {
+        let ratio: BeatFraction | undefined;
+        if (token.modifier) {
+          try {
+            ratio = parseDuration('quarter', token.modifier).beats;
+          } catch (e) {
+            error((e as Error).message);
+          }
+        }
+        blocks.push({ ...token, id: ++blockId, ratio });
+      }
       return;
     }
     if (token.kind === 'articulation-close') {
-      if (!blocks.length) error('Unexpected closing ]; open staccato[ or legato[ first.');
+      if (!blocks.length)
+        error('Unexpected closing ]; open an articulation or tuplet block first.');
       else blocks.pop();
       return;
     }
     if (token.kind === 'bracket-open') {
-      error('Use staccato[ or legato[ to open an articulation block.');
+      error('Use staccato[, legato[, triplet[ or tuplet:N:M[ to open a block.');
       return;
     }
     if (!line) return;
@@ -240,19 +251,40 @@ export function parseScore(
       return;
     }
     const [, expression, word, dots, modifier, suffixArticulation] = event;
-    const block = blocks.at(-1);
+    const block = [...blocks].reverse().find((scope) => scope.articulation);
     const articulation =
       expression === 'rest' ? suffixArticulation : (suffixArticulation ?? block?.articulation);
     let notes: string[] = [];
     let chordSymbol: ScoreEvent['chordSymbol'];
     try {
       const written = parseDuration(word + dots, modifier);
+      // Each enclosing tuplet contributes an exact scale; articulation scopes are independent.
+      let ratioNotes = BigInt(written.tuplet?.notes ?? 1);
+      let ratioTime = BigInt(written.tuplet?.inTimeOf ?? 1);
+      for (const scope of blocks)
+        if (scope.ratio) {
+          written.beats = fraction(
+            written.beats.numerator * scope.ratio.numerator,
+            written.beats.denominator * scope.ratio.denominator,
+          );
+          ratioNotes *= scope.ratio.denominator;
+          ratioTime *= scope.ratio.numerator;
+        }
+      written.duration = beatValue(written.beats);
+      const combinedRatio = fraction(ratioTime, ratioNotes);
+      // Keep display metadata finite by reducing nested ratios before numeric conversion.
+      if (blocks.some((scope) => scope.ratio))
+        written.tuplet = {
+          notes: Number(combinedRatio.denominator),
+          inTimeOf: Number(combinedRatio.numerator),
+        };
       if (expression === 'rest' && articulation)
         throw new Error('Rests cannot have staccato or legato articulation.');
       if (expression === 'rest') notes = [];
       else if (
         /^chord\b/.test(expression) ||
-        /^[A-G][#b]?[A-Za-z][A-Za-z0-9#+-]*(?:@[0-8])?$/.test(expression)
+        (!/^[A-G][#b]?\d+$/.test(expression) &&
+          /^[A-G][#b]?[A-Za-z][A-Za-z0-9#+-]*(?:@[0-8])?$/.test(expression))
       ) {
         const symbolic = /^chord\s*:\s*([^()\s]+)$/.exec(expression);
         const symbol = symbolic?.[1] ?? (!/^chord\b/.test(expression) ? expression : undefined);
