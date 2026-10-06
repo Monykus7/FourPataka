@@ -1,5 +1,13 @@
-import { DURATIONS, SCORE_KEY, pitch } from './music';
-import { DEFAULT_METER, parseMeter, type TimeSignature } from './meter';
+import { SCORE_KEY, pitch } from './music';
+import { addBeats, beatValue, parseDuration, type BeatFraction } from './rhythm';
+import type { Articulation } from './articulation';
+import {
+  DEFAULT_METER,
+  parseMeter,
+  measureLength,
+  type MeterChange,
+  type TimeSignature,
+} from './meter';
 import { expandChordSymbol, type ChordExpansion } from './chordSymbols';
 import { CHORD_SHAPES, type ChordShapeRegistry } from '../modules/chords';
 
@@ -10,6 +18,10 @@ export interface Diagnostic {
   message: string;
 }
 export interface ScoreEvent {
+  articulation?: Articulation;
+  gateDuration?: number;
+  legatoToNext?: boolean;
+  tuplet?: { notes: number; inTimeOf: number };
   chordSymbol?: ChordExpansion & { from: number; to: number };
   id: string;
   track: string;
@@ -34,6 +46,7 @@ export interface ScoreTrack {
   beats: number;
 }
 export interface CompiledScore {
+  meterChanges: MeterChange[];
   tempo: number;
   meter: TimeSignature;
   directives: Partial<Record<'tempo' | 'time', { from: number; to: number }>>;
@@ -56,6 +69,7 @@ export function parseScore(
   const result: CompiledScore = {
     tempo: 120,
     meter: { ...DEFAULT_METER },
+    meterChanges: [],
     directives: {},
     master: null,
     tracks: [],
@@ -68,6 +82,7 @@ export function parseScore(
   let current: ScoreTrack | null = null;
   const globals = new Set<string>();
   const tracks = new Set<string>();
+  const positions = new Map<string, BeatFraction>();
   const lines = text.split('\n');
   lines.forEach((raw, index) => {
     const withoutComment = raw.split('//')[0];
@@ -90,6 +105,28 @@ export function parseScore(
       return;
     }
     if (!current) {
+      const meterChange = /^time\s+(\S+)\s+at\s+(\S+)$/.exec(line);
+      if (meterChange) {
+        try {
+          const beat = Number(meterChange[2]);
+          if (!Number.isFinite(beat) || beat <= 0 || beat > 1_000_000)
+            throw new Error(
+              'Meter-change position must be greater than 0 and at most 1,000,000 quarter beats.',
+            );
+          if (result.meterChanges.length >= 64)
+            throw new Error('A score may contain at most 64 meter changes.');
+          result.meterChanges.push({
+            beat,
+            meter: parseMeter(meterChange[1]),
+            from,
+            to,
+            line: index + 1,
+          });
+        } catch (e) {
+          error((e as Error).message);
+        }
+        return;
+      }
       const master = /^master\s+through\s+(\S+)$/.exec(line);
       if (master) {
         const key = master[1],
@@ -167,15 +204,23 @@ export function parseScore(
         );
       return;
     }
-    const event = /^(.*?)\s+(whole|half|quarter|8th|16th)$/.exec(line);
+    const event =
+      /^(.*?)\s+(whole|half|quarter|8th|16th|32nd|64th)(\.{0,2})(?:\s+(triplet|tuplet:\d+:\d+))?(?:\s+(staccato|legato))?$/.exec(
+        line,
+      );
     if (!event) {
-      error('Expected a note, chord, or rest followed by whole, half, quarter, 8th, or 16th.');
+      error(
+        'Expected a note, chord, or rest followed by a duration, optional triplet/tuplet:N:M and staccato/legato.',
+      );
       return;
     }
-    const [, expression, word] = event;
+    const [, expression, word, dots, modifier, articulation] = event;
     let notes: string[] = [];
     let chordSymbol: ScoreEvent['chordSymbol'];
     try {
+      const written = parseDuration(word + dots, modifier);
+      if (expression === 'rest' && articulation)
+        throw new Error('Rests cannot have staccato or legato articulation.');
       if (expression === 'rest') notes = [];
       else if (/^chord\b/.test(expression)) {
         const symbolic = /^chord\s*:\s*([^()\s]+)$/.exec(expression);
@@ -207,17 +252,27 @@ export function parseScore(
         id: `${current.key}:${current.events.length}`,
         track: current.key,
         beat: current.beats,
-        duration: DURATIONS[word],
+        duration: written.duration,
         notes,
         frequencies,
         from,
         to,
         line: index + 1,
         ...(chordSymbol ? { chordSymbol } : {}),
+        ...(written.tuplet ? { tuplet: written.tuplet } : {}),
+        ...(articulation ? { articulation: articulation as Articulation } : {}),
+        ...(articulation === 'staccato' ? { gateDuration: written.duration / 2 } : {}),
       };
       current.events.push(compiled);
       result.events.push(compiled);
-      current.beats += compiled.duration;
+      // Rational accumulation makes three triplets close exactly at the beat;
+      // only the public scheduler/UI boundary converts quarter beats to numbers.
+      const position = addBeats(
+        positions.get(current.key) ?? { numerator: 0n, denominator: 1n },
+        written.beats,
+      );
+      positions.set(current.key, position);
+      current.beats = beatValue(position);
     } catch (e) {
       error((e as Error).message);
     }
@@ -236,6 +291,31 @@ export function parseScore(
       line: 1,
       message: 'Add a track to start composing.',
     });
+  for (const track of result.tracks)
+    track.events.forEach((event, i) => {
+      if (event.articulation === 'legato' && track.events[i + 1]?.notes.length)
+        event.legatoToNext = true;
+    });
+  const requestedChanges = result.meterChanges.sort((a, b) => a.beat - b.beat);
+  result.meterChanges = [];
+  let meterStart = 0,
+    previousMeter = result.meter;
+  for (const change of requestedChanges) {
+    const bars = (change.beat - meterStart) / measureLength(previousMeter);
+    if (change.beat <= meterStart || Math.abs(bars - Math.round(bars)) > 1e-8) {
+      result.diagnostics.push({
+        from: change.from,
+        to: change.to,
+        line: change.line,
+        message:
+          'Meter changes must use distinct positions at a bar boundary of the preceding meter.',
+      });
+      continue;
+    }
+    result.meterChanges.push(change);
+    meterStart = change.beat;
+    previousMeter = change.meter;
+  }
   result.beats = Math.max(0, ...result.tracks.map((t) => t.beats));
   result.seconds = (result.beats * 60) / result.tempo;
   return result;
