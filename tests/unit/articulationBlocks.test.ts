@@ -64,5 +64,7 @@ it('accepts the requested block example and preserves bare-chord expansion spans
   expect(score.events[1].notes).toEqual(['G4', 'B4', 'D5', 'F#5']);
   expect(score.events[1].chordSymbol?.symbol).toBe('Gmaj7');
   expect(parse('G quarter').diagnostics.length).toBeGreaterThan(0);
+  // Numeric roots stay pitch syntax: C9 is an invalid octave, not an inferred ninth chord.
+  expect(parse('C9 quarter').diagnostics.length).toBeGreaterThan(0);
   expect(parse('legato[\nGmaj7@3 eighth. triplet\nchord:Cmaj7 quarter\n]').beats).toBe(1.5);
 });

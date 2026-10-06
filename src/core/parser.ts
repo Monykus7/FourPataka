@@ -252,7 +252,7 @@ export function parseScore(
       if (expression === 'rest') notes = [];
       else if (
         /^chord\b/.test(expression) ||
-        (!/^[A-G][#b]?[0-8]$/.test(expression) && /^[A-G][#b]?\S+/.test(expression))
+        /^[A-G][#b]?[A-Za-z][A-Za-z0-9#+-]*(?:@[0-8])?$/.test(expression)
       ) {
         const symbolic = /^chord\s*:\s*([^()\s]+)$/.exec(expression);
         const symbol = symbolic?.[1] ?? (!/^chord\b/.test(expression) ? expression : undefined);
