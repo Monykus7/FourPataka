@@ -1,7 +1,7 @@
 import type { Articulation } from './articulation';
 
 export interface ScoreToken {
-  kind: 'text' | 'articulation-open' | 'tuplet-open' | 'articulation-close' | 'bracket-open';
+  kind: 'text' | 'articulation-open' | 'tuplet-open' | 'block-close' | 'bracket-open';
   text: string;
   from: number;
   to: number;
@@ -50,7 +50,7 @@ export function lexScore(text: string): ScoreToken[] {
           : match[2]
             ? 'tuplet-open'
             : match[0] === ']'
-              ? 'articulation-close'
+              ? 'block-close'
               : 'bracket-open',
         match[1] as Articulation | undefined,
         match[2],

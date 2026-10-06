@@ -160,7 +160,7 @@ Track Maker validates note/chord/rest rows, reorders with buttons, previews proj
 - Track creation and assignment / dependency group 3: [tests/browser/composition.spec.ts](../../tests/browser/composition.spec.ts)
 - Track creation and assignment / dependency group 4: [tests/browser/score-chains.spec.ts](../../tests/browser/score-chains.spec.ts)
 
-Key definitions: [ChainAssignment](../../src/components/ChainAssignment.tsx#L3), [Row](../../src/components/TrackMaker.tsx#L9), [expression](../../src/components/TrackMaker.tsx#L20), [TrackMaker](../../src/components/TrackMaker.tsx#L22), [update](../../src/components/TrackMaker.tsx#L58), [move](../../src/components/TrackMaker.tsx#L60), [add](../../src/components/TrackMaker.tsx#L71), [source](../../tests/browser/score-chains.spec.ts#L3).
+Key definitions: [ChainAssignment](../../src/components/ChainAssignment.tsx#L3), [Row](../../src/components/TrackMaker.tsx#L9), [expression](../../src/components/TrackMaker.tsx#L20), [groupedEvents](../../src/components/TrackMaker.tsx#L22), [closeRhythm](../../src/components/TrackMaker.tsx#L26), [TrackMaker](../../src/components/TrackMaker.tsx#L54), [update](../../src/components/TrackMaker.tsx#L91), [move](../../src/components/TrackMaker.tsx#L93).
 
 #### Articulation, tuplets and score meter changes
 

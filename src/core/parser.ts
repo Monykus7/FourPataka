@@ -122,7 +122,7 @@ export function parseScore(
       }
       return;
     }
-    if (token.kind === 'articulation-close') {
+    if (token.kind === 'block-close') {
       if (!blocks.length)
         error('Unexpected closing ]; open an articulation or tuplet block first.');
       else blocks.pop();

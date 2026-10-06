@@ -18,7 +18,39 @@ type Row = {
   tupletTime?: string;
 };
 const expression = (row: Row) =>
-  `${row.kind === 'rest' ? 'rest' : row.kind === 'chord' ? `chord:(${row.notes.trim()})` : row.notes.trim()} ${row.duration}${row.dots ?? ''}${row.rhythm ? ` ${row.rhythm === 'custom' ? `tuplet:${row.tupletNotes ?? '3'}:${row.tupletTime ?? '2'}` : row.rhythm}` : ''}${row.kind !== 'rest' && row.articulation ? ` ${row.articulation}` : ''}`;
+  `${row.kind === 'rest' ? 'rest' : row.kind === 'chord' ? `chord:(${row.notes.trim()})` : row.notes.trim()} ${row.duration}${row.dots ?? ''}`;
+function groupedEvents(rows: Row[]) {
+  const lines: string[] = [];
+  let articulation = '',
+    rhythm = '';
+  const closeRhythm = () => {
+    if (rhythm) lines.push(']');
+    rhythm = '';
+  };
+  for (const row of rows) {
+    const nextArticulation = row.kind === 'rest' ? '' : (row.articulation ?? '');
+    const nextRhythm =
+      row.rhythm === 'custom'
+        ? `tuplet:${row.tupletNotes ?? '3'}:${row.tupletTime ?? '2'}`
+        : (row.rhythm ?? '');
+    // Articulation is outermost so a legato run can cross a change of tuplet ratio.
+    if (nextArticulation !== articulation) {
+      closeRhythm();
+      if (articulation) lines.push(']');
+      articulation = nextArticulation;
+      if (articulation) lines.push(`${articulation}[`);
+    }
+    if (nextRhythm !== rhythm) {
+      closeRhythm();
+      rhythm = nextRhythm;
+      if (rhythm) lines.push(`${rhythm}[`);
+    }
+    lines.push(`${articulation || rhythm ? '  ' : ''}${expression(row)}`);
+  }
+  closeRhythm();
+  if (articulation) lines.push(']');
+  return lines;
+}
 export default function TrackMaker({
   initialKey,
   instruments,
@@ -49,7 +81,8 @@ export default function TrackMaker({
   ]);
   const nextId = useRef(4);
   const [error, setError] = useState('');
-  const text = `track ${key} using ${instrument}${chainKey ? ` through ${chainKey}` : ''} {\n${rows.map((row) => `  ${expression(row)}`).join('\n')}\n}`;
+  const events = groupedEvents(rows);
+  const text = `track ${key} using ${instrument}${chainKey ? ` through ${chainKey}` : ''} {\n${events.map((event) => `  ${event}`).join('\n')}\n}`;
   const preview = parseScore(
     `time ${meterLabel(meter)}\n${meterChanges.map((change) => `time ${meterLabel(change.meter)} at ${change.beat}\n`).join('')}${text}`,
     instruments.map((i) => i.key),
@@ -93,7 +126,7 @@ export default function TrackMaker({
         onSubmit={(event) => {
           event.preventDefault();
           try {
-            onCreate(key.trim(), instrument, rows.map(expression), chainKey || null);
+            onCreate(key.trim(), instrument, events, chainKey || null);
             dialog.current?.close();
           } catch (e) {
             setError((e as Error).message);
@@ -328,7 +361,8 @@ export default function TrackMaker({
         )}
         <div className="maker-footer">
           <p className="footnote">
-            C4 is middle C. Chords use explicit octaves. Adding this track is one undo step.
+            Adjacent rows with matching articulation or rhythm form bracketed groups. Adding this
+            track is one undo step.
           </p>
           <button
             type="submit"

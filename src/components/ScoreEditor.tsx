@@ -98,10 +98,10 @@ const scoreLanguage = StreamLanguage.define({
       )
     )
       return 'keyword';
-    if (stream.match(/\b(?:whole|half|quarter|8th|16th|32nd|64th)\b/)) return 'typeName';
+    if (stream.match(/\b(?:whole|half|quarter|eighth|8th|16th|32nd|64th)\b/)) return 'typeName';
     if (stream.match(/[A-G][#b]?[0-8]?\b/)) return 'atom';
     if (stream.match(/\d+(?:\.\d+)?/)) return 'number';
-    if (stream.match(/[{}():]/)) return 'punctuation';
+    if (stream.match(/[{}():\[\]]/)) return 'punctuation';
     stream.next();
     return null;
   },
@@ -225,24 +225,11 @@ export default function ScoreEditor({
                 };
               const prefix = line.text.slice(0, context.pos - line.from);
               const modifier =
-                /\s(?:whole|half|quarter|8th|16th|32nd|64th)\.{0,2}\s+(?:(triplet|tuplet:\d+:\d+)\s+)?([A-Za-z]*)$/.exec(
+                /\s(?:whole|half|quarter|eighth|8th|16th|32nd|64th)\.{0,2}\s+(?:(triplet|tuplet:\d+:\d+)\s+)?([A-Za-z]*)$/.exec(
                   prefix,
                 );
-              if (modifier)
-                return {
-                  from: context.pos - modifier[2].length,
-                  options: [
-                    ...(!modifier[1]
-                      ? [
-                          { label: 'triplet', type: 'keyword' },
-                          snippetCompletion('tuplet:${}:${}', { label: 'tuplet', type: 'keyword' }),
-                        ]
-                      : []),
-                    { label: 'staccato', type: 'keyword' },
-                    { label: 'legato', type: 'keyword' },
-                  ],
-                  validFor: /[A-Za-z]*/,
-                };
+              // Group commands start a line; do not insert an opener after an event duration.
+              if (modifier) return null;
               const symbol = /\bchord:\s*[A-G][#b]?([A-Za-z0-9#+-]*)$/.exec(
                 line.text.slice(0, context.pos - line.from),
               );
@@ -263,7 +250,12 @@ export default function ScoreEditor({
               if (!word && !context.explicit) return null;
               const commands = COMMANDS.filter(
                 (c) =>
-                  !chord || c.name === 'chord' || c.name === 'voicing' || c.name === 'chord-symbol',
+                  (!chord ||
+                    c.name === 'chord' ||
+                    c.name === 'voicing' ||
+                    c.name === 'chord-symbol') &&
+                  (!['staccato', 'legato', 'triplet', 'tuplet'].includes(c.name) ||
+                    /^\s*[A-Za-z]*$/.test(prefix)),
               ).map((c) =>
                 snippetCompletion(c.completionTemplate, {
                   label: c.name,

@@ -9,7 +9,7 @@ it('lexes adjacent brackets and ignores comment brackets while retaining exact C
     'articulation-open',
     'text',
     'text',
-    'articulation-close',
+    'block-close',
   ]);
   expect(tokens.map((token) => source.slice(token.from, token.to))).toEqual([
     'staccato[',
