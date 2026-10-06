@@ -282,3 +282,16 @@ Every tuplet scope multiplies exact rational duration by M/N; nested scales and 
 The editable bundled demo remains EXAMPLE_SCORE in src/core/project.ts, now using grouped articulation/tuplets with unchanged 25-quarter-beat aligned tracks and meter map. Existing saved songs are retained until explicit undoable Load demo. Shared voice factories, phase/A-B clock, owned copies, measured latency, WAV resource bounds and finite tails/Stop remain. True shared-envelope slurs, glide, general modularity and manual device/listening gates stay open.
 
 Reference insertion uses the track closing-brace source offset when `] }` shares a line, adding the command after closed scopes rather than before their delimiters. Unit cases cover both articulation and tuplet inheritance; the grouped browser/native workflow verifies the inserted note is normal.
+
+
+## IDE composition, repeats and bar alignment (v0.23.0)
+
+<!-- features: composition, rhythm, timing, notation, keyboard-workflow -->
+
+Tempo and meter editing are now IDE-only; reference insertion helpers remain. Beside-score Timeline/Command Reference placement is a persisted global preference, not musical project/history. Tab indentation takes precedence over snippet navigation; F2/Shift+F2 navigate fields and Ctrl+M toggles Tab focus navigation. Source undo/redo remains grouped by gesture.
+
+Position expressions parse numeric +,-,*,/ and parentheses into reduced fractions without eval or identifiers, bounded to 256 characters/16 parentheses or unary levels and numeric exponents ±16. Single * means multiplication; ** is rejected. Public changes remain finite positive quarter-beat offsets ≤1,000,000, capped at64 and distinct preceding-meter boundaries. Exact bar-rest timing pre-reads global directives, including those below tracks. At an existing bar boundary rest bar advances a full bar; it is an absolute alignment directive, not rescaled by tuplets.
+
+repeat N {...} uses total plays (default2, count1–128, nesting16). Each iteration compiles from original tokens so position-dependent rests resolve anew; IDs are unique per track while spans/line/chord expansions still cite original source. Bracket scopes cannot cross a repeat boundary; a surrounding articulation scope may connect copies, while articulation opened inside a repeat ends within that pass. A 10,000-event/100,000-token-visit cap prevents exponential expansion. Shared live/WAV voice/latency/tail limits and frozen revision clocks remain. No project schema change or general module gate completion.
+
+User-authored EXAMPLE_SCORE is preserved with only the stray final brace repaired: two17-beat tracks, sine through clean and softBass, changes at8/22. Tests of ownership use stable fixtures rather than overwrite that composition. Explicit Load demo restores only missing required factory instrument/chain keys, with collision-free IDs; existing customized libraries and owned copies remain. Broader physical listening/device and modularity gates remain open.

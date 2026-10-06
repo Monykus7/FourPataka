@@ -71,7 +71,7 @@ Instrument-builder acoustics is a requested later feature, detailed in section 5
 
 The 32-harmonic bank expansion is also queued under stage 8, ahead of richer instrument-realism controls. The initial H1–H16 release boundary remains historical/current scope; it is not the planned long-term limit.
 
-Dotted notes and per-event N:M tuplets are implemented by the v0.21.0 rhythm extension. Keep repeat blocks, time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
+Dotted notes and per-event N:M tuplets are implemented by the v0.21.0 rhythm extension. Repeat blocks and bar-aligned rests are implemented in v0.23.0. Keep time-varying instrument changes, volume/pan commands, phase controls, per-harmonic envelopes, noise, morphing, modulation, inharmonicity, microphone/upload analysis, spectrograms, MIDI, and staff engraving in the later backlog.
 
 Accounts, collaboration, and a backend are unnecessary for the planned local studio.
 
@@ -634,7 +634,7 @@ The 32-harmonic bank is implemented by the synthesis/notation pilot, with the mi
 
 Requested instrument-builder follow-up: the deferred tiny-chamber acoustics feature in section 5, with algorithmic reverb, wet/dry control and instrument-owned saved settings. Implement its audio proof and copy/clock/tail/export gates together; no IR assets are required. Keep it after the current main-feature completion and WAV export work.
 
-Consider phase, per-partial envelopes, noise, modulation, morphing, repeat, volume/pan,  inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
+Consider phase, per-partial envelopes, noise, modulation, morphing, volume/pan,  inharmonicity, recorded-audio analysis, spectrograms, MIDI, and staff notation.
 
 Registered chord-symbol macros such as `chord:Cmaj13#11` are implemented by the synthesis/notation pilot, with hover and keyboard-cursor note previews, default root octave 4, @octave override, bounded ascending root-position shapes and shared explicit-note playback. See [the implemented contributor contract](docs/extensions/CHORD_SHAPES.md). Inversions, slash bass, automatic omissions and arbitrary alteration grammar remain future work.
 
@@ -750,3 +750,8 @@ The starter score demonstrates the implemented rhythm release with seven aligned
 ### Bracketed notation — v0.22.0
 
 Articulation uses staccato[...] / legato[...] scopes; grouped triplet[...] / tuplet:N:M[...] scales all enclosed events including rests, with nested exact rational scales. Brackets retain source offsets and diagnostics, legato stops at scope ends, and rests break connections. Track Maker/reference/autocomplete and the editable EXAMPLE_SCORE demo use groups. Bare named-quality chord symbols and eighth alias support the requested example; suffix syntax stays compatible. General modularity, true shared-envelope slurs, glide and manual physical gates remain open. Current verification is recorded in IMPLEMENTATION_STATUS.md.
+
+
+### IDE composition follow-up — v0.23.0
+
+Implemented arithmetic meter-change positions, repeat blocks and meter-aware bar rests; preserved the user-authored demo. Timing form removed in favor of source. Tab indents, F2 moves snippet fields, Ctrl+M toggles focus navigation. Timeline/reference can trade adjacent and lower positions via persisted preference. Resource/source/clock/copy/live-WAV and responsive/native checks are recorded in IMPLEMENTATION_STATUS.md. Modularity and manual gates remain open.

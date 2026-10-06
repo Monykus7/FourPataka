@@ -44,3 +44,27 @@ Existing saved scores using event suffixes (`C4 quarter staccato`, `C4 eighth tr
 Edit the built-in song in **EXAMPLE_SCORE in [src/core/project.ts](../src/core/project.ts)**. Existing autosaves are preserved: choose Compose → Load demo score to replace source in one undo step after building. The demo uses two aligned tracks, nested groups and 4/4→7/8→3/4→4/4 meter changes.
 
 Ties, shared-envelope slurs, pitch glide, additive beat grouping, per-track meters and runtime grammar extensions remain future work. General modularity milestones and physical listening/device checks remain open.
+
+
+## Repeats, expressions and bar rests
+
+```text
+tempo 120
+time 4/4
+time 7/4 at 4*2
+time 6/4 at 4*2 + 7*3
+track lead using sine {
+  repeat 3 {
+    C4 quarter
+    rest bar
+  }
+}
+```
+
+`repeat 3 { ... }` plays the section three times total; `repeat { ... }` defaults to two total plays. Counts are 1–128, repeat nesting is at most16, compilation allows at most10,000 events/100,000 token visits. Events retain original source spans and have unique compiled IDs. Bracket scopes must close in the repeat where they open; a surrounding legato block can span copies.
+
+`rest bar` (also `rest till end of bar`) reaches the next boundary under the global meter at that track position. At a boundary it rests a whole bar. It recomputes each repeat pass and is not rescaled by an enclosing tuplet.
+
+Timing expressions accept numbers, +, -, *, /, parentheses and conventional precedence; `4*2+7*3` =29 quarter beats. Single * multiplies, not **. Expressions never evaluate JavaScript. Existing positive finite limits and preceding-meter bar-boundary validation remain. The example above first switches to 7/4 at beat8, making beat29 a valid change boundary.
+
+Tempo/meter forms have been removed: write directives in the IDE. Tab/Shift+Tab indent/outdent; F2/Shift+F2 move snippet fields. Ctrl+M toggles Tab focus navigation. The Beside score preference swaps Timeline/Command Reference placement. The current user-authored demo has two17-beat tracks; existing saves remain intact until Load demo score.
