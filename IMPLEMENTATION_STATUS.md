@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-10. Latest verified release: v0.25.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-10. Latest verified release: v0.25.1. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -469,4 +469,6 @@ Production build, format/diff checks, knowledge build/check and portable packagi
 
 Corrects the v0.25.0 separate setup requirement: old local sessions, JSON imports and recovery now gain missing bundled percussion before parser/IDE key discovery. Existing custom keys/templates, edited A/B/applied sounds and source remain unchanged; ID collisions resolve only for additions and full valid libraries still open. The manual strict import action remains a capacity-reporting fallback. Startup reports added score keys, while autosave preserves the previous distinct recovery checkpoint. No new grammar or synthesis/schema behavior is needed: tracks use kick, hiHat or snare from the same project library.
 
-Verification in progress; the latest verified artifact remains v0.25.0 until packaged checks finish.
+Verified: 205 unit checks, twelve affected browser checks and three packaged native workflows passed. Regression starts from a six-preset save with independently edited library/track/A-B sounds; all three entries appear at boot, kick autocomplete is available and kick/hiHat/snare tracks compile/play without a manual import. Tests also cover capacity-full valid imports, ID/custom-key collisions, recovery checkpoint retention, preset preview/JSON persistence, finite audio and frozen WAV. Fourteen contributor diagrams were re-rendered. Production/portable build, formatting, diff checks and knowledge build/check passed.
+
+Native-tested v0.25.1 app.asar SHA-256: 21DAC7EEEB3BD57DD08B14B6FA5DB1E1924CAB745A62AA1D3C2B9C62503D0206. Portable artifact: release/FourPataka-0.25.1-win-x64.exe. The user's visible v0.25.0 window remains running; the correction needs reopening with the new executable. No running user session was terminated or modified by the isolated-profile native tests. Four focused correction commits are pushed to origin/master with the configured identity. Existing unsigned/default-icon, physical device/listening and broader module/roadmap gates remain open.
