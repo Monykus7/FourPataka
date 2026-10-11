@@ -36,6 +36,8 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 
 ## Illustrated contributor walkthroughs
 
+- [Instrument library](INSTRUMENT_LIBRARY.md): folder creation, drag/keyboard placement, legacy project migration, copy/history boundaries and source/data-flow diagrams.
+
 - [Percussion presets](PERCUSSION_PRESETS.md): three current Fourier factories, conservative bundled additions on project load, shared short-hit comparison material, units/headroom and live/WAV ownership diagrams.
 
 - [Module creation](MODULE_CREATION.md): tested chord-shape example, assembly and consumption, owned settings/runtime lifecycle, audio routing and compatibility diagrams.

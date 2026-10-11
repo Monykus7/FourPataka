@@ -62,7 +62,16 @@ Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], atta
 - Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 - Instrument presets and source thumbnails / dependency group 3: [tests/browser/percussion.spec.ts](../../tests/browser/percussion.spec.ts), [tests/helpers/percussion.ts](../../tests/helpers/percussion.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
+
+#### Instrument library folders
+
+v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Recognized sine/square/saw/triangle factory IDs and keys seed Simple shapes in new and legacy projects; explicit empty organization is respected. Create/rename/remove (32 folders, unique names1–100) and internal preset-ID drag/drop or keyboard/touch selector moves are independent whole-operation history edits. Removing a folder unfiles its instruments; Save as new stays unfiled. Optional schema2 instrumentFolders and preset.folderId validate/whitelist IDs and references; metadata persists through local/JSON/native/recovery. Preset IDs/score keys/versions/Sound, source, applied/A-B copies and running audio phase/clock stay unchanged. Closed folder keys remain available to compiler/autocomplete/assignment/WAV; demo imports strip source-project folder references. Collapse is local view state, reset on reload, not musical history. Nested folders/manual ordering and general M3 preset registry remain outside this release. Window titles show runtime version to identify old builds.
+
+- Instrument library folders / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/localSave.ts](../../src/core/localSave.ts), [src/components/InstrumentLibrary.tsx](../../src/components/InstrumentLibrary.tsx), [src/core/instrumentFolders.ts](../../src/core/instrumentFolders.ts), [tests/unit/instrumentFolders.test.ts](../../tests/unit/instrumentFolders.test.ts)
+- Instrument library folders / dependency group 2: [tests/browser/instrument-folders.spec.ts](../../tests/browser/instrument-folders.spec.ts), [tests/helpers/instrumentLibrary.ts](../../tests/helpers/instrumentLibrary.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
 
 #### 32-harmonic Fourier bank
 
@@ -118,7 +127,7 @@ Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, i
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
 
 #### Score parsing and editor
 
@@ -139,7 +148,7 @@ Twenty scoped cards show the selected instrument/pedal keys, unique new-track sn
 - Contextual command reference / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts)
 - Contextual command reference / dependency group 2: [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts), [tests/helpers/referenceSearch.ts](../../tests/helpers/referenceSearch.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
 
 #### Tempo, meter and timeline
 
@@ -180,7 +189,7 @@ Implemented v0.24.0: All score and per-track source views edit one canonical sco
 - Shared-file score track tabs / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [tests/unit/scoreWorkspace.test.ts](../../tests/unit/scoreWorkspace.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx)
 - Shared-file score track tabs / dependency group 2: [tests/browser/score-workspace.spec.ts](../../tests/browser/score-workspace.spec.ts), [tests/helpers/scoreWorkspace.ts](../../tests/helpers/scoreWorkspace.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
 
 #### Variable swing — planned
 
@@ -252,7 +261,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L103), [View](../../src/App.tsx#L105), [readPreferences](../../src/App.tsx#L106), [MiniWave](../../src/App.tsx#L128), [RangeControl](../../src/App.tsx#L163), [App](../../src/App.tsx#L213), [measure](../../src/App.tsx#L265), [resetMacros](../../src/App.tsx#L348).
 
 ### Maintained project knowledge
 

@@ -4,6 +4,8 @@ Status: Fourier presets can be contributed through current source changes. Prese
 
 ## Current Fourier preset contribution
 
+[Library folders](INSTRUMENT_LIBRARY.md) organize project presets independently of their score keys, template versions and applied sound copies. Preset contributions must leave this host metadata intact.
+
 The [percussion preset walkthrough](PERCUSSION_PRESETS.md) is a working source example with fresh factories, safe bundled availability for existing projects, short-hit preview units, gain/copy tests and routing diagrams. It adds bundled Fourier timbres without declaring the planned M3 registry implemented.
 
 1. Construct a fresh `Sound` using [music.ts](../../src/core/music.ts), with a timbre factory where appropriate in [instrumentPresets.ts](../../src/core/instrumentPresets.ts). Existing mathematical presets are useful starting points; do not mutate a shared template.

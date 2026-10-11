@@ -125,6 +125,25 @@
       ]
     },
     {
+      "id": "instrument-folders",
+      "parent": "sound",
+      "title": "Instrument library folders",
+      "summary": "v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Recognized sine/square/saw/triangle factory IDs and keys seed Simple shapes in new and legacy projects; explicit empty organization is respected. Create/rename/remove (32 folders, unique names1\u2013100) and internal preset-ID drag/drop or keyboard/touch selector moves are independent whole-operation history edits. Removing a folder unfiles its instruments; Save as new stays unfiled. Optional schema2 instrumentFolders and preset.folderId validate/whitelist IDs and references; metadata persists through local/JSON/native/recovery. Preset IDs/score keys/versions/Sound, source, applied/A-B copies and running audio phase/clock stay unchanged. Closed folder keys remain available to compiler/autocomplete/assignment/WAV; demo imports strip source-project folder references. Collapse is local view state, reset on reload, not musical history. Nested folders/manual ordering and general M3 preset registry remain outside this release. Window titles show runtime version to identify old builds.",
+      "paths": [
+        "src/core/instrumentFolders.ts",
+        "src/core/project.ts",
+        "src/core/localSave.ts",
+        "src/components/InstrumentLibrary.tsx",
+        "src/App.tsx",
+        "src/styles.css",
+        "tests/unit/instrumentFolders.test.ts",
+        "tests/helpers/instrumentLibrary.ts",
+        "tests/browser/instrument-folders.spec.ts",
+        "tests/desktop/app.spec.ts",
+        "docs/extensions/INSTRUMENT_LIBRARY.md"
+      ]
+    },
+    {
       "id": "harmonic-expansion",
       "parent": "sound",
       "title": "32-harmonic Fourier bank",
