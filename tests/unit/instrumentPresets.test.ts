@@ -50,6 +50,9 @@ it('validates optional pitch and independent noise-decay units and retains them 
   validateSound(snarePreset());
   const hit = kickPreset().percussion!;
   for (const change of [
+    { lowpass: 0 },
+    { lowpass: 17000 },
+    { lowpass: NaN },
     { noiseDecay: 0 },
     { noiseDecay: 3 },
     { pitch: null },
@@ -61,6 +64,7 @@ it('validates optional pitch and independent noise-decay units and retains them 
   const project = createProject();
   project.comparison.A = kickPreset();
   project.comparison.B = snarePreset();
+  project.comparison.B.percussion!.lowpass = 6000;
   expect(importProject(JSON.stringify(project)).comparison).toEqual(project.comparison);
 });
 

@@ -345,6 +345,8 @@ export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts v
     record(value.percussion);
     numeric(value.percussion.noise, 0, 1, 'noise level');
     numeric(value.percussion.highpass, 20, 16000, 'noise high-pass Hz');
+    if (value.percussion.lowpass !== undefined)
+      numeric(value.percussion.lowpass, 20, 16000, 'noise low-pass Hz');
     numeric(value.percussion.decay, 0.01, 2, 'hit decay seconds');
     if (value.percussion.noiseDecay !== undefined)
       numeric(value.percussion.noiseDecay, 0.005, 2, 'noise decay seconds');

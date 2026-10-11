@@ -32,6 +32,7 @@ export interface Sound {
   percussion?: {
     noise: number;
     highpass: number;
+    lowpass?: number; // Hz; omission retains the original 14000 Hz noise ceiling.
     decay: number;
     noiseDecay?: number;
     pitch?: { amount: number; decay: number };
