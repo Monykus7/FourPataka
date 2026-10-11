@@ -1,4 +1,5 @@
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
+import { percussionWorkflow, PERCUSSION_SCORE } from '../helpers/percussion';
 import {
   scoreWorkspaceWorkflow,
   trackOperationsWorkflow,
@@ -32,6 +33,25 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged percussion presets preview compose and retain native JSON sounds', async () => {
+  const page = await app.firstWindow();
+  await percussionWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'percussion.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved percussion.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toBe(PERCUSSION_SCORE);
+  expect(saved.comparisonMaterial).toMatchObject({ note: 'D3', noteBeats: 0.125 });
+  expect(saved.tracks.map((track: any) => track.presetId)).toEqual(['kick', 'snare', 'hi-hat']);
+  const library = saved.instruments.find((p: any) => p.key === 'snare');
+  expect(saved.tracks.find((t: any) => t.key === 'snareTrack').sound).toEqual(library.sound);
 });
 
 test('packaged articulation tuplets and meter changes survive native saving', async () => {
