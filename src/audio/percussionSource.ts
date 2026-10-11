@@ -86,7 +86,7 @@ export function createPercussionSource(
       lowpass = context.createBiquadFilter();
       lowpass.type = 'lowpass';
       lowpass.Q.value = 0.707;
-      lowpass.frequency.value = Math.min(14000, context.sampleRate * 0.45);
+      lowpass.frequency.value = Math.min(hit?.lowpass ?? 14000, context.sampleRate * 0.45);
       level = context.createGain();
       level.gain.value = 0;
       noiseHit = context.createGain();
@@ -127,6 +127,14 @@ export function createPercussionSource(
         levelRamp = { at, until: at + 0.02, from: held, to: amount };
       }
       if (!initial) highpass.frequency.setTargetAtTime(cutoff, at, 0.01);
+      // Cutoff edits retune the owned filter without replacing the noise cursor
+      // or retriggering the hit. Omitted ceilings preserve earlier sounds.
+      if (!initial)
+        lowpass!.frequency.setTargetAtTime(
+          Math.min(hit?.lowpass ?? 14000, context.sampleRate * 0.45),
+          at,
+          0.01,
+        );
       noise.stop(end + 0.005);
     }
   };
