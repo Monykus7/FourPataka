@@ -7,6 +7,7 @@ import {
   upgradeSoftBassTemplate,
 } from '../../src/core/instrumentPresets';
 import { dbToGain, mathematicalPreset, sourceSamples } from '../../src/core/music';
+import { parseScore } from '../../src/core/parser';
 import {
   createProject,
   importProject,
@@ -55,11 +56,22 @@ it('percussion has distinct low, sparse-high and dense-high spectra with bounded
   expect(presets[1].sound.harmonics).not.toBe(presets[2].sound.harmonics);
 });
 
-it('new projects include percussion but old imports only gain it by explicit action', () => {
+it('existing projects gain missing bundled percussion before parser key discovery without replacing owned sounds', () => {
   const old = createProject();
   old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
   const before = structuredClone(old);
-  expect(importProject(JSON.stringify(old)).instruments).toEqual(old.instruments);
+  const restored = importProject(JSON.stringify(old));
+  expect(restored.instruments.map((p) => p.key)).toEqual([
+    ...old.instruments.map((p) => p.key),
+    'kick',
+    'hiHat',
+    'snare',
+  ]);
+  expect(restored.tracks).toEqual(old.tracks);
+  expect(restored.comparison).toEqual(old.comparison);
+  expect(restored.scoreText).toBe(old.scoreText);
+  expect(restored.editorPresetId).toBe(old.editorPresetId);
+  expect(importProject(JSON.stringify(restored))).toEqual(restored);
   const next = withPercussionPresets(old);
   expect(next.instruments).toHaveLength(9);
   expect(next.scoreText).toBe(old.scoreText);
@@ -90,6 +102,48 @@ it('explicit percussion import preserves colliding keys, resolves IDs, and is at
   const before = JSON.stringify(full);
   expect(() => withPercussionPresets(full)).toThrow('128-preset limit');
   expect(JSON.stringify(full)).toBe(before);
+});
+
+it('old score files resolve kick hiHat and snare into distinct owned tracks after loading', () => {
+  const old = createProject();
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  old.scoreText =
+    'tempo 120\ntrack drums using kick {\n C2 16th\n}\ntrack hats using hiHat {\n C4 64th\n}\ntrack snares using snare {\n D3 32nd\n}';
+  const restored = importProject(JSON.stringify(old));
+  const score = parseScore(
+    restored.scoreText,
+    restored.instruments.map((p) => p.key),
+  );
+  expect(score.diagnostics).toEqual([]);
+  expect(restored.tracks.map((t) => t.presetId)).toEqual(['kick', 'hi-hat', 'snare']);
+  for (const track of restored.tracks) {
+    const library = restored.instruments.find((p) => p.id === track.presetId)!;
+    expect(track.sound).toEqual(library.sound);
+    expect(track.sound).not.toBe(library.sound);
+  }
+});
+
+it('a full old library remains valid and customized percussion keys/IDs survive automatic loading', () => {
+  const old = createProject();
+  old.instruments = old.instruments.filter((p) => !['hiHat', 'snare'].includes(p.key));
+  const kick = old.instruments.find((p) => p.key === 'kick')!;
+  kick.sound.trim = -23;
+  old.instruments[1].id = 'hi-hat';
+  const restored = importProject(JSON.stringify(old));
+  expect(restored.instruments.find((p) => p.key === 'kick')!.sound.trim).toBe(-23);
+  expect(restored.instruments.find((p) => p.key === 'hiHat')!.id).toBe('hi-hat-2');
+  const full = createProject();
+  full.instruments = full.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  const template = full.instruments[0];
+  while (full.instruments.length < 128) {
+    const suffix = full.instruments.length;
+    full.instruments.push({
+      ...structuredClone(template),
+      id: `user${suffix}`,
+      key: `user${suffix}`,
+    });
+  }
+  expect(importProject(JSON.stringify(full))).toEqual(full);
 });
 
 it('Soft bass has a distinct signed source and retains explicit envelope/gain settings', () => {

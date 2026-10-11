@@ -93,17 +93,25 @@ export function loadProject(storage?: LocalStore): {
     if (stored === null) return { project: createProject(), warning: null, recoveryIssue: false };
     try {
       const project = importProject(stored);
-      const before = JSON.parse(stored).instruments.find(
-        (preset: { id: string }) => preset.id === 'soft-bass',
-      );
+      const savedInstruments = JSON.parse(stored).instruments;
+      const before = savedInstruments.find((preset: { id: string }) => preset.id === 'soft-bass');
       const after = project.instruments.find((preset) => preset.id === 'soft-bass');
+      const added = project.instruments.filter(
+        (preset) => !savedInstruments.some((saved: { key: string }) => saved.key === preset.key),
+      );
+      const messages: string[] = [];
+      if (before?.version === 1 && after?.version === 2)
+        messages.push(
+          'Soft bass library preset updated. Existing tracks and A/B sounds are kept. Load Soft bass from the library to use the new shape.',
+        );
+      if (added.length)
+        messages.push(
+          `Percussion presets added: ${added.map((p) => p.key).join(', ')}. Existing sounds kept.`,
+        );
       return {
         project,
         recoveryIssue: false,
-        warning:
-          before?.version === 1 && after?.version === 2
-            ? 'Soft bass library preset updated. Existing tracks and A/B sounds are kept. Load Soft bass from the library to use the new shape.'
-            : null,
+        warning: messages.join(' ') || null,
       };
     } catch {
       // Archiving failure must not prevent reading an available valid backup.

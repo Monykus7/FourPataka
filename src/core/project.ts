@@ -425,7 +425,7 @@ export function importProject(text: string): Project {
   }
   // Rebuild a whitelisted object: imported runtime/UI/unknown fields are never trusted.
   const project = data as unknown as Project;
-  const clean: Project = {
+  let clean: Project = {
     processing: importProcessing(data.processing),
     schemaVersion: 2,
     id: project.id,
@@ -463,6 +463,12 @@ export function importProject(text: string): Project {
       level: t.level,
     })),
   };
+  // Bundled additions must reach existing sessions before parser key discovery.
+  // Never replace occupied keys or invalidate an otherwise valid full library.
+  const missingPercussion = createPercussionPresets().filter(
+    (preset) => !clean.instruments.some((existing) => existing.key === preset.key),
+  ).length;
+  if (clean.instruments.length + missingPercussion <= 128) clean = withPercussionPresets(clean);
   return reconcileTracks(
     clean,
     parseScore(

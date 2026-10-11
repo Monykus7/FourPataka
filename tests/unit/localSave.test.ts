@@ -18,6 +18,26 @@ function memoryStore(): LocalStore & { values: Map<string, string> } {
   };
 }
 
+it('loads an old session with bundled percussion available while preserving original recovery bytes', () => {
+  const storage = memoryStore();
+  const old = createProject();
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  const bytes = JSON.stringify(old);
+  const checkpoint = JSON.stringify({ ...old, name: 'Previous session' }, null, 2);
+  storage.setItem(STORAGE_KEY, bytes);
+  storage.setItem(RECOVERY_KEY, checkpoint);
+  const loaded = loadProject(storage);
+  expect(loaded.recoveryIssue).toBe(false);
+  expect(loaded.warning).toContain('kick, hiHat, snare');
+  expect(loaded.project.instruments).toHaveLength(9);
+  expect(loaded.project.tracks).toEqual(old.tracks);
+  expect(loaded.project.comparison).toEqual(old.comparison);
+  expect(storage.getItem(STORAGE_KEY)).toBe(bytes);
+  saveLocalProject(loaded.project, storage);
+  expect(storage.getItem(RECOVERY_KEY)).toBe(checkpoint);
+  expect(loadProject(storage).warning).toBeNull();
+});
+
 it('keeps the previous distinct project across identical saves and canonicalized reloads', () => {
   const storage = memoryStore();
   const first = createProject();
