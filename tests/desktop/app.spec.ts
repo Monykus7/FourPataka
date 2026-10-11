@@ -1,4 +1,5 @@
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
+import { sectionsWorkflow } from '../helpers/sections';
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 import {
   percussionWorkflow,
@@ -38,6 +39,32 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged named sections retain source editing and native JSON round-trip', async () => {
+  const page = await app.firstWindow();
+  await sectionsWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'named-sections.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved named-sections.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toContain('section Verse');
+  expect(saved.scoreText).toContain('play Verse trim 1 + 0.5');
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill('track changed using sine {\n C4 quarter\n}');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, savePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Score section', exact: true })).toContainText(
+    'Verse',
+  );
 });
 
 test('packaged instrument folders drag and retain organization through native saving', async () => {

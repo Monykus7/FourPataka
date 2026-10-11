@@ -19,6 +19,7 @@ interface Props {
   onTrack: (key: string) => void;
   onInstrument: (key: string) => void;
   onChain: (key: string) => void;
+  onSection: (key: string) => void;
   onInsert: (command: CommandDefinition) => void;
 }
 
@@ -32,6 +33,7 @@ export default function CommandReference({
   onTrack,
   onInstrument,
   onChain,
+  onSection,
   onInsert,
 }: Props) {
   const [search, setSearch] = useState('');
@@ -83,6 +85,20 @@ export default function CommandReference({
           }}
         >
           <div className="command-destination">
+            {!!context.sectionNames?.length && (
+              <label>
+                Section
+                <select
+                  aria-label="Command section"
+                  value={context.sectionKey}
+                  onChange={(event) => onSection(event.target.value)}
+                >
+                  {context.sectionNames.map((name) => (
+                    <option key={name}>{name}</option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label>
               Track
               <select

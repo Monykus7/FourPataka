@@ -178,8 +178,7 @@ export default function ScoreWorkspace(props: Props) {
     !index.problem &&
     score.diagnostics.every((d) => d.message === 'Add a track to start composing.');
   const empty = !value.trim();
-  const chords = score.events
-    .flatMap((event) => (event.chordSymbol ? [event.chordSymbol] : []))
+  const chords = score.chordPreviews
     .filter((chord) => chord.from >= offset && chord.to <= end)
     .map((chord) => ({
       ...chord,
@@ -190,6 +189,11 @@ export default function ScoreWorkspace(props: Props) {
     .filter((d) => d.from >= offset && d.from <= end)
     .map((d) => ({
       ...d,
+      message:
+        d.message +
+        (d.sectionCalls?.length
+          ? ` Called via ${d.sectionCalls.map((call) => `${call.name} at line ${call.line}`).join(' → ')}.`
+          : ''),
       from: Math.max(0, projection.toLocal(d.from)),
       to: Math.min(text.length, projection.toLocal(d.to)),
       line: d.line - (active?.firstLine ?? 1) + 1,

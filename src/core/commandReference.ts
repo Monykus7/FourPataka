@@ -1,6 +1,9 @@
 import { COMMANDS, type CommandDefinition } from './commands';
+import { nextSectionName } from './scoreSections';
 
 export interface ReferenceContext {
+  sectionNames?: string[];
+  sectionKey?: string;
   meterChangeBeat?: number;
   instrumentKey: string;
   chainKey: string;
@@ -12,6 +15,12 @@ export interface ReferenceContext {
 
 export function referenceSnippet(command: CommandDefinition, context: ReferenceContext) {
   switch (command.name) {
+    case 'section':
+      return `section ${nextSectionName(context.sectionNames ?? [])} {\n  C4 quarter\n  D4 quarter\n}`;
+    case 'play':
+      return `play ${context.sectionKey || 'A'}`;
+    case 'play-trim':
+      return `play ${context.sectionKey || 'A'} trim 0 {\n  E4 quarter\n}`;
     case 'meter-change':
       return `time 7/8 at ${context.meterChangeBeat ?? 4}`;
     case 'track':
@@ -31,6 +40,8 @@ export function insertionReason(command: CommandDefinition, context: ReferenceCo
   if (context.playing) return 'Stop score playback to insert commands.';
   if (context.invalid) return 'Fix score diagnostics before inserting commands.';
   if (command.scope === 'track' && !context.targetKey) return 'Create a track first.';
+  if (['play', 'play-trim'].includes(command.name) && !context.sectionKey)
+    return 'Define a section in this track first.';
   if (['track', 'using'].includes(command.name) && !context.instrumentKey)
     return 'Save an instrument preset first.';
   if (['through', 'master'].includes(command.name) && !context.chainKey)

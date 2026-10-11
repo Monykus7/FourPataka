@@ -116,7 +116,7 @@ describe('score compilation', () => {
             ? command.name === 'track'
               ? command.snippet
               : `${command.snippet}\ntrack lead using brightReed {\nC4 quarter\n}`
-            : `track lead using brightReed {\n${command.snippet}\n}`;
+            : `track lead using brightReed {\n${command.name.startsWith('play') ? 'section A {\n C4 quarter\n D4 quarter\n}\n' : ''}${command.snippet}\n}`;
       expect(parseScore(text, keys, ['warmDrive', 'cleanGlue']).diagnostics, command.name).toEqual(
         [],
       );

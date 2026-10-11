@@ -156,6 +156,12 @@ export function sectionNamesAt(source: string, position: number) {
   return track ? index.sections.filter((s) => s.track === track.key).map((s) => s.name) : [];
 }
 
+export function nextSectionName(names: readonly string[]) {
+  let name = 'A';
+  for (let suffix = 2; names.includes(name); suffix++) name = `A${suffix}`;
+  return name;
+}
+
 export function renameSectionSource(
   source: string,
   index: SectionSourceIndex,

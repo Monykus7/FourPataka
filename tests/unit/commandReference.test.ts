@@ -12,18 +12,37 @@ import { parseScore } from '../../src/core/parser';
 const keys = ['personalKeys', 'quietBrass'];
 const chains = ['bodyChain'];
 const text =
-  '// retained\r\ntrack lead using personalKeys through bodyChain { // header\r\n C4 quarter\r\n}\r\n';
+  '// retained\r\ntrack lead using personalKeys through bodyChain { // header\r\n section A {\r\n C4 quarter\r\n }\r\n C4 quarter\r\n}\r\n';
 const context = {
   instrumentKey: 'quietBrass',
   chainKey: 'bodyChain',
   newTrackKey: 'lead2',
   targetKey: 'lead',
+  sectionNames: ['A'],
+  sectionKey: 'A',
   playing: false,
   invalid: false,
 };
 const command = (name: string) => COMMANDS.find((item) => item.name === name)!;
 
 describe('contextual command reference', () => {
+  it('requires a local definition for calls and uses collision-free section declaration names', () => {
+    expect(insertionReason(command('play'), { ...context, sectionKey: undefined })).toContain(
+      'Define',
+    );
+    expect(referenceSnippet(command('section'), context)).toContain('section A2');
+    expect(() =>
+      insertCommand(text, keys, 'play', 'lead', 'personalKeys', chains, 'bodyChain', 'foreign'),
+    ).toThrow('Define');
+    expect(
+      parseScore(
+        insertCommand(text, keys, 'play-trim', 'lead', 'personalKeys', chains, 'bodyChain', 'A'),
+        keys,
+        chains,
+      ).tracks[0].beats,
+    ).toBe(3);
+    expect(searchCommands('play trim', context).map((card) => card.name)).toEqual(['play-trim']);
+  });
   it('looks up command names without incidental mentions in other rules', () => {
     for (const name of [
       'time',

@@ -71,6 +71,7 @@ export interface ScoreTrack {
   beats: number;
 }
 export interface CompiledScore {
+  chordPreviews: NonNullable<ScoreEvent['chordSymbol']>[];
   sections: SectionSource[];
   sectionInvocations: SectionInvocation[];
   meterChanges: MeterChange[];
@@ -94,6 +95,7 @@ export function parseScore(
   chordShapes: ChordShapeRegistry = CHORD_SHAPES,
 ): CompiledScore {
   const result: CompiledScore = {
+    chordPreviews: [],
     sections: [],
     sectionInvocations: [],
     tempo: 120,
@@ -115,6 +117,7 @@ export function parseScore(
   const blocks: (ScoreToken & { id: number; ratio?: BeatFraction })[] = [];
   const eventBlocks = new WeakMap<ScoreEvent, number>();
   const eventTiming = new WeakMap<ScoreEvent, { start: BeatFraction; duration: BeatFraction }>();
+  const chordPreviews = new Map<number, NonNullable<ScoreEvent['chordSymbol']>>();
   const callTiming = new WeakMap<
     SectionInvocation,
     { start: BeatFraction; bodyEnd: BeatFraction; end: BeatFraction }
@@ -387,6 +390,9 @@ export function parseScore(
         }
       } else notes = [expression];
       const frequencies = notes.map((note) => pitch(note).frequency);
+      // Source previews include declarations and trimmed-away notes. A repeated
+      // invocation still annotates its original chord span only once.
+      if (chordSymbol) chordPreviews.set(chordSymbol.from, chordSymbol);
       if (result.events.length >= 10000) {
         error('A compiled score may contain at most 10,000 events.');
         exhausted = true;
@@ -711,6 +717,7 @@ export function parseScore(
   }
   result.beats = Math.max(0, ...result.tracks.map((t) => t.beats));
   result.seconds = (result.beats * 60) / result.tempo;
+  result.chordPreviews = [...chordPreviews.values()];
   return result;
 }
 

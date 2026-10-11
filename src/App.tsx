@@ -253,6 +253,7 @@ export default function App() {
   const [commandsOpen, setCommandsOpen] = useState(true);
   const [commandFocusRequest, setCommandFocusRequest] = useState(0);
   const [commandChain, setCommandChain] = useState('warmDrive');
+  const [commandSection, setCommandSection] = useState('');
   const fileInput = useRef<HTMLInputElement>(null);
   const scorePanel = useRef<HTMLElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -761,11 +762,21 @@ export default function App() {
     [],
   );
 
+  const referenceTarget =
+    score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '';
+  const referenceSections = score.sections
+    .filter((section) => section.track === referenceTarget)
+    .map((section) => section.name);
+  const referenceSection = referenceSections.includes(commandSection)
+    ? commandSection
+    : referenceSections[0];
   const referencePanel = (
     <CommandReference
       open={commandsOpen}
       onOpen={setCommandsOpen}
       context={{
+        sectionNames: referenceSections,
+        sectionKey: referenceSection,
         instrumentKey: instruments.some((i) => i.key === commandInstrument)
           ? commandInstrument
           : preset.key,
@@ -786,6 +797,7 @@ export default function App() {
       onTrack={setSelectedTrack}
       onInstrument={setCommandInstrument}
       onChain={setCommandChain}
+      onSection={setCommandSection}
       onInsert={(command) => {
         try {
           const targetKey =
@@ -798,6 +810,7 @@ export default function App() {
             instruments.some((i) => i.key === commandInstrument) ? commandInstrument : preset.key,
             chainKeys,
             chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
+            referenceSection,
           );
           change((p) => ({ ...p, scoreText: text }));
           setToast(
@@ -1806,6 +1819,15 @@ export default function App() {
                         <div key={i}>
                           <span>LINE {d.line}</span>
                           {d.message}
+                          {!!d.sectionCalls?.length && (
+                            <small>
+                              {' '}
+                              · called via{' '}
+                              {d.sectionCalls
+                                .map((call) => `${call.name} at line ${call.line}`)
+                                .join(' → ')}
+                            </small>
+                          )}
                         </div>
                       ))}
                     </div>

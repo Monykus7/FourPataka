@@ -17,5 +17,5 @@ export async function referenceSearchWorkflow(page: Page) {
     reference.getByRole('button', { name: 'Insert rest-bar command', exact: true }),
   ).toBeVisible();
   await search.fill('');
-  await expect(reference.locator('.command-card')).toHaveCount(20);
+  await expect(reference.locator('.command-card')).toHaveCount(23);
 }

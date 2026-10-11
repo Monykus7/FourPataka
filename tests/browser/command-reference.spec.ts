@@ -157,7 +157,7 @@ test('reference matches the score height while search stays reachable on desktop
       width === 390 ? 'matrix(0, 1, -1, 0, 0, 0)' : 'none',
     );
     await search.fill('');
-    await expect(reference.locator('.command-card')).toHaveCount(20);
+    await expect(reference.locator('.command-card')).toHaveCount(23);
     await expect
       .poll(async () => {
         const referenceBox = (await reference.boundingBox())!;

@@ -201,6 +201,39 @@ export const COMMANDS: readonly CommandDefinition[] = [
       'Count is total plays (1–128); omitted count means two plays. Repeat blocks nest up to 16 levels. Bracket groups must close within their repeat. Expansion is capped at 10,000 events and 100,000 token visits; source spans stay original. Bar rests are recalculated each pass.',
   },
   {
+    name: 'section',
+    group: 'Structure',
+    scope: 'track',
+    description: 'Define a reusable passage without playing it',
+    snippet: 'section A {\n  C4 quarter\n  D4 quarter\n}',
+    completionTemplate: 'section ${} {\n\t${}\n}',
+    syntax: 'section <name> {\n  <events, repeats or section calls>\n}',
+    rules:
+      'Definitions belong directly inside a track and do not advance time. Names are track-local, case-sensitive, start with a letter and use letters/digits/_. Forward references are allowed. At most 64 definitions per track, 16 nested calls, 10,000 expanded events/calls and 100,000 token visits. Undefined/cyclic calls and unused invalid definitions diagnose. Bracket groups close within their own section.',
+  },
+  {
+    name: 'play',
+    group: 'Structure',
+    scope: 'track',
+    description: 'Perform a named section at this track position',
+    snippet: 'play A',
+    completionTemplate: 'play ${}',
+    syntax: 'play <name>',
+    rules:
+      'Uses a definition in this track, including one below the call. Enclosing tuplets/articulation apply; positional bar rests recompile at each invocation. repeat N { play A } repeats the passage without copying source. Notes retain definition and call-site provenance. Define a section before using reference insertion.',
+  },
+  {
+    name: 'play-trim',
+    group: 'Structure',
+    scope: 'track',
+    description: 'Cut a section tail and append a different ending',
+    snippet: 'play A trim 0 {\n  E4 quarter\n}',
+    completionTemplate: 'play ${} trim ${} {\n\t${}\n}',
+    syntax: 'play <name> [trim <quarter-beat expression>] {\n  <replacement ending>\n}',
+    rules:
+      'Trim 0–1,000,000 quarter-note beats, never more than this expanded invocation. Supports numbers, +,-,*,/, parentheses and exact fractions; no ** or identifiers. Resolve original bar rests before cutting. Partial events shorten without a new attack; staccato gates and legato boundaries recompute. Result length is retained prefix plus ending, with no padding. Other calls/definitions stay unchanged. A call may omit the ending; a bare ending without trim appends. Reference insertion starts at safe trim 0; edit the amount in the IDE.',
+  },
+  {
     name: 'rest-bar',
     group: 'Events',
     scope: 'track',

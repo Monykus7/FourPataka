@@ -1,6 +1,7 @@
 import { SCORE_KEY } from './music';
 import { COMMANDS, parseScore } from './parser';
 import { nextMeterBoundary } from './meter';
+import { nextSectionName } from './scoreSections';
 
 export function addMeterChange(
   text: string,
@@ -123,6 +124,7 @@ export function insertCommand(
   instrumentKey: string,
   chainKeys: string[] = [],
   chainKey = chainKeys.includes('warmDrive') ? 'warmDrive' : chainKeys[0],
+  sectionKey?: string,
 ) {
   const parsed = assertEditable(text, instrumentKeys, chainKeys);
   const command = COMMANDS.find((c) => c.name === name);
@@ -161,11 +163,21 @@ export function insertCommand(
     );
   const target = parsed.tracks.find((t) => t.key === targetKey);
   if (!target) throw new Error('Make a track or choose an insertion destination first.');
+  const names = parsed.sections
+    .filter((section) => section.track === targetKey)
+    .map((section) => section.name);
+  let snippet = command.snippet;
+  if (name === 'section')
+    snippet = `section ${nextSectionName(names)} {\n  C4 quarter\n  D4 quarter\n}`;
+  if (name === 'play' || name === 'play-trim') {
+    const selected = sectionKey ?? names[0];
+    if (!selected || !names.includes(selected))
+      throw new Error('Define a section in this track first.');
+    snippet = name === 'play' ? `play ${selected}` : `play ${selected} trim 0 {\n  E4 quarter\n}`;
+  }
   const lineStart = text.lastIndexOf('\n', target.bodyTo - 1) + 1;
   // Inline ] } closes the scope before the track brace; insert after those delimiters.
   const inline = text.slice(lineStart, target.bodyTo).trim().length > 0;
   const insertion = inline ? target.bodyTo : lineStart;
-  return (
-    text.slice(0, insertion) + `${inline ? '\n' : ''}  ${command.snippet}\n` + text.slice(insertion)
-  );
+  return text.slice(0, insertion) + `${inline ? '\n' : ''}  ${snippet}\n` + text.slice(insertion);
 }
