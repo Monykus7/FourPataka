@@ -5,6 +5,8 @@ import {
   renameTrackSource,
   removeTrackSource,
   moveTrackOwnership,
+  projectScoreView,
+  removeTrackOwnership,
 } from '../../src/core/scoreWorkspace';
 import { createProject, reconcileTracks } from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
@@ -12,6 +14,23 @@ import { parseScore } from '../../src/core/parser';
 const source =
   '// retained { }\r\ntempo 116\r\ntrack lead using sine { // header\r\n repeat 2 {\r\n legato[C4 quarter]\r\n }\r\n} // tail\r\ntime 7/8 at 4\r\ntrack bass using softBass {\r\n C2 whole\r\n}\r\n';
 describe('single-source track views', () => {
+  it('maps CRLF source spans to editor offsets and restores selected-view line endings', () => {
+    const index = indexScoreViews(source),
+      view = index.tracks[0];
+    const projection = projectScoreView(source, view);
+    const at = source.indexOf('C4');
+    expect(projection.text.slice(projection.toLocal(at), projection.toLocal(at + 2))).toBe('C4');
+    expect(projection.toCanonical(projection.toLocal(at))).toBe(at);
+    expect(projection.restore(projection.text)).toBe(source.slice(view.from, view.to));
+    const result = editTrackView(
+      source,
+      index,
+      'lead',
+      projection.restore(projection.text.replace('C4', 'A4')),
+    );
+    expect(result.text).toBe(source.replace('C4', 'A4'));
+    expect(projectScoreView('track all using sine {\nC4 quarter\n}').toLocal(26)).toBe(26);
+  });
   it('indexes nested braces/brackets while preserving canonical CRLF offsets and outside globals', () => {
     const index = indexScoreViews(source);
     expect(index.problem).toBeNull();
@@ -70,6 +89,14 @@ describe('single-source track views', () => {
     expect(removeTrackSource(source, index, 'lead')).toBe(
       source.slice(0, view.from) + source.slice(view.to),
     );
+  });
+  it('explicit deletion removes copies even when the remaining source has no tracks', () => {
+    const project = createProject();
+    const key = project.tracks[0].key;
+    const result = removeTrackOwnership(project, key);
+    expect(result.tracks.some((t) => t.key === key)).toBe(false);
+    expect(result.processing.tracks[key]).toBeUndefined();
+    expect(project.tracks.some((t) => t.key === key)).toBe(true);
   });
   it('moves owned sounds, levels, chains and comparison selection through rename and reconciliation', () => {
     let project = createProject();

@@ -16,6 +16,33 @@ export interface ScoreViewIndex {
   problem: string | null;
 }
 
+/** CodeMirror counts a CRLF as one character; source offsets count both. */
+export function projectScoreView(source: string, view?: TrackSourceView) {
+  const from = view?.from ?? 0;
+  const to = view?.to ?? source.length;
+  const slice = source.slice(from, to);
+  const removed = [...slice.matchAll(/\r\n/g)].map((match) => match.index!);
+  const localBreaks = removed.map((position, index) => position - index);
+  const before = (positions: number[], at: number) => {
+    let low = 0,
+      high = positions.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (positions[middle] < at) low = middle + 1;
+      else high = middle;
+    }
+    return low;
+  };
+  return {
+    text: slice.replace(/\r\n/g, '\n'),
+    from,
+    to,
+    toLocal: (position: number) => position - from - before(removed, position - from),
+    toCanonical: (position: number) => from + position + before(localBreaks, position),
+    restore: (text: string) => (removed.length ? text.replace(/\r?\n/g, '\r\n') : text),
+  };
+}
+
 /** Views address canonical UTF-16 offsets, never an independently saved document. */
 export function indexScoreViews(source: string): ScoreViewIndex {
   const tracks: TrackSourceView[] = [];
@@ -127,6 +154,21 @@ export function moveTrackOwnership(project: Project, from: string, to: string): 
     comparisonMaterial:
       project.comparisonMaterial.trackKey === from
         ? { ...project.comparisonMaterial, trackKey: to }
+        : project.comparisonMaterial,
+  };
+}
+
+export function removeTrackOwnership(project: Project, key: string): Project {
+  const chains = { ...project.processing.tracks };
+  delete chains[key];
+  const tracks = project.tracks.filter((track) => track.key !== key);
+  return {
+    ...project,
+    tracks,
+    processing: { ...project.processing, tracks: chains },
+    comparisonMaterial:
+      project.comparisonMaterial.trackKey === key
+        ? { ...project.comparisonMaterial, trackKey: tracks[0]?.key ?? '' }
         : project.comparisonMaterial,
   };
 }

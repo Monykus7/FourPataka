@@ -86,11 +86,12 @@ import WavExport from './components/WavExport';
 import HarmonicPolarity from './components/HarmonicPolarity';
 import RecoveryDialog from './components/RecoveryDialog';
 import { appendTrack, insertCommand, nextTrackKey, setScoreChain } from './core/scoreTools';
+import { moveTrackOwnership, removeTrackOwnership } from './core/scoreWorkspace';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
 import { applyTheme, resolveTheme, THEMES } from './core/themes';
-const ScoreEditor = lazy(() => import('./components/ScoreEditor'));
+const ScoreWorkspace = lazy(() => import('./components/ScoreWorkspace'));
 
 type View = 'instrument' | 'pedalboard' | 'compose' | 'learn';
 function readPreferences() {
@@ -1633,20 +1634,51 @@ export default function App() {
                     </div>
                   </div>
                   <Suspense fallback={<div className="editor-loading">Opening score editor…</div>}>
-                    <ScoreEditor
+                    <ScoreWorkspace
                       value={project.scoreText}
-                      onChange={(text) => {
-                        if (projectRef.current.scoreText !== text)
-                          change((p) => ({ ...p, scoreText: text }), 'score-text');
+                      score={score}
+                      onChange={({ base, text, rename, operation, remove }) => {
+                        if (projectRef.current.scoreText !== base) {
+                          setToast('The score changed. The current version has been retained.');
+                          return false;
+                        }
+                        change(
+                          (p) =>
+                            p.scoreText !== base
+                              ? p
+                              : {
+                                  ...(rename
+                                    ? moveTrackOwnership(p, rename.from, rename.to)
+                                    : remove
+                                      ? removeTrackOwnership(p, remove)
+                                      : p),
+                                  scoreText: text,
+                                },
+                          rename || operation ? '' : 'score-text',
+                        );
+                        if (rename) {
+                          setSelectedTrack((key) => (key === rename.from ? rename.to : key));
+                          setPedalDestination((key) =>
+                            key === `track:${rename.from}` ? `track:${rename.to}` : key,
+                          );
+                        }
+                        if (remove) {
+                          setSelectedTrack((key) => (key === remove ? '' : key));
+                          setPedalDestination((key) =>
+                            key === `track:${remove}` ? 'audition' : key,
+                          );
+                        }
+                        return true;
                       }}
-                      chords={score.events.flatMap((event) =>
-                        event.chordSymbol ? [event.chordSymbol] : [],
-                      )}
-                      diagnostics={score.diagnostics}
                       autocomplete={preferences.autocomplete}
                       presetKeys={instruments.map((i) => i.key)}
                       chainKeys={chainKeys}
                       lines={highlightedLines}
+                      playing={playback === 'score'}
+                      onTrack={setSelectedTrack}
+                      onView={() => {
+                        editGroup.current = { key: '', time: 0 };
+                      }}
                       onUndo={() => travel('undo')}
                       onRedo={() => travel('redo')}
                     />
