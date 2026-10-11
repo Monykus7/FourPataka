@@ -8,6 +8,10 @@ import {
   hiHatPreset,
   legacyHiHatPreset,
   upgradeHiHatTemplate,
+  legacyKickPreset,
+  legacySnarePreset,
+  snarePreset,
+  upgradeDrumTemplate,
 } from '../../src/core/instrumentPresets';
 import { dbToGain, mathematicalPreset, sourceSamples } from '../../src/core/music';
 import { parseScore } from '../../src/core/parser';
@@ -17,6 +21,48 @@ import {
   validateSound,
   withPercussionPresets,
 } from '../../src/core/project';
+
+it('kick/snare factory updates preserve edited libraries and applied sounds', () => {
+  for (const [key, label, legacy, createSound] of [
+    ['kick', 'Kick', legacyKickPreset, kickPreset],
+    ['snare', 'Snare', legacySnarePreset, snarePreset],
+  ] as const) {
+    const old = { id: key, key, label, version: 1, sound: legacy() };
+    expect(upgradeDrumTemplate(old)).toEqual({ ...old, version: 2, sound: createSound() });
+    const custom = { ...old, sound: { ...old.sound, trim: -27 } };
+    expect(upgradeDrumTemplate(custom)).toBe(custom);
+    const project = createProject();
+    project.instruments = project.instruments.map((preset) => (preset.key === key ? old : preset));
+    project.scoreText = `track drums using ${key} {\n C3 quarter\n}`;
+    const restored = importProject(JSON.stringify(project));
+    restored.tracks[0].sound = legacy();
+    restored.tracks[0].presetVersion = 1;
+    restored.comparison.A = legacy();
+    const next = importProject(JSON.stringify(restored));
+    expect(next.tracks).toEqual(restored.tracks);
+    expect(next.comparison).toEqual(restored.comparison);
+    expect(next.instruments.find((preset) => preset.key === key)!.sound).toEqual(createSound());
+  }
+});
+
+it('validates optional pitch and independent noise-decay units and retains them through JSON', () => {
+  validateSound(kickPreset());
+  validateSound(snarePreset());
+  const hit = kickPreset().percussion!;
+  for (const change of [
+    { noiseDecay: 0 },
+    { noiseDecay: 3 },
+    { pitch: null },
+    { pitch: { amount: 49, decay: 0.1 } },
+    { pitch: { amount: 12, decay: 0 } },
+    { pitch: { amount: NaN, decay: 0.1 } },
+  ])
+    expect(() => validateSound({ ...kickPreset(), percussion: { ...hit, ...change } })).toThrow();
+  const project = createProject();
+  project.comparison.A = kickPreset();
+  project.comparison.B = snarePreset();
+  expect(importProject(JSON.stringify(project)).comparison).toEqual(project.comparison);
+});
 
 it('hi-hat carries a fresh validated noise hit and rejects invalid physical units', () => {
   const sound = hiHatPreset();
@@ -88,12 +134,15 @@ it('kick has a low body with audible beater partials and fresh editable banks', 
   expect(kickPreset().undertones[0]).toBe(0);
 });
 
-it('percussion has distinct low, sparse-high and dense-high spectra with bounded gain', () => {
+it('percussion combines distinct low bodies and noisy transients with bounded Fourier gain', () => {
   const presets = createPercussionPresets();
   const [kick, hat, snare] = presets.map((p) => p.sound);
   expect(hat.harmonics.slice(0, 12).every((v) => v === 0)).toBe(true);
   expect(hat.harmonics.filter((v) => v > 0)).toHaveLength(6);
-  expect(snare.harmonics.slice(8).filter((v) => v > 0)).toHaveLength(24);
+  expect(snare.harmonics.filter((v) => v > 0)).toHaveLength(4);
+  expect(kick.percussion!.pitch!.amount).toBeGreaterThan(snare.percussion!.pitch!.amount);
+  expect(kick.percussion!.noiseDecay).toBeLessThan(kick.percussion!.decay);
+  expect(snare.percussion!.noiseDecay).toBeGreaterThan(snare.percussion!.decay);
   expect(snare.harmonics[0]).toBeGreaterThan(0);
   expect(new Set(presets.map((p) => JSON.stringify(p.sound.harmonics))).size).toBe(3);
   for (const preset of presets) {

@@ -24,6 +24,7 @@ import {
   softBassPreset,
   upgradeSoftBassTemplate,
   upgradeHiHatTemplate,
+  upgradeDrumTemplate,
 } from './instrumentPresets';
 
 export interface InstrumentPreset {
@@ -484,15 +485,17 @@ export function importProject(text: string): Project {
       B: migrateSound(project.comparison.B),
     },
     instruments: project.instruments.map((p) =>
-      upgradeHiHatTemplate(
-        upgradeSoftBassTemplate({
-          id: p.id,
-          key: p.key,
-          label: p.label,
-          version: p.version,
-          sound: migrateSound(p.sound),
-          ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
-        }),
+      upgradeDrumTemplate(
+        upgradeHiHatTemplate(
+          upgradeSoftBassTemplate({
+            id: p.id,
+            key: p.key,
+            label: p.label,
+            version: p.version,
+            sound: migrateSound(p.sound),
+            ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
+          }),
+        ),
       ),
     ),
     ...(instrumentFolders !== undefined ? { instrumentFolders } : {}),

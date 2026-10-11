@@ -1,6 +1,6 @@
 import { LEGACY_HARMONIC_COUNT, mathematicalPreset, type Sound } from './music';
 
-export function kickPreset(): Sound {
+export function legacyKickPreset(): Sound {
   const sound = mathematicalPreset('sine');
   // A low fundamental supplies the body; quiet upper partials add the beater.
   // Note duration still controls the gate: this is not a pitch/decay envelope.
@@ -10,6 +10,25 @@ export function kickPreset(): Sound {
     harmonics: sound.harmonics.map((_, i) => magnitudes[i] ?? 0),
     attack: 0.005,
     release: 0.16,
+  };
+}
+
+export function kickPreset(): Sound {
+  const base = mathematicalPreset('sine');
+  const body = [1, 0.14, 0.045, 0.015];
+  return {
+    ...base,
+    harmonics: base.harmonics.map((_, i) => body[i] ?? 0),
+    percussion: {
+      noise: 0.12,
+      highpass: 3000,
+      decay: 0.12,
+      noiseDecay: 0.012,
+      pitch: { amount: 24, decay: 0.025 },
+    },
+    attack: 0.005,
+    release: 0.24,
+    trim: -12,
   };
 }
 
@@ -47,7 +66,7 @@ export function hiHatPreset(): Sound {
   };
 }
 
-export function snarePreset(): Sound {
+export function legacySnarePreset(): Sound {
   const sound = mathematicalPreset('sine');
   // A small low body under a dense upper bank approximates a snare's rattle.
   // Deterministic signs spread the waveform's peaks; audio stays unnormalized.
@@ -64,17 +83,37 @@ export function snarePreset(): Sound {
   };
 }
 
+export function snarePreset(): Sound {
+  const base = mathematicalPreset('sine');
+  const body = [0.6, 0.26, 0.08, 0.035];
+  // A short tuned membrane body and longer broadband rattle have separate decay.
+  return {
+    ...base,
+    harmonics: base.harmonics.map((_, i) => body[i] ?? 0),
+    percussion: {
+      noise: 0.8,
+      highpass: 1200,
+      decay: 0.045,
+      noiseDecay: 0.09,
+      pitch: { amount: 4, decay: 0.018 },
+    },
+    attack: 0.005,
+    release: 0.18,
+    trim: -12,
+  };
+}
+
 // Bundled source metadata, not the planned M3 public preset-module registry.
 export const PERCUSSION_PRESETS = [
   {
     id: 'kick',
     key: 'kick',
     label: 'Kick',
-    version: 1,
+    version: 2,
     createSound: kickPreset,
     note: 'C2',
-    noteBeats: 0.125,
-    hint: 'Low body + beater · try C1–C2, short notes',
+    noteBeats: 0.5,
+    hint: 'Falling pitch + low body + short beater · try C1–C2',
   },
   {
     id: 'hi-hat',
@@ -90,11 +129,11 @@ export const PERCUSSION_PRESETS = [
     id: 'snare',
     key: 'snare',
     label: 'Snare',
-    version: 1,
+    version: 2,
     createSound: snarePreset,
-    note: 'D3',
-    noteBeats: 0.125,
-    hint: 'Low body + bright rattle · try C3–D3, short notes',
+    note: 'G3',
+    noteBeats: 0.5,
+    hint: 'Short membrane body + filtered noise rattle · try D3–G3',
   },
 ] as const;
 
@@ -139,6 +178,23 @@ interface Template {
   label: string;
   version: number;
   sound: Sound;
+}
+
+export function upgradeDrumTemplate<T extends Template>(template: T): T {
+  const definition = PERCUSSION_PRESETS.find(
+    (preset) =>
+      preset.id === template.id && preset.key === template.key && preset.label === template.label,
+  );
+  if (!definition || template.version !== 1 || !['kick', 'snare'].includes(template.key))
+    return template;
+  const legacy = template.key === 'kick' ? legacyKickPreset() : legacySnarePreset();
+  const keys = Object.keys(legacy) as (keyof Sound)[];
+  if (
+    Object.keys(template.sound).length !== keys.length ||
+    !keys.every((key) => JSON.stringify(template.sound[key]) === JSON.stringify(legacy[key]))
+  )
+    return template;
+  return { ...template, version: 2, sound: definition.createSound() };
 }
 
 export function upgradeHiHatTemplate<T extends Template>(template: T): T {
