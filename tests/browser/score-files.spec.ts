@@ -9,7 +9,10 @@ test('selected-file Track Maker and commands add audio without touching sibling 
   await scoreFilesWorkflow(page);
   await page.getByRole('button', { name: 'Make a track', exact: true }).click();
   await page.getByRole('textbox', { name: 'New track name' }).fill('harmony');
-  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  await page
+    .getByRole('dialog', { name: 'Make a track' })
+    .getByRole('button', { name: 'Add track', exact: true })
+    .click();
   await expect
     .poll(async () => {
       const source = await page.evaluate(
@@ -45,7 +48,7 @@ test('shared-track completion and navigation find definitions in a closed siblin
     'true',
   );
   await expect(editor).toContainText('section A');
-  await expect(editor).not.toContainText('from song');
+  await expect(editor).toContainText('from song');
 });
 
 test('virtual file tabs keep multiple tracks, shared clocks, closed-file playback and persistent editing', async ({

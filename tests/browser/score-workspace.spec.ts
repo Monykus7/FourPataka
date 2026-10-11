@@ -52,14 +52,14 @@ test('CRLF source stays canonical while editor chord offsets remain accurate', a
   );
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await page.getByRole('tab', { name: 'lead', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   await editor.press('Control+Home');
+  await editor.press('ArrowDown');
   await editor.press('ArrowDown');
   await editor.press('Home');
   for (let i = 0; i < 10; i++) await editor.press('ArrowRight');
   await expect(page.locator('.chord-expansion')).toContainText('C3 · D4 · G4');
-  await editor.fill('track lead using sine {\n chord:Fwide2@3 quarter\n}');
+  await editor.fill(source.replace('Cwide2', 'Fwide2').replaceAll('\r\n', '\n'));
   await expect
     .poll(() =>
       page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
@@ -84,7 +84,7 @@ test('removing the last track saves an importable empty workspace and permits a 
   await page
     .getByRole('textbox', { name: 'Score editor' })
     .fill('tempo 120\ntrack only using sine {\n C4 quarter\n}');
-  await page.getByRole('tab', { name: 'only', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Track in file' }).selectOption('only');
   await page.getByRole('button', { name: 'Remove track', exact: true }).click();
   await page.getByRole('button', { name: 'Confirm remove track', exact: true }).click();
   await expect
@@ -94,13 +94,10 @@ test('removing the last track saves an importable empty workspace and permits a 
     .toBe(0);
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await expect(page.getByRole('tab', { name: 'only', exact: true })).toHaveCount(0);
-  await page.getByRole('button', { name: 'New track tab', exact: true }).click();
-  await page.getByRole('textbox', { name: 'Track tab name' }).fill('rebuilt');
-  await page.getByRole('button', { name: 'Create track tab' }).click();
-  await expect(page.getByRole('tab', { name: 'rebuilt', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  );
+  await expect(page.getByRole('combobox', { name: 'Track in file' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Track name' }).fill('rebuilt');
+  await page.getByRole('button', { name: 'Create track' }).click();
+  await expect(page.getByRole('combobox', { name: 'Track in file' })).toHaveValue('rebuilt');
   await expect(page.locator('.editor-status')).toContainText('Ready to play');
 });

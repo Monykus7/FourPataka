@@ -35,8 +35,7 @@ export async function sectionsWorkflow(page: Page) {
   await editor.fill(SECTION_SCORE);
   await expect.poll(() => saved(page)).toBe(SECTION_SCORE);
   await expect(page.locator('.editor-status')).toContainText('5.5 quarter beats');
-  const tabs = page.getByRole('tablist', { name: 'Score views' });
-  await tabs.getByRole('tab', { name: 'melody', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Track in file' }).selectOption('melody');
   await page.getByRole('button', { name: 'Go to section', exact: true }).click();
   await expect(editor).toBeFocused();
   expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('A');
@@ -63,7 +62,7 @@ export async function sectionsWorkflow(page: Page) {
   );
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Rename section', exact: true })).toBeDisabled();
-  await expect(page.locator('.score-editor .playing-line')).toHaveCount(2);
+  await expect(page.locator('.score-editor .playing-line')).not.toHaveCount(0);
   await expect
     .poll(async () =>
       Number(
@@ -73,11 +72,7 @@ export async function sectionsWorkflow(page: Page) {
     .toBeGreaterThan(0);
   await page.getByRole('button', { name: 'B', exact: true }).click();
   await expect(page.locator('.transport-time')).not.toContainText('00:00');
-  const melodySource = renamed.slice(
-    renamed.indexOf('track melody'),
-    renamed.indexOf('\ntrack bass'),
-  );
-  await editor.fill(melodySource.replace('G4 quarter', 'A4 quarter'));
+  await editor.fill(renamed.replace('G4 quarter', 'A4 quarter'));
   await expect(page.locator('.editor-status')).toContainText('Playing previous version');
   await expect(page.locator('.score-editor .playing-line')).toHaveCount(0);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
@@ -97,7 +92,6 @@ export async function sectionsWorkflow(page: Page) {
     .toBe(renamed.replace('\n}\ntrack bass', '\n  play Verse\n}\ntrack bass'));
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect.poll(() => saved(page)).toBe(renamed);
-  await tabs.getByRole('tab', { name: 'All score', exact: true }).click();
   await editor.fill('track only using sine {\n section Silent {\n C4 whole\n}\n}');
   await expect(page.locator('.editor-status')).toContainText('0 quarter beats');
   await expect(

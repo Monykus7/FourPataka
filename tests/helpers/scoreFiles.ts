@@ -15,17 +15,13 @@ export async function scoreFilesWorkflow(page: Page) {
     'from song Demo\ntrack drums using sine {\n A4 whole\n}\ntrack bass using softBass {\n C2 whole\n}\ntrack melody using sine {\n play A\n D4 half\n}\n';
   await editor.fill(body);
   await expect(page.locator('.editor-status')).toContainText('Ready to play');
-  const views = page.getByRole('tablist', { name: 'Score views' });
-  await expect(views.getByRole('tab')).toHaveCount(4);
+  await expect(page.getByRole('tablist', { name: 'Score views' })).toHaveCount(0);
   const saved = () =>
     page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
   await expect
     .poll(async () => (await saved()).tracks.map((t: any) => t.key))
     .toEqual(['melody', 'drums', 'bass']);
-  await views.getByRole('tab', { name: 'bass', exact: true }).click();
-  await expect(editor).toContainText('C2 whole');
-  await expect(editor).not.toContainText('track drums');
-  await views.getByRole('tab', { name: 'Whole file', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Track in file' }).selectOption('bass');
   await expect(editor).toContainText('track drums');
   const text = (await saved()).scoreText;
   await page.getByRole('button', { name: 'Close rhythm.fourier tab', exact: true }).click();
