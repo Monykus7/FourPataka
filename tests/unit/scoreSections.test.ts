@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { lexScore } from '../../src/core/scoreLexer';
 import { indexScoreSections, renameSectionSource } from '../../src/core/scoreSections';
 import { indexScoreViews } from '../../src/core/scoreWorkspace';
+import { parseScore } from '../../src/core/parser';
 
 const source = `track melody using sine {
   section A {
@@ -75,4 +76,50 @@ it('retains CRLF offsets and diagnoses duplicate nested missing or malformed sec
     const index = indexScoreSections(bad);
     expect(index.diagnostics.length || indexScoreViews(bad).problem).toBeTruthy();
   }
+});
+
+it('defines without playing, resolves forward calls and reuses track-local sections with unique event IDs', () => {
+  const score = parseScore(
+    'track melody using sine {\n play A\n repeat 2 {\n play A\n}\n section A {\n C4 quarter\n D4 8th\n}\n}\ntrack bass using sine {\n section A {\n C2 whole\n}\n play A\n}',
+    ['sine'],
+  );
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks.map((t) => t.beats)).toEqual([4.5, 4]);
+  expect(score.events.map((e) => e.notes[0])).toEqual(['C4', 'D4', 'C4', 'D4', 'C4', 'D4', 'C2']);
+  expect(new Set(score.events.map((e) => e.id)).size).toBe(7);
+  expect(score.sectionInvocations.map((c) => c.duration)).toEqual([1.5, 1.5, 1.5, 4]);
+  expect(score.events[0].line).toBe(7);
+  expect(score.events[0].sectionCalls![0].line).toBe(2);
+  expect(
+    parseScore('track a using sine {\n section A {\n C4 whole\n}\n}', ['sine']).events,
+  ).toEqual([]);
+});
+
+it('inherits caller scales, recompiles positional bar rests and retains nested call provenance', () => {
+  const score = parseScore(
+    'time 4/4\ntrack a using sine {\n section A {\n C4 quarter\n rest bar\n}\n section B {\n play A\n}\n C4 quarter\n play B\n triplet[\n play A\n]\n}',
+    ['sine'],
+  );
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks[0].beats).toBe(8);
+  expect(score.events.map((e) => e.duration)).toEqual([1, 1, 2, 2 / 3, 10 / 3]);
+  expect(score.events[1].sectionCalls!.map((c) => c.name)).toEqual(['B', 'A']);
+});
+
+it('diagnoses unused invalid definitions, undefined/cyclic calls and bounded recursive expansion', () => {
+  for (const text of [
+    'section A {\n play Missing\n}',
+    'section A {\n play B\n}\n section B {\n play A\n}',
+    'section A {\n Q4 quarter\n}',
+  ])
+    expect(
+      parseScore(`track a using sine {\n${text}\n}`, ['sine']).diagnostics.length,
+    ).toBeGreaterThan(0);
+  const explosive = parseScore(
+    'track a using sine {\n section A {\n C4 64th\n}\n repeat 128 {\n repeat 128 {\n play A\n}\n}\n}',
+    ['sine'],
+  );
+  expect(explosive.events.length).toBeLessThanOrEqual(10000);
+  expect(explosive.sectionInvocations.length).toBeLessThanOrEqual(10000);
+  expect(explosive.diagnostics.some((d) => /10,000|100,000/.test(d.message))).toBe(true);
 });

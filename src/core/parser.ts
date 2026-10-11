@@ -2,6 +2,7 @@ import { SCORE_KEY, pitch } from './music';
 import { beatExpression } from './beatExpression';
 import { scoreTiming, restToBar } from './scoreTiming';
 import { lexScore, type ScoreToken } from './scoreLexer';
+import { indexScoreSections, type SectionSource } from './scoreSections';
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
 import {
@@ -21,6 +22,7 @@ export interface Diagnostic {
   message: string;
 }
 export interface ScoreEvent {
+  sectionCalls?: SectionInvocation[];
   articulation?: Articulation;
   gateDuration?: number;
   legatoToNext?: boolean;
@@ -36,6 +38,21 @@ export interface ScoreEvent {
   to: number;
   line: number;
 }
+export interface SectionInvocation {
+  id: string;
+  track: string;
+  name: string;
+  from: number;
+  to: number;
+  line: number;
+  definitionFrom: number;
+  definitionTo: number;
+  beat: number;
+  duration: number;
+  originalDuration: number;
+  trimmedBeats: number;
+  endingDuration: number;
+}
 export interface ScoreTrack {
   key: string;
   instrumentKey: string;
@@ -49,6 +66,8 @@ export interface ScoreTrack {
   beats: number;
 }
 export interface CompiledScore {
+  sections: SectionSource[];
+  sectionInvocations: SectionInvocation[];
   meterChanges: MeterChange[];
   tempo: number;
   meter: TimeSignature;
@@ -70,6 +89,8 @@ export function parseScore(
   chordShapes: ChordShapeRegistry = CHORD_SHAPES,
 ): CompiledScore {
   const result: CompiledScore = {
+    sections: [],
+    sectionInvocations: [],
     tempo: 120,
     meter: { ...DEFAULT_METER },
     meterChanges: [],
@@ -100,6 +121,18 @@ export function parseScore(
     blocks.length = 0;
   };
   const tokens = lexScore(text);
+  const sectionIndex = indexScoreSections(text, tokens);
+  result.sections = sectionIndex.sections;
+  result.diagnostics.push(...sectionIndex.diagnostics);
+  const definitions = new Map<string, Map<string, SectionSource>>();
+  for (const section of sectionIndex.sections) {
+    const local = definitions.get(section.track) ?? new Map<string, SectionSource>();
+    local.set(section.name, section);
+    definitions.set(section.track, local);
+  }
+  const usedSections = new Set<SectionSource>();
+  const callStack: SectionInvocation[] = [];
+  let invocationId = 0;
   // Read global timing first so directives below tracks also govern positional bar rests.
   const timing = scoreTiming(tokens);
   let exhausted = false;
@@ -338,6 +371,7 @@ export function parseScore(
         return;
       }
       const compiled: ScoreEvent = {
+        ...(callStack.length ? { sectionCalls: [...callStack] } : {}),
         id: `${current.key}:${current.events.length}`,
         track: current.key,
         beat: current.beats,
@@ -369,7 +403,7 @@ export function parseScore(
     }
   };
   let visits = 0;
-  const visit = (start: number, end: number, depth: number) => {
+  const visit = (start: number, end: number, depth: number, ancestry: SectionSource[] = []) => {
     for (let i = start; i < end && !exhausted; i++) {
       const token = tokens[i];
       const error = (message: string) =>
@@ -379,20 +413,74 @@ export function parseScore(
         exhausted = true;
         break;
       }
+      if (token.kind === 'section-open') {
+        const close = sectionIndex.closes.get(i);
+        if (close === undefined || close >= end) {
+          error('Section block is missing its closing }.');
+          break;
+        }
+        // Definitions declare source only. Forward references resolve through
+        // the track-local index; no events or time are consumed by declaration.
+        i = close;
+        continue;
+      }
+      if (token.kind === 'section-play' || token.kind === 'ending-open') {
+        const close = token.kind === 'ending-open' ? sectionIndex.closes.get(i) : i;
+        if (close === undefined || close >= end) {
+          error('Alternate ending block is missing its closing }.');
+          break;
+        }
+        const section = current && definitions.get(current.key)?.get(token.sectionName!);
+        if (!section) error(`Unknown section “${token.sectionName}” in this track.`);
+        else if (ancestry.includes(section))
+          error(`Cyclic section reference to “${section.name}”.`);
+        else if (ancestry.length >= 16) error('Section calls may nest at most 16 levels.');
+        else if (token.trimExpression || token.kind === 'ending-open')
+          error('Alternate endings are not available in this parser checkpoint.');
+        else if (result.sectionInvocations.length >= 10000) {
+          error('A score may expand at most 10,000 section calls.');
+          exhausted = true;
+        } else {
+          const track = current!;
+          const outer = [...blocks];
+          const call: SectionInvocation = {
+            id: `${track.key}:section:${invocationId++}`,
+            track: track.key,
+            name: section.name,
+            from: token.from,
+            to: token.to,
+            line: token.line,
+            definitionFrom: section.from,
+            definitionTo: section.to,
+            beat: track.beats,
+            duration: 0,
+            originalDuration: 0,
+            trimmedBeats: 0,
+            endingDuration: 0,
+          };
+          usedSections.add(section);
+          result.sectionInvocations.push(call);
+          callStack.push(call);
+          visit(section.open + 1, section.close, depth, [...ancestry, section]);
+          callStack.pop();
+          if (
+            blocks.length !== outer.length ||
+            blocks.some((block, index) => block !== outer[index])
+          ) {
+            error('Bracket groups must close within the section where they opened.');
+            blocks.splice(0, blocks.length, ...outer);
+          }
+          call.duration = call.originalDuration = track.beats - call.beat;
+        }
+        i = close;
+        continue;
+      }
       if (token.kind !== 'repeat-open') {
         consumeToken(token);
         continue;
       }
-      let balance = 1,
-        close = i + 1;
-      for (; close < end; close++) {
-        if (tokens[close].kind === 'repeat-open') balance++;
-        if (tokens[close].kind === 'brace-close') {
-          balance--;
-          if (balance === 0) break;
-        }
-      }
-      if (close >= end) {
+      const close = sectionIndex.closes.get(i);
+      if (close === undefined || close >= end) {
         error('Repeat block is missing its closing }.');
         break;
       }
@@ -405,7 +493,7 @@ export function parseScore(
         // Recompile each pass: rest-to-bar alignment is position dependent; source spans stay original.
         for (let pass = 0; pass < count && !exhausted; pass++) {
           const errorsBefore = result.diagnostics.length;
-          visit(i + 1, close, depth + 1);
+          visit(i + 1, close, depth + 1, ancestry);
           if (
             blocks.length !== outer.length ||
             blocks.some((block, index) => block !== outer[index])
@@ -429,6 +517,30 @@ export function parseScore(
       line: lines.length,
       message: `Track “${(current as ScoreTrack).key}” is missing its closing brace.`,
     });
+  // Validate unused definitions too, in a scratch track at beat zero. This
+  // checks music/reference errors without scheduling declarations or leaking
+  // their events, clocks or invocation metadata into the actual composition.
+  const savedTrack = current;
+  const realEvents = result.events;
+  const realCalls = result.sectionInvocations;
+  for (const section of sectionIndex.sections) {
+    if (usedSections.has(section) || section.close < 0 || exhausted) continue;
+    const owner = result.tracks.find((track) => track.key === section.track);
+    if (!owner) continue;
+    const position = positions.get(owner.key);
+    current = { ...owner, events: [], beats: 0 };
+    positions.set(owner.key, fraction(0n, 1n));
+    result.events = [];
+    result.sectionInvocations = [];
+    usedSections.add(section);
+    visit(section.open + 1, section.close, 0, [section]);
+    reportUnclosed();
+    if (position) positions.set(owner.key, position);
+    else positions.delete(owner.key);
+  }
+  result.events = realEvents;
+  result.sectionInvocations = realCalls;
+  current = savedTrack;
   if (!result.tracks.length && !result.diagnostics.length)
     result.diagnostics.push({
       from: 0,

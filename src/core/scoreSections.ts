@@ -38,6 +38,7 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
   };
   const stack: { index: number; token: ScoreToken; track: string; bracket: boolean }[] = [];
   let track = '';
+  const names = new Map<string, Set<string>>();
   const report = (token: ScoreToken, message: string) =>
     result.diagnostics.push({ from: token.from, to: token.to, line: token.line, message });
   for (let i = 0; i < tokens.length; i++) {
@@ -47,31 +48,37 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
       if (header && /\{$/.test(token.text)) track = header[1];
     }
     if (token.kind === 'section-open') {
-      if (!track || stack.length !== 1 || stack[0].token.kind !== 'text')
+      const direct = !!track && stack.length === 1 && stack[0].token.kind === 'text';
+      const validName = SCORE_KEY.test(token.sectionName ?? '') && token.sectionName!.length <= 100;
+      const localNames = names.get(track) ?? new Set<string>();
+      if (!direct)
         report(
           token,
           'Section definitions belong directly inside a track, outside repeats and bracket groups.',
         );
-      if (!SCORE_KEY.test(token.sectionName ?? '') || token.sectionName!.length > 100)
+      if (!validName)
         report(
           token,
           'Section names start with a letter, use letters/digits/_, and are at most 100 characters.',
         );
-      if (result.sections.some((s) => s.track === track && s.name === token.sectionName))
+      if (localNames.has(token.sectionName!))
         report(token, `Section “${token.sectionName}” is already defined in track “${track}”.`);
-      if (result.sections.filter((s) => s.track === track).length >= 64)
-        report(token, 'A track may define at most 64 named sections.');
-      result.sections.push({
-        track,
-        name: token.sectionName!,
-        from: token.from,
-        to: token.to,
-        nameFrom: token.nameFrom!,
-        nameTo: token.nameTo!,
-        line: token.line,
-        open: i,
-        close: -1,
-      });
+      if (localNames.size >= 64) report(token, 'A track may define at most 64 named sections.');
+      if (direct && validName && localNames.size < 64 && !localNames.has(token.sectionName!)) {
+        localNames.add(token.sectionName!);
+        names.set(track, localNames);
+        result.sections.push({
+          track,
+          name: token.sectionName!,
+          from: token.from,
+          to: token.to,
+          nameFrom: token.nameFrom!,
+          nameTo: token.nameTo!,
+          line: token.line,
+          open: i,
+          close: -1,
+        });
+      }
     }
     if (token.kind === 'section-play' || token.kind === 'ending-open') {
       if (!track) report(token, 'Section calls belong inside a track.');
@@ -93,17 +100,31 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
       }
       stack.push({ index: i, token, track, bracket: !isScoreBraceOpen(token) });
     } else if (token.kind === 'brace-close' || token.kind === 'block-close') {
+      // Match parser recovery: a closing brace ends its track/repeat even when
+      // an inner ] was omitted. The music parser reports that bracket once.
+      if (token.kind === 'brace-close') {
+        while (stack.at(-1)?.bracket) {
+          stack.pop();
+          result.complete = false;
+        }
+      } else if (!stack.at(-1)?.bracket) {
+        result.complete = false;
+        continue;
+      }
       const open = stack.pop();
       if (!open || open.bracket !== (token.kind === 'block-close')) {
-        report(token, 'A section/phrase delimiter is unmatched.');
+        if (stack.some((scope) => ['section-open', 'ending-open'].includes(scope.token.kind)))
+          report(token, 'A section/phrase delimiter is unmatched.');
         result.complete = false;
         continue;
       }
       if (!open.bracket) result.closes.set(open.index, i);
       if (open.token.kind === 'section-open') {
-        const section = result.sections.find((s) => s.open === open.index)!;
-        section.close = i;
-        section.to = token.to;
+        const section = result.sections.find((s) => s.open === open.index);
+        if (section) {
+          section.close = i;
+          section.to = token.to;
+        }
       }
       if (open.token.kind === 'text') track = '';
     }
