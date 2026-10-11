@@ -44,7 +44,7 @@ track drums using kick {
 
 Melody lasts six quarter beats: two in the intro followed by four in the ending. Bass and drums start at zero and last four beats. Files organize source, rather than imply chronological sections. Use rests to position a distinct track later. Matching keys extend the same clock in canonical file order; reopening tabs in a different order does not change music order. Sections remain track-scoped: melody's A is callable from its other files, but another track cannot use it. Declarations do not play.
 
-All files use the same case-sensitive song key: letter first, then letters/digits/underscore, at most100 characters. `from song` is the first non-comment command. Tempo, initial meter and master routing remain unique globally; scheduled meter changes govern all files. Matching track parts must agree on instrument and chain keys. Conflicts diagnose rather than replacing sound mid-track. Assignment helpers update all matching headers as one operation.
+All files use the same case-sensitive song key: letter first, then letters/digits/underscore, at most 100 characters. `from song` is the first non-comment command. Tempo, initial meter and master routing remain unique globally; scheduled meter changes govern all files. Matching track parts must agree on instrument and chain keys. Conflicts diagnose rather than replacing sound mid-track. Assignment helpers update all matching headers as one operation.
 
 ## Source authority and boundaries
 
@@ -59,7 +59,7 @@ from song Study
 // music here
 ```
 
-Local edits cannot introduce reserved boundaries; use file operations or All files. Names have1–100 characters, are unique case-insensitively and exclude path separators/control characters and `.`/`..`. Limits are32 files and128 distinct logical tracks. Metadata grants no OS paths, import execution or renderer filesystem privileges.
+Local edits cannot introduce reserved boundaries; use file operations or All files. Names have 1–100 characters, are unique case-insensitively and exclude path separators/control characters and `.`/`..`. Limits are 32 files and 128 distinct logical tracks. Metadata grants no OS paths, import execution or renderer filesystem privileges.
 
 ```mermaid
 flowchart TD
@@ -129,6 +129,6 @@ Start with `src/core/scoreFiles.ts` for pure index/CRUD/presentation, `scoreLexe
 
 Keep shared scheduler/voice factories. File organization adds no engine, envelope, phase origin, seconds-based latency policy or filesystem bridge. Section/repeat work budgets remain song-wide, not renewed per file. General registries, missing-module compatibility, runtime loading and M1–M6 publication gates remain planned.
 
-Run `npm test`, `npm run build`, affected Playwright file/workspace/section/IDE/reference/export checks and packaged native JSON/WAV workflows. Cover legacy/custom music;32-file limits; malformed links; duplicate keys/conflicting assignments; continuing clocks/parallel tracks; cross-file definitions and CRLF spans; source guards/history/owned copies; closed/reopened tabs; selected-file insertion; keyboard/narrow layouts and one-file round trips. Compare linked-file WAV with flattened music at44.1/48 kHz and verify nonzero audio from later files. Refresh the knowledge map before committing.
+Run `npm test`, `npm run build`, affected Playwright file/workspace/section/IDE/reference/export checks and packaged native JSON/WAV workflows. Cover legacy/custom music; 32-file limits; malformed links; duplicate keys/conflicting assignments; continuing clocks/parallel tracks; cross-file definitions and CRLF spans; source guards/history/owned copies; closed/reopened tabs; selected-file insertion; keyboard/narrow layouts and one-file round trips. Compare linked-file WAV with flattened music at 44.1/48 kHz and verify nonzero audio from later files. Refresh the knowledge map before committing.
 
 See [score views](SCORE_VIEWS.md), [named sections](NAMED_SECTIONS.md), [module creation](MODULE_CREATION.md) and [feature-module plans](FEATURE_MODULES.md).

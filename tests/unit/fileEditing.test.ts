@@ -27,6 +27,15 @@ it('edits the addressed part while explicit track rename covers all files', () =
   expect(index.problem).toBeNull();
   expect(index.tracks).toHaveLength(2);
   const part = index.tracks[1];
+  expect(() =>
+    editTrackView(
+      source,
+      index,
+      'a',
+      '// @fourpataka-file {"id":"hidden","name":"hidden"}\nfrom song Demo\ntrack a using sine {\n C4 quarter\n}',
+      'file1',
+    ),
+  ).toThrow('All files');
   const edited = editTrackView(
     source,
     index,

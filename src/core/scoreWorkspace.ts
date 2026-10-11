@@ -128,6 +128,9 @@ export function editTrackView(
   fileId?: string,
 ) {
   const view = currentView(source, index, key, fileId);
+  // A projected track cannot create a hidden sibling file through a pasted boundary.
+  if (value.split('\n').some((line) => line.trim().startsWith('// @fourpataka-file')))
+    throw new Error('Edit file boundaries in All files, or use New file.');
   const text = source.slice(0, view.from) + value + source.slice(view.to);
   const local = indexScoreViews(value);
   const only = !local.problem && local.tracks.length === 1 ? local.tracks[0] : null;

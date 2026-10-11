@@ -29,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The latest verified portable build is `release/FourPataka-0.27.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.28.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -104,6 +104,8 @@ Library changes do not overwrite track instances. The editor works on the select
 Soft bass now uses a rounded source with quiet even and odd harmonics; Triangle retains its alternating odd-harmonic coefficients. Untouched factory Soft bass templates in old projects upgrade in the library. Existing tracks, A/B snapshots and customized presets keep their sounds. **Load Soft bass from the library**, then Apply when you want to update a track.
 
 ## Score notation
+
+Compose now has named file tabs above the IDE. Use **+** to create a file and **Files** to reopen, rename or delete it. Each file starts with `from song <key>` and can contain multiple track blocks; **Whole file** edits them together. Matching track keys across files continue the same track in source order, while different tracks remain parallel. Closing a tab keeps its music in playback. File names and open tabs are retained in the same saved project JSON. See the [song-file guide](docs/extensions/SCORE_FILES.md) for syntax, source services and diagrams.
 
 ```text
 tempo 120
