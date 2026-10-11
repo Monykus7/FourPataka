@@ -5,6 +5,11 @@ export async function scoreFilesWorkflow(page: Page) {
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   const original = 'tempo 60\ntrack melody using sine {\n section A {\n C4 quarter\n}\n play A\n}';
   await editor.fill(original);
+  await expect
+    .poll(() =>
+      page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText),
+    )
+    .toBe(original);
   await page.getByRole('button', { name: 'New score file', exact: true }).click();
   await page.getByRole('textbox', { name: 'Score file name' }).fill('rhythm.fourier');
   await page.getByRole('textbox', { name: 'Song key' }).fill('Demo');
@@ -14,7 +19,11 @@ export async function scoreFilesWorkflow(page: Page) {
   const body =
     'from song Demo\ntrack drums using sine {\n A4 whole\n}\ntrack bass using softBass {\n C2 whole\n}\ntrack melody using sine {\n play A\n D4 half\n}\n';
   await editor.fill(body);
-  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+  await expect
+    .poll(async () =>
+      (await page.locator('.editor-status, .diagnostics-list').allTextContents()).join('\n'),
+    )
+    .toContain('Ready to play');
   await expect(page.getByRole('tablist', { name: 'Score views' })).toHaveCount(0);
   const saved = () =>
     page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
