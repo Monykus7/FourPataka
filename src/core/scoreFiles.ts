@@ -107,22 +107,24 @@ export function indexScoreFiles(source: string): ScoreFileIndex {
   for (const file of result.files) {
     const body = source.slice(file.from, file.to);
     const first = body.split('\n').find((line) => line.split('//')[0].trim());
+    const firstOffset = first ? body.indexOf(first) : 0;
+    const location = {
+      from: file.from + firstOffset,
+      to: Math.min(file.to, file.from + firstOffset + (first?.length ?? 0)),
+      line: file.firstLine + body.slice(0, firstOffset).split('\n').length - 1,
+    };
     const link = first && /^\s*from\s+song\s+(\S+)\s*$/.exec(first.split('//')[0]);
     if (link && SCORE_KEY.test(link[1]) && link[1].length <= 100) {
       file.song = link[1];
       result.song ??= file.song;
       if (file.song !== result.song)
         result.diagnostics.push({
-          from: file.from,
-          to: Math.min(file.to, file.from + body.indexOf(first!) + first!.length),
-          line: file.firstLine + body.slice(0, body.indexOf(first!)).split('\n').length - 1,
+          ...location,
           message: `This file must use from song ${result.song}. One project contains one song.`,
         });
     } else if (result.explicit)
       result.diagnostics.push({
-        from: file.from,
-        to: Math.min(file.to, file.from + (first?.length ?? 0)),
-        line: file.firstLine,
+        ...location,
         message: 'Start this file with from song <songKey>.',
       });
   }

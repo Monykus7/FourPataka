@@ -461,7 +461,9 @@ export default function ScoreWorkspace(props: Props) {
             : notice ||
               (active
                 ? `${active.key} · ${file?.name ?? 'shared score'} · whole-song playback.`
-                : 'All tracks and shared tempo, meter and master routing.')}
+                : fileIndex.explicit && file
+                  ? `${file.name} · ${fileTracks.length} track parts · whole-song playback.`
+                  : 'All tracks and shared tempo, meter and master routing.')}
         </p>
         <div
           role="tabpanel"

@@ -769,9 +769,23 @@ export default function App() {
     [],
   );
 
-  const composeFiles = indexScoreFiles(project.scoreText);
-  const composeWorkspace = normalizeFileWorkspace(project.scoreText, project.scoreWorkspace);
+  const composeFiles = useMemo(() => indexScoreFiles(project.scoreText), [project.scoreText]);
+  const composeWorkspace = useMemo(
+    () => normalizeFileWorkspace(project.scoreText, project.scoreWorkspace),
+    [project.scoreText, project.scoreWorkspace],
+  );
   const composeFileId = composeWorkspace.activeFile ?? composeFiles.files[0]?.id;
+  // Inspector provenance follows the performed revision, even while another file is edited.
+  const timelineFiles = useMemo(
+    () => (playback === 'score' && running ? indexScoreFiles(running.text) : composeFiles),
+    [playback, running, composeFiles],
+  );
+  const sourceLocation = (files: typeof composeFiles, fileId: string | undefined, line: number) => {
+    const file = files.files.find((f) => f.id === fileId);
+    return files.explicit && !files.problem && file
+      ? `${file.name} · line ${Math.max(1, line - file.firstLine + 1)}`
+      : `line ${line}`;
+  };
   const composeTracks = score.tracks.filter((t) => t.parts.some((p) => p.fileId === composeFileId));
   const referenceTarget =
     composeTracks.find((t) => t.key === selectedTrack)?.key ?? composeTracks[0]?.key ?? '';
@@ -1858,7 +1872,7 @@ export default function App() {
                     <div className="diagnostics-list">
                       {score.diagnostics.map((d, i) => (
                         <div key={i}>
-                          <span>LINE {d.line}</span>
+                          <span>{sourceLocation(composeFiles, d.fileId, d.line)}</span>
                           {d.message}
                           {!!d.sectionCalls?.length && (
                             <small>
@@ -2064,13 +2078,14 @@ export default function App() {
                     </div>
                     <strong>{inspectedEvent.notes.join(' · ') || 'Rest'}</strong>
                     <p>
-                      {inspectedEvent.track} · line {inspectedEvent.line}
+                      {inspectedEvent.track} ·{' '}
+                      {sourceLocation(timelineFiles, inspectedEvent.fileId, inspectedEvent.line)}
                     </p>
                     {inspectedEvent.sectionCalls?.map((call) => (
                       <p key={call.id} className="event-section-context">
                         {call.name}
                         {inspectedEvent.sectionEndingOf?.includes(call.id) ? ' ending' : ''} · call
-                        line {call.line} ·{' '}
+                        {sourceLocation(timelineFiles, call.fileId, call.line)} ·{' '}
                         {call.duration.toLocaleString(undefined, { maximumFractionDigits: 6 })}{' '}
                         quarter beats
                         {call.trimmedBeats ? ` · cut ${call.trimmedBeats}` : ''}

@@ -1,5 +1,52 @@
 import { expect, test } from '@playwright/test';
 import { scoreFilesWorkflow } from '../helpers/scoreFiles';
+import { completeCommand } from '../helpers/autocomplete';
+
+test('selected-file Track Maker and commands add audio without touching sibling music', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await scoreFilesWorkflow(page);
+  await page.getByRole('button', { name: 'Make a track', exact: true }).click();
+  await page.getByRole('textbox', { name: 'New track name' }).fill('harmony');
+  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  await expect
+    .poll(async () => {
+      const source = await page.evaluate(
+        () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText,
+      );
+      return source.indexOf('track harmony') > source.indexOf('"name":"rhythm-section.fourier"');
+    })
+    .toBe(true);
+  await page.getByRole('textbox', { name: 'Search commands' }).fill('note');
+  await page.getByRole('combobox', { name: 'Command insertion track' }).selectOption('harmony');
+  await page.getByRole('button', { name: 'Insert note command', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText('C5 quarter');
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+});
+
+test('shared-track completion and navigation find definitions in a closed sibling file', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await scoreFilesWorkflow(page);
+  const editor = await completeCommand(
+    page,
+    'from song Demo\ntrack melody using sine {\n play A\n}\n',
+    'A',
+    2,
+  );
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+  await page.getByRole('button', { name: 'Close score.fourier tab', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Score section', exact: true }).selectOption('melody:A');
+  await page.getByRole('button', { name: 'Go to section', exact: true }).click();
+  await expect(page.getByRole('tab', { name: 'score.fourier', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(editor).toContainText('section A');
+  await expect(editor).not.toContainText('from song');
+});
 
 test('virtual file tabs keep multiple tracks, shared clocks, closed-file playback and persistent editing', async ({
   page,
