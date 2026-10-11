@@ -1,6 +1,6 @@
 # Building on the score workspace
 
-Status: shared-file track views are implemented in v0.24.0. The functions below are current source services with tests, not a versioned M5 plugin SDK. A feature contribution is still an explicit reviewed source change. Named sections/alternate endings and swing remain planned.
+Status: shared-file track views are implemented in v0.24.0. The functions below are current source services with tests, not a versioned M5 plugin SDK. A feature contribution is still an explicit reviewed source change. Named sections/alternate endings are implemented in v0.27.0; [their source services and diagrams](NAMED_SECTIONS.md) extend these track views. Swing remains planned.
 
 ## One document, several views
 

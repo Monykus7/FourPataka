@@ -29,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The latest verified portable build is `release/FourPataka-0.23.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.27.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -124,6 +124,8 @@ track bass using softBass {
 ```
 
 Durations are `whole`, `half`, `quarter`, `8th`, `16th`, `32nd`, and `64th`, with optional one/two dots. Group events with `triplet[...]`, `tuplet:N:M[...]`, `staccato[...]` or `legato[...]`; `eighth` also means `8th`. Legacy event suffixes remain supported. See the [rhythm guide](docs/RHYTHM.md) for exact timing and examples. Pitches use scientific notation (C4 is middle C, A4 is 440 Hz), with octaves 0–8. `(Bb D F)5` uses octave 5 for all three notes; use `(Bb4 D5 F5)` for explicit voicing. One event per line. `//` starts a comment.
+
+`section A { ... }` defines a track-local passage without playing it; `play A` performs it. Forward references and calls inside `repeat N { ... }` work. `play A trim 1/2 { ... }` cuts the last half quarter-note beat and appends a replacement ending, shortening a spanning note/chord/rest without a new attack. Each section/play header occupies its own line. The IDE provides local-name completion, section navigation/rename and definition/call playback context. See [named sections and contributor diagrams](docs/extensions/NAMED_SECTIONS.md) for syntax, exact timing and bounds.
 
 `time <numerator>/<denominator>` sets the initial global meter: 1–32 beats per bar, with a beat unit of 1, 2, 4, 8, or 16. Omitted meter defaults to 4/4 for existing projects. `time 7/8 at 4` schedules a global change at quarter-beat offset 4, on a bar boundary in the preceding meter. Bar numbers continue across changes. Common choices include 3/4, 5/4, 6/8, 7/8 and 12/8. Tempo always counts quarter notes; 6/8 has six eighth-note beats per bar (three quarter notes). Changing meter changes guides and bar/beat positions without changing note durations. Partial final bars and notes crossing bar lines are valid. The timeline and transport retain the running tempo and meter until Stop/replay when score text is edited. Long timelines thin their grid labels to keep rendering bounded.
 
