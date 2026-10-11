@@ -1,6 +1,6 @@
 # Contributing to FourPataka
 
-FourPataka is preparing for community contributions through a [six-milestone modularity program](BUILD_PLAN.md#14-modularity-and-open-source-contributions). The application works today; the module registries and public SDK described in [extension architecture](docs/extensions/ARCHITECTURE.md) are planned, not implemented. Until those milestones ship, contributions are reviewed source changes using the existing integration points.
+FourPataka is preparing for community contributions through a [six-milestone modularity program](BUILD_PLAN.md#14-modularity-and-open-source-contributions). The application works today; the general category registries and public SDK described in [extension architecture](docs/extensions/ARCHITECTURE.md) remain planned. Chord API1 and the tested score-view source services are implemented; their guides identify the supported boundaries. Until those milestones ship, contributions are reviewed source changes using the existing integration points.
 
 ## Start from a working checkout
 
@@ -13,7 +13,9 @@ npm run dev
 
 Open the local URL printed by Vite. For the desktop development workflow, run `npm run desktop:dev`. Visual Studio is not required. See [README.md](README.md) for Chrome test setup, native execution limits and portable Windows packaging.
 
-Read [AGENTS.md](AGENTS.md), [BUILD_PLAN.md](BUILD_PLAN.md), [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the relevant source before editing. The [project map](docs/knowledge/PROJECT_MAP.md) provides navigation; `npm run knowledge:query -- "your task" --budget 2048` retrieves local context. Use its explicitly labeled `--lexical` mode if a local embedding model is unavailable. Model setup is optional and should never upload repository text.
+Read [knowledge usage](docs/knowledge/USAGE.md), [BUILD_PLAN.md](BUILD_PLAN.md), [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the relevant source before editing. The [project map](docs/knowledge/PROJECT_MAP.md) provides navigation; `npm run knowledge:query -- "your task" --budget 2048` retrieves local context. Use its explicitly labeled `--lexical` mode if a local embedding model is unavailable. Model setup is optional and should never upload repository text.
+
+Start with the illustrated [module creation walkthrough](docs/extensions/MODULE_CREATION.md). It includes a bundled chord example, validation/ownership diagrams, real import paths and the distinction between working services and planned registries. The [score-view guide](docs/extensions/SCORE_VIEWS.md) covers the implemented single-file editor boundary.
 
 ## Choose the right contribution
 
@@ -43,7 +45,7 @@ Make focused commits and push useful checkpoints to the configured primary branc
 
 ## Documentation and example acceptance
 
-Each supported module category must ship a clean-checkout tutorial, a small runnable module example, parameter/units and lifecycle reference, troubleshooting, migration guidance and contract tests. At present these guides document current seams and planned contracts; no example import path in the proposed architecture is an implemented public API. When a milestone lands, replace the planned recipe with its actual buildable commands and supported version, and verify the example in CI.
+Each supported module category must ship a clean-checkout tutorial, a small runnable module example, parameter/units and lifecycle reference, troubleshooting, migration guidance and contract tests. The chord examples use implemented API1 paths and the workspace guide describes tested source helpers. Other category recipes identify current host edits and planned contracts; proposed M1-M5 imports are not implemented public APIs. When a milestone lands, replace the planned recipe with its actual buildable commands and supported version, and verify the example in CI.
 
 ## Open-source readiness
 

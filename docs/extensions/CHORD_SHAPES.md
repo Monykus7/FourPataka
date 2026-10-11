@@ -37,3 +37,24 @@ Hover over a symbol or place the keyboard cursor inside it to see the compiled n
 ## Compatibility and limits
 
 Project schema 2 stores source text and 32-partial sound banks, not chord executable definitions. Schema 1 imports preserve all 16 original coefficients/signs and pad silent upper partials independently. Storage/recovery keys remain stable. Unknown chord aliases remain in source, produce diagnostics and block playback/export; existing track copies are retained while the score is invalid. Removal or semantic alteration of an alias is a language compatibility change: keep old aliases/intervals stable and add a new shape/alias for a different voicing. API-version changes require explicit review; no runtime module discovery or unknown-pedal/engine preservation is claimed by this pilot.
+
+## Illustrated assembly and second example
+
+The [module creation walkthrough](MODULE_CREATION.md#walkthrough-the-wide-suspended-second-example) traces a complete reviewed definition through registry, compiler, both editor views, comparison and live/WAV factories. The shipped wideSecond.ts example registers wide2 as root/ninth/twelfth; chord:Cwide2@3 quarter expands to C3 D4 G4. It supplements open5 and follows the same API1 contract without modifying parser/voice branches.
+
+```mermaid
+sequenceDiagram
+  participant Author as Contributor
+  participant Assembly as Chord assembly
+  participant Registry as API1 registry
+  participant Parser as Score parser
+  participant View as All/track editor
+  Author->>Assembly: Definition with namespaced ID, aliases and tones
+  Assembly->>Registry: Validate, clone and freeze
+  Parser->>Registry: Resolve exact alias wide2
+  Registry-->>Parser: Ascending degree/semitone intervals
+  Parser-->>View: Expanded notes and canonical symbol spans
+  Note over Parser,View: Track projections translate offsets, not musical semantics
+```
+
+When removing/changing a definition, test its old saved aliases explicitly. Registry removal never edits source to a different shape automatically. Unknown aliases produce diagnostics and block Play/WAV while retaining source and existing owned copies. A different voicing should get a new identity/alias rather than silently change familiar music. Contributor guides and tests must use the real assembly and public chord type, not a parallel test-only parser dictionary.

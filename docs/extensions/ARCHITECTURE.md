@@ -72,3 +72,24 @@ The first supported contribution paths are [pedals](PEDALS.md) and [Fourier inst
 Migrate all four built-in pedals through the same registry before declaring the pedal API usable. Add a small independent example using only the public contract and one assembly entry. Then do the equivalent for instrument presets, followed by the voice capability contract and optional feature modules. Verify schema-v1 projects, copy ownership, phase/clock continuity, measured latency, bypass/tails/Stop, source/history and shared live/offline output throughout.
 
 Publication readiness additionally needs an owner-approved open-source license, attribution review, maintained contribution/review guidance and repeatable CI. No license is selected by this plan, and no publishing settings are changed. Milestones M1 (contracts), M2 (pedals), M3 (presets), M4 (engines), M5 (features) and M6 (open-source readiness) each have their own release, documentation and proof gates. M2/M3 enable useful contributions without waiting for all six. A visibly working module plus maintained contributor documentation is a milestone gate, not an optional polish task.
+
+## Contributor assembly boundary
+
+The chord path below is implemented. Pedal/preset/engine/feature registries remain M1–M5 designs; their acceptance is more than arranging files into folders. See the tested [module creation walkthrough](MODULE_CREATION.md).
+
+```mermaid
+flowchart TB
+  Source[Reviewed contribution source] --> Contract[Versioned definition contract]
+  Contract --> Validate[Immutable registry validation]
+  Validate --> Assembly[One explicit build assembly]
+  Assembly --> Consumers[Parser / completion / inspection / rendering]
+  Project[Serializable project data] --> Consumers
+  Consumers --> Result[Owned settings and compiled events]
+  Project -. cannot install executable code .-> Source
+```
+
+Project JSON contains source and owned data, not executable module definitions. The dashed path represents a forbidden installation path, not an available capability. Definitions must not reach back into mutable host state. Every registry category needs compatibility fixtures, independently owned instances, disposal/resource/latency policy and a buildable contributor example before its public API can be advertised.
+
+## Source-view boundary as an implemented reference
+
+The v0.24.0 workspace uses a pure span index/projection and narrow host edit callback. It is a useful concrete architecture reference for future M5 source/outline features, without declaring a general loader complete. See [SCORE_VIEWS.md](SCORE_VIEWS.md) for revision and CRLF mappings and [the workspace plan](../SCORE_WORKSPACE_PLAN.md) for separate named-section/swing gates.

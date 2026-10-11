@@ -8,6 +8,20 @@ The application already separates some pure definitions from UI. [themes.ts](../
 
 Add data-only definitions in their existing catalogs when appropriate, and validate the corresponding consumers. Do not add a command card and assume that its syntax now plays: [parser.ts](../../src/core/parser.ts) owns score semantics, offsets and diagnostics. Notation changes must update parsing, source mappings, reference/completion, editing and compiled playback together.
 
+## Implemented source-view service example (v0.24.0)
+
+Shared-file Compose tabs now exercise a concrete host boundary: read canonical source, index complete track spans, project CRLF-aware editor offsets, submit guarded patches and move owned instances for explicit rename. Full-score compilation/history/save/audio stay with the host. Read [SCORE_VIEWS.md](SCORE_VIEWS.md) for real helper signatures and diagrams; [MODULE_CREATION.md](MODULE_CREATION.md) explains how to build a reviewed source feature against this seam. These internal services do not complete a versioned M5 feature registry or add runtime discovery.
+
+```mermaid
+flowchart LR
+  Feature[Reviewed source feature] --> Read[Read-only canonical snapshot]
+  Read --> Span[Projection and source span services]
+  Span --> Action[Explicit revision-guarded action]
+  Action --> Host[Host history / ownership / compiler]
+  Host --> Update[Translated diagnostics and previews]
+  Update --> Feature
+```
+
 ## Planned M5 contribution recipe
 
 Provide one feature definition and an optional React adapter through a documented host-services boundary. Register once; discovery and view composition must not require adding a branch to the root application for each module. Extract domain workflow hooks incrementally rather than move a monolithic root file wholesale into a generic plugin engine.

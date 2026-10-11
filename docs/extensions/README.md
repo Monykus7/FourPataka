@@ -33,3 +33,8 @@ For each delivered category, a contributor should be able to follow a clean-chec
 The host remains responsible for score authority, independent copies, undo, clocks, voice scheduling, cable routing, latency alignment, hard Stop, export snapshots/budgets and native file privileges. Preset/extension data never installs executable code. Runtime plugin loading and a marketplace are separate future proposals.
 
 Until a milestone ships, use its current-source recipe and label its public-contract guidance as planned. When it ships, replace proposed names with real imports/commands, record validation in IMPLEMENTATION_STATUS.md, and refresh the [project knowledge map](../knowledge/PROJECT_MAP.md).
+
+## Illustrated contributor walkthroughs
+
+- [Module creation](MODULE_CREATION.md): tested chord-shape example, assembly and consumption, owned settings/runtime lifecycle, audio routing and compatibility diagrams.
+- [Score workspace](SCORE_VIEWS.md): canonical source/track projections, guarded edit transactions, CRLF-aware spans, ownership operations and recovery diagrams. Shared-file track views ship in v0.24.0; the general M5 registration/capability API stays planned.
