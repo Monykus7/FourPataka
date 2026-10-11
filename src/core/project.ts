@@ -29,6 +29,11 @@ export interface InstrumentPreset {
   label: string;
   version: number;
   sound: Sound;
+  folderId?: string;
+}
+export interface InstrumentFolder {
+  id: string;
+  label: string;
 }
 export interface TrackInstance {
   key: string;
@@ -44,6 +49,7 @@ export interface Project {
   name: string;
   scoreText: string;
   instruments: InstrumentPreset[];
+  instrumentFolders?: InstrumentFolder[];
   tracks: TrackInstance[];
   editorPresetId: string;
   comparison: { active: 'A' | 'B'; A: Sound; B: Sound };
