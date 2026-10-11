@@ -5,12 +5,14 @@ import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 import {
   percussionWorkflow,
   percussionAvailabilityWorkflow,
+  hiHatEditingWorkflow,
   PERCUSSION_SCORE,
 } from '../helpers/percussion';
 import {
   scoreWorkspaceWorkflow,
   trackOperationsWorkflow,
   chordViewWorkflow,
+  unfinishedTrackWorkflow,
 } from '../helpers/scoreWorkspace';
 import { ideWorkflow } from '../helpers/ide';
 import { blockWorkflow } from '../helpers/blocks';
@@ -40,6 +42,14 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged track editing keeps t and unfinished groups in the selected view', async () => {
+  await unfinishedTrackWorkflow(await app.firstWindow());
+});
+
+test('packaged hi-hat settings retain independent saving Apply and reload', async () => {
+  await hiHatEditingWorkflow(await app.firstWindow());
 });
 
 test('packaged virtual files retain multiple tracks through native saving opening and WAV rendering', async () => {

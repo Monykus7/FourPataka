@@ -1,5 +1,16 @@
 import { expect, test } from '@playwright/test';
-import { percussionWorkflow, percussionAvailabilityWorkflow } from '../helpers/percussion';
+import {
+  percussionWorkflow,
+  percussionAvailabilityWorkflow,
+  hiHatEditingWorkflow,
+} from '../helpers/percussion';
+
+test('noise hit settings save independently and reach owned tracks only through Apply', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await hiHatEditingWorkflow(page);
+});
 
 test('percussion presets preview short hits, compose together and survive reload', async ({
   page,
@@ -54,11 +65,141 @@ test('percussion WAV uses frozen owned sounds through the shared voice factory',
     };
   });
   expect(proof.keys).toEqual(['kickTrack', 'snareTrack', 'hatTrack']);
-  expect(proof.hatH31).toBe(0.21);
+  expect(proof.hatH31).toBeCloseTo(0.21 * 0.08);
   expect(proof.finite).toBe(true);
   expect(proof.peak).toBeGreaterThan(0.05);
   expect(proof.peak).toBeLessThan(1);
   expect(proof.tail).toBe(0);
+});
+
+test('hi-hat is a broadband decaying hit rather than a sustained pitched cycle', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { hiHatPreset, legacyHiHatPreset } = await import('/src/core/' + 'instrumentPresets.ts');
+    const { createVoice } = await import('/src/audio/' + 'voice.ts');
+    const results = [];
+    for (const sampleRate of [44100, 48000]) {
+      const render = async (sound: any, duration = 0.5, solo?: string) => {
+        const context = new OfflineAudioContext(1, sampleRate, sampleRate);
+        createVoice(context, context.destination, sound, 261.625565, 0, duration, solo);
+        return (await context.startRendering()).getChannelData(0);
+      };
+      const sound = hiHatPreset();
+      const data = await render(sound),
+        repeated = await render(sound);
+      const legacy = await render(legacyHiHatPreset());
+      const rms = (data: Float32Array, from: number, to: number) => {
+        const slice = data.slice(Math.floor(from * sampleRate), Math.floor(to * sampleRate));
+        return Math.sqrt(slice.reduce((total, value) => total + value * value, 0) / slice.length);
+      };
+      const correlation = (data: Float32Array) => {
+        const lag = Math.round(sampleRate / 261.625565);
+        let sum = 0,
+          left = 0,
+          right = 0;
+        for (let i = Math.floor(0.01 * sampleRate); i < 0.03 * sampleRate; i++) {
+          sum += data[i] * data[i + lag];
+          left += data[i] ** 2;
+          right += data[i + lag] ** 2;
+        }
+        return sum / Math.sqrt(left * right);
+      };
+      const noiseOnly = structuredClone(sound);
+      noiseOnly.harmonics.fill(0);
+      const noise = await render(noiseOnly);
+      const solo = await render(noiseOnly, 0.5, 'H13');
+      const short = await render(sound, 0.01);
+      results.push({
+        sampleRate,
+        early: rms(data, 0.01, 0.03),
+        late: rms(data, 0.2, 0.22),
+        correlation: correlation(data),
+        legacyCorrelation: correlation(legacy),
+        noiseRms: rms(noise, 0.01, 0.03),
+        soloPeak: Math.max(...Array.from(solo, Math.abs)),
+        repeatError: Math.max(...Array.from(data, (value, i) => Math.abs(value - repeated[i]))),
+        shortTail: Math.max(...Array.from(short.slice(Math.ceil(0.06 * sampleRate)), Math.abs)),
+      });
+    }
+    return results;
+  });
+  for (const result of proof) {
+    expect(result.early).toBeGreaterThan(0.02);
+    expect(result.late / result.early).toBeLessThan(0.03);
+    expect(Math.abs(result.correlation)).toBeLessThan(0.2);
+    expect(result.legacyCorrelation).toBeGreaterThan(0.8);
+    expect(result.noiseRms).toBeGreaterThan(0.02);
+    expect(result.soloPeak).toBe(0);
+    expect(result.repeatError).toBe(0);
+    expect(result.shortTail).toBe(0);
+  }
+});
+
+test('editing and enabling noise mid-note keeps the original hit age and cleans up on Stop', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { hiHatPreset } = await import('/src/core/' + 'instrumentPresets.ts');
+    const { createVoice } = await import('/src/audio/' + 'voice.ts');
+    const { AudioEngine } = await import('/src/audio/' + 'engine.ts');
+    const sound = hiHatPreset();
+    sound.harmonics.fill(0);
+    const context = new OfflineAudioContext(1, 48000, 48000);
+    const voice = createVoice(context, context.destination, sound, 261.625565, 0, 0.5);
+    const suspended = context.suspend(0.12);
+    const rendering = context.startRendering();
+    await suspended;
+    const changed = structuredClone(sound);
+    changed.percussion!.noise = 0.65;
+    voice.update(changed);
+    await context.resume();
+    const data = (await rendering).getChannelData(0);
+    const enabledContext = new OfflineAudioContext(1, 48000, 48000);
+    const silent = structuredClone(sound);
+    silent.percussion!.noise = 0;
+    const enabledVoice = createVoice(
+      enabledContext,
+      enabledContext.destination,
+      silent,
+      261.625565,
+      0,
+      0.5,
+    );
+    const enableAt = enabledContext.suspend(0.12);
+    const enabledRendering = enabledContext.startRendering();
+    await enableAt;
+    enabledVoice.update(sound);
+    await enabledContext.resume();
+    const enabledData = (await enabledRendering).getChannelData(0);
+    enabledVoice.dispose();
+    const rms = (from: number, to: number) => {
+      const slice = data.slice(Math.floor(from * 48000), Math.floor(to * 48000));
+      return Math.sqrt(slice.reduce((sum, value) => sum + value * value, 0) / slice.length);
+    };
+    voice.dispose();
+    voice.dispose();
+    const engine = new AudioEngine();
+    await engine.audition(sound, [261.625565]);
+    const session = engine.session;
+    engine.stop();
+    for (let i = 0; i < 40 && session.ownedVoices.size; i++)
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    await engine.context.close();
+    return {
+      early: rms(0.01, 0.03),
+      afterEdit: rms(0.15, 0.17),
+      remaining: session.ownedVoices.size,
+      enabledPeak: Math.max(...Array.from(enabledData.slice(7200, 8160), Math.abs)),
+      initialPeak: Math.max(...Array.from(data.slice(480, 1440), Math.abs)),
+    };
+  });
+  expect(proof.afterEdit / proof.early).toBeLessThan(0.08);
+  expect(proof.remaining).toBe(0);
+  expect(proof.enabledPeak).toBeGreaterThan(0);
+  expect(proof.enabledPeak / proof.initialPeak).toBeLessThan(0.08);
 });
 
 test('percussion voices produce bounded finite short-hit audio at both sample rates', async ({

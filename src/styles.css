@@ -1093,6 +1093,16 @@ button {
   grid-template-columns: repeat(3, 1fr);
   gap: 27px;
 }
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  font-size: 12px;
+}
+.check-label input {
+  accent-color: var(--accent);
+}
 .macro-panel {
   margin-top: 16px;
   padding: 16px 20px;

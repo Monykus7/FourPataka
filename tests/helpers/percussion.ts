@@ -24,6 +24,43 @@ track hatTrack using hiHat {
   }
 }`;
 
+export async function hiHatEditingWorkflow(page: Page) {
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill('track hats using hiHat {\n C4 quarter\n}');
+  const saved = () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
+  await expect.poll(async () => (await saved()).tracks[0].key).toBe('hats');
+  const before = await saved();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('button', { name: 'Closed hi-hat hiHat', exact: true }).click();
+  await page.getByRole('spinbutton', { name: 'Noise level exact value' }).fill('60');
+  await page.getByRole('spinbutton', { name: 'Noise high-pass exact value' }).fill('5200');
+  await page.getByRole('spinbutton', { name: 'Hit decay exact value' }).fill('75');
+  await page.getByRole('button', { name: 'Save preset', exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (await saved()).instruments.find((p: any) => p.key === 'hiHat').sound.percussion.decay,
+    )
+    .toBe(0.075);
+  expect((await saved()).tracks).toEqual(before.tracks);
+  await page.getByRole('combobox', { name: 'Apply destination', exact: true }).selectOption('hats');
+  await page.getByRole('button', { name: 'Apply to hats', exact: true }).click();
+  await expect
+    .poll(async () => (await saved()).tracks[0].sound.percussion)
+    .toEqual({ noise: 0.6, highpass: 5200, decay: 0.075 });
+  await page.reload();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('button', { name: 'Closed hi-hat hiHat', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('75');
+  await page.getByRole('checkbox', { name: 'Percussive hit', exact: true }).uncheck();
+  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('75');
+}
+
 export async function percussionAvailabilityWorkflow(page: Page) {
   await expect
     .poll(() => page.evaluate(() => !!localStorage.getItem('fourpataka.project.v1')))
