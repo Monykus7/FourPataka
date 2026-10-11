@@ -1031,6 +1031,10 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+.hit-preview {
+  grid-column: 1 / -1;
+  color: var(--accent-ink);
+}
 .graph-card {
   border: 1px solid var(--border);
   background: var(--surface-1);

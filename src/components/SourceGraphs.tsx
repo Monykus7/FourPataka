@@ -1,4 +1,5 @@
 import { components, sourceSamples, type Sound } from '../core/music';
+import HitPreview from './HitPreview';
 export default function SourceGraphs({
   sound,
   frequency,
@@ -40,6 +41,7 @@ export default function SourceGraphs({
   const maxFrequency = Math.max(frequency * 16, 1000);
   return (
     <div className="source-graphs">
+      {sound.percussion && <HitPreview sound={sound} frequency={frequency} />}
       <section className="graph-card">
         {sound.percussion && (
           <p className="hint">

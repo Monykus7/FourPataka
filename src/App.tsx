@@ -82,6 +82,7 @@ import {
   type ScoreFileWorkspace,
 } from './core/scoreFiles';
 import SourceGraphs from './components/SourceGraphs';
+import HitPreview from './components/HitPreview';
 import FourierWorkspace from './components/FourierWorkspace';
 import Pedalboard from './components/Pedalboard';
 import ChainBypass from './components/ChainBypass';
@@ -132,6 +133,10 @@ function readPreferences() {
   }
 }
 function MiniWave({ kind, sound }: { kind: string; sound?: Sound }) {
+  if (sound?.percussion) {
+    const note = PERCUSSION_PRESETS.find((p) => p.key === kind)?.note ?? 'G3';
+    return <HitPreview sound={sound} frequency={pitch(note).frequency} compact />;
+  }
   const shapes: Record<string, string> = {
     sine: 'M2 18 C7 0 13 0 18 18 S29 36 34 18 S45 0 50 18',
     square: 'M2 28 L2 8 L14 8 L14 28 L26 28 L26 8 L38 8 L38 28 L50 28',
@@ -280,6 +285,8 @@ export default function App() {
     return () => observer.disconnect();
   }, [view]);
   const auditionRequested = useRef(false);
+  const pendingHitPreview = useRef(false);
+  const [hitPreviewRequest, setHitPreviewRequest] = useState(0);
   const editGroup = useRef({ key: '', time: 0 });
   const active = project.comparison.active;
   const sound = project.comparison[active];
@@ -501,6 +508,7 @@ export default function App() {
   useEffect(() => {
     const previous = previousAudition.current;
     previousAudition.current = { active, material, presetId: preset.id };
+    if (pendingHitPreview.current) return;
     if (engine.current.mode !== 'audition' && !auditionRequested.current) return;
     if (engine.current.mode !== 'audition' || previous.material !== material) {
       void actionRef.current.audition();
@@ -517,6 +525,13 @@ export default function App() {
       }
     }
   }, [active, material, preset.id, sound, solo, selectedPartial, project.processing]);
+  useEffect(() => {
+    if (!hitPreviewRequest || !pendingHitPreview.current) return;
+    pendingHitPreview.current = false;
+    // Start once after material and solo state have committed together. Normal
+    // A/B updates still retain their clock; this explicit action requests replay.
+    void actionRef.current.audition();
+  }, [hitPreviewRequest]);
   useEffect(() => {
     if (engine.current.mode === 'score') {
       engine.current.updateProcessing(project.processing, active);
@@ -1186,6 +1201,25 @@ export default function App() {
                     <span>{percussion.hint}.</span>
                     <button
                       className="secondary-button"
+                      onClick={() => {
+                        pendingHitPreview.current = true;
+                        setSolo(false);
+                        change((p) => ({
+                          ...p,
+                          comparisonMaterial: {
+                            ...p.comparisonMaterial,
+                            kind: 'note',
+                            note: percussion.note,
+                            noteBeats: percussion.noteBeats,
+                          },
+                        }));
+                        setHitPreviewRequest((n) => n + 1);
+                      }}
+                    >
+                      Preview hit
+                    </button>
+                    <button
+                      className="secondary-button"
                       onClick={() =>
                         change((p) => ({
                           ...p,
@@ -1509,6 +1543,20 @@ export default function App() {
                             changeSound(
                               (s) => ({ ...s, percussion: { ...s.percussion!, highpass: n } }),
                               'hit-highpass',
+                            )
+                          }
+                        />
+                        <RangeControl
+                          label="Noise low-pass"
+                          value={sound.percussion.lowpass ?? 14000}
+                          min={20}
+                          max={16000}
+                          step={20}
+                          unit="Hz"
+                          onChange={(n) =>
+                            changeSound(
+                              (s) => ({ ...s, percussion: { ...s.percussion!, lowpass: n } }),
+                              'hit-lowpass',
                             )
                           }
                         />
