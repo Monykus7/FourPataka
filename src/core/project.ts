@@ -345,6 +345,13 @@ export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts v
     numeric(value.percussion.noise, 0, 1, 'noise level');
     numeric(value.percussion.highpass, 20, 16000, 'noise high-pass Hz');
     numeric(value.percussion.decay, 0.01, 2, 'hit decay seconds');
+    if (value.percussion.noiseDecay !== undefined)
+      numeric(value.percussion.noiseDecay, 0.005, 2, 'noise decay seconds');
+    if (value.percussion.pitch !== undefined) {
+      record(value.percussion.pitch);
+      numeric(value.percussion.pitch.amount, 0, 48, 'pitch drop semitones');
+      numeric(value.percussion.pitch.decay, 0.005, 0.5, 'pitch decay seconds');
+    }
   }
   if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints, count);
   for (const [name, size] of [

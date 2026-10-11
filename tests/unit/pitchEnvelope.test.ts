@@ -1,6 +1,14 @@
 import { expect, it } from 'vitest';
 import { createPitchEnvelope } from '../../src/audio/pitchEnvelope';
 
+it('sampled phase agrees with summing per-frame oscillator frequencies', () => {
+  const rate = 48000,
+    curve = createPitchEnvelope(0, { amount: 24, decay: 0.025 }, rate);
+  let sum = 0;
+  for (let frame = 0; frame < 4800; frame++) sum += curve.sample(frame / rate).ratio / rate;
+  expect(curve.sample(0.1).integral).toBeCloseTo(sum, 10);
+});
+
 it('falling pitch integrates frequency for phase rather than multiplying instantaneous pitch by age', () => {
   const curve = createPitchEnvelope(2, { amount: 24, decay: 0.025 });
   expect(curve.sample(2).ratio).toBe(4);

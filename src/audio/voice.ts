@@ -1,5 +1,6 @@
 import { components, dbToGain, type Sound } from '../core/music';
 import { createPercussionSource } from './percussionSource';
+import { createPitchEnvelope } from './pitchEnvelope';
 
 export interface Voice {
   envelope: GainNode;
@@ -10,6 +11,7 @@ export interface Voice {
   dispose: () => void;
 }
 interface Source {
+  base: number;
   oscillator: OscillatorNode;
   gain: GainNode;
   retired: boolean;
@@ -49,6 +51,7 @@ export function createVoice(
   const sources = new Set<Source>();
   const harmonicSources = new Set<Source>();
   const subs = new Map<number, Source>();
+  const pitchCurve = createPitchEnvelope(start, sound.percussion?.pitch, context.sampleRate);
   const cleanup = () => {
     if (!sources.size && context.currentTime >= end) {
       percussion.dispose();
@@ -75,7 +78,7 @@ export function createVoice(
       // A new oscillator starts its own phase at zero. Rotate its cosine/sine
       // coefficients by the phase reached since the original note start so the
       // replacement joins that same wave: sin(wt + phase), not a retrigger.
-      const phase = 2 * Math.PI * h * base * (at - start);
+      const phase = 2 * Math.PI * h * base * pitchCurve.sample(at).integral;
       real[h] = value * Math.sin(phase);
       imag[h] = value * Math.cos(phase);
     });
@@ -84,11 +87,14 @@ export function createVoice(
       // would change every partial's gain when only one partial is edited.
       context.createPeriodicWave(real, imag, { disableNormalization: true }),
     );
-    oscillator.frequency.value = base;
+    // Seed the intrinsic value too: a target scheduled at the oscillator's first
+    // automation time must start at this ratio, never its default 440 Hz.
+    oscillator.frequency.value = base * pitchCurve.sample(at).ratio;
+    pitchCurve.schedule(oscillator.frequency, base, at);
     gain.gain.setValueAtTime(level, at);
     oscillator.connect(gain);
     gain.connect(percussion.input);
-    const item = { oscillator, gain, retired: false };
+    const item = { oscillator, gain, base, retired: false };
     sources.add(item);
     oscillators.push(oscillator);
     oscillator.onended = () => {
@@ -106,9 +112,13 @@ export function createVoice(
   };
   const setSources = (next: Sound, selection: string | undefined, initial: boolean) => {
     const at = Math.max(start, context.currentTime);
-    const effective = components(next, frequency, context.sampleRate).filter(
-      (p) => p.available && (!selection || p.label === selection),
-    );
+    // Sweeps must not drive a saved upper partial above Nyquist. Exclude it
+    // conservatively for this voice; the saved coefficient remains intact.
+    const effective = components(
+      next,
+      frequency * pitchCurve.maximum(at),
+      context.sampleRate,
+    ).filter((p) => p.available && (!selection || p.label === selection));
     const coefficients = new Array<number>(next.harmonics.length + 1).fill(0);
     effective
       .filter((p) => p.kind === 'harmonic')
@@ -172,6 +182,10 @@ export function createVoice(
         });
       }
       trim.gain.setTargetAtTime(dbToGain(next.trim), now, 0.01);
+      if (pitchCurve.update(next.percussion?.pitch, now))
+        sources.forEach((source) =>
+          pitchCurve.schedule(source.oscillator.frequency, source.base, now),
+        );
       percussion.update(next, selection, now, end);
       setSources(next, selection, false);
       current = structuredClone(next);

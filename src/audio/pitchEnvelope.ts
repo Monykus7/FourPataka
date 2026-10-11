@@ -12,7 +12,7 @@ interface Segment {
 }
 
 /** Integrate the same frequency curve scheduled on every source in a voice. */
-export function createPitchEnvelope(start: number, initial?: HitPitch) {
+export function createPitchEnvelope(start: number, initial?: HitPitch, sampleRate?: number) {
   const ratioAt = (pitch: HitPitch | undefined, time: number) =>
     pitch ? 1 + (2 ** (pitch.amount / 12) - 1) * Math.exp(-(time - start) / pitch.decay) : 1;
   let key = JSON.stringify(initial);
@@ -24,18 +24,27 @@ export function createPitchEnvelope(start: number, initial?: HitPitch) {
     const elapsed = Math.max(0, time - segment.at);
     if (segment.decay !== undefined) {
       const fade = Math.exp(-elapsed / segment.decay);
+      // Oscillator phase accumulates sampled frequency, not a continuous integral.
+      // The geometric sum joins a replacement to that same sample clock.
+      const decayIntegral = sampleRate
+        ? 1 / (sampleRate * -Math.expm1(-1 / (sampleRate * segment.decay)))
+        : segment.decay;
       return {
         ratio: segment.to + (segment.from - segment.to) * fade,
         integral:
           segment.integral +
           segment.to * elapsed +
-          (segment.from - segment.to) * segment.decay * (1 - fade),
+          (segment.from - segment.to) * decayIntegral * (1 - fade),
       };
     }
     const slope = (segment.to - segment.from) / (segment.until! - segment.at);
     return {
       ratio: segment.from + slope * elapsed,
-      integral: segment.integral + segment.from * elapsed + (slope * elapsed * elapsed) / 2,
+      integral:
+        segment.integral +
+        segment.from * elapsed +
+        (slope * elapsed * elapsed) / 2 -
+        (sampleRate ? (slope * elapsed) / (2 * sampleRate) : 0),
     };
   };
   return {
@@ -52,7 +61,10 @@ export function createPitchEnvelope(start: number, initial?: HitPitch) {
         { at, integral: current.integral, from: current.ratio, to: target, until: settle },
         {
           at: settle,
-          integral: current.integral + (current.ratio + target) * 0.01,
+          integral:
+            current.integral +
+            (current.ratio + target) * 0.01 +
+            (sampleRate ? (current.ratio - target) / (2 * sampleRate) : 0),
           from: target,
           to: 1,
           decay: pitch?.decay ?? 0.03,

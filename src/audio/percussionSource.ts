@@ -18,7 +18,7 @@ function noiseBuffer(context: BaseAudioContext) {
   return buffer;
 }
 
-/** A voice-local hit envelope multiplies both the Fourier body and filtered noise. */
+/** Body and noise have independent decay, but share the voice's note-off envelope. */
 export function createPercussionSource(
   context: BaseAudioContext,
   destination: AudioNode,
@@ -31,7 +31,13 @@ export function createPercussionSource(
   let highpass: BiquadFilterNode | undefined;
   let lowpass: BiquadFilterNode | undefined;
   let level: GainNode | undefined;
+  let noiseHit: GainNode | undefined;
+  let levelRamp = { at: start, until: start, from: 0, to: 0 };
   let disposed = false;
+  const envelopes = new WeakMap<
+    AudioParam,
+    { at: number; settle: number; from: number; to: number; decay?: number }
+  >();
   const update = (
     sound: Sound,
     solo: string | undefined,
@@ -43,13 +49,32 @@ export function createPercussionSource(
     // Editing a hit changes its decay at the original note age, never retriggers
     // the attack or the score clock. Absence preserves the legacy sustained path.
     const settle = initial ? at : at + 0.02;
-    const amplitude = hit ? Math.exp(-(settle - start) / hit.decay) : 1;
-    if (initial) input.gain.setValueAtTime(amplitude, at);
-    else {
-      input.gain.cancelAndHoldAtTime(at);
-      input.gain.linearRampToValueAtTime(amplitude, settle);
-    }
-    if (hit) input.gain.setTargetAtTime(0, settle, hit.decay);
+    const decayGain = (parameter: AudioParam, decay?: number) => {
+      const amplitude = decay ? Math.exp(-(settle - start) / decay) : 1;
+      const previous = envelopes.get(parameter);
+      if (previous && previous.decay === decay) return;
+      if (!previous) {
+        const level = decay ? Math.exp(-(at - start) / decay) : 1;
+        parameter.setValueAtTime(level, at);
+        if (decay) parameter.setTargetAtTime(0, at, decay);
+        envelopes.set(parameter, { at, settle: at, from: level, to: level, decay });
+      } else {
+        const held =
+          at < previous.settle
+            ? previous.from +
+              ((previous.to - previous.from) * (at - previous.at)) / (previous.settle - previous.at)
+            : previous.to *
+              (previous.decay ? Math.exp(-(at - previous.settle) / previous.decay) : 1);
+        // A target cancellation must be followed by an explicit anchor. Without
+        // it a new ramp can interpolate from the original attack event.
+        parameter.cancelScheduledValues(at);
+        parameter.setValueAtTime(held, at);
+        parameter.linearRampToValueAtTime(amplitude, settle);
+        if (decay) parameter.setTargetAtTime(0, settle, decay);
+        envelopes.set(parameter, { at, settle, from: held, to: amplitude, decay });
+      }
+    };
+    decayGain(input.gain, hit?.decay);
     const amount = solo ? 0 : (hit?.noise ?? 0);
     if (amount > 0 && !noise) {
       noise = context.createBufferSource();
@@ -64,7 +89,13 @@ export function createPercussionSource(
       lowpass.frequency.value = Math.min(14000, context.sampleRate * 0.45);
       level = context.createGain();
       level.gain.value = 0;
-      noise.connect(highpass).connect(lowpass).connect(level).connect(input);
+      noiseHit = context.createGain();
+      noise
+        .connect(highpass)
+        .connect(lowpass)
+        .connect(level)
+        .connect(noiseHit)
+        .connect(destination);
       // The deterministic noise cursor follows note age even if enabled mid-note.
       noise.start(at, (at - start) % noise.buffer.duration);
       noise.onended = () => {
@@ -72,19 +103,30 @@ export function createPercussionSource(
         highpass?.disconnect();
         lowpass?.disconnect();
         level?.disconnect();
+        noiseHit?.disconnect();
         onEnded();
       };
     }
     if (noise && highpass && level) {
+      decayGain(noiseHit!.gain, hit?.noiseDecay ?? hit?.decay);
       const cutoff = Math.min(hit?.highpass ?? 6500, context.sampleRate * 0.45);
       if (initial) {
         highpass.frequency.setValueAtTime(cutoff, at);
         level.gain.setValueAtTime(amount, at);
-      } else {
-        highpass.frequency.setTargetAtTime(cutoff, at, 0.01);
-        level.gain.cancelAndHoldAtTime(at);
+        levelRamp = { at, until: at, from: amount, to: amount };
+      } else if (amount !== levelRamp.to) {
+        const held =
+          at >= levelRamp.until
+            ? levelRamp.to
+            : levelRamp.from +
+              ((levelRamp.to - levelRamp.from) * (at - levelRamp.at)) /
+                (levelRamp.until - levelRamp.at);
+        level.gain.cancelScheduledValues(at);
+        level.gain.setValueAtTime(held, at);
         level.gain.linearRampToValueAtTime(amount, at + 0.02);
+        levelRamp = { at, until: at + 0.02, from: held, to: amount };
       }
+      if (!initial) highpass.frequency.setTargetAtTime(cutoff, at, 0.01);
       noise.stop(end + 0.005);
     }
   };
@@ -100,6 +142,7 @@ export function createPercussionSource(
       highpass?.disconnect();
       lowpass?.disconnect();
       level?.disconnect();
+      noiseHit?.disconnect();
       input.disconnect();
     },
   };
