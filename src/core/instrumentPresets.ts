@@ -83,7 +83,7 @@ export function legacySnarePreset(): Sound {
   };
 }
 
-export function snarePreset(): Sound {
+export function legacySnareV2Preset(): Sound {
   const base = mathematicalPreset('sine');
   const body = [0.6, 0.26, 0.08, 0.035];
   // A short tuned membrane body and longer broadband rattle have separate decay.
@@ -100,6 +100,21 @@ export function snarePreset(): Sound {
     attack: 0.005,
     release: 0.18,
     trim: -12,
+  };
+}
+
+export function snarePreset(): Sound {
+  const base = mathematicalPreset('sine');
+  // The membrane supports the wire rattle, rather than masking it with a bass
+  // tone. A fixed noise band keeps the crack independent of the written pitch.
+  const body = [0.18, 0.1, 0.07, 0.025];
+  return {
+    ...base,
+    harmonics: base.harmonics.map((_, i) => body[i] ?? 0),
+    percussion: { noise: 1, highpass: 700, lowpass: 7800, decay: 0.022, noiseDecay: 0.085 },
+    attack: 0.005,
+    release: 0.18,
+    trim: -9,
   };
 }
 
@@ -129,11 +144,11 @@ export const PERCUSSION_PRESETS = [
     id: 'snare',
     key: 'snare',
     label: 'Snare',
-    version: 2,
+    version: 3,
     createSound: snarePreset,
     note: 'G3',
     noteBeats: 0.5,
-    hint: 'Short membrane body + filtered noise rattle · try D3–G3',
+    hint: 'Noise-led crack + wire rattle · quiet 22 ms body · try D3–G3',
   },
 ] as const;
 
@@ -185,16 +200,23 @@ export function upgradeDrumTemplate<T extends Template>(template: T): T {
     (preset) =>
       preset.id === template.id && preset.key === template.key && preset.label === template.label,
   );
-  if (!definition || template.version !== 1 || !['kick', 'snare'].includes(template.key))
-    return template;
-  const legacy = template.key === 'kick' ? legacyKickPreset() : legacySnarePreset();
+  if (!definition || !['kick', 'snare'].includes(template.key)) return template;
+  const legacy =
+    template.version === 1
+      ? template.key === 'kick'
+        ? legacyKickPreset()
+        : legacySnarePreset()
+      : template.key === 'snare' && template.version === 2
+        ? legacySnareV2Preset()
+        : undefined;
+  if (!legacy) return template;
   const keys = Object.keys(legacy) as (keyof Sound)[];
   if (
     Object.keys(template.sound).length !== keys.length ||
     !keys.every((key) => JSON.stringify(template.sound[key]) === JSON.stringify(legacy[key]))
   )
     return template;
-  return { ...template, version: 2, sound: definition.createSound() };
+  return { ...template, version: definition.version, sound: definition.createSound() };
 }
 
 export function upgradeHiHatTemplate<T extends Template>(template: T): T {

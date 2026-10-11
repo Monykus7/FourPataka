@@ -10,6 +10,7 @@ import {
   upgradeHiHatTemplate,
   legacyKickPreset,
   legacySnarePreset,
+  legacySnareV2Preset,
   snarePreset,
   upgradeDrumTemplate,
 } from '../../src/core/instrumentPresets';
@@ -28,7 +29,11 @@ it('kick/snare factory updates preserve edited libraries and applied sounds', ()
     ['snare', 'Snare', legacySnarePreset, snarePreset],
   ] as const) {
     const old = { id: key, key, label, version: 1, sound: legacy() };
-    expect(upgradeDrumTemplate(old)).toEqual({ ...old, version: 2, sound: createSound() });
+    expect(upgradeDrumTemplate(old)).toEqual({
+      ...old,
+      version: key === 'snare' ? 3 : 2,
+      sound: createSound(),
+    });
     const custom = { ...old, sound: { ...old.sound, trim: -27 } };
     expect(upgradeDrumTemplate(custom)).toBe(custom);
     const project = createProject();
@@ -144,7 +149,7 @@ it('percussion combines distinct low bodies and noisy transients with bounded Fo
   expect(hat.harmonics.slice(0, 12).every((v) => v === 0)).toBe(true);
   expect(hat.harmonics.filter((v) => v > 0)).toHaveLength(6);
   expect(snare.harmonics.filter((v) => v > 0)).toHaveLength(4);
-  expect(kick.percussion!.pitch!.amount).toBeGreaterThan(snare.percussion!.pitch!.amount);
+  expect(snare.percussion!.pitch).toBeUndefined();
   expect(kick.percussion!.noiseDecay).toBeLessThan(kick.percussion!.decay);
   expect(snare.percussion!.noiseDecay).toBeGreaterThan(snare.percussion!.decay);
   expect(snare.harmonics[0]).toBeGreaterThan(0);
@@ -315,4 +320,32 @@ it('preserves customized, renamed, saved and alternate-identity templates', () =
     { ...template, sound: { ...template.sound, polarity: Array(16).fill(1) } },
   ])
     expect(upgradeSoftBassTemplate(custom)).toBe(custom);
+});
+
+it('untouched v2 snare upgrades without rewriting edited templates or owned playback copies', () => {
+  const old = {
+    id: 'snare',
+    key: 'snare',
+    label: 'Snare',
+    version: 2,
+    sound: legacySnareV2Preset(),
+  };
+  expect(upgradeDrumTemplate(old)).toEqual({ ...old, version: 3, sound: snarePreset() });
+  for (const edited of [
+    { ...old, sound: { ...old.sound, trim: -20 } },
+    { ...old, label: 'Mine' },
+    { ...old, sound: { ...old.sound, percussion: { ...old.sound.percussion!, lowpass: 7000 } } },
+  ])
+    expect(upgradeDrumTemplate(edited)).toBe(edited);
+  const project = createProject();
+  project.instruments = project.instruments.map((p) => (p.key === 'snare' ? old : p));
+  project.scoreText = 'track snares using snare { G3 quarter }';
+  const saved = importProject(JSON.stringify(project));
+  saved.tracks[0].sound = legacySnareV2Preset();
+  saved.tracks[0].appliedVersion = 2;
+  saved.comparison.A = legacySnareV2Preset();
+  const next = importProject(JSON.stringify(saved));
+  expect(next.tracks).toEqual(saved.tracks);
+  expect(next.comparison).toEqual(saved.comparison);
+  expect(next.instruments.find((p) => p.key === 'snare')!.version).toBe(3);
 });
