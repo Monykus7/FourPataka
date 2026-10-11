@@ -1,11 +1,30 @@
 import { expect, it } from 'vitest';
 import {
+  kickPreset,
   softBassPreset,
   legacySoftBassPreset,
   upgradeSoftBassTemplate,
 } from '../../src/core/instrumentPresets';
 import { mathematicalPreset, sourceSamples } from '../../src/core/music';
-import { createProject, importProject } from '../../src/core/project';
+import { createProject, importProject, validateSound } from '../../src/core/project';
+
+it('kick has a low body with audible beater partials and fresh editable banks', () => {
+  const kick = kickPreset();
+  validateSound(kick);
+  expect(kick.attack).toBeLessThan(softBassPreset().attack);
+  expect(kick.release).toBeLessThan(softBassPreset().release);
+  expect(kick.harmonics[0]).toBeGreaterThan(kick.harmonics.slice(1).reduce((a, b) => a + b, 0));
+  expect(sourceSamples(kick, 65).values).not.toEqual(sourceSamples(softBassPreset(), 65).values);
+  kick.harmonics[0] = 0;
+  kick.polarity[0] = -1;
+  kick.undertones[0] = 1;
+  expect(kickPreset()).toMatchObject({
+    harmonics: expect.arrayContaining([1]),
+    undertonesEnabled: false,
+  });
+  expect(kickPreset().polarity[0]).toBe(1);
+  expect(kickPreset().undertones[0]).toBe(0);
+});
 
 it('Soft bass has a distinct signed source and retains explicit envelope/gain settings', () => {
   const bass = softBassPreset();

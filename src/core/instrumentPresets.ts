@@ -1,5 +1,18 @@
 import { LEGACY_HARMONIC_COUNT, mathematicalPreset, type Sound } from './music';
 
+export function kickPreset(): Sound {
+  const sound = mathematicalPreset('sine');
+  // A low fundamental supplies the body; quiet upper partials add the beater.
+  // Note duration still controls the gate: this is not a pitch/decay envelope.
+  const magnitudes = [1, 0.32, 0.12, 0.07, 0.035, 0.018, 0.009];
+  return {
+    ...sound,
+    harmonics: sound.harmonics.map((_, i) => magnitudes[i] ?? 0),
+    attack: 0.005,
+    release: 0.16,
+  };
+}
+
 export function softBassPreset(): Sound {
   const sound = mathematicalPreset('sine');
   // A few quiet even/odd partials make a rounded, asymmetric bass source.
