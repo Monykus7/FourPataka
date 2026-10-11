@@ -1,4 +1,5 @@
 import { components, dbToGain, type Sound } from '../core/music';
+import { createPercussionSource } from './percussionSource';
 
 export interface Voice {
   envelope: GainNode;
@@ -48,6 +49,14 @@ export function createVoice(
   const sources = new Set<Source>();
   const harmonicSources = new Set<Source>();
   const subs = new Map<number, Source>();
+  const cleanup = () => {
+    if (!sources.size && context.currentTime >= end) {
+      percussion.dispose();
+      envelope.disconnect();
+      trim.disconnect();
+    }
+  };
+  const percussion = createPercussionSource(context, envelope, start, cleanup);
   let harmonic: Source | null = null;
   let harmonicKey = '';
   const reached = Math.min(1, duration / sound.attack);
@@ -55,6 +64,7 @@ export function createVoice(
   envelope.gain.linearRampToValueAtTime(reached, start + Math.min(sound.attack, duration));
   envelope.gain.setValueAtTime(reached, noteOff);
   envelope.gain.linearRampToValueAtTime(0, end);
+  percussion.update(sound, solo, start, end, true);
 
   const source = (base: number, coefficients: number[], at: number, level: number): Source => {
     const oscillator = context.createOscillator();
@@ -77,7 +87,7 @@ export function createVoice(
     oscillator.frequency.value = base;
     gain.gain.setValueAtTime(level, at);
     oscillator.connect(gain);
-    gain.connect(envelope);
+    gain.connect(percussion.input);
     const item = { oscillator, gain, retired: false };
     sources.add(item);
     oscillators.push(oscillator);
@@ -88,10 +98,7 @@ export function createVoice(
       harmonicSources.delete(item);
       const index = oscillators.indexOf(oscillator);
       if (index >= 0) oscillators.splice(index, 1);
-      if (!sources.size && context.currentTime >= end) {
-        envelope.disconnect();
-        trim.disconnect();
-      }
+      cleanup();
     };
     oscillator.start(at);
     oscillator.stop(end + 0.005);
@@ -165,6 +172,7 @@ export function createVoice(
         });
       }
       trim.gain.setTargetAtTime(dbToGain(next.trim), now, 0.01);
+      percussion.update(next, selection, now, end);
       setSources(next, selection, false);
       current = structuredClone(next);
     },
@@ -174,11 +182,13 @@ export function createVoice(
       envelope.gain.cancelAndHoldAtTime(time);
       envelope.gain.linearRampToValueAtTime(0, time + 0.01);
       end = time + 0.01;
+      percussion.stop(end);
       sources.forEach((s) => s.oscillator.stop(time + 0.015));
     },
     dispose() {
       if (disposed) return;
       disposed = true;
+      percussion.dispose();
       sources.forEach((s) => {
         try {
           s.oscillator.stop();
