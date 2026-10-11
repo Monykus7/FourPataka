@@ -346,3 +346,12 @@ Use the existing periodic 32-partial engine for Kick/Closed hi-hat/Snare electro
 Factory additions seed new projects or an explicit undoable Add percussion presets action; never silently merge on import/boot. Occupied keys belong to the user, IDs are collision-resolved, and capacity failure adds nothing. Existing templates/snapshots/applied sounds remain owned; normal host source reconciliation may resolve previously missing assignments after the explicit action.
 
 Short audition is shared musical material, not a sound-specific engine branch. Optional comparisonMaterial.noteBeats is 1/64–32 quarter beats at fixed120 BPM; absence preserves the old3.2 beats and phrase timing ignores it. Import validation whitelists/bounds it without a Sound/schema-version change. Explicit Use hit preview chooses the suggested note/gate but does not replace the score or either sound; preset/A-B changes retain material and phase clock. Reference pitches/release settings and source-extension/ownership diagrams are maintained in the percussion contributor guide.
+
+
+## Existing-session percussion availability correction (v0.25.1)
+
+<!-- features: instrument-presets, notation, local-save -->
+
+The owner reports missing library entries/parser support in the already-open v0.25.0 session. The implementation had restricted factory additions to fresh projects or an explicit action; score-key validation correctly rejected absent keys. This setup requirement was an incomplete user workflow. Supersede the v0.25.0 no-merge policy for these missing bundled additions: validated import, local startup and recovery add the entire missing set if capacity permits, before compilation/reconciliation. Preserve all occupied keys/custom templates/applied/A-B data and source; resolve only new IDs. Full libraries remain valid instead of falling into recovery. Autosave canonicalization leaves the previous distinct checkpoint bytes intact. No new drum grammar, sound normalization, clock change, DSP/schema field or completed general module gate is introduced.
+
+Regression evidence must start from a saved six-preset project with independent edited library/track/A-B sounds, show all three entries immediately, and exercise using keys, autocomplete and playback in browser and package. Merely testing a fresh nine-preset project does not prove upgrade availability.

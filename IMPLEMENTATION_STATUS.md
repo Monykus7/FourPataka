@@ -463,3 +463,10 @@ Implemented fresh Kick (kick), Closed hi-hat (hiHat) and Snare (snare) Fourier p
 Verified: 202 unit checks, 28 distinct affected browser checks and four packaged desktop workflows passed. Coverage includes all three previews, library import/undo/redo and independent copies, mobile selection, optional gate persistence/old defaults, 44.1/48 kHz finite audio/silent tails, frozen owned WAV output, native JSON/WAV and existing Soft bass/sign/keyboard behavior. Initial test failures were corrected boot-autosave and multiline score fixtures; production parser grammar and the authored demo remain unchanged. Desktop/mobile screenshots were reviewed, fourteen contributor diagrams were syntax-checked/rendered (two new), and twenty-five affected documentation file links plus the exact tested score example were checked.
 
 Production build, format/diff checks, knowledge build/check and portable packaging passed. The native-tested v0.25.0 app.asar SHA-256 is DB1DF2E4B920CFF03E1EC2EBC98F2C8505BBDE7B26F42CC98E47956810215099. The portable application was opened visibly, and its extracted running app.asar matches that native-tested hash. The package remains unsigned with the default Electron icon; physical listening/device/screen-reader checks and general modularity gates are still open. Eight focused commits use Monykus7 and are pushed to origin/master.
+
+
+### Existing-session percussion availability fix — v0.25.1
+
+Corrects the v0.25.0 separate setup requirement: old local sessions, JSON imports and recovery now gain missing bundled percussion before parser/IDE key discovery. Existing custom keys/templates, edited A/B/applied sounds and source remain unchanged; ID collisions resolve only for additions and full valid libraries still open. The manual strict import action remains a capacity-reporting fallback. Startup reports added score keys, while autosave preserves the previous distinct recovery checkpoint. No new grammar or synthesis/schema behavior is needed: tracks use kick, hiHat or snare from the same project library.
+
+Verification in progress; the latest verified artifact remains v0.25.0 until packaged checks finish.

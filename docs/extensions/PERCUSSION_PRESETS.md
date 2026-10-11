@@ -4,7 +4,7 @@ The v0.25.0 source includes three editable percussion-inspired timbres: **Kick**
 
 ## Use them
 
-New projects include the three presets. In an existing project, open Instrument and choose **Add percussion presets**. This is one undoable action. It adds only missing score keys, preserves customized presets with those keys, resolves colliding IDs, and rejects the entire import if it would exceed 128 templates. Starting the application does not silently add or replace library data.
+New projects include the three presets. Since v0.25.1, loading an existing local session, importing JSON or restoring recovery also adds missing bundled percussion before parsing. No separate setup action is required: they appear in Instrument and their score keys are available to the IDE. Occupied keys/custom presets, owned A/B/track sounds and source text remain intact; colliding IDs receive a suffix. If all missing templates cannot fit within 128 slots, the valid project still opens unchanged. **Add percussion presets** remains a strict manual fallback and reports the capacity limit instead of partially adding a set. The original v0.25.0 required this separate action, which left existing sessions without the feature until it ran.
 
 Select a preset, choose **Use hit preview**, then **Listen**. The preview changes the shared comparison material's pitch and gate length, leaving the score and owned track sounds intact. The gate length selector in Comparison works for any note/chord audition; A and B use the same duration. Selecting another preset or switching A/B does not automatically change the material or restart its clock. Explicitly changing material/replaying starts a new audition.
 
@@ -46,15 +46,15 @@ This example is a separate test fixture; the owner's bundled demo is preserved.
 
 See [instrumentPresets.ts](../../src/core/instrumentPresets.ts) for the pure factories and `PERCUSSION_PRESETS` metadata. Each call starts from a fresh mathematical preset and returns fresh magnitude/sign/undertone arrays. Never mutate an exported singleton `Sound`. A catalog entry has a unique ID/key, label, template version, factory, suggested pitch, quarter-beat gate and concise hint. This narrow bundled catalog is not a public runtime registry.
 
-`createPercussionPresets()` creates owned templates. [project.ts](../../src/core/project.ts) uses it for new projects and the explicit `withPercussionPresets()` action. It does not run during project import. A/B snapshots and tracks deep-copy the selected library sound, and saving a newer library version still requires explicit Apply to change a track. Score `using` keys come from that project's library; the parser has no percussion-specific branch.
+`createPercussionPresets()` creates owned templates. [project.ts](../../src/core/project.ts) uses it for new projects and the strict `withPercussionPresets()` action. Validated project import calls that action when the missing set fits, before ordinary parser/reconciliation; local startup, JSON import and recovery share this path. Import never rejects an otherwise valid project for lacking factory capacity. Autosave canonicalization preserves the previous distinct recovery checkpoint rather than replacing it for a bundled-only addition. A/B snapshots and tracks deep-copy the selected library sound, and saving a newer library version still requires explicit Apply to change a track. Score `using` keys come from that project's library; the parser has no percussion-specific branch.
 
 ```mermaid
 flowchart TD
   Factory[Pure Sound factory] --> Catalog[Bundled catalog metadata]
   Catalog --> New[New project templates]
-  Catalog --> Import[Explicit Add percussion action]
+  Catalog --> Import[Validated project load or explicit Add action]
   Saved[Existing project library] --> Import
-  Import --> Check[Skip occupied keys; resolve IDs; check capacity]
+  Import --> Check[Preserve occupied keys; resolve IDs; check capacity]
   Check --> Library[Independent library templates]
   New --> Library
   Library --> AB[Explicit load into active A/B snapshot]
@@ -83,6 +83,6 @@ flowchart LR
 
 Run `npm test -- tests/unit/instrumentPresets.test.ts tests/unit/comparison.test.ts`, then `npx playwright test tests/browser/percussion.spec.ts`. The native workflow is `npx playwright test --config playwright.desktop.config.ts --grep "packaged percussion"` against a freshly built/package-verified application.
 
-Tests validate schema bounds, fresh banks, distinct spectral roles, and conservative explicit import (including collision/capacity behavior). The sum of magnitudes times trim gain bounds each source below 0.65 at any phase; this is a proof of factory headroom, not automatic normalization or a guarantee about arbitrary edited/polyphonic mixes. Offline voices verify finite nonzero output and silent tails at 44.1/48 kHz. Browser/native flows cover previews, source assignment, persistence and JSON; WAV verifies the frozen owned sounds and upper bank through the shared factory. Audible realism and physical-device response remain listening checks.
+Tests validate schema bounds, fresh banks, distinct spectral roles, and automatic availability for old sessions, parser/IDE key discovery and conservative additions (including collision/capacity behavior). The sum of magnitudes times trim gain bounds each source below 0.65 at any phase; this is a proof of factory headroom, not automatic normalization or a guarantee about arbitrary edited/polyphonic mixes. Offline voices verify finite nonzero output and silent tails at 44.1/48 kHz. Browser/native flows cover previews, source assignment, persistence and JSON; WAV verifies the frozen owned sounds and upper bank through the shared factory. Audible realism and physical-device response remain listening checks.
 
 For broader module contracts and ownership diagrams, continue with [the instrument guide](INSTRUMENTS.md), [module creation](MODULE_CREATION.md), and [compatibility](COMPATIBILITY.md).

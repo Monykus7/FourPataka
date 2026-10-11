@@ -106,7 +106,7 @@
       "id": "instrument-presets",
       "parent": "sound",
       "title": "Instrument presets and source thumbnails",
-      "summary": "Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], attack 30 ms, release 350 ms and trim \u221212 dB; Triangle retains alternating odd signs. Library and editor thumbnails sample their actual signed harmonic bank, excluding undertones/trim/envelope. Decorative thumbnail scaling never normalizes audio. Only an untouched factory v1 library template upgrades; applied tracks and A/B remain owned copies until explicit loading/application. v0.25.0 adds editable Kick (kick), Closed hi-hat (hiHat) and Snare (snare) Fourier approximations with short envelopes and distinct low/sparse-high/dense-high banks. New projects include them; an explicit undoable library action adds missing keys, preserves occupied keys and owned copies, resolves IDs and atomically enforces 128 templates. Optional shared comparisonMaterial.noteBeats controls note/chord gates at 120 BPM (1/64\u201332 quarter beats, old default3.2); Use hit preview explicitly changes material, not score/sounds. Periodic sources have no noise, decay or pitch-drop envelope: long gates sustain. Preset-module M3 and broader engine work remain planned.",
+      "summary": "Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], attack 30 ms, release 350 ms and trim \u221212 dB; Triangle retains alternating odd signs. Library and editor thumbnails sample their actual signed harmonic bank, excluding undertones/trim/envelope. Decorative thumbnail scaling never normalizes audio. Only an untouched factory v1 library template upgrades; applied tracks and A/B remain owned copies until explicit loading/application. v0.25.0 adds editable Kick (kick), Closed hi-hat (hiHat) and Snare (snare) Fourier approximations with short envelopes and distinct low/sparse-high/dense-high banks. New projects include them; v0.25.1 also adds missing bundled keys during validated local/JSON/recovery loading before parser discovery, preserving occupied custom keys and owned copies and resolving IDs. If the full set exceeds128 slots the valid project remains unchanged; the explicit strict action remains a capacity-reporting fallback. Autosave preserves the previous distinct checkpoint for bundled-only canonicalization. Score using/completion and Track Maker receive the same project keys. Optional shared comparisonMaterial.noteBeats controls note/chord gates at 120 BPM (1/64\u201332 quarter beats, old default3.2); Use hit preview explicitly changes material, not score/sounds. Periodic sources have no noise, decay or pitch-drop envelope: long gates sustain. Preset-module M3 and broader engine work remain planned.",
       "paths": [
         "src/core/instrumentPresets.ts",
         "src/core/project.ts",
@@ -119,7 +119,9 @@
         "tests/unit/comparison.test.ts",
         "tests/browser/percussion.spec.ts",
         "tests/helpers/percussion.ts",
-        "docs/extensions/PERCUSSION_PRESETS.md"
+        "docs/extensions/PERCUSSION_PRESETS.md",
+        "src/core/localSave.ts",
+        "tests/unit/localSave.test.ts"
       ]
     },
     {
