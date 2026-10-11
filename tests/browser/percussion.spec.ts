@@ -53,6 +53,8 @@ test('percussion WAV uses frozen owned sounds through the shared voice factory',
     );
     const pending = renderWav(project, { sampleRate: 48000, channels: 1, tailSeconds: 0 });
     for (const p of project.instruments) p.sound.harmonics.fill(0);
+    for (const track of project.tracks)
+      if (track.sound.percussion) track.sound.percussion.noise = 0;
     const rendered = await pending;
     const data = rendered.buffer.getChannelData(0);
     return {
@@ -61,11 +63,14 @@ test('percussion WAV uses frozen owned sounds through the shared voice factory',
       finite: data.every(Number.isFinite),
       hatH31: rendered.plan.snapshot.tracks.find((t: any) => t.key === 'hatTrack').sound
         .harmonics[30],
+      hatNoise: rendered.plan.snapshot.tracks.find((t: any) => t.key === 'hatTrack').sound
+        .percussion.noise,
       tail: Math.max(...Array.from(data.slice(-480), Math.abs)),
     };
   });
   expect(proof.keys).toEqual(['kickTrack', 'snareTrack', 'hatTrack']);
   expect(proof.hatH31).toBeCloseTo(0.21 * 0.08);
+  expect(proof.hatNoise).toBe(0.85);
   expect(proof.finite).toBe(true);
   expect(proof.peak).toBeGreaterThan(0.05);
   expect(proof.peak).toBeLessThan(1);

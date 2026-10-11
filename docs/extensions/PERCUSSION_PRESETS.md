@@ -85,7 +85,7 @@ flowchart LR
 
 - `noise`: linear white-noise level, 0–1. Zero retains decay on the Fourier body without audible noise.
 - `highpass`: high-pass cutoff in Hz, 20–16000. Runtime clamps it below Nyquist at the context's sample rate. A fixed 14000 Hz low-pass is similarly clamped; both filters use Q 0.707.
-- `decay`: exponential e-fold time in seconds, 0.01–2. The builder displays milliseconds. At45 ms, hit gain reaches about 37% after 45 ms and about 1.2% after 200 ms, before the ordinary attack/gate/release envelope.
+- `decay`: exponential e-fold time in seconds, 0.01–2. The builder displays milliseconds. At 45 ms, hit gain reaches about 37% after 45 ms and about 1.2% after 200 ms, before the ordinary attack/gate/release envelope.
 
 The instrument builder's **Percussive hit** toggle exposes these three controls for any sound. Disabling removes optional hit data; undo restores it. Noise is not represented by editable Fourier dots, harmonics or the steady source graph. Those graphs explicitly identify the Fourier component; playback/output monitoring includes both paths. Harmonic solo excludes noise. Saving a library template does not change applied tracks; use Apply or Apply to all using this preset.
 
