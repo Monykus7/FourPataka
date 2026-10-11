@@ -36,6 +36,8 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 
 ## Illustrated contributor walkthroughs
 
+- [Named sections](NAMED_SECTIONS.md): definition-only passages, calls, exact tail cuts/endings, source provenance, rename and shared audio diagrams (v0.27.0).
+
 - [Instrument library](INSTRUMENT_LIBRARY.md): folder creation, drag/keyboard placement, legacy project migration, copy/history boundaries and source/data-flow diagrams.
 
 - [Percussion presets](PERCUSSION_PRESETS.md): three current Fourier factories, conservative bundled additions on project load, shared short-hit comparison material, units/headroom and live/WAV ownership diagrams.
