@@ -3,6 +3,7 @@ import { SCORE_KEY } from './music';
 import type { Project } from './project';
 
 export interface TrackSourceView {
+  fileId?: string;
   key: string;
   from: number;
   to: number;
@@ -46,22 +47,34 @@ export function projectScoreView(source: string, view?: TrackSourceView) {
 /** Views address canonical UTF-16 offsets, never an independently saved document. */
 export function indexScoreViews(source: string): ScoreViewIndex {
   const tracks: TrackSourceView[] = [];
+  const keys = new Set<string>();
+  const fileKeys = new Map<string, Set<string>>();
   const stack: ('track' | 'repeat' | 'bracket')[] = [];
   let current: TrackSourceView | null = null;
   const fail = (problem: string): ScoreViewIndex => ({ source, tracks: [], problem });
   for (const token of lexScore(source)) {
+    if (token.kind === 'file-boundary') {
+      if (current || stack.length) return fail('Close all blocks before the next file.');
+      continue;
+    }
     if (token.kind === 'text') {
       const header =
         /^track\s+([A-Za-z][A-Za-z0-9_]*)\s+using\s+\S+(?:\s+through\s+\S+)?\s*\{$/.exec(
           token.text,
         );
       if (header) {
-        if (tracks.length >= 128) return fail('A score may contain at most 128 tracks.');
+        if (tracks.length >= 4096 || (!keys.has(header[1]) && keys.size >= 128))
+          return fail('A score may contain at most 128 tracks across 32 files.');
         if (current || stack.length) return fail('A track header is inside another block.');
-        if (header[1].length > 100 || tracks.some((track) => track.key === header[1]))
+        const localKeys = fileKeys.get(token.fileId ?? 'main') ?? new Set<string>();
+        if (header[1].length > 100 || localKeys.has(header[1]))
           return fail('Track names must be unique and at most 100 characters.');
+        keys.add(header[1]);
+        localKeys.add(header[1]);
+        fileKeys.set(token.fileId ?? 'main', localKeys);
         const keyFrom = token.from + /^track\s+/.exec(token.text)![0].length;
         current = {
+          fileId: token.fileId,
           key: header[1],
           from: token.from,
           to: token.to,
@@ -96,17 +109,25 @@ export function indexScoreViews(source: string): ScoreViewIndex {
   return { source, tracks, problem: null };
 }
 
-function currentView(source: string, index: ScoreViewIndex, key: string) {
+function currentView(source: string, index: ScoreViewIndex, key: string, fileId?: string) {
   // Offset reuse after a full-score/other-track edit could overwrite unrelated music.
   if (source !== index.source)
     throw new Error('The score changed. Select the track again before editing.');
-  const view = !index.problem && index.tracks.find((track) => track.key === key);
+  const view =
+    !index.problem &&
+    index.tracks.find((track) => track.key === key && (!fileId || track.fileId === fileId));
   if (!view) throw new Error('Open All score to repair the track boundaries.');
   return view;
 }
 
-export function editTrackView(source: string, index: ScoreViewIndex, key: string, value: string) {
-  const view = currentView(source, index, key);
+export function editTrackView(
+  source: string,
+  index: ScoreViewIndex,
+  key: string,
+  value: string,
+  fileId?: string,
+) {
+  const view = currentView(source, index, key, fileId);
   const text = source.slice(0, view.from) + value + source.slice(view.to);
   const local = indexScoreViews(value);
   const only = !local.problem && local.tracks.length === 1 ? local.tracks[0] : null;
@@ -116,7 +137,12 @@ export function editTrackView(source: string, index: ScoreViewIndex, key: string
     only && !whole.problem && !(value.slice(0, only.from) + value.slice(only.to)).trim()
       ? only.key
       : null;
-  return { text, trackKey };
+  return {
+    text,
+    trackKey,
+    renameOwnership:
+      !!trackKey && trackKey !== key && !whole.tracks.some((track) => track.key === key),
+  };
 }
 
 export function renameTrackSource(
@@ -125,17 +151,33 @@ export function renameTrackSource(
   key: string,
   nextKey: string,
 ) {
-  const view = currentView(source, index, key);
+  currentView(source, index, key);
   if (!SCORE_KEY.test(nextKey) || nextKey.length > 100)
     throw new Error('Use a name starting with a letter, followed by letters, digits or _.');
   if (nextKey !== key && index.tracks.some((track) => track.key === nextKey))
     throw new Error('Another track already uses that name.');
-  return source.slice(0, view.keyFrom) + nextKey + source.slice(view.keyTo);
+  let text = source;
+  // A song track has one owned sound even when its source spans several files.
+  for (const part of index.tracks
+    .filter((track) => track.key === key)
+    .sort((a, b) => b.keyFrom - a.keyFrom))
+    text = text.slice(0, part.keyFrom) + nextKey + text.slice(part.keyTo);
+  return text;
 }
 
-export function removeTrackSource(source: string, index: ScoreViewIndex, key: string) {
-  const view = currentView(source, index, key);
-  return source.slice(0, view.from) + source.slice(view.to);
+export function removeTrackSource(
+  source: string,
+  index: ScoreViewIndex,
+  key: string,
+  fileId?: string,
+) {
+  currentView(source, index, key, fileId);
+  let text = source;
+  for (const part of index.tracks
+    .filter((track) => track.key === key && (!fileId || track.fileId === fileId))
+    .sort((a, b) => b.from - a.from))
+    text = text.slice(0, part.from) + text.slice(part.to);
+  return text;
 }
 
 /** Renaming a view must move owned instances, rather than re-copy a library preset. */

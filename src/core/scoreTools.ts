@@ -2,6 +2,20 @@ import { SCORE_KEY } from './music';
 import { COMMANDS, parseScore } from './parser';
 import { nextMeterBoundary } from './meter';
 import { nextSectionName } from './scoreSections';
+import { indexScoreFiles } from './scoreFiles';
+
+function globalInsertion(text: string) {
+  const file = indexScoreFiles(text).files[0];
+  const start = file?.from ?? 0;
+  const link = /^\s*from\s+song\s+\S+[^\S\n]*(?:\/\/[^\n]*)?\r?$/m.exec(
+    text.slice(start, file?.to),
+  );
+  return link ? Math.min(text.length, start + link.index + link[0].length + 1) : start;
+}
+function insertGlobal(text: string, command: string) {
+  const at = globalInsertion(text);
+  return text.slice(0, at) + (at && text[at - 1] !== '\n' ? '\n' : '') + command + text.slice(at);
+}
 
 export function addMeterChange(
   text: string,
@@ -49,7 +63,7 @@ export function setScoreDirective(
   const span = parsed.directives[name];
   return span
     ? text.slice(0, span.from) + value + text.slice(span.to)
-    : `${name} ${value}\n` + text;
+    : insertGlobal(text, `${name} ${value}\n`);
 }
 export function appendTrack(
   text: string,
@@ -59,12 +73,21 @@ export function appendTrack(
   events: string[],
   chainKeys: string[] = [],
   chainKey: string | null = null,
+  fileId?: string,
 ) {
   const parsed = assertEditable(text, instrumentKeys, chainKeys);
   if (!SCORE_KEY.test(key) || key.length > 100)
     throw new Error('Use a track key starting with a letter, followed by letters, digits, or _.');
-  if (parsed.tracks.some((t) => t.key === key)) throw new Error(`Track “${key}” already exists.`);
-  if (parsed.tracks.length >= 128) throw new Error('A project may contain at most 128 tracks.');
+  const files = indexScoreFiles(text);
+  const destination = fileId ? files.files.find((file) => file.id === fileId) : files.files.at(-1);
+  if (!destination) throw new Error('Choose an existing score file.');
+  const existing = parsed.tracks.find((t) => t.key === key);
+  if (existing && existing.parts.some((part) => part.fileId === destination.id))
+    throw new Error(`Track “${key}” already exists in this file.`);
+  if (existing && (existing.instrumentKey !== instrumentKey || existing.chainKey !== chainKey))
+    throw new Error('Use the existing track instrument and pedal assignment.');
+  if (!existing && parsed.tracks.length >= 128)
+    throw new Error('A project may contain at most 128 tracks.');
   if (!instrumentKeys.includes(instrumentKey))
     throw new Error('Choose an existing instrument preset.');
   if (!events.length) throw new Error('Add at least one note, chord, or rest.');
@@ -74,7 +97,14 @@ export function appendTrack(
   const block = `track ${key} using ${instrumentKey}${chainKey ? ` through ${chainKey}` : ''} {\n${events.map((e) => `  ${e}`).join('\n')}\n}`;
   const checked = parseScore(block, instrumentKeys, chainKeys);
   if (checked.diagnostics.length) throw new Error(checked.diagnostics[0].message);
-  return text + (text.trim() ? (text.endsWith('\n') ? '\n' : '\n\n') : '') + block + '\n';
+  const prefix = text.slice(0, destination.to);
+  return (
+    prefix +
+    (prefix.trim() ? (prefix.endsWith('\n') ? '\n' : '\n\n') : '') +
+    block +
+    '\n' +
+    text.slice(destination.to)
+  );
 }
 export function setScoreChain(
   text: string,
@@ -92,14 +122,21 @@ export function setScoreChain(
       return master ? text.slice(0, master.commandFrom) + text.slice(master.commandTo) : text;
     return master
       ? text.slice(0, master.from) + key + text.slice(master.to)
-      : `master through ${key}${text.includes('\r\n') ? '\r\n' : '\n'}` + text;
+      : insertGlobal(text, `master through ${key}${text.includes('\r\n') ? '\r\n' : '\n'}`);
   }
   const track = parsed.tracks.find((t) => t.key === targetKey);
   if (!track) throw new Error('Choose an existing track for pedal assignment.');
-  if (!key)
-    return track.chainKey ? text.slice(0, track.instrumentTo) + text.slice(track.chainTo) : text;
-  if (track.chainKey) return text.slice(0, track.chainFrom) + key + text.slice(track.chainTo);
-  return text.slice(0, track.instrumentTo) + ` through ${key}` + text.slice(track.instrumentTo);
+  let next = text;
+  for (const part of [...track.parts].sort((a, b) => b.instrumentTo - a.instrumentTo)) {
+    if (!key) {
+      if (part.chainTo !== undefined)
+        next = next.slice(0, part.instrumentTo) + next.slice(part.chainTo);
+    } else if (part.chainFrom !== undefined)
+      next = next.slice(0, part.chainFrom) + key + next.slice(part.chainTo);
+    else
+      next = next.slice(0, part.instrumentTo) + ` through ${key}` + next.slice(part.instrumentTo);
+  }
+  return next;
 }
 export function setScoreInstrument(
   text: string,
@@ -114,7 +151,10 @@ export function setScoreInstrument(
   const target = parsed.tracks.find((track) => track.key === targetKey);
   if (!target) throw new Error('Choose an existing track for instrument assignment.');
   // Replace only the parser-owned key span; routing and comments belong to the user.
-  return text.slice(0, target.instrumentFrom) + instrumentKey + text.slice(target.instrumentTo);
+  let next = text;
+  for (const part of [...target.parts].sort((a, b) => b.instrumentFrom - a.instrumentFrom))
+    next = next.slice(0, part.instrumentFrom) + instrumentKey + next.slice(part.instrumentTo);
+  return next;
 }
 export function insertCommand(
   text: string,
@@ -125,6 +165,7 @@ export function insertCommand(
   chainKeys: string[] = [],
   chainKey = chainKeys.includes('warmDrive') ? 'warmDrive' : chainKeys[0],
   sectionKey?: string,
+  fileId?: string,
 ) {
   const parsed = assertEditable(text, instrumentKeys, chainKeys);
   const command = COMMANDS.find((c) => c.name === name);
@@ -137,6 +178,8 @@ export function insertCommand(
       instrumentKey,
       ['C5 quarter'],
       chainKeys,
+      null,
+      fileId,
     );
   if (name === 'using')
     return setScoreInstrument(text, instrumentKeys, chainKeys, targetKey, instrumentKey);
@@ -175,9 +218,11 @@ export function insertCommand(
       throw new Error('Define a section in this track first.');
     snippet = name === 'play' ? `play ${selected}` : `play ${selected} trim 0 {\n  E4 quarter\n}`;
   }
-  const lineStart = text.lastIndexOf('\n', target.bodyTo - 1) + 1;
+  const part = fileId ? target.parts.find((part) => part.fileId === fileId) : target.parts.at(-1);
+  if (!part) throw new Error('This track has no part in the selected file.');
+  const lineStart = text.lastIndexOf('\n', part.bodyTo - 1) + 1;
   // Inline ] } closes the scope before the track brace; insert after those delimiters.
-  const inline = text.slice(lineStart, target.bodyTo).trim().length > 0;
-  const insertion = inline ? target.bodyTo : lineStart;
+  const inline = text.slice(lineStart, part.bodyTo).trim().length > 0;
+  const insertion = inline ? part.bodyTo : lineStart;
   return text.slice(0, insertion) + `${inline ? '\n' : ''}  ${snippet}\n` + text.slice(insertion);
 }

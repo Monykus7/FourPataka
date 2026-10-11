@@ -262,6 +262,7 @@ export function applyPreset(
   let scoreText = project.scoreText;
   parsed.tracks
     .filter((t) => targets.includes(t.key))
+    .flatMap((t) => t.parts)
     .sort((a, b) => b.instrumentFrom - a.instrumentFrom)
     .forEach((t) => {
       scoreText =
