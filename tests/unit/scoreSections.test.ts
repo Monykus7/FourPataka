@@ -7,6 +7,10 @@ import {
 } from '../../src/core/scoreSections';
 import { indexScoreViews } from '../../src/core/scoreWorkspace';
 import { parseScore } from '../../src/core/parser';
+import { prepareExport } from '../../src/audio/export';
+import { createProject } from '../../src/core/project';
+import { DEFAULT_WAV_OPTIONS } from '../../src/core/wav';
+import { readFileSync } from 'node:fs';
 
 const source = `track melody using sine {
   section A {
@@ -134,4 +138,74 @@ it('diagnoses unused invalid definitions, undefined/cyclic calls and bounded rec
   expect(explosive.events.length).toBeLessThanOrEqual(10000);
   expect(explosive.sectionInvocations.length).toBeLessThanOrEqual(10000);
   expect(explosive.diagnostics.some((d) => /10,000|100,000/.test(d.message))).toBe(true);
+});
+
+it('bounds local definitions and call depth even for empty sections', () => {
+  const definitions = Array.from({ length: 65 }, (_, i) => `section S${i} {\n}\n`).join('');
+  const capped = parseScore(`track a using sine {\n${definitions}}`, ['sine']);
+  expect(capped.sections).toHaveLength(64);
+  expect(capped.diagnostics.some((d) => d.message.includes('64 named'))).toBe(true);
+  const chain = (count: number) =>
+    Array.from(
+      { length: count },
+      (_, i) => `section S${i} {\n${i + 1 < count ? `play S${i + 1}` : 'C4 quarter'}\n}\n`,
+    ).join('');
+  expect(parseScore(`track a using sine {\n${chain(16)}play S0\n}`, ['sine']).diagnostics).toEqual(
+    [],
+  );
+  expect(
+    parseScore(`track a using sine {\n${chain(17)}play S0\n}`, ['sine']).diagnostics.some((d) =>
+      d.message.includes('16 levels'),
+    ),
+  ).toBe(true);
+  const emptyCalls = parseScore(
+    'track a using sine {\n section A {\n}\nrepeat 128 {\n repeat 128 {\n play A\n}\n}\n}',
+    ['sine'],
+  );
+  expect(emptyCalls.events).toEqual([]);
+  expect(emptyCalls.sectionInvocations.length).toBeLessThanOrEqual(10000);
+  expect(emptyCalls.diagnostics.some((d) => d.message.includes('10,000 section calls'))).toBe(true);
+});
+
+it('previews each source chord once including declarations and fully trimmed notes', () => {
+  const parsed = parseScore(
+    'track a using sine {\n section A {\n chord:Cwide2@3 quarter\n}\n section B {\n chord:Fmaj7 half\n}\n repeat 3 {\n play A\n}\n play B trim 2\n}',
+    ['sine'],
+  );
+  expect(parsed.diagnostics).toEqual([]);
+  expect(parsed.events).toHaveLength(3);
+  expect(parsed.chordPreviews.map((c) => c.symbol)).toEqual(['Cwide2@3', 'Fmaj7']);
+  const unused = parseScore('track a using sine {\n section A {\n chord:Cmaj7 half\n}\n}', [
+    'sine',
+  ]);
+  expect(unused.chordPreviews).toHaveLength(1);
+  expect(unused.events).toEqual([]);
+  expect(unused.beats).toBe(0);
+});
+
+it('WAV preflight freezes the whole performed score while keeping independent track sounds', () => {
+  const project = createProject();
+  project.scoreText =
+    'tempo 60\ntrack a using sine {\n section A {\n C4 half\n D4 quarter\n}\n play A trim 0.5 {\n E4 quarter\n}\n}';
+  const plan = prepareExport(project, DEFAULT_WAV_OPTIONS);
+  expect(plan.score.events.map((e) => [e.beat, e.duration])).toEqual([
+    [0, 2],
+    [2, 0.5],
+    [2.5, 1],
+  ]);
+  const original = plan.snapshot.tracks[0].sound.harmonics[0];
+  project.scoreText = '';
+  project.instruments.find((p) => p.key === 'sine')!.sound.harmonics[0] = 0;
+  expect(plan.snapshot.scoreText).toContain('play A trim');
+  expect(plan.snapshot.tracks[0].sound.harmonics[0]).toBe(original);
+});
+
+it('the contributor passage example produces its documented nine beats', () => {
+  const guide = readFileSync('docs/extensions/NAMED_SECTIONS.md', 'utf8');
+  const example = /```text\n([\s\S]*?)```/.exec(guide)![1];
+  const compiled = parseScore(example, ['sine']);
+  expect(compiled.diagnostics).toEqual([]);
+  expect(compiled.sectionInvocations.map((call) => call.duration)).toEqual([4, 5]);
+  expect(compiled.beats).toBe(9);
+  expect(compiled.seconds).toBe(4.5);
 });

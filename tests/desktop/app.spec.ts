@@ -65,6 +65,23 @@ test('packaged named sections retain source editing and native JSON round-trip',
   await expect(page.getByRole('combobox', { name: 'Score section', exact: true })).toContainText(
     'Verse',
   );
+  await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
+  const panel = page.getByRole('dialog', { name: 'Export WAV', exact: true });
+  await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
+  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  const wavPath = resolve('.test-results', 'desktop', 'named-sections.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, wavPath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved named-sections.wav');
+  const bytes = await readFile(wavPath);
+  expect(bytes.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(bytes.readUInt32LE(40) / 2 / 48000).toBeGreaterThan(5.5);
+  expect(bytes.readUInt32LE(40) / 2 / 48000).toBeLessThan(8);
+  expect(bytes.subarray(bytes.length - 960).every((byte) => byte === 0)).toBe(true);
 });
 
 test('packaged instrument folders drag and retain organization through native saving', async () => {

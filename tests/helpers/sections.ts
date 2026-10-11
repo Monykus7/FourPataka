@@ -58,10 +58,34 @@ export async function sectionsWorkflow(page: Page) {
   await expect(page.getByRole('status', { name: 'Selected timeline event' })).toContainText(
     'Verse',
   );
+  const ownedTracks = await page.evaluate(
+    () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks,
+  );
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Rename section', exact: true })).toBeDisabled();
   await expect(page.locator('.score-editor .playing-line')).toHaveCount(2);
+  await expect
+    .poll(async () =>
+      Number(
+        (await page.locator('.transport-time strong').textContent())?.match(/00:(\d+)/)?.[1] ?? 0,
+      ),
+    )
+    .toBeGreaterThan(0);
+  await page.getByRole('button', { name: 'B', exact: true }).click();
+  await expect(page.locator('.transport-time')).not.toContainText('00:00');
+  const melodySource = renamed.slice(
+    renamed.indexOf('track melody'),
+    renamed.indexOf('\ntrack bass'),
+  );
+  await editor.fill(melodySource.replace('G4 quarter', 'A4 quarter'));
+  await expect(page.locator('.editor-status')).toContainText('Playing previous version');
+  await expect(page.locator('.score-editor .playing-line')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect.poll(() => saved(page)).toBe(renamed);
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+  expect(
+    await page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks),
+  ).toEqual(ownedTracks);
   await page.getByRole('textbox', { name: 'Search commands' }).fill('play');
   await expect(page.locator('.command-card')).toHaveCount(1);
   await expect(
