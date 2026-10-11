@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { percussionWorkflow } from '../helpers/percussion';
+import { percussionWorkflow, percussionAvailabilityWorkflow } from '../helpers/percussion';
 
 test('percussion presets preview short hits, compose together and survive reload', async ({
   page,
@@ -9,50 +9,17 @@ test('percussion presets preview short hits, compose together and survive reload
   await page.screenshot({ path: '.test-results/percussion-desktop.png', fullPage: true });
 });
 
-test('existing projects explicitly import percussion with undo and unchanged owned sounds', async ({
+test('existing sessions show percussion presets and compile their keys without a manual import', async ({
   page,
 }) => {
   await page.goto('/');
-  const fixture = await page.evaluate(async () => {
-    const { createProject } = await import('/src/core/' + 'project.ts');
-    const project = createProject();
-    project.instruments = project.instruments.filter(
-      (p: any) => !['kick', 'hiHat', 'snare'].includes(p.key),
-    );
-    return project;
-  });
-  await page.addInitScript(
-    (project) => localStorage.setItem('fourpataka.project.v1', JSON.stringify(project)),
-    fixture,
-  );
-  await page.reload();
-  await expect(page.locator('.preset-item')).toHaveCount(6);
-  await page.getByRole('button', { name: 'Add percussion presets', exact: true }).click();
-  await expect(page.locator('.preset-item')).toHaveCount(9);
-  await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(page.locator('.preset-item')).toHaveCount(6);
-  await page.getByRole('button', { name: 'Redo', exact: true }).click();
-  await expect(page.locator('.preset-item')).toHaveCount(9);
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).instruments.length,
-      ),
-    )
-    .toBe(9);
-  const saved = await page.evaluate(() =>
-    JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
-  );
-  expect(saved.tracks).toEqual(fixture.tracks);
-  expect(saved.comparison).toEqual(fixture.comparison);
-  expect(saved.comparisonMaterial).toEqual(fixture.comparisonMaterial);
-  expect(saved.scoreText).toBe(fixture.scoreText);
+  await percussionAvailabilityWorkflow(page);
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await page.setViewportSize({ width: 540, height: 900 });
   await page
     .getByRole('combobox', { name: 'Instrument preset', exact: true })
     .selectOption('hi-hat');
   await expect(page.getByRole('button', { name: 'Use hit preview', exact: true })).toBeVisible();
-  await page.screenshot({ path: '.test-results/percussion-mobile.png', fullPage: true });
 });
 
 test('percussion WAV uses frozen owned sounds through the shared voice factory', async ({

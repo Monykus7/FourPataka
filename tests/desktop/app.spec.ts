@@ -1,5 +1,9 @@
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
-import { percussionWorkflow, PERCUSSION_SCORE } from '../helpers/percussion';
+import {
+  percussionWorkflow,
+  percussionAvailabilityWorkflow,
+  PERCUSSION_SCORE,
+} from '../helpers/percussion';
 import {
   scoreWorkspaceWorkflow,
   trackOperationsWorkflow,
@@ -33,6 +37,10 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged old sessions expose percussion and parse all three score keys', async () => {
+  await percussionAvailabilityWorkflow(await app.firstWindow());
 });
 
 test('packaged percussion presets preview compose and retain native JSON sounds', async () => {
