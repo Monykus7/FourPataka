@@ -25,7 +25,7 @@ flowchart TD
   Source --> Save[One project JSON file]
 ```
 
-The view index is structural, not the music compiler. It reuses lexer tokens and walks typed track/repeat/bracket scopes. Notes with diagnostics can remain editable in a structurally unambiguous view. Unknown library assignments do not become guessed sounds. Duplicate names, nested track headers, unmatched delimiters or missing closers remove track projections and expose All score for repair.
+The view index is structural, not the music compiler. It reuses lexer tokens and walks typed track/repeat/bracket scopes. Notes with diagnostics can remain editable in a structurally unambiguous view. Unknown library assignments do not become guessed sounds. The strict index still rejects duplicate names, nested headers and unmatched delimiters. Since v0.29.0 an already selected track retains its captured canonical slice during unfinished typing, including a bare `t`, partial headers and open phrase groups. It does not automatically switch to All score. Select All score/Whole file explicitly for broader repair. Unrelated changes that invalidate both outside anchors still require recovery.
 
 ## Source service reference
 
@@ -33,7 +33,9 @@ Imports use the real [scoreWorkspace.ts](../../src/core/scoreWorkspace.ts) sourc
 
 - **indexScoreViews(source)** returns the captured source, complete track spans and a structural problem, if any. A track records key, from/to, keyFrom/keyTo and its original firstLine. Bounds are zero-based UTF-16 positions; to is exclusive. Source lines are one-based. At most 128 tracks and 64 nested phrase scopes are indexed, matching the compiler boundaries; the enclosing track is not counted as a phrase.
 - **projectScoreView(source, view?)** returns editor text, canonical bounds, toLocal/toCanonical converters and a newline-restoration function. Without a view it projects the full score. CodeMirror uses LF internally; canonical CRLF occupies two code units. Binary-search conversion counts removed CR characters rather than assuming that subtracting the track start is enough.
-- **editTrackView(currentSource, capturedIndex, key, nextText)** verifies the entire current source matches the captured revision, then replaces only that old track span. It returns the canonical text and the resulting track key when the edit still forms one isolated block. An incomplete/boundary-changing edit is retained and requests full-score recovery. Text outside the old span is preserved exactly.
+- **editTrackView(currentSource, capturedIndex, key, nextText)** verifies the entire current source matches the captured revision, then replaces only that old track span. It returns the canonical text and the resulting track key when the edit still forms one isolated block. The result also returns a `TrackDraft` containing the captured revision and updated slice bounds; incomplete typing stays editable in that slice. Text outside the old span is preserved exactly.
+- **resolveTrackDraft(source, draft)** retains a slice only if the exact prefix and suffix outside the previous bounds are unchanged. Its new end comes from the current source length, so unfinished edits and undo never reuse a stale end offset.
+- **editTrackDraft(source, draft, nextText)** performs the guarded slice replacement even when the strict structural index cannot yet recognize a complete track. The host still checks the exact current revision. Reserved file-boundary pastes remain rejected. A recognized complete isolated header rename can move ownership; an unfinished rename keeps the selected identity until repair.
 - **renameTrackSource(...)** edits only the key span and rejects invalid/colliding keys. Names start with a letter and contain letters, digits or underscore; maximum length is 100.
 - **removeTrackSource(...)** removes only the indexed block. Surrounding comments, directives and whitespace survive; it does not invent a different arrangement.
 - **moveTrackOwnership(project, oldKey, newKey)** moves the owned track and chain identities and comparison target before normal reconciliation. It preserves coefficients, signs, level, applied version, pedal settings/bypass/placement/cables and associations rather than fetch another library template.
@@ -71,7 +73,7 @@ sequenceDiagram
   Host->>Host: Commit one musical operation
   Host->>Compiler: Parse canonical source and  reconcile valid assignments
   Compiler-->>IDE: Translate canonical diagnostics/chords/highlights
-  Note over IDE,Host: Incomplete boundaries are retained in All score
+  Note over IDE,Host: Incomplete typing stays in the captured track slice
 ```
 
 The editor annotates host-driven document replacements, so projecting/reloading a document does not echo back as another typing gesture. Tab switches reset the typing group without entering musical history. Ordinary typing groups remain scoped to a view; add/rename/remove are whole operations. Undo/redo belongs to the project, not independent per-tab histories.
@@ -83,7 +85,8 @@ flowchart LR
   Capture -->|Yes| Patch[Patch canonical source]
   Patch --> Structure{Still one isolated complete block?}
   Structure -->|Yes| Track[Continue track view]
-  Structure -->|No| Full[All score and  keep the edit verbatim]
+  Structure -->|No| Draft[Keep selected track and guarded updated slice]
+  Draft --> Explicit[Explicit All score or Whole file for wider repair]
 ```
 
 ## Metadata, selection and playback
@@ -94,7 +97,7 @@ Cursor/selection and scroll positions are UI state, clamped on document replacem
 
 New track tab creates a real source block with a selected saved instrument and rest bar. Rename and Remove operate on the selected track, have collision/error feedback and explicit removal confirmation. Structural/library diagnostics block these helpers until repair; source typing remains available. These helpers are disabled during score playback, while view selection and source edits remain usable. Source edits affect replay, preserving the running clock and frozen sound/pedal snapshot.
 
-Mixed newline files preserve all text outside a patched track. An edited view containing CRLF restores that style for its new lines; uniformly mixed newline style inside that edited slice is not promised. Shared settings/extra blocks inserted outside a track's boundary switch to All score instead of disappearing from view.
+Mixed newline files preserve all text outside a patched track. An edited view containing CRLF restores that style for its new lines; uniformly mixed newline style inside that edited slice is not promised. Shared settings/extra blocks typed into the captured slice remain visible there until explicit view selection; they are never discarded. A draft is transient navigation state, not a separately saved music buffer. Reload still starts from the canonical source and strict index.
 
 ## Contribution boundaries and proofs
 

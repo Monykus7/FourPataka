@@ -103,7 +103,7 @@ flowchart LR
   Monitor --> Device[Audio device]
 ```
 
-The body-acoustics box is a planned location; there is no chamber effect in this release. Current voices feed track chains directly. Pedal reverb is a separate planned chain effect. Live and offline renderers must share factories; a module does not get its own sequencer. Declare latency in seconds, tail bounds in seconds, gain reference, supported sample rates and update behavior. Hard Stop clears voices and buffers; bypass policy must state what happens to existing tails. See the effect-specific requirements in the pedal guide.
+The body-acoustics box is a planned location; there is no chamber effect in this release. Current voices feed track chains directly. The optional v0.29.0 [noise-hit source](PERCUSSION_PRESETS.md#noise-hit-source-contract-v0290) illustrates a voice-owned synthesis layer with shared live/WAV creation, validated units, deterministic buffers and original-note-age updates; it does not introduce a general engine registry. Pedal reverb is a separate planned chain effect. Live and offline renderers must share factories; a module does not get its own sequencer. Declare latency in seconds, tail bounds in seconds, gain reference, supported sample rates and update behavior. Hard Stop clears voices and buffers; bypass policy must state what happens to existing tails. See the effect-specific requirements in the pedal guide.
 
 ## Compatibility review before adding saved settings
 

@@ -1,6 +1,6 @@
-# Fourier percussion presets
+# Percussion presets and noise hits
 
-The v0.25.0 source includes three editable percussion-inspired timbres: **Kick** (`kick`), **Closed hi-hat** (`hiHat`), and **Snare** (`snare`). They use the existing signed 32-harmonic Fourier engine. This is a bundled preset contribution, not completion of the planned M3 module API or M4 synthesis engines.
+The v0.25.0 source includes three editable percussion-inspired timbres: **Kick** (`kick`), **Closed hi-hat** (`hiHat`), and **Snare** (`snare`). Kick and Snare use the signed 32-harmonic Fourier engine. v0.29.0 replaces the factory Closed hi-hat with quiet metallic partials plus a filtered noise burst and automatic hit decay. This is a bundled preset contribution, not completion of the planned M3 module API or M4 synthesis engines.
 
 ## Use them
 
@@ -9,10 +9,10 @@ New projects include the three presets. Since v0.25.1, loading an existing local
 Select a preset, choose **Use hit preview**, then **Listen**. The preview changes the shared comparison material's pitch and gate length, leaving the score and owned track sounds intact. The gate length selector in Comparison works for any note/chord audition; A and B use the same duration. Selecting another preset or switching A/B does not automatically change the material or restart its clock. Explicitly changing material/replaying starts a new audition.
 
 - **Kick:** C2 preview, 62.5 ms gate, 5 ms attack, 160 ms release, −12 dB trim. A dominant low fundamental and six quieter partials provide body and a beater edge. Try C1–C2.
-- **Closed hi-hat:** C4 preview, 31.25 ms gate, 5 ms attack, 35 ms release, −15 dB trim. Six sparse partials at H13/H17/H19/H23/H29/H31 provide a metallic tick. Try C4–C5.
+- **Closed hi-hat v2:** C4 preview, 31.25 ms gate, 5 ms attack, 35 ms release, −12 dB trim. Filtered white noise (level 0.85, high-pass 6500 Hz, low-pass 14000 Hz) supplies the sizzle; six H13/H17/H19/H23/H29/H31 partials at 8% of the old magnitudes supply a quiet metallic edge. A45 ms e-fold decay shortens the hit even with a long written note.
 - **Snare:** D3 preview, 62.5 ms gate, 5 ms attack, 90 ms release, −18 dB trim. A low four-partial body and dense H9–H32 bank provide a brighter rattle. Try C3–D3.
 
-These are periodic electronic approximations. There is no random noise source, pitch drop or automatic decay after attack. Long written notes sustain until note-off; a short release alone does not shorten the held part. Use short notes, optionally with `staccato[...]`. Nyquist filtering can remove high partials at higher pitches/sample rates, while retaining their saved coefficients. More realistic noise/inharmonic sources and decay/pitch envelopes require separately planned synthesis work.
+Kick and Snare remain periodic electronic approximations with held gates; they have no pitch-drop envelope. The original hi-hat v1 was also periodic and sustained. The v2 noise hit decays independently of written gate length; note-off/release can shorten it further. Fourier partials still honor Nyquist without changing their saved coefficients. Noise is aperiodic and its spectrum stays independent of written pitch. Inharmonic cymbal models and other engine contracts remain planned.
 
 ```text
 tempo 120
@@ -65,7 +65,7 @@ flowchart TD
   Voice --> WAV[Frozen WAV output]
 ```
 
-The comparison gate is optional `comparisonMaterial.noteBeats` in schema 2, bounded to 1/64–32 **quarter-note beats**. Omitted means the original 3.2 beats. Note/chord preview tempo remains 120 BPM, so seconds = beats × 0.5. Phrase comparison ignores this field and uses the score's timing. The UI displays milliseconds; factory metadata keeps the underlying beat unit. No `Sound` field or voice envelope equation changes.
+The comparison gate is optional `comparisonMaterial.noteBeats` in schema 2, bounded to 1/64–32 **quarter-note beats**. Omitted means the original 3.2 beats. Note/chord preview tempo remains 120 BPM, so seconds = beats × 0.5. Phrase comparison ignores this field and uses the score's timing. The UI displays milliseconds; factory metadata keeps the underlying beat unit. That preview gate behavior is unchanged. v0.29.0 separately adds optional `Sound.percussion` hit data as described below; ordinary sounds without it keep the original envelope.
 
 ```mermaid
 flowchart LR
@@ -79,10 +79,70 @@ flowchart LR
   Trim --> Pedals[Destination pedals and project mix]
 ```
 
+## Noise-hit source contract (v0.29.0)
+
+`Sound.percussion` is optional data inside the existing schema2 sound. Omitting it preserves sustained Fourier behavior. When present, all three fields are required and validated before import:
+
+- `noise`: linear white-noise level, 0–1. Zero retains decay on the Fourier body without audible noise.
+- `highpass`: high-pass cutoff in Hz, 20–16000. Runtime clamps it below Nyquist at the context's sample rate. A fixed 14000 Hz low-pass is similarly clamped; both filters use Q 0.707.
+- `decay`: exponential e-fold time in seconds, 0.01–2. The builder displays milliseconds. At45 ms, hit gain reaches about 37% after 45 ms and about 1.2% after 200 ms, before the ordinary attack/gate/release envelope.
+
+The instrument builder's **Percussive hit** toggle exposes these three controls for any sound. Disabling removes optional hit data; undo restores it. Noise is not represented by editable Fourier dots, harmonics or the steady source graph. Those graphs explicitly identify the Fourier component; playback/output monitoring includes both paths. Harmonic solo excludes noise. Saving a library template does not change applied tracks; use Apply or Apply to all using this preset.
+
+```mermaid
+flowchart LR
+  Fourier[Signed Fourier body and undertones] --> Hit[Original-note-age hit decay]
+  Noise[Deterministic white-noise buffer] --> HP[High-pass and fixed low-pass]
+  HP --> Level[Saved noise level]
+  Level --> Hit
+  Hit --> Gate[Existing attack gate release]
+  Gate --> Trim[Instrument trim]
+  Trim --> Routing[Owned pedals and shared live or WAV mix]
+```
+
+Implementation lives in [percussionSource.ts](../../src/audio/percussionSource.ts), created once per [voice.ts](../../src/audio/voice.ts) voice. It adds no score-key special case or transport. A deterministic xorshift buffer contains one second of bounded uniform white noise per context, cached weakly; each voice owns its source/filter/gain nodes. Live and offline rendering use the same factory and seed. Repeated renders at the same sample rate are reproducible. No repository text, audio asset or network request is involved.
+
+The noise cursor starts at the original note age if enabled later. Filter/level changes smooth over about 20 ms; hit gain changes join the decay appropriate to that original age, also over 20 ms. They do not restart the note attack or host clock. The existing Fourier phase rotation is unchanged. Ordinary envelope note-off/release still determines the finite voice end, and articulation's release limit still applies. Noise stops with the voice, including stealing, hard Stop and disposal; a noise-only voice also disconnects on completion. Noise adds no alignment latency or effect tail beyond the existing envelope. This is a synthesis layer, separate from the planned chamber and reverb pedal.
+
+To contribute another hit today, return fresh data from a reviewed preset factory and add its catalog metadata. For example, this independent source factory needs no parser changes:
+
+```ts
+import { mathematicalPreset, type Sound } from '../../core/music';
+
+export function brushedHit(): Sound {
+  const base = mathematicalPreset('sine');
+  return {
+    ...base,
+    harmonics: base.harmonics.map(() => 0),
+    percussion: { noise: 0.55, highpass: 1800, decay: 0.12 },
+    attack: 0.005,
+    release: 0.04,
+    trim: -18,
+  };
+}
+```
+
+This import is real when contributing under `src/modules/my-hit/`; catalog registration remains an explicit source change. M3/M4 public registries, unknown-engine preservation and contributor engine CI remain planned. Schema2 stays additive; old builds may ignore hit data, so they cannot reproduce the new timbre. Do not promise audio equivalence when rolling back.
+
+On load, only the recognizable untouched `hi-hat`/`hiHat`/`Closed hi-hat` v1 factory upgrades to v2. Detection compares every legacy sound field and rejects extra/custom fields. Labels, IDs, versions or edited values prevent replacement. Existing applied v1 sounds and A/B remain owned snapshots. Select **Closed hi-hat** to load the new library sound and explicitly **Apply** to update a saved hat track. New assignments use v2 immediately. The owner's demo source remains unchanged.
+
+```mermaid
+flowchart TD
+  Import[Validated saved project] --> Recognize{Exact untouched v1 library hat?}
+  Recognize -->|Yes| Upgrade[Fresh v2 library template]
+  Recognize -->|No| Keep[Preserve custom template]
+  Import --> Owned[Preserve applied tracks and A/B]
+  Upgrade --> Load[Explicit select into active A/B]
+  Load --> Apply[Explicit undoable Apply]
+  Apply --> Track[New independent track sound]
+```
+
+Regression checks cover deterministic renders, low cycle correlation versus the old pitched hat, early/late RMS decay, noise-only output and silent solo, short-note tails, mid-note enabling/editing, Stop, validated import bounds, conservative migration, saved controls/undo and explicit copy application. Numeric tests establish behavior; perceptual realism remains a listening check.
+
 ## Verification recipe
 
 Run `npm test -- tests/unit/instrumentPresets.test.ts tests/unit/comparison.test.ts`, then `npx playwright test tests/browser/percussion.spec.ts`. The native workflow is `npx playwright test --config playwright.desktop.config.ts --grep "packaged percussion"` against a freshly built/package-verified application.
 
-Tests validate schema bounds, fresh banks, distinct spectral roles, and automatic availability for old sessions, parser/IDE key discovery and conservative additions (including collision/capacity behavior). The sum of magnitudes times trim gain bounds each source below 0.65 at any phase; this is a proof of factory headroom, not automatic normalization or a guarantee about arbitrary edited/polyphonic mixes. Offline voices verify finite nonzero output and silent tails at 44.1/48 kHz. Browser/native flows cover previews, source assignment, persistence and JSON; WAV verifies the frozen owned sounds and upper bank through the shared factory. Audible realism and physical-device response remain listening checks.
+Tests validate schema bounds, fresh banks, distinct spectral roles, and automatic availability for old sessions, parser/IDE key discovery and conservative additions (including collision/capacity behavior). The sum of magnitudes times trim bounds the Fourier component only. Noise hits also need rendered headroom checks: bundled short-hit output is finite, nonzero and below 0.65 peak at 44.1/48 kHz. This is factory evidence, not automatic normalization or a guarantee about arbitrary edited/polyphonic mixes. Offline voices verify finite nonzero output and silent tails at 44.1/48 kHz. Browser/native flows cover previews, source assignment, persistence and JSON; WAV verifies the frozen owned sounds and upper bank through the shared factory. Audible realism and physical-device response remain listening checks.
 
 For broader module contracts and ownership diagrams, continue with [the instrument guide](INSTRUMENTS.md), [module creation](MODULE_CREATION.md), and [compatibility](COMPATIBILITY.md).
