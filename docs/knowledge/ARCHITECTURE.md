@@ -30,6 +30,10 @@ flowchart TD
 
 The tracked feature catalog and generated project map provide the durable documentation; the graph and semantic vectors are derived artifacts.
 
+## Task cost
+
+Keep the existing feature/dependency graph and ranking: source-linked neighborhoods provide useful navigation without additional clustering or LLM-generated summaries. [TASK_GUIDE.md](TASK_GUIDE.md) is the cheap entry point for known areas. Retrieval is optional when docs/direct search locate the source; unfamiliar tasks start with a1024-token query. Current-state summaries keep that budget available for concrete citations instead of release chronology. Update affected graph inputs once and regenerate/check before committing. The retrieval budget limits returned context, not the whole chat's usage; savings also depend on bounded source reads and proportional validation.
+
 ## Sources
 
 Tree-sitter uses [Microsoft's packaged WASM runtime and grammars](https://github.com/microsoft/vscode-tree-sitter-wasm). Semantic inference uses [Transformers.js feature extraction](https://huggingface.co/docs/transformers.js/api/pipelines) with mean pooling and normalized embeddings. Token accounting uses the local `js-tiktoken` implementation of [tiktoken](https://github.com/dqbd/tiktoken).

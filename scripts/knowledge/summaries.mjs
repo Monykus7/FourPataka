@@ -72,6 +72,8 @@ export function projectMap(graph) {
   const lines = [
     '# FourPataka project map',
     '',
+    'Start with [TASK_GUIDE.md](TASK_GUIDE.md) for direct source routes. Read only the relevant feature section; query the graph when relationships are unclear.',
+    '',
     'Generated with `npm run knowledge:build`. Edit features.json and DECISIONS.md for behavioral summaries; source locations below are derived from the working files.',
     '',
     'Full source fingerprints are kept in the local graph cache; this tracked map records feature summaries, dependency groups and source locations.',
@@ -116,7 +118,7 @@ export function projectMap(graph) {
     '',
     '## Maintenance',
     '',
-    'Update feature summaries and decisions with behavior changes. Regenerate this map, check freshness, and query the graph for a concrete task before starting the next change.',
+    'Keep feature summaries current and concise; put chronology in IMPLEMENTATION_STATUS.md. Update decisions with invariant changes. Regenerate/check before committing. Use TASK_GUIDE.md for known areas and optional focused graph queries for unfamiliar relationships.',
     '',
   );
   return lines.join('\n');

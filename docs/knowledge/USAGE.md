@@ -2,11 +2,13 @@
 
 Run from the FourPataka folder after `npm ci`.
 
+Start with [TASK_GUIDE.md](TASK_GUIDE.md). For a known area, follow its source route and read the affected function/range; no graph query is required. For unfamiliar relationships, make one focused query at1024 tokens. Increase to2048 only when a specific unresolved dependency needs more context. Do not read the entire map, release history or large source files as a routine preamble.
+
 ```sh
 npm run knowledge:build
 npm run knowledge:check
 npm run knowledge:embed -- --download-model
-npm run knowledge:query -- "keep a melody playing while switching A and B" --budget 2048
+npm run knowledge:query -- "keep a melody playing while switching A and B" --budget 1024
 npm run knowledge:verify
 ```
 
@@ -28,12 +30,14 @@ The optional watcher refreshes the graph/map after edits to code, docs, plans or
 
 ## With each feature change
 
-1. Query the task and read the cited source; ranking helps navigation and does not establish correctness.
-2. Update [features.json](features.json) for behavioral changes or a new feature/community. Parent IDs form an acyclic hierarchy; path membership can overlap where code spans concepts.
+1. Follow the task guide or query unfamiliar relationships, then read the affected source; ranking helps navigation and does not establish correctness.
+2. Update [features.json](features.json) for behavioral changes or a new feature/community. Keep summaries about current behavior, normally60–150 words; move chronology/verification to IMPLEMENTATION_STATUS.md and detailed contracts to the relevant guide. Preserve invariants and citations. Parent IDs form an acyclic hierarchy; path membership can overlap where code spans concepts.
 3. Update [DECISIONS.md](DECISIONS.md) when an invariant or tradeoff changes. Use `<!-- features: timing, notation -->` after the heading to link that section directly to features.
 4. Comment dense implementation areas where the reasoning is otherwise hidden: phase, latency, source authority, snapshot ownership, bounds and gesture history. Explain why, including units; avoid narrating obvious statements.
 5. Update BUILD_PLAN.md / IMPLEMENTATION_STATUS.md when roadmap gates change. Keep planned behavior distinct from implemented behavior.
 6. Run build and freshness check, and include the generated map with the implementation commit. Semantic vectors refresh only for changed retrieval text at the next query/embedding run.
+
+Use bounded `rg` searches and source ranges; avoid repeated reads of unchanged evidence. Run checks appropriate to the change once, then repeat only after relevant changes/failures or unresolved risk. Do not turn documentation/tooling work into an application version bump, portable package or broad UI suite. Keep commits focused; commit-count targets do not justify artificial work.
 
 The hierarchy is editorial at project/domain/feature level; dependency subcommunities are connected components of the syntax-derived import graph within each feature. Summaries combine maintained behavior with generated file/symbol evidence. They are not automatically generated LLM prose or Leiden communities. Semantic seeds reserve both feature concepts and concrete sources before graph expansion and personalized PageRank.
 
