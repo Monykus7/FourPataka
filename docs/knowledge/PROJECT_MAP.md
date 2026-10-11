@@ -56,13 +56,13 @@ Key definitions: [Voice](../../src/audio/voice.ts#L3), [Source](../../src/audio/
 
 #### Instrument presets and source thumbnails
 
-Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], attack 30 ms, release 350 ms and trim −12 dB; Triangle retains alternating odd signs. Library and editor thumbnails sample their actual signed harmonic bank, excluding undertones/trim/envelope. Decorative thumbnail scaling never normalizes audio. Only an untouched factory v1 library template upgrades; applied tracks and A/B remain owned copies until explicit loading/application.
+Soft bass v2 uses six positive partials [1, 0.22, 0.1, 0.045, 0.02, 0.009], attack 30 ms, release 350 ms and trim −12 dB; Triangle retains alternating odd signs. Library and editor thumbnails sample their actual signed harmonic bank, excluding undertones/trim/envelope. Decorative thumbnail scaling never normalizes audio. Only an untouched factory v1 library template upgrades; applied tracks and A/B remain owned copies until explicit loading/application. v0.25.0 adds editable Kick (kick), Closed hi-hat (hiHat) and Snare (snare) Fourier approximations with short envelopes and distinct low/sparse-high/dense-high banks. New projects include them; an explicit undoable library action adds missing keys, preserves occupied keys and owned copies, resolves IDs and atomically enforces 128 templates. Optional shared comparisonMaterial.noteBeats controls note/chord gates at 120 BPM (1/64–32 quarter beats, old default3.2); Use hit preview explicitly changes material, not score/sounds. Periodic sources have no noise, decay or pitch-drop envelope: long gates sustain. Preset-module M3 and broader engine work remain planned.
 
-- Instrument presets and source thumbnails / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/instrumentPresets.ts](../../src/core/instrumentPresets.ts), [tests/unit/instrumentPresets.test.ts](../../tests/unit/instrumentPresets.test.ts)
+- Instrument presets and source thumbnails / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/core/instrumentPresets.ts](../../src/core/instrumentPresets.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx), [tests/unit/comparison.test.ts](../../tests/unit/comparison.test.ts), [tests/unit/instrumentPresets.test.ts](../../tests/unit/instrumentPresets.test.ts)
 - Instrument presets and source thumbnails / dependency group 2: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
-- Instrument presets and source thumbnails / dependency group 3: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
+- Instrument presets and source thumbnails / dependency group 3: [tests/browser/percussion.spec.ts](../../tests/browser/percussion.spec.ts), [tests/helpers/percussion.ts](../../tests/helpers/percussion.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
 
 #### 32-harmonic Fourier bank
 
@@ -118,7 +118,7 @@ Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, i
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
 
 #### Score parsing and editor
 
@@ -139,7 +139,7 @@ Twenty scoped cards show the selected instrument/pedal keys, unique new-track sn
 - Contextual command reference / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts)
 - Contextual command reference / dependency group 2: [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts), [tests/helpers/referenceSearch.ts](../../tests/helpers/referenceSearch.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
 
 #### Tempo, meter and timeline
 
@@ -180,7 +180,7 @@ Implemented v0.24.0: All score and per-track source views edit one canonical sco
 - Shared-file score track tabs / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [tests/unit/scoreWorkspace.test.ts](../../tests/unit/scoreWorkspace.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx)
 - Shared-file score track tabs / dependency group 2: [tests/browser/score-workspace.spec.ts](../../tests/browser/score-workspace.spec.ts), [tests/helpers/scoreWorkspace.ts](../../tests/helpers/scoreWorkspace.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
 
 #### Variable swing — planned
 
@@ -252,7 +252,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L94), [View](../../src/App.tsx#L96), [readPreferences](../../src/App.tsx#L97), [MiniWave](../../src/App.tsx#L119), [RangeControl](../../src/App.tsx#L154), [App](../../src/App.tsx#L204), [measure](../../src/App.tsx#L253), [resetMacros](../../src/App.tsx#L328).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L96), [View](../../src/App.tsx#L98), [readPreferences](../../src/App.tsx#L99), [MiniWave](../../src/App.tsx#L121), [RangeControl](../../src/App.tsx#L156), [App](../../src/App.tsx#L206), [measure](../../src/App.tsx#L255), [resetMacros](../../src/App.tsx#L338).
 
 ### Maintained project knowledge
 

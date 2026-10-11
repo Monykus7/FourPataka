@@ -4,6 +4,8 @@ Status: Fourier presets can be contributed through current source changes. Prese
 
 ## Current Fourier preset contribution
 
+The [percussion preset walkthrough](PERCUSSION_PRESETS.md) is a working source example with fresh factories, explicit safe library import, short-hit preview units, gain/copy tests and routing diagrams. It adds bundled Fourier timbres without declaring the planned M3 registry implemented.
+
 1. Construct a fresh `Sound` using [music.ts](../../src/core/music.ts), with a timbre factory where appropriate in [instrumentPresets.ts](../../src/core/instrumentPresets.ts). Existing mathematical presets are useful starting points; do not mutate a shared template.
 2. Supply exactly 32 harmonic magnitudes, 32 signs and five undertone magnitudes today. Magnitudes are 0–1; signs are +1/-1 even for silent partials. Undertones have a separate enable flag. Attack/release are seconds and output trim is dB.
 3. Validate against `validateSound` in [project.ts](../../src/core/project.ts): attack 0.005–2 s, release 0.01–3 s and trim -36–0 dB. Optional waveform points must pass their own validator. These are current limits, not a future module schema.
