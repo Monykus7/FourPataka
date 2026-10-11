@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-10. Latest verified release: v0.25.1. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-10. Latest verified release: v0.26.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -478,4 +478,6 @@ Native-tested v0.25.1 app.asar SHA-256: 21DAC7EEEB3BD57DD08B14B6FA5DB1E1924CAB74
 
 Implemented single-level collapsible folders, counts/selected-member cues, Unfiled, inline create/rename/remove, pointer drag/drop onto collapsed groups and Unfiled, and a keyboard/touch folder selector. New and legacy projects group recognized factory waveforms in Simple shapes; custom creations stay unfiled. Explicit empty organization remains empty. Optional schema2 folder metadata/membership validates and persists through project/local/native/recovery flows. Operations enter whole-operation history without altering source/keys/versions/sounds/applied copies or the running audition clock; removing a folder retains all presets. Demo restoration strips foreign folder membership. Runtime window titles now show version. The contributor guide adds two data/ownership diagrams. General module and remaining music/device gates remain open.
 
-Verification in progress; the latest verified release remains v0.25.1 until native/package checks finish.
+Verified: 212 unit checks, 29 distinct affected browser checks and six packaged desktop workflows passed. Coverage includes real pointer drags into open/collapsed folders and Unfiled, counts/selection, create/rename/remove, move undo/redo, keyboard/narrow placement, legacy migration, native JSON save/open/reload, source-key and preset-sign/application behavior, percussion availability, recovery and demo compatibility. Folder moves leave the running audition clock and saved sounds/source unchanged. A demo restoration regression prevents foreign folder IDs leaking into projects with explicit empty organization. Desktop/mobile screenshots were reviewed; sixteen contributor diagrams (two new) rendered successfully and twenty-nine affected documentation file links were checked.
+
+Production TypeScript/bundle, formatting, diff whitespace, knowledge build/check and portable packaging pass. Native-tested v0.26.0 app.asar SHA-256: D46C3E8E0F78CFB245EFBE199DED4AAD890D56AB0BAB2CE8C7DDBCBE6D1ABA70. The portable application was opened visibly as FourPataka v0.26.0, and its extracted running app.asar matches that native-tested hash. Eight focused milestone commits use the configured Monykus7 identity and are pushed to origin/master. The portable remains unsigned with the default Electron icon; physical trackpad/touch, listening/device and screen-reader checks remain manual gates. General M1–M6, named sections/swing/acoustics/effect plans and their remaining gates stay open.
