@@ -1,6 +1,6 @@
 # Score workspace follow-ups
 
-Status: planned on 2026-10-06. Track tabs are the next application milestone. Named sections and alternate endings are a separate follow-on milestone; variable swing remains a later composition feature. None is implemented in v0.23.2. These milestones do not complete the modularity program or remaining physical listening/device/screen-reader gates.
+Status: track tabs are implemented in v0.24.0 (2026-10-10). Named sections and alternate endings are the next requested Compose milestone; variable swing remains a planned later feature. Their implementation gates remain separate. These milestones do not complete the modularity program or remaining physical listening/device/screen-reader gates.
 
 ## Shared-file track tabs
 
@@ -10,7 +10,7 @@ Status: planned on 2026-10-06. Track tabs are the next application milestone. Na
 4. **Integrated IDE.** Translate local edits, diagnostics, chord hover, completion, command insertion and playback highlights to canonical source offsets. Undo/redo spans the entire score and restores a useful view even after tab deletion. Compiling a tab alone must never mute hidden tracks: Play, comparison and WAV use one whole-score snapshot. Edits become audible on replay, preserving the playing clock and A/B phase.
 5. **Verification and contributor notes.** Cover malformed/duplicate blocks, arbitrary directive placement, CRLF/comments, nested groups/repeats, stale revisions, external full-score edits, cross-tab history and one-file autosave/import/export/native saving. Test all tracks together in browser/native playback and WAV, keyboard tab selection/rename controls, narrow layouts and portable startup. Explain the source-view service boundary for later M5 extensions; keep the API explicitly provisional until that contract lands.
 
-Default view and exact new-tab controls can be refined during implementation. The canonical single-file invariant is required. The existing full-score editor stays available for recovery and shared settings.
+The implemented default is All score. New track tab writes a real instrument-assigned block with rest bar; Rename preserves owned sound/chain state, and Remove is confirmed/undoable. Duplicate/incomplete source structure switches to All score, retaining edits. Cursor/scroll are remembered during Compose view switches; source/save/export stay canonical and schema2 stays unchanged. See [current services and diagrams](extensions/SCORE_VIEWS.md) and IMPLEMENTATION_STATUS.md for actual validation. The numbered phases above describe the required architecture rather than an unimplemented tab proposal.
 
 ## Named sections and alternate endings
 

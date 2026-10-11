@@ -199,3 +199,10 @@ Themes are bundled for offline desktop use and saved as a local preference along
 
 
 Project schema 2 uses 32 harmonics. Schema 1 imports preserve all original 16 coefficients/signs and add silent upper partials independently to libraries, tracks and A/B. Autosave keys stay stable; old waveform geometry is retained without reprojection. Older applications do not support schema 2. H1–H16 remain the primary controls; Show H17–H32 opens the second bank and reports active upper partials even while collapsed.
+
+
+### Shared-file Compose views (v0.24.0)
+
+All score and instrument-track tabs edit one score file. Shared tempo, meter changes and master routing stay in All score; selecting a tab never excludes other tracks from Play, comparison, JSON or WAV. New track tab creates a real instrument-assigned block, Rename keeps owned sound/pedal settings, and confirmed Remove is undoable. Broken boundaries return to the full editor with the edit retained. Arrow keys select tabs, and each view remembers its cursor/scroll while Compose is open.
+
+For contributions, start with the illustrated [module creation guide](docs/extensions/MODULE_CREATION.md) and [score-view service reference](docs/extensions/SCORE_VIEWS.md). The tested wide2 chord example complements open5. Chord API1 is implemented; general pedal/preset/engine/feature registries remain planned, and owner-approved licensing remains an open-source publication gate.

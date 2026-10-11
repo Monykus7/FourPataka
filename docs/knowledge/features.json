@@ -11,7 +11,7 @@
       "id": "modularity",
       "parent": "project",
       "title": "Modular open-source contributor program (planned)",
-      "summary": "Major requested program, planned and not implemented, split into separately releasable M1 contracts/compatibility, M2 pedals, M3 presets, M4 engines, M5 features and M6 open-source readiness. The user-selected chord/32-harmonic pilot precedes M1; general M1 is the following foundation: source-reviewed bundled module registries and versioned contracts for pedals, Fourier instrument presets, later synthesis engines and feature panels/commands. Built-ins use contributor contracts; one folder plus explicit assembly registration replaces scattered switches. Preserve source authority, owned copies, session phase/clock, measured seconds-based latency, finite tails/Stop and shared live/WAV factories. Distinguish namespaced module IDs, score keys, API and data versions; retain unavailable-module data without silently changing sound. Contributor tutorials, runnable examples, contract checks, migration fixtures, owner-approved licensing/attributions and repeatable CI are acceptance gates. A narrow chord registry is implemented by the synthesis/notation pilot; general pedal/preset/engine/feature registries, runtime loader, missing-module preservation, SDK and publication remain planned.",
+      "summary": "Major requested program, planned and not implemented, split into separately releasable M1 contracts/compatibility, M2 pedals, M3 presets, M4 engines, M5 features and M6 open-source readiness. The user-selected chord/32-harmonic pilot precedes M1; general M1 is the following foundation: source-reviewed bundled module registries and versioned contracts for pedals, Fourier instrument presets, later synthesis engines and feature panels/commands. Built-ins use contributor contracts; one folder plus explicit assembly registration replaces scattered switches. Preserve source authority, owned copies, session phase/clock, measured seconds-based latency, finite tails/Stop and shared live/WAV factories. Distinguish namespaced module IDs, score keys, API and data versions; retain unavailable-module data without silently changing sound. Contributor tutorials, runnable examples, contract checks, migration fixtures, owner-approved licensing/attributions and repeatable CI are acceptance gates. A narrow chord registry is implemented by the synthesis/notation pilot; general pedal/preset/engine/feature registries, runtime loader, missing-module preservation, SDK and publication remain planned. v0.24.0 adds extensive illustrated source-view/module creation documentation and a tested wide2 chord example; this does not complete general M1-M6 contracts or publication/licensing gates.",
       "paths": [
         "docs/extensions/ARCHITECTURE.md",
         "BUILD_PLAN.md",
@@ -22,7 +22,9 @@
         "docs/extensions/INSTRUMENTS.md",
         "docs/extensions/FEATURE_MODULES.md",
         "docs/extensions/COMPATIBILITY.md",
-        "docs/extensions/README.md"
+        "docs/extensions/README.md",
+        "docs/extensions/MODULE_CREATION.md",
+        "docs/extensions/SCORE_VIEWS.md"
       ]
     },
     {
@@ -198,19 +200,22 @@
       "id": "composition",
       "parent": "project",
       "title": "Composition studio",
-      "summary": "Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration. v0.23.1 Show beside score has a directional arrow (right in columns, down when stacked). Shared-file track tabs are the explicitly selected next application milestone; swing remains a planned follow-up. v0.23.2 anchors the selector at the right edge of the header, above the action row. Named sections/repeats with beat-based alternate endings are a separate planned follow-on milestone.",
+      "summary": "Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, initial time and changes in the IDE. A persisted global preference places Command Reference or Timeline beside the score, moving the other below with independent track controls; layout changes do not edit project/history/audio. Tab/Shift+Tab indent/outdent even in snippets; F2/Shift+F2 move snippet fields, Ctrl+M toggles Tab focus navigation. Snapshot timing, independent copies and source-aware whole-operation commands remain. Lower track controls retain usable height when the reference is folded. Demo checks follow EXAMPLE_SCORE rather than fix its pitches or duration. v0.23.1 Show beside score has a directional arrow (right in columns, down when stacked). Shared-file track tabs are the explicitly selected next application milestone; swing remains a planned follow-up. v0.23.2 anchors the selector at the right edge of the header, above the action row. Named sections/repeats with beat-based alternate endings are a separate planned follow-on milestone. v0.24.0 implements single-source track tabs and ownership-preserving operations; named sections/alternate endings are the next requested Compose milestone. General module registries and swing remain planned.",
       "paths": [
         "src/App.tsx",
         "src/styles.css",
         "tests/browser/timeline.spec.ts",
-        "docs/SCORE_WORKSPACE_PLAN.md"
+        "docs/SCORE_WORKSPACE_PLAN.md",
+        "src/components/ScoreWorkspace.tsx",
+        "src/core/scoreWorkspace.ts",
+        "docs/extensions/SCORE_VIEWS.md"
       ]
     },
     {
       "id": "notation",
       "parent": "composition",
       "title": "Score parsing and editor",
-      "summary": "Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Twenty shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Registered chord symbols now expand through bundled API-v1 shape definitions, default root octave 4 and @octave override, full ascending root-position intervals. Compiled source spans drive hover and keyboard cursor note previews without editing text. Unknown shapes diagnose; blank completion shells remain blank, suffix choices insert only selected aliases. A shipped open5 example and contributor guide exercise the same contract as built-ins. v0.19.3 command autocomplete inserts blank editable shells instead of reference examples: chord notes/octave/duration and track name/instrument/events use Tab/Shift+Tab fields. A typed chord: prefix is replaced once with chord:(). Explicit meter and saved library choices remain values; unfinished shells retain parser diagnostics and block Play. Reference cards keep complete examples; no source/history/copy/audio policy or roadmap gate change. Rhythm syntax adds 32nd/64th, dots, per-event triplet/N:M and staccato/legato; global meter changes retain source spans and diagnostics. See rhythm for implemented timing invariants. Current articulation and tuplets use bracketed scopes; bare named-quality chord symbols and eighth alias are supported while legacy per-event syntax remains compatible. Event/chord spans exclude delimiters and retain original source offsets.",
+      "summary": "Source offsets map diagnostics, explicit notes/chords/rests and instrument/pedal assignments back to text. Track through and one global master through directive validate local library keys. Twenty shared command definitions supply contextual reference snippets, syntax/rules and source-aware insertion. Using/through completion restricts optional suggestions to the matching saved library. Unknown/duplicate directives diagnose visibly and preserve applied copies. Registered chord symbols now expand through bundled API-v1 shape definitions, default root octave 4 and @octave override, full ascending root-position intervals. Compiled source spans drive hover and keyboard cursor note previews without editing text. Unknown shapes diagnose; blank completion shells remain blank, suffix choices insert only selected aliases. A shipped open5 example and contributor guide exercise the same contract as built-ins. v0.19.3 command autocomplete inserts blank editable shells instead of reference examples: chord notes/octave/duration and track name/instrument/events use Tab/Shift+Tab fields. A typed chord: prefix is replaced once with chord:(). Explicit meter and saved library choices remain values; unfinished shells retain parser diagnostics and block Play. Reference cards keep complete examples; no source/history/copy/audio policy or roadmap gate change. Rhythm syntax adds 32nd/64th, dots, per-event triplet/N:M and staccato/legato; global meter changes retain source spans and diagnostics. See rhythm for implemented timing invariants. Current articulation and tuplets use bracketed scopes; bare named-quality chord symbols and eighth alias are supported while legacy per-event syntax remains compatible. Event/chord spans exclude delimiters and retain original source offsets. A second bundled API1 example, wide2, stacks root/ninth/twelfth (C3 D4 G4 for Cwide2@3) through the same registry/parser and track-view previews; no parser/voice special case.",
       "paths": [
         "src/core/parser.ts",
         "src/components/ScoreEditor.tsx",
@@ -231,7 +236,9 @@
         "tests/unit/chordSymbols.test.ts",
         "tests/browser/synthesis-notation.spec.ts",
         "tests/helpers/synthesisNotation.ts",
-        "docs/extensions/CHORD_SHAPES.md"
+        "docs/extensions/CHORD_SHAPES.md",
+        "src/modules/chords/examples/wideSecond.ts",
+        "docs/extensions/MODULE_CREATION.md"
       ]
     },
     {
@@ -446,9 +453,22 @@
     {
       "id": "track-tabs",
       "parent": "composition",
-      "title": "Shared-file score track tabs — planned next milestone",
-      "summary": "User-selected next application milestone on 2026-10-06, before resuming modularity M1. Planned All score and virtual per-track editor tabs backed by one canonical scoreText. Revision-aware source spans preserve globals/comments/CRLF, diagnostics, cross-tab history and owned sound/pedal copies. One-file save/export and whole-score frozen playback/comparison/WAV remain. No tab implementation yet; source adapter, UI/operations and browser/native/portable gates are explicit. Named section navigation/reuse and alternate endings are a separate milestone after tabs, not part of their initial gate.",
-      "paths": ["docs/SCORE_WORKSPACE_PLAN.md", "BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md"]
+      "title": "Shared-file score track tabs",
+      "summary": "Implemented v0.24.0: All score and per-track source views edit one canonical scoreText. A revision-guarded lexer span index walks nested repeats/brackets and a CRLF-aware projection translates diagnostics/chord hover/playback lines. Invalid boundaries retain typed edits in All score; stale captures reject rather than overwrite music. New/rename/confirmed remove are source operations; rename moves owned sound/level/chain/comparison identity before reconciliation, explicit deletion removes copies even for the last track. Switching views is UI state and resets typing groups without musical history; cursor/scroll persist during Compose view switches, All score defaults on reload. Whole-score save/live/WAV/comparison use canonical frozen snapshots; CRUD helpers block during playback. General M5 registry, named sections and swing remain planned. Contributor docs explain actual services and diagrams.",
+      "paths": [
+        "src/core/scoreWorkspace.ts",
+        "src/components/ScoreWorkspace.tsx",
+        "src/components/ScoreEditor.tsx",
+        "src/App.tsx",
+        "tests/unit/scoreWorkspace.test.ts",
+        "tests/browser/score-workspace.spec.ts",
+        "tests/helpers/scoreWorkspace.ts",
+        "tests/desktop/app.spec.ts",
+        "docs/extensions/SCORE_VIEWS.md",
+        "docs/extensions/MODULE_CREATION.md",
+        "BUILD_PLAN.md",
+        "IMPLEMENTATION_STATUS.md"
+      ]
     },
     {
       "id": "swing",
