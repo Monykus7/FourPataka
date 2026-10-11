@@ -23,6 +23,7 @@ import {
   createPercussionPresets,
   softBassPreset,
   upgradeSoftBassTemplate,
+  upgradeHiHatTemplate,
 } from './instrumentPresets';
 
 export interface InstrumentPreset {
@@ -339,6 +340,12 @@ function stringValue(value: unknown, label: string, max = 100): asserts value is
 }
 export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts value is Sound {
   record(value);
+  if (value.percussion !== undefined) {
+    record(value.percussion);
+    numeric(value.percussion.noise, 0, 1, 'noise level');
+    numeric(value.percussion.highpass, 20, 16000, 'noise high-pass Hz');
+    numeric(value.percussion.decay, 0.01, 2, 'hit decay seconds');
+  }
   if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints, count);
   for (const [name, size] of [
     ['harmonics', count],
@@ -470,14 +477,16 @@ export function importProject(text: string): Project {
       B: migrateSound(project.comparison.B),
     },
     instruments: project.instruments.map((p) =>
-      upgradeSoftBassTemplate({
-        id: p.id,
-        key: p.key,
-        label: p.label,
-        version: p.version,
-        sound: migrateSound(p.sound),
-        ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
-      }),
+      upgradeHiHatTemplate(
+        upgradeSoftBassTemplate({
+          id: p.id,
+          key: p.key,
+          label: p.label,
+          version: p.version,
+          sound: migrateSound(p.sound),
+          ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
+        }),
+      ),
     ),
     ...(instrumentFolders !== undefined ? { instrumentFolders } : {}),
     tracks: project.tracks.map((t) => ({

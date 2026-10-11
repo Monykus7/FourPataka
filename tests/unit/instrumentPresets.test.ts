@@ -5,6 +5,9 @@ import {
   softBassPreset,
   legacySoftBassPreset,
   upgradeSoftBassTemplate,
+  hiHatPreset,
+  legacyHiHatPreset,
+  upgradeHiHatTemplate,
 } from '../../src/core/instrumentPresets';
 import { dbToGain, mathematicalPreset, sourceSamples } from '../../src/core/music';
 import { parseScore } from '../../src/core/parser';
@@ -14,6 +17,58 @@ import {
   validateSound,
   withPercussionPresets,
 } from '../../src/core/project';
+
+it('hi-hat carries a fresh validated noise hit and rejects invalid physical units', () => {
+  const sound = hiHatPreset();
+  expect(sound.percussion).toEqual({ noise: 0.85, highpass: 6500, decay: 0.045 });
+  validateSound(sound);
+  sound.percussion!.noise = 0;
+  expect(hiHatPreset().percussion!.noise).toBe(0.85);
+  for (const percussion of [
+    null,
+    {},
+    { noise: 2, highpass: 6500, decay: 0.045 },
+    { noise: 0.5, highpass: -1, decay: 0.045 },
+    { noise: 0.5, highpass: 6500, decay: 0 },
+  ])
+    expect(() => validateSound({ ...sound, percussion })).toThrow();
+});
+
+it('upgrades only untouched v1 hi-hat library templates, preserving custom and applied copies', () => {
+  const template = {
+    id: 'hi-hat',
+    key: 'hiHat',
+    label: 'Closed hi-hat',
+    version: 1,
+    sound: legacyHiHatPreset(),
+  };
+  expect(upgradeHiHatTemplate(template)).toEqual({ ...template, version: 2, sound: hiHatPreset() });
+  for (const custom of [
+    { ...template, label: 'Mine' },
+    { ...template, sound: { ...template.sound, trim: -17 } },
+    {
+      ...template,
+      sound: { ...template.sound, percussion: { noise: 0, highpass: 20, decay: 0.1 } },
+    },
+  ])
+    expect(upgradeHiHatTemplate(custom)).toBe(custom);
+  const project = createProject();
+  project.instruments = project.instruments.map((preset) =>
+    preset.id === 'hi-hat' ? template : preset,
+  );
+  project.comparison.A = legacyHiHatPreset();
+  project.scoreText = 'track hats using hiHat {\n C4 quarter\n}';
+  const initial = importProject(JSON.stringify(project));
+  initial.tracks[0].sound = legacyHiHatPreset();
+  initial.tracks[0].presetVersion = 1;
+  const restored = importProject(JSON.stringify(initial));
+  expect(restored.instruments.find((preset) => preset.id === 'hi-hat')!.sound).toEqual(
+    hiHatPreset(),
+  );
+  expect(restored.tracks[0].sound).toEqual(legacyHiHatPreset());
+  expect(restored.comparison.A).toEqual(legacyHiHatPreset());
+  expect(importProject(JSON.stringify(restored))).toEqual(restored);
+});
 
 it('kick has a low body with audible beater partials and fresh editable banks', () => {
   const kick = kickPreset();

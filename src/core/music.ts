@@ -28,6 +28,8 @@ export function pitch(note: string): { midi: number; frequency: number; name: st
 }
 
 export interface Sound {
+  /** Optional aperiodic hit: linear noise level, high-pass Hz, e-fold decay seconds. */
+  percussion?: { noise: number; highpass: number; decay: number };
   waveformPoints?: import('./waveform').WavePoint[];
   harmonics: number[];
   polarity: number[];

@@ -13,7 +13,7 @@ export function kickPreset(): Sound {
   };
 }
 
-export function hiHatPreset(): Sound {
+export function legacyHiHatPreset(): Sound {
   const sound = mathematicalPreset('sine');
   // Sparse high partials give a metallic tick without a low pitched body.
   // They remain integer harmonics, not noise or an inharmonic cymbal model.
@@ -32,6 +32,18 @@ export function hiHatPreset(): Sound {
     attack: 0.005,
     release: 0.035,
     trim: -15,
+  };
+}
+
+export function hiHatPreset(): Sound {
+  const legacy = legacyHiHatPreset();
+  // Noise supplies the broadband sizzle; quiet upper partials retain a metallic edge.
+  // The hit decays independently of written duration, while note-off can shorten it.
+  return {
+    ...legacy,
+    harmonics: legacy.harmonics.map((level) => level * 0.08),
+    percussion: { noise: 0.85, highpass: 6500, decay: 0.045 },
+    trim: -12,
   };
 }
 
@@ -68,11 +80,11 @@ export const PERCUSSION_PRESETS = [
     id: 'hi-hat',
     key: 'hiHat',
     label: 'Closed hi-hat',
-    version: 1,
+    version: 2,
     createSound: hiHatPreset,
     note: 'C4',
     noteBeats: 0.0625,
-    hint: 'Metallic high partials · try C4–C5, very short notes',
+    hint: 'Filtered noise + metallic edge · 45 ms hit decay',
   },
   {
     id: 'snare',
@@ -127,6 +139,25 @@ interface Template {
   label: string;
   version: number;
   sound: Sound;
+}
+
+export function upgradeHiHatTemplate<T extends Template>(template: T): T {
+  if (
+    template.id !== 'hi-hat' ||
+    template.key !== 'hiHat' ||
+    template.label !== 'Closed hi-hat' ||
+    template.version !== 1
+  )
+    return template;
+  const legacy = legacyHiHatPreset();
+  const keys = Object.keys(legacy) as (keyof Sound)[];
+  if (
+    Object.keys(template.sound).length !== keys.length ||
+    !keys.every((key) => JSON.stringify(template.sound[key]) === JSON.stringify(legacy[key]))
+  )
+    return template;
+  // Upgrade library factories only. Owned tracks and A/B remain explicit user copies.
+  return { ...template, version: 2, sound: hiHatPreset() };
 }
 
 export function upgradeSoftBassTemplate<T extends Template>(template: T): T {
