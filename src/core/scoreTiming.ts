@@ -8,7 +8,7 @@ export function scoreTiming(tokens: ScoreToken[]) {
     depth = 0;
   const requested: { position: BeatFraction; meter: TimeSignature }[] = [];
   for (const token of tokens) {
-    if (token.kind === 'repeat-open') {
+    if (['repeat-open', 'section-open', 'ending-open'].includes(token.kind)) {
       depth++;
       continue;
     }

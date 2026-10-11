@@ -73,7 +73,7 @@ export function indexScoreViews(source: string): ScoreViewIndex {
       } else if (/^track\b/.test(token.text) || /[{}]/.test(token.text)) {
         return fail('A track header or brace is incomplete.');
       }
-    } else if (token.kind === 'repeat-open') {
+    } else if (['repeat-open', 'section-open', 'ending-open'].includes(token.kind)) {
       if (!current) return fail('A repeat is outside a track.');
       stack.push('repeat');
     } else if (['articulation-open', 'tuplet-open'].includes(token.kind)) {

@@ -6,6 +6,9 @@ export interface ScoreToken {
     | 'articulation-open'
     | 'tuplet-open'
     | 'repeat-open'
+    | 'section-open'
+    | 'section-play'
+    | 'ending-open'
     | 'brace-close'
     | 'block-close'
     | 'bracket-open';
@@ -16,7 +19,15 @@ export interface ScoreToken {
   articulation?: Articulation;
   modifier?: string;
   repeatCount?: number;
+  sectionName?: string;
+  nameFrom?: number;
+  nameTo?: number;
+  trimExpression?: string;
 }
+
+export const isScoreBraceOpen = (token: ScoreToken) =>
+  ['repeat-open', 'section-open', 'ending-open'].includes(token.kind) ||
+  (token.kind === 'text' && /^track\b.*\{$/.test(token.text));
 
 export function lexScore(text: string): ScoreToken[] {
   const tokens: ScoreToken[] = [];
@@ -50,6 +61,22 @@ export function lexScore(text: string): ScoreToken[] {
     // A preset/chain may legally be named repeat; a complete header owns its identifiers.
     if (/^track\s+\S+\s+using\s+\S+(?:\s+through\s+\S+)?\s*\{$/.test(source.trim())) {
       emit(0, source.length, 'text');
+      offset += raw.length + 1;
+      return;
+    }
+    // Whole headers own their identifiers: a section can legally be named
+    // repeat/play, and trim expressions must not be mistaken for music tokens.
+    const section = /^\s*section\s+(\S+)\s*\{\s*$/.exec(source);
+    const play = /^\s*play\s+(\S+?)(?:\s+trim\s+([^{}]+?))?\s*(\{)?\s*$/.exec(source);
+    if (section || play) {
+      const match = (section ?? play)!;
+      emit(0, source.length, section ? 'section-open' : play![3] ? 'ending-open' : 'section-play');
+      const token = tokens[tokens.length - 1];
+      token.sectionName = match[1];
+      const prefix = /^\s*(?:section|play)\s+/.exec(source)![0];
+      token.nameFrom = offset + prefix.length;
+      token.nameTo = token.nameFrom + match[1].length;
+      if (play?.[2]) token.trimExpression = play[2].trim();
       offset += raw.length + 1;
       return;
     }
