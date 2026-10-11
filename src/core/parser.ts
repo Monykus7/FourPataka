@@ -3,6 +3,7 @@ import { beatExpression } from './beatExpression';
 import { scoreTiming, restToBar } from './scoreTiming';
 import { lexScore, type ScoreToken } from './scoreLexer';
 import { indexScoreSections, type SectionSource } from './scoreSections';
+import { compareBeats, minBeats, sectionCut, subtractBeats } from './sectionTiming';
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
 import {
@@ -16,12 +17,14 @@ import { expandChordSymbol, type ChordExpansion } from './chordSymbols';
 import { CHORD_SHAPES, type ChordShapeRegistry } from '../modules/chords';
 
 export interface Diagnostic {
+  sectionCalls?: Pick<SectionInvocation, 'name' | 'from' | 'to' | 'line' | 'track'>[];
   from: number;
   to: number;
   line: number;
   message: string;
 }
 export interface ScoreEvent {
+  sectionEndingOf?: string[];
   sectionCalls?: SectionInvocation[];
   articulation?: Articulation;
   gateDuration?: number;
@@ -52,6 +55,8 @@ export interface SectionInvocation {
   originalDuration: number;
   trimmedBeats: number;
   endingDuration: number;
+  retainedBeats: number;
+  clippedByParent?: boolean;
 }
 export interface ScoreTrack {
   key: string;
@@ -109,6 +114,11 @@ export function parseScore(
   const lines = text.split('\n');
   const blocks: (ScoreToken & { id: number; ratio?: BeatFraction })[] = [];
   const eventBlocks = new WeakMap<ScoreEvent, number>();
+  const eventTiming = new WeakMap<ScoreEvent, { start: BeatFraction; duration: BeatFraction }>();
+  const callTiming = new WeakMap<
+    SectionInvocation,
+    { start: BeatFraction; bodyEnd: BeatFraction; end: BeatFraction }
+  >();
   let blockId = 0;
   const reportUnclosed = () => {
     for (const block of blocks)
@@ -132,6 +142,7 @@ export function parseScore(
   }
   const usedSections = new Set<SectionSource>();
   const callStack: SectionInvocation[] = [];
+  const endingOwners = new Set<string>();
   let invocationId = 0;
   // Read global timing first so directives below tracks also govern positional bar rests.
   const timing = scoreTiming(tokens);
@@ -140,6 +151,17 @@ export function parseScore(
     const { text: line, from, to } = token;
     const error = (message: string, start = from, end = to) =>
       result.diagnostics.push({
+        ...(callStack.length
+          ? {
+              sectionCalls: callStack.map(({ name, from, to, line, track }) => ({
+                name,
+                from,
+                to,
+                line,
+                track,
+              })),
+            }
+          : {}),
         from: start,
         to: Math.max(start + 1, end),
         line: token.line,
@@ -371,6 +393,7 @@ export function parseScore(
         return;
       }
       const compiled: ScoreEvent = {
+        ...(endingOwners.size ? { sectionEndingOf: [...endingOwners] } : {}),
         ...(callStack.length ? { sectionCalls: [...callStack] } : {}),
         id: `${current.key}:${current.events.length}`,
         track: current.key,
@@ -388,6 +411,10 @@ export function parseScore(
       };
       // Scope identity prevents a legato gate from leaking past ] or into a nested block.
       if (block) eventBlocks.set(compiled, block.id);
+      eventTiming.set(compiled, {
+        start: positions.get(current.key) ?? fraction(0n, 1n),
+        duration: written.beats,
+      });
       current.events.push(compiled);
       result.events.push(compiled);
       // Rational accumulation makes three triplets close exactly at the beat;
@@ -407,7 +434,23 @@ export function parseScore(
     for (let i = start; i < end && !exhausted; i++) {
       const token = tokens[i];
       const error = (message: string) =>
-        result.diagnostics.push({ from: token.from, to: token.to, line: token.line, message });
+        result.diagnostics.push({
+          from: token.from,
+          to: token.to,
+          line: token.line,
+          message,
+          ...(callStack.length
+            ? {
+                sectionCalls: callStack.map(({ name, from, to, line, track }) => ({
+                  name,
+                  from,
+                  to,
+                  line,
+                  track,
+                })),
+              }
+            : {}),
+        });
       if (++visits > 100000) {
         error('Repeat expansion exceeds 100,000 token visits.');
         exhausted = true;
@@ -434,21 +477,33 @@ export function parseScore(
         if (!section) error(`Unknown section “${token.sectionName}” in this track.`);
         else if (ancestry.includes(section))
           error(`Cyclic section reference to “${section.name}”.`);
-        else if (ancestry.length >= 16) error('Section calls may nest at most 16 levels.');
-        else if (token.trimExpression || token.kind === 'ending-open')
-          error('Alternate endings are not available in this parser checkpoint.');
-        else if (result.sectionInvocations.length >= 10000) {
+        else if (ancestry.length >= 16 || callStack.length >= 16)
+          error('Section calls may nest at most 16 levels.');
+        else if (invocationId >= 10000) {
           error('A score may expand at most 10,000 section calls.');
           exhausted = true;
         } else {
           const track = current!;
           const outer = [...blocks];
+          const startPosition = positions.get(track.key) ?? fraction(0n, 1n);
+          const firstEvent = track.events.length;
+          const firstGlobalEvent = result.events.length;
+          const firstCall = result.sectionInvocations.length;
+          const errorsBefore = result.diagnostics.length;
+          let trim: BeatFraction;
+          try {
+            trim = token.trimExpression ? beatExpression(token.trimExpression) : fraction(0n, 1n);
+          } catch (failure) {
+            error(`Section trim: ${(failure as Error).message}`);
+            i = close;
+            continue;
+          }
           const call: SectionInvocation = {
             id: `${track.key}:section:${invocationId++}`,
             track: track.key,
             name: section.name,
             from: token.from,
-            to: token.to,
+            to: tokens[close].to,
             line: token.line,
             definitionFrom: section.from,
             definitionTo: section.to,
@@ -457,12 +512,12 @@ export function parseScore(
             originalDuration: 0,
             trimmedBeats: 0,
             endingDuration: 0,
+            retainedBeats: 0,
           };
           usedSections.add(section);
           result.sectionInvocations.push(call);
           callStack.push(call);
           visit(section.open + 1, section.close, depth, [...ancestry, section]);
-          callStack.pop();
           if (
             blocks.length !== outer.length ||
             blocks.some((block, index) => block !== outer[index])
@@ -470,7 +525,84 @@ export function parseScore(
             error('Bracket groups must close within the section where they opened.');
             blocks.splice(0, blocks.length, ...outer);
           }
-          call.duration = call.originalDuration = track.beats - call.beat;
+          const originalEnd = positions.get(track.key) ?? startPosition;
+          call.originalDuration = beatValue(subtractBeats(originalEnd, startPosition));
+          const clock = { start: startPosition, bodyEnd: originalEnd, end: originalEnd };
+          callTiming.set(call, clock);
+          try {
+            const cutoff = sectionCut(startPosition, originalEnd, trim);
+            const kept = track.events.slice(firstEvent).filter((event) => {
+              const timing = eventTiming.get(event)!;
+              if (compareBeats(timing.start, cutoff) >= 0) return false;
+              const available = subtractBeats(cutoff, timing.start);
+              if (compareBeats(timing.duration, available) > 0) {
+                timing.duration = available;
+                event.duration = beatValue(available);
+                if (event.articulation === 'staccato') event.gateDuration = event.duration / 2;
+              }
+              return true;
+            });
+            // Shorten an existing event, never split/retrigger it. Event IDs in
+            // the appended ending continue from the retained prefix's count.
+            track.events.splice(firstEvent, track.events.length - firstEvent, ...kept);
+            result.events.splice(
+              firstGlobalEvent,
+              result.events.length - firstGlobalEvent,
+              ...kept,
+            );
+            positions.set(track.key, cutoff);
+            track.beats = beatValue(cutoff);
+            clock.bodyEnd = cutoff;
+            call.trimmedBeats = beatValue(trim);
+            call.retainedBeats = beatValue(subtractBeats(cutoff, startPosition));
+            const children = result.sectionInvocations.slice(firstCall + 1).filter((child) => {
+              const timing = callTiming.get(child)!;
+              if (compareBeats(timing.start, cutoff) >= 0) return false;
+              if (compareBeats(timing.end, cutoff) > 0) {
+                timing.end = cutoff;
+                timing.bodyEnd = minBeats(timing.bodyEnd, cutoff);
+                child.duration = beatValue(subtractBeats(timing.end, timing.start));
+                child.retainedBeats = beatValue(subtractBeats(timing.bodyEnd, timing.start));
+                child.endingDuration = beatValue(subtractBeats(timing.end, timing.bodyEnd));
+                child.clippedByParent = true;
+              }
+              return true;
+            });
+            result.sectionInvocations.splice(
+              firstCall + 1,
+              result.sectionInvocations.length - firstCall - 1,
+              ...children,
+            );
+            if (token.kind === 'ending-open') {
+              endingOwners.add(call.id);
+              // An ending is written at the call site. It may call the same
+              // definition again; only template ancestry diagnoses recursion.
+              visit(i + 1, close, depth, ancestry);
+              endingOwners.delete(call.id);
+              if (
+                blocks.length !== outer.length ||
+                blocks.some((block, index) => block !== outer[index])
+              ) {
+                error('Bracket groups must close within the alternate ending where they opened.');
+                blocks.splice(0, blocks.length, ...outer);
+              }
+            }
+            clock.end = positions.get(track.key) ?? cutoff;
+            call.endingDuration = beatValue(subtractBeats(clock.end, cutoff));
+            call.duration = beatValue(subtractBeats(clock.end, startPosition));
+          } catch (failure) {
+            error((failure as Error).message);
+          }
+          callStack.pop();
+          if (result.diagnostics.length > errorsBefore) {
+            // An invalid invocation has no partial musical side effects. Its
+            // definition/call diagnostics remain visible at the original spans.
+            track.events.splice(firstEvent);
+            result.events.splice(firstGlobalEvent);
+            result.sectionInvocations.splice(firstCall);
+            positions.set(track.key, startPosition);
+            track.beats = beatValue(startPosition);
+          }
         }
         i = close;
         continue;
