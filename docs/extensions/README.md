@@ -42,7 +42,7 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 
 - [Instrument library](INSTRUMENT_LIBRARY.md): folder creation, drag/keyboard placement, legacy project migration, copy/history boundaries and source/data-flow diagrams.
 
-- [Percussion presets](PERCUSSION_PRESETS.md): Kick/Snare Fourier factories and the v0.29.0 noise-hit hi-hat, conservative library upgrades, shared comparison material, editable units, lifecycle/headroom and live/WAV ownership diagrams.
+- [Percussion presets](PERCUSSION_PRESETS.md): v0.30.0 decaying pitch-swept Kick/Snare and the v0.29.0 noise-hit hi-hat, conservative library upgrades, shared comparison material, editable units, lifecycle/headroom and live/WAV ownership diagrams.
 
 - [Module creation](MODULE_CREATION.md): tested chord-shape example, assembly and consumption, owned settings/runtime lifecycle, audio routing and compatibility diagrams.
-- [Score workspace](SCORE_VIEWS.md): canonical source/track projections, guarded edit transactions, CRLF-aware spans, ownership operations and recovery diagrams. Shared-file track views ship in v0.24.0; the general M5 registration/capability API stays planned.
+- [Score workspace](SCORE_VIEWS.md): current file-only editor identity and track operations, historical projection helpers, guarded transactions, CRLF spans and ownership/recovery diagrams. Shared-file track views ship in v0.24.0; the general M5 registration/capability API stays planned.

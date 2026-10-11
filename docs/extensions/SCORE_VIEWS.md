@@ -1,8 +1,14 @@
 # Building on the score workspace
 
-Status: shared-file track views are implemented in v0.24.0. The functions below are current source services with tests, not a versioned M5 plugin SDK. A feature contribution is still an explicit reviewed source change. Named sections/alternate endings are implemented in v0.27.0; [their source services and diagrams](NAMED_SECTIONS.md) extend these track views. Swing remains planned.
+Status: v0.30.0 uses file tabs only. Historical shared-file track projections shipped in v0.24.0. The functions below are current source services with tests, not a versioned M5 plugin SDK. A feature contribution is still an explicit reviewed source change. Named sections/alternate endings are implemented in v0.27.0; [their source services and diagrams](NAMED_SECTIONS.md) extend these track views. Swing remains planned.
 
-## One document, several views
+## Current interface: file tabs only
+
+v0.30.0 removes automatic per-track tabs and the All score/Whole file subtab row. User-created named files show every contained track together. A track target dropdown plus Add track to file/rename/remove keeps operations convenient without projecting a different editor. File names do not depend on track names. Unfinished typing does not change the active file or editor identity. See [current file-editor contracts](SCORE_FILES.md#file-only-editor-identity-v0300).
+
+The track projection/draft functions and diagrams below document historical v0.24–0.29 behavior and remain tested source helpers; they no longer drive the Compose editor. Whole-file CRLF projection, guarded track rename/removal and owned-copy services still support the current interface.
+
+## Historical track projections
 
 v0.28.0 adds named [virtual song files](SCORE_FILES.md) above track views. Whole file projects one file's body; its track tabs project its parts. All files remains the aggregate recovery editor. Matching keys across files continue one logical track in source order. The original v0.24.0 behavior below describes legacy single-file scores. Helpers now accept an optional fileId for part-specific edit/removal; guarded rename updates every same-key part.
 

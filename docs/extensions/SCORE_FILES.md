@@ -6,7 +6,7 @@ Implemented in v0.28.0. File tabs organize one song into named virtual files abo
 
 Use **New score file** (+) to create a file and **Files** to reopen, rename or delete it. A new file contains `from song <key>`; first creation links the existing score without replacing its music. File names are independent of the song key. Closing hides a view and keeps its music. Deleting removes its music and is undoable. A legacy score appears as `score.fourier` and is not rewritten simply by opening the app.
 
-Each file may contain several complete track blocks. **Whole file** edits all of them; smaller track tabs project individual blocks. **All files** exposes canonical text for boundary repair. File selection never decides which tracks play. Play, comparison and WAV use the whole song. Edits to a running score are heard on replay.
+Since v0.30.0, file tabs are the only editor tabs. Each file shows all its track blocks together. Names such as Rhythm section are independent of track keys; adding or renaming a track never creates or renames a file tab. Use **Add track to file** or type another track block in the same editor. **Track in file** selects a rename/remove and command target without hiding music or changing editor identity. **All files** exposes canonical text for boundary repair. File selection never decides which tracks play. Play, comparison and WAV use the whole song. Edits to a running score are heard on replay.
 
 Create `intro.fourier` with:
 
@@ -121,7 +121,7 @@ flowchart TD
   Song --> Freeze[Frozen whole-song playback and WAV]
 ```
 
-Selection/closing creates no musical undo entry and preserves redo. Note undo keeps selection when the file-ID set survives. Creation/deletion undo restores historical tab state because IDs changed. Rename keeps the ID stable. Stale forms/edits reject rather than overwrite newer revisions. Cursor/scroll are remembered per file/track while the workspace is mounted; only open/active file state persists on reopen.
+Selection/closing creates no musical undo entry and preserves redo. Note undo keeps selection when the file-ID set survives. Creation/deletion undo restores historical tab state because IDs changed. Rename keeps the ID stable. Stale forms/edits reject rather than overwrite newer revisions. Cursor/scroll are remembered per file while the workspace is mounted; only open/active file state persists on reopen.
 
 ## Contributor recipe and proof
 
@@ -132,3 +132,24 @@ Keep shared scheduler/voice factories. File organization adds no engine, envelop
 Run `npm test`, `npm run build`, affected Playwright file/workspace/section/IDE/reference/export checks and packaged native JSON/WAV workflows. Cover legacy/custom music; 32-file limits; malformed links; duplicate keys/conflicting assignments; continuing clocks/parallel tracks; cross-file definitions and CRLF spans; source guards/history/owned copies; closed/reopened tabs; selected-file insertion; keyboard/narrow layouts and one-file round trips. Compare linked-file WAV with flattened music at 44.1/48 kHz and verify nonzero audio from later files. Refresh the knowledge map before committing.
 
 See [score views](SCORE_VIEWS.md), [named sections](NAMED_SECTIONS.md), [module creation](MODULE_CREATION.md) and [feature-module plans](FEATURE_MODULES.md).
+
+
+## File-only editor identity (v0.30.0)
+
+The component key and projection depend on the selected file ID only. A partial `t`, unfinished track header, open bracket or malformed note may produce diagnostics but cannot choose All files or remount another track editor. The structural track index is used for the target dropdown and source operations, not for selecting the displayed document. All files is an explicit aggregate view; malformed reserved file boundaries still require it. Keep revision and reserved-boundary paste guards; never save independently authoritative tab buffers.
+
+```mermaid
+flowchart TD
+  User[User creates and names a file] --> File[Stable file ID and canonical source span]
+  File --> Editor[One editor with every track in the file]
+  Editor --> Typing[Valid or unfinished typing]
+  Typing --> Guard[Revision-guarded whole-file patch]
+  Guard --> Source[Canonical song source]
+  Source --> Diagnostics[Whole-song compiler diagnostics]
+  Diagnostics --> Editor
+  Tracks[Track dropdown and Add rename remove] --> Guard
+  Tracks --> Target[Command target only]
+  File --> Saved[Open and active file metadata in one JSON]
+```
+
+Track creation preserves tab count, name and active file. Rename moves the same-key owned sound/chain/comparison identity across parts while leaving file metadata unchanged. Removal deletes the selected part; surviving parts retain ownership. Track forms capture the source revision and file ID, rejecting confirmation after source edits or a file change. Manual header renames use ordinary compiler reconciliation; prefer the Rename track action to preserve owned identity. Section navigation opens the definition's actual file and selects its text while displaying the whole file. File/track actions are undoable; selection and closing remain presentation-only, and whole-song playback includes every file.
