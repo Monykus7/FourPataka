@@ -7,7 +7,12 @@ import {
   upgradeSoftBassTemplate,
 } from '../../src/core/instrumentPresets';
 import { dbToGain, mathematicalPreset, sourceSamples } from '../../src/core/music';
-import { createProject, importProject, validateSound } from '../../src/core/project';
+import {
+  createProject,
+  importProject,
+  validateSound,
+  withPercussionPresets,
+} from '../../src/core/project';
 
 it('kick has a low body with audible beater partials and fresh editable banks', () => {
   const kick = kickPreset();
@@ -48,6 +53,43 @@ it('percussion has distinct low, sparse-high and dense-high spectra with bounded
   presets[0].sound.harmonics[0] = 0;
   expect(createPercussionPresets()[0].sound.harmonics[0]).toBe(1);
   expect(presets[1].sound.harmonics).not.toBe(presets[2].sound.harmonics);
+});
+
+it('new projects include percussion but old imports only gain it by explicit action', () => {
+  const old = createProject();
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  const before = structuredClone(old);
+  expect(importProject(JSON.stringify(old)).instruments).toEqual(old.instruments);
+  const next = withPercussionPresets(old);
+  expect(next.instruments).toHaveLength(9);
+  expect(next.scoreText).toBe(old.scoreText);
+  expect(next.tracks).toBe(old.tracks);
+  expect(next.comparison).toBe(old.comparison);
+  expect(next.processing).toBe(old.processing);
+  expect(next.comparisonMaterial).toBe(old.comparisonMaterial);
+  expect(next.editorPresetId).toBe(old.editorPresetId);
+  expect(old).toEqual(before);
+  expect(importProject(JSON.stringify(next))).toEqual(next);
+  expect(withPercussionPresets(next)).toBe(next);
+});
+
+it('explicit percussion import preserves colliding keys, resolves IDs, and is atomic at capacity', () => {
+  const project = createProject();
+  project.instruments = project.instruments.filter((p) => !['hiHat', 'snare'].includes(p.key));
+  const custom = project.instruments.find((p) => p.key === 'kick')!;
+  custom.label = 'My kick';
+  custom.sound.harmonics[0] = 0.123;
+  project.instruments[0].id = 'hi-hat';
+  const next = withPercussionPresets(project);
+  expect(next.instruments.find((p) => p.key === 'kick')).toBe(custom);
+  expect(next.instruments.find((p) => p.key === 'hiHat')!.id).toBe('hi-hat-2');
+  const full = {
+    ...project,
+    instruments: Array.from({ length: 127 }, (_, i) => ({ ...custom, id: `p${i}`, key: `p${i}` })),
+  };
+  const before = JSON.stringify(full);
+  expect(() => withPercussionPresets(full)).toThrow('128-preset limit');
+  expect(JSON.stringify(full)).toBe(before);
 });
 
 it('Soft bass has a distinct signed source and retains explicit envelope/gain settings', () => {

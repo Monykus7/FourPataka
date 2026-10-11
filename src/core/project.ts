@@ -17,7 +17,11 @@ import {
 import { parseScore, type CompiledScore } from './parser';
 import { DEFAULT_MATERIAL, type ComparisonMaterial } from './comparison';
 import { setScoreChain } from './scoreTools';
-import { softBassPreset, upgradeSoftBassTemplate } from './instrumentPresets';
+import {
+  createPercussionPresets,
+  softBassPreset,
+  upgradeSoftBassTemplate,
+} from './instrumentPresets';
 
 export interface InstrumentPreset {
   id: string;
@@ -139,6 +143,7 @@ export function createProject(): Project {
     })),
     { id: 'bright-reed', key: 'brightReed', label: 'Bright reed', version: 1, sound: bright },
     { id: 'soft-bass', key: 'softBass', label: 'Soft bass', version: 2, sound: bass },
+    ...createPercussionPresets(),
   ];
   const project: Project = {
     processing: defaultProcessing(),
@@ -161,6 +166,24 @@ export function createProject(): Project {
       project.processing.library.map((p) => p.key),
     ),
   );
+}
+
+export function withPercussionPresets(project: Project): Project {
+  // Existing keys belong to the user, even if named after a factory preset.
+  // An explicit import adds only missing templates and never reapplies sounds.
+  const keys = new Set(project.instruments.map((p) => p.key));
+  const missing = createPercussionPresets().filter((p) => !keys.has(p.key));
+  if (!missing.length) return project;
+  if (project.instruments.length + missing.length > 128)
+    throw new Error('Adding percussion would exceed the 128-preset limit.');
+  const ids = new Set(project.instruments.map((p) => p.id));
+  const additions = missing.map((p) => {
+    let id = p.id;
+    for (let suffix = 2; ids.has(id); suffix++) id = `${p.id}-${suffix}`;
+    ids.add(id);
+    return { ...p, id };
+  });
+  return { ...project, instruments: [...project.instruments, ...additions] };
 }
 
 export function reconcileTracks(project: Project, score: CompiledScore): Project {
