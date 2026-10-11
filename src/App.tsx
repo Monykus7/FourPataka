@@ -1183,7 +1183,10 @@ export default function App() {
                 </label>
                 {percussion && (
                   <div className="percussion-hint">
-                    <span>{percussion.hint}. Fourier approximation; long notes sustain.</span>
+                    <span>
+                      {percussion.hint}.
+                      {percussion.key !== 'hiHat' && ' Fourier approximation; long notes sustain.'}
+                    </span>
                     <button
                       className="secondary-button"
                       onClick={() =>
@@ -1464,6 +1467,70 @@ export default function App() {
                         onChange={(n) => changeSound((s) => ({ ...s, trim: n }), 'trim')}
                       />
                     </div>
+                    <label className="check-label">
+                      <input
+                        type="checkbox"
+                        checked={!!sound.percussion}
+                        onChange={(event) =>
+                          changeSound((s) => {
+                            const { percussion: _hit, ...rest } = s;
+                            return event.target.checked
+                              ? {
+                                  ...rest,
+                                  percussion: { noise: 0.85, highpass: 6500, decay: 0.045 },
+                                }
+                              : rest;
+                          }, 'hit-mode')
+                        }
+                      />
+                      Percussive hit
+                    </label>
+                    {sound.percussion && (
+                      <div className="envelope-controls">
+                        <RangeControl
+                          label="Noise level"
+                          value={sound.percussion.noise * 100}
+                          min={0}
+                          max={100}
+                          step={1}
+                          unit="%"
+                          onChange={(n) =>
+                            changeSound(
+                              (s) => ({ ...s, percussion: { ...s.percussion!, noise: n / 100 } }),
+                              'hit-noise',
+                            )
+                          }
+                        />
+                        <RangeControl
+                          label="Noise high-pass"
+                          value={sound.percussion.highpass}
+                          min={20}
+                          max={16000}
+                          step={20}
+                          unit="Hz"
+                          onChange={(n) =>
+                            changeSound(
+                              (s) => ({ ...s, percussion: { ...s.percussion!, highpass: n } }),
+                              'hit-highpass',
+                            )
+                          }
+                        />
+                        <RangeControl
+                          label="Hit decay"
+                          value={sound.percussion.decay * 1000}
+                          min={10}
+                          max={2000}
+                          step={5}
+                          unit="ms"
+                          onChange={(n) =>
+                            changeSound(
+                              (s) => ({ ...s, percussion: { ...s.percussion!, decay: n / 1000 } }),
+                              'hit-decay',
+                            )
+                          }
+                        />
+                      </div>
+                    )}
                   </section>
                   <section className="panel macro-panel">
                     <button

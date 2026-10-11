@@ -101,7 +101,16 @@ export async function percussionWorkflow(page: Page) {
         .nth(1)
         .getAttribute('d'))!,
     );
-    await expect(page.locator('.percussion-hint')).toContainText('long notes sustain');
+    await expect(page.locator('.percussion-hint')).toContainText(
+      key === 'hiHat' ? 'Filtered noise' : 'long notes sustain',
+    );
+    if (key === 'hiHat') {
+      await expect(
+        page.getByRole('checkbox', { name: 'Percussive hit', exact: true }),
+      ).toBeChecked();
+      await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('45');
+      await expect(page.locator('.source-graphs')).toContainText('Fourier component only');
+    }
     await page.getByRole('button', { name: 'Use hit preview', exact: true }).click();
     await expect(page.getByRole('combobox', { name: 'Audition pitch', exact: true })).toHaveValue(
       note,

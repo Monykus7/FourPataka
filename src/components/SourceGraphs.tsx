@@ -41,6 +41,12 @@ export default function SourceGraphs({
   return (
     <div className="source-graphs">
       <section className="graph-card">
+        {sound.percussion && (
+          <p className="hint">
+            Fourier component only; filtered noise and hit decay are audible in playback and the
+            output monitor.
+          </p>
+        )}
         <div className="graph-heading">
           <span>Source waveform</span>
           <span className="tag">STEADY SHAPE</span>
