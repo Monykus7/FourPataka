@@ -95,7 +95,7 @@ test('removing the last track saves an importable empty workspace and permits a 
   await page.reload();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await expect(page.getByRole('combobox', { name: 'Track in file' })).toBeDisabled();
-  await page.getByRole('button', { name: 'Add track', exact: true }).click();
+  await page.getByRole('button', { name: 'Add track to file', exact: true }).click();
   await page.getByRole('textbox', { name: 'Track name' }).fill('rebuilt');
   await page.getByRole('button', { name: 'Create track' }).click();
   await expect(page.getByRole('combobox', { name: 'Track in file' })).toHaveValue('rebuilt');

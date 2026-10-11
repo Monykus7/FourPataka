@@ -1,11 +1,13 @@
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { sectionsWorkflow } from '../helpers/sections';
+import { fileTabsWorkflow } from '../helpers/fileTabs';
 import { scoreFilesWorkflow } from '../helpers/scoreFiles';
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 import {
   percussionWorkflow,
   percussionAvailabilityWorkflow,
   hiHatEditingWorkflow,
+  drumEditingWorkflow,
   PERCUSSION_SCORE,
 } from '../helpers/percussion';
 import {
@@ -181,7 +183,7 @@ test('packaged percussion presets preview compose and retain native JSON sounds'
   );
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
   expect(saved.scoreText).toBe(PERCUSSION_SCORE);
-  expect(saved.comparisonMaterial).toMatchObject({ note: 'D3', noteBeats: 0.125 });
+  expect(saved.comparisonMaterial).toMatchObject({ note: 'G3', noteBeats: 0.5 });
   expect(saved.tracks.map((track: any) => track.presetId)).toEqual(['kick', 'snare', 'hi-hat']);
   const library = saved.instruments.find((p: any) => p.key === 'snare');
   expect(saved.tracks.find((t: any) => t.key === 'snareTrack').sound).toEqual(library.sound);
@@ -273,7 +275,7 @@ test('native WAV menu renders, validates binary data, cancels safely and saves P
 });
 
 test('packaged keyboard-only studio demonstration saves and reloads independent sounds and processing', async () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
   const page = await app.firstWindow();
   const saved = await keyboardWorkflow(page);
   const filePath = resolve('.test-results', 'desktop', 'keyboard-workflow.fourpataka.json');
@@ -909,4 +911,22 @@ test('packaged score views preserve canonical source playback and native JSON sa
 });
 test('packaged track operations keep rename deletion and malformed source undoable', async () => {
   await trackOperationsWorkflow(await app.firstWindow());
+});
+
+test('packaged user file tabs hold several tracks and stay selected during typing', async () => {
+  await fileTabsWorkflow(await app.firstWindow());
+});
+
+test('packaged drums retain pitch and noise settings through native JSON saving', async () => {
+  const page = await app.firstWindow();
+  await drumEditingWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'drums.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved drums.fourpataka.json');
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.tracks[0].sound.percussion.pitch).toEqual({ amount: 18, decay: 0.035 });
+  expect(saved.tracks[0].sound.percussion.noiseDecay).toBe(0.02);
 });

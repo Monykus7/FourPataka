@@ -74,6 +74,7 @@ export default function ScoreWorkspace(props: Props) {
   const formInput = useRef<HTMLInputElement>(null);
   const operationForm = useRef<HTMLFormElement>(null);
   const operationTrigger = useRef<HTMLButtonElement | null>(null);
+  const operationCapture = useRef<{ source: string; fileId?: string } | undefined>(undefined);
   const active = !index.problem
     ? (fileTracks.find((track) => track.key === selected) ?? fileTracks[0])
     : undefined;
@@ -143,6 +144,7 @@ export default function ScoreWorkspace(props: Props) {
     requestAnimationFrame(() => operationTrigger.current?.focus());
   };
   const begin = (kind: 'new' | 'rename' | 'delete') => {
+    operationCapture.current = { source: value, fileId: file?.id };
     operationTrigger.current = document.activeElement as HTMLButtonElement;
     setOperation(kind);
     setError('');
@@ -151,6 +153,11 @@ export default function ScoreWorkspace(props: Props) {
   };
   const submit = () => {
     try {
+      if (
+        operationCapture.current?.source !== value ||
+        operationCapture.current?.fileId !== file?.id
+      )
+        throw new Error('The score changed. Open this track operation again.');
       if (operation === 'new') {
         apply(
           {
@@ -293,7 +300,7 @@ export default function ScoreWorkspace(props: Props) {
               disabled={props.playing || (!valid && !empty) || !presetKeys.length}
               onClick={() => begin('new')}
             >
-              Add track
+              Add track to file
             </button>
             <button disabled={props.playing || !valid || !active} onClick={() => begin('rename')}>
               Rename track

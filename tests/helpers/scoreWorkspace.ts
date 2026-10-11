@@ -88,7 +88,7 @@ export async function trackOperationsWorkflow(page: Page) {
   await expect(editor).toContainText('track melody');
   await page
     .locator('.score-view-actions')
-    .getByRole('button', { name: 'Add track', exact: true })
+    .getByRole('button', { name: 'Add track to file', exact: true })
     .click();
   await page.getByRole('textbox', { name: 'Track name', exact: true }).fill('harmony');
   await page.getByRole('combobox', { name: 'New track instrument' }).selectOption('triangle');

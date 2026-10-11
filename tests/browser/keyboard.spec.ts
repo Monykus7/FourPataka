@@ -5,7 +5,8 @@ import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
 test('keyboard-only instrument, comparison, composition, processing, playback, JSON and reload demonstration', async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  // This walks hundreds of real Tab stops; retain per-control bounds on slower hosts.
+  test.setTimeout(180_000);
   await page.goto('/');
   const saved = await keyboardWorkflow(page);
   const download = page.waitForEvent('download');

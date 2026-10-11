@@ -36,7 +36,7 @@ it('kick/snare factory updates preserve edited libraries and applied sounds', ()
     project.scoreText = `track drums using ${key} {\n C3 quarter\n}`;
     const restored = importProject(JSON.stringify(project));
     restored.tracks[0].sound = legacy();
-    restored.tracks[0].presetVersion = 1;
+    restored.tracks[0].appliedVersion = 1;
     restored.comparison.A = legacy();
     const next = importProject(JSON.stringify(restored));
     expect(next.tracks).toEqual(restored.tracks);
@@ -106,7 +106,7 @@ it('upgrades only untouched v1 hi-hat library templates, preserving custom and a
   project.scoreText = 'track hats using hiHat {\n C4 quarter\n}';
   const initial = importProject(JSON.stringify(project));
   initial.tracks[0].sound = legacyHiHatPreset();
-  initial.tracks[0].presetVersion = 1;
+  initial.tracks[0].appliedVersion = 1;
   const restored = importProject(JSON.stringify(initial));
   expect(restored.instruments.find((preset) => preset.id === 'hi-hat')!.sound).toEqual(
     hiHatPreset(),

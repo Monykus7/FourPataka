@@ -61,6 +61,51 @@ export async function hiHatEditingWorkflow(page: Page) {
   await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('75');
 }
 
+export async function drumEditingWorkflow(page: Page) {
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill('track drums using kick {\n C2 quarter\n}');
+  const saved = () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
+  await expect.poll(async () => (await saved()).tracks[0].key).toBe('drums');
+  const before = (await saved()).tracks;
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('button', { name: 'Kick kick', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Pitch drop', exact: true })).toHaveValue('24');
+  await expect(page.getByRole('slider', { name: 'Noise decay', exact: true })).toHaveValue('12');
+  await page.getByRole('spinbutton', { name: 'Pitch drop exact value' }).fill('18');
+  await page.getByRole('spinbutton', { name: 'Pitch decay exact value' }).fill('35');
+  await page.getByRole('spinbutton', { name: 'Noise decay exact value' }).fill('20');
+  await page.getByRole('button', { name: 'Save preset', exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (await saved()).instruments.find((preset: any) => preset.key === 'kick').sound.percussion
+          .pitch,
+    )
+    .toEqual({ amount: 18, decay: 0.035 });
+  expect((await saved()).tracks).toEqual(before);
+  await page
+    .getByRole('combobox', { name: 'Apply destination', exact: true })
+    .selectOption('drums');
+  await page.getByRole('button', { name: 'Apply to drums', exact: true }).click();
+  await expect.poll(async () => (await saved()).tracks[0].sound.percussion.noiseDecay).toBe(0.02);
+  await page.reload();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('button', { name: 'Kick kick', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Pitch decay', exact: true })).toHaveValue('35');
+  await page.getByRole('button', { name: 'Snare snare', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('45');
+  await expect(page.getByRole('slider', { name: 'Noise decay', exact: true })).toHaveValue('90');
+  await page.getByRole('button', { name: 'Use hit preview', exact: true }).click();
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Listen', exact: true })).not.toHaveClass(
+    /playing/,
+  );
+  await page.screenshot({ path: '.test-results/drum-controls.png', fullPage: true });
+}
+
 export async function percussionAvailabilityWorkflow(page: Page) {
   await expect
     .poll(() => page.evaluate(() => !!localStorage.getItem('fourpataka.project.v1')))
@@ -124,9 +169,9 @@ export async function percussionWorkflow(page: Page) {
     JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
   );
   for (const [label, key, note, gate] of [
-    ['Kick', 'kick', 'C2', '0.125'],
+    ['Kick', 'kick', 'C2', '0.5'],
     ['Closed hi-hat', 'hiHat', 'C4', '0.0625'],
-    ['Snare', 'snare', 'D3', '0.125'],
+    ['Snare', 'snare', 'G3', '0.5'],
   ]) {
     await page.getByRole('button', { name: `${label} ${key}`, exact: true }).click();
     paths.add(
@@ -139,7 +184,7 @@ export async function percussionWorkflow(page: Page) {
         .getAttribute('d'))!,
     );
     await expect(page.locator('.percussion-hint')).toContainText(
-      key === 'hiHat' ? 'Filtered noise' : 'long notes sustain',
+      key === 'hiHat' ? 'Filtered noise' : key === 'kick' ? 'Falling pitch' : 'noise rattle',
     );
     if (key === 'hiHat') {
       await expect(
@@ -168,7 +213,7 @@ export async function percussionWorkflow(page: Page) {
         () => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).comparisonMaterial.note,
       ),
     )
-    .toBe('D3');
+    .toBe('G3');
   const preview = await page.evaluate(() =>
     JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
   );
@@ -190,7 +235,7 @@ export async function percussionWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Instrument', exact: true }).click();
   await expect(
     page.getByRole('combobox', { name: 'Audition gate length', exact: true }),
-  ).toHaveValue('0.125');
+  ).toHaveValue('0.5');
   await expect(
     page.getByRole('button', { name: 'Closed hi-hat hiHat', exact: true }),
   ).toBeVisible();

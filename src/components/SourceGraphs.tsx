@@ -43,8 +43,8 @@ export default function SourceGraphs({
       <section className="graph-card">
         {sound.percussion && (
           <p className="hint">
-            Fourier component only; filtered noise and hit decay are audible in playback and the
-            output monitor.
+            Fourier component only, at the written pitch; noise, hit decay and pitch sweeps are
+            audible in playback and the output monitor.
           </p>
         )}
         <div className="graph-heading">

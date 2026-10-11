@@ -1183,10 +1183,7 @@ export default function App() {
                 </label>
                 {percussion && (
                   <div className="percussion-hint">
-                    <span>
-                      {percussion.hint}.
-                      {percussion.key !== 'hiHat' && ' Fourier approximation; long notes sustain.'}
-                    </span>
+                    <span>{percussion.hint}.</span>
                     <button
                       className="secondary-button"
                       onClick={() =>
@@ -1529,6 +1526,67 @@ export default function App() {
                             )
                           }
                         />
+                        <RangeControl
+                          label="Noise decay"
+                          value={(sound.percussion.noiseDecay ?? sound.percussion.decay) * 1000}
+                          min={5}
+                          max={2000}
+                          step={1}
+                          unit="ms"
+                          onChange={(n) =>
+                            changeSound(
+                              (s) => ({
+                                ...s,
+                                percussion: { ...s.percussion!, noiseDecay: n / 1000 },
+                              }),
+                              'noise-decay',
+                            )
+                          }
+                        />
+                        <RangeControl
+                          label="Pitch drop"
+                          value={sound.percussion.pitch?.amount ?? 0}
+                          min={0}
+                          max={48}
+                          step={1}
+                          unit="st"
+                          onChange={(n) =>
+                            changeSound((s) => {
+                              const { pitch: oldPitch, ...hit } = s.percussion!;
+                              return {
+                                ...s,
+                                percussion: n
+                                  ? {
+                                      ...hit,
+                                      pitch: { amount: n, decay: oldPitch?.decay ?? 0.025 },
+                                    }
+                                  : hit,
+                              };
+                            }, 'pitch-drop')
+                          }
+                        />
+                        {sound.percussion.pitch && (
+                          <RangeControl
+                            label="Pitch decay"
+                            value={sound.percussion.pitch.decay * 1000}
+                            min={5}
+                            max={500}
+                            step={1}
+                            unit="ms"
+                            onChange={(n) =>
+                              changeSound(
+                                (s) => ({
+                                  ...s,
+                                  percussion: {
+                                    ...s.percussion!,
+                                    pitch: { ...s.percussion!.pitch!, decay: n / 1000 },
+                                  },
+                                }),
+                                'pitch-decay',
+                              )
+                            }
+                          />
+                        )}
                       </div>
                     )}
                   </section>
