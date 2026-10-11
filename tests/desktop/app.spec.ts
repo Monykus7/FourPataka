@@ -1,3 +1,4 @@
+import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 import {
   percussionWorkflow,
@@ -37,6 +38,42 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged instrument folders drag and retain organization through native saving', async () => {
+  const page = await app.firstWindow();
+  await instrumentFoldersWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'instrument-folders.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved instrument-folders.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  const drums = saved.instrumentFolders.find((f: any) => f.label === 'Drum kit');
+  expect(saved.instruments.find((p: any) => p.key === 'snare').folderId).toBe(drums.id);
+  expect(saved.instruments.find((p: any) => p.key === 'kick').folderId).toBeUndefined();
+  expect(saved.instruments.find((p: any) => p.key === 'sine').folderId).toBe('simple-shapes');
+  await page.getByRole('button', { name: 'Remove Drum kit folder', exact: true }).click();
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, savePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Toggle Drum kit folder', exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem('fourpataka.project.v1')!).instruments.find(
+            (p: any) => p.key === 'snare',
+          ).folderId,
+      ),
+    )
+    .toBe(drums.id);
 });
 
 test('packaged old sessions expose percussion and parse all three score keys', async () => {
@@ -238,6 +275,7 @@ test('native recovery menu exports exact damaged bytes and restores a checkpoint
 
 test('native harmonic sign and distinct Soft bass survive file save and reload', async () => {
   const page = await app.firstWindow();
+  await showSimpleShapes(page);
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
   const sign = page.getByRole('button', { name: 'H3 inverted polarity', exact: true });
   await sign.focus();

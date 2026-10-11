@@ -80,3 +80,24 @@ test('legacy project migration groups factory shapes without changing edited sou
     .fill('track test using triangle {\n C4 quarter\n}');
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
 });
+
+test('library folder moves leave a running audition clock and its source untouched', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
+  const progress = page.getByRole('progressbar', {
+    name: 'Comparison phrase progress',
+    exact: true,
+  });
+  await expect.poll(async () => Number(await progress.getAttribute('value'))).toBeGreaterThan(0.25);
+  const before = Number(await progress.getAttribute('value'));
+  await page
+    .getByRole('combobox', { name: 'Instrument folder', exact: true })
+    .selectOption('simple-shapes');
+  await expect
+    .poll(async () => Number(await progress.getAttribute('value')))
+    .toBeGreaterThan(before);
+  await expect(page.getByRole('button', { name: 'Listen', exact: true })).toHaveClass(/playing/);
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+});

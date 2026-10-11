@@ -1,3 +1,4 @@
+import { showSimpleShapes } from '../helpers/instrumentLibrary';
 import { expect, test } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
@@ -37,6 +38,7 @@ test('instrument UI, independent A/B snapshots, audition, and undo', async ({ pa
 test('preset Apply updates notation; library Save keeps the track copy; refresh preserves both', async ({
   page,
 }) => {
+  await showSimpleShapes(page);
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
   await page.getByRole('button', { name: 'Apply to melody', exact: true }).click();
   await page.getByRole('spinbutton', { name: 'H1 exact magnitude', exact: true }).fill('0.42');

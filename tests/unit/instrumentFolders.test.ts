@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createProject, importProject } from '../../src/core/project';
+import { createProject, importProject, withExampleScore } from '../../src/core/project';
 import {
   createInstrumentFolder,
   moveInstrumentToFolder,
@@ -130,4 +130,13 @@ it('rejects dangling folder memberships and malformed folder metadata before rep
     instrumentFolders: project.instrumentFolders!.map((f) => ({ ...f, privateRuntime: true })),
   };
   expect(importProject(JSON.stringify(extended))).toEqual(project);
+});
+
+it('restoring missing demo presets never imports another project’s folder references', () => {
+  const project = removeInstrumentFolder(createProject(), 'simple-shapes');
+  project.instruments = project.instruments.filter((p) => p.key !== 'sine');
+  const restored = withExampleScore(project);
+  expect(restored.instrumentFolders).toEqual([]);
+  expect(restored.instruments.find((p) => p.key === 'sine')!.folderId).toBeUndefined();
+  expect(() => importProject(JSON.stringify(restored))).not.toThrow();
 });

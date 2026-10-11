@@ -538,12 +538,16 @@ export function withExampleScore(project: Project): Project {
             keys.has(preset.key) &&
             !project.instruments.some((existing) => existing.key === preset.key),
         )
-        .map((preset) => ({
-          ...preset,
-          id: project.instruments.some((existing) => existing.id === preset.id)
-            ? crypto.randomUUID()
-            : preset.id,
-        })),
+        .map((preset) => {
+          // Folder IDs belong to the destination project, not the demo catalog.
+          const { folderId: _factoryFolder, ...unfiled } = preset;
+          return {
+            ...unfiled,
+            id: project.instruments.some((existing) => existing.id === preset.id)
+              ? crypto.randomUUID()
+              : preset.id,
+          };
+        }),
     ],
   };
 }

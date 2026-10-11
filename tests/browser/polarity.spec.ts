@@ -1,3 +1,4 @@
+import { showSimpleShapes } from '../helpers/instrumentLibrary';
 import { expect, test } from '@playwright/test';
 
 const waveform = (page: import('@playwright/test').Page) =>
@@ -14,6 +15,7 @@ test('visible sign buttons and exact inspector change waveform with separate und
   page,
 }) => {
   await page.goto('/');
+  await showSimpleShapes(page);
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
   const sign = page.getByRole('button', { name: 'H3 inverted polarity', exact: true });
   await expect(sign).toHaveText('−');
@@ -36,6 +38,7 @@ test('zero-magnitude sign stays editable, keyboard accessible and isolated in sa
   page,
 }) => {
   await page.goto('/');
+  await showSimpleShapes(page);
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
   await page.getByRole('button', { name: 'Copy A to B', exact: true }).click();
   await page.getByRole('button', { name: 'B', exact: true }).click();
@@ -64,6 +67,7 @@ test('the UI sign change produces the expected inverted sine in actual rendered 
   page,
 }) => {
   await page.goto('/');
+  await showSimpleShapes(page);
   await page.getByRole('button', { name: 'Triangle triangle', exact: true }).click();
   const before = (await saved(page)).comparison.A;
   await page.getByRole('button', { name: 'H3 inverted polarity', exact: true }).click();

@@ -1,3 +1,4 @@
+import { showSimpleShapes } from '../helpers/instrumentLibrary';
 import { expect, test } from '@playwright/test';
 
 const waveform = (page: import('@playwright/test').Page) =>
@@ -10,6 +11,7 @@ test('Soft bass has its own source shape and accurate library thumbnail', async 
   await page.goto('/');
   const triangle = page.getByRole('button', { name: 'Triangle triangle', exact: true });
   const bass = page.getByRole('button', { name: 'Soft bass softBass', exact: true });
+  await showSimpleShapes(page);
   await triangle.click();
   const trianglePath = await waveform(page).getAttribute('d');
   const triangleThumbnail = await triangle.locator('svg path').getAttribute('d');

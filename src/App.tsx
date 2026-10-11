@@ -211,6 +211,9 @@ function RangeControl({
 }
 
 export default function App() {
+  useEffect(() => {
+    document.title = `FourPataka v${version}`;
+  }, []);
   const [initial] = useState(loadProject);
   const [history, setHistory] = useState<History<Project>>({
     past: [],

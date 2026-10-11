@@ -44,7 +44,7 @@ export async function percussionAvailabilityWorkflow(page: Page) {
     old,
   );
   await page.reload();
-  await expect(page.locator('.preset-item')).toHaveCount(9);
+  await expect(page.locator('.preset-item')).toHaveCount(5);
   for (const name of ['Kick kick', 'Closed hi-hat hiHat', 'Snare snare'])
     await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
   await expect(
