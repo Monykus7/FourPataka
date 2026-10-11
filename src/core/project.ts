@@ -414,6 +414,8 @@ export function importProject(text: string): Project {
   stringValue(material.note, 'comparison note');
   // Validate the pitch even when the saved material currently uses a phrase.
   pitch(material.note);
+  if (material.noteBeats !== undefined)
+    numeric(material.noteBeats, 1 / 64, 32, 'audition note length');
   stringValue(material.trackKey, 'comparison track');
   if (!SCORE_KEY.test(material.trackKey)) throw new Error('Invalid comparison track key.');
   numeric(material.fromBeat, 0, 1_000_000, 'phrase start');
@@ -434,6 +436,7 @@ export function importProject(text: string): Project {
     comparisonMaterial: {
       kind: material.kind as ComparisonMaterial['kind'],
       note: material.note,
+      ...(material.noteBeats !== undefined ? { noteBeats: material.noteBeats as number } : {}),
       trackKey: material.trackKey,
       fromBeat: material.fromBeat,
       toBeat: material.toBeat as number | null,

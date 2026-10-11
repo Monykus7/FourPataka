@@ -4,6 +4,8 @@ import { pitch } from './music';
 export interface ComparisonMaterial {
   kind: 'note' | 'chord' | 'phrase';
   note: string;
+  /** Quarter-note beats at the fixed 120 BPM note/chord audition tempo. */
+  noteBeats?: number;
   trackKey: string;
   fromBeat: number;
   toBeat: number | null;
@@ -31,11 +33,14 @@ export function comparisonPhrase(
 ): AuditionPhrase {
   if (material.kind !== 'phrase') {
     const notes = material.kind === 'chord' ? ['Bb4', 'D5', 'F5'] : [material.note];
+    const beats = material.noteBeats ?? 3.2;
+    if (!Number.isFinite(beats) || beats < 1 / 64 || beats > 32)
+      throw new Error('Audition note length must be 1/64–32 quarter-note beats.');
     return {
       tempo: 120,
-      beats: 3.2,
+      beats,
       events: [
-        { beat: 0, duration: 3.2, notes, frequencies: notes.map((n) => pitch(n).frequency) },
+        { beat: 0, duration: beats, notes, frequencies: notes.map((n) => pitch(n).frequency) },
       ],
     };
   }

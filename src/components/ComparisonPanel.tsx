@@ -76,10 +76,40 @@ export default function ComparisonPanel({
               onChange={(e) => onChange({ ...material, note: e.target.value })}
             >
               {Array.from(
-                new Set(['C2', 'C3', 'C4', 'A4', 'C5', 'C6', 'C7', 'C8', material.note]),
+                new Set([
+                  'C1',
+                  'C2',
+                  'C3',
+                  'D3',
+                  'C4',
+                  'A4',
+                  'C5',
+                  'C6',
+                  'C7',
+                  'C8',
+                  material.note,
+                ]),
               ).map((n) => (
                 <option key={n}>{n}</option>
               ))}
+            </select>
+          </label>
+        )}
+        {material.kind !== 'phrase' && (
+          <label>
+            Gate length
+            <select
+              aria-label="Audition gate length"
+              value={material.noteBeats ?? 3.2}
+              onChange={(e) => onChange({ ...material, noteBeats: Number(e.target.value) })}
+            >
+              {Array.from(new Set([0.0625, 0.125, 0.25, 0.5, 1, 3.2, material.noteBeats ?? 3.2]))
+                .sort((a, b) => a - b)
+                .map((beats) => (
+                  <option key={beats} value={beats}>
+                    {Math.round(beats * 500)} ms{beats === 3.2 ? ' · default' : ''}
+                  </option>
+                ))}
             </select>
           </label>
         )}

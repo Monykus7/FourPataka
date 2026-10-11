@@ -20,6 +20,34 @@ const score = parseScore(
   project.instruments.map((i) => i.key),
 );
 describe('shared A/B musical material', () => {
+  it('keeps old gates unchanged and shares short note/chord gates without altering score timing', () => {
+    expect(comparisonPhrase(score, DEFAULT_MATERIAL).events[0].duration).toBe(3.2);
+    for (const kind of ['note', 'chord'] as const) {
+      const material = { ...DEFAULT_MATERIAL, kind, noteBeats: 0.125 };
+      expect(comparisonPhrase(score, material)).toMatchObject({
+        tempo: 120,
+        beats: 0.125,
+        events: [{ beat: 0, duration: 0.125 }],
+      });
+      expect(
+        importProject(JSON.stringify({ ...project, comparisonMaterial: material }))
+          .comparisonMaterial,
+      ).toEqual(material);
+    }
+    expect(
+      comparisonPhrase(score, { ...DEFAULT_MATERIAL, kind: 'phrase', noteBeats: 0.125 }).beats,
+    ).toBe(4);
+    for (const noteBeats of [0, -1, 0.001, 33, NaN, Infinity]) {
+      expect(() => comparisonPhrase(score, { ...DEFAULT_MATERIAL, noteBeats })).toThrow(
+        'Audition note length',
+      );
+      expect(() =>
+        importProject(
+          JSON.stringify({ ...project, comparisonMaterial: { ...DEFAULT_MATERIAL, noteBeats } }),
+        ),
+      ).toThrow();
+    }
+  });
   it('uses one track, preserves rests and chords, and rebases clipped boundaries', () => {
     const phrase = comparisonPhrase(score, {
       ...DEFAULT_MATERIAL,
