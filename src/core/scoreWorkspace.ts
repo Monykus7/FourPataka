@@ -1,0 +1,132 @@
+import { lexScore } from './scoreLexer';
+import { SCORE_KEY } from './music';
+import type { Project } from './project';
+
+export interface TrackSourceView {
+  key: string;
+  from: number;
+  to: number;
+  keyFrom: number;
+  keyTo: number;
+  firstLine: number;
+}
+export interface ScoreViewIndex {
+  source: string;
+  tracks: TrackSourceView[];
+  problem: string | null;
+}
+
+/** Views address canonical UTF-16 offsets, never an independently saved document. */
+export function indexScoreViews(source: string): ScoreViewIndex {
+  const tracks: TrackSourceView[] = [];
+  const stack: ('track' | 'repeat' | 'bracket')[] = [];
+  let current: TrackSourceView | null = null;
+  const fail = (problem: string): ScoreViewIndex => ({ source, tracks: [], problem });
+  for (const token of lexScore(source)) {
+    if (token.kind === 'text') {
+      const header =
+        /^track\s+([A-Za-z][A-Za-z0-9_]*)\s+using\s+\S+(?:\s+through\s+\S+)?\s*\{$/.exec(
+          token.text,
+        );
+      if (header) {
+        if (current || stack.length) return fail('A track header is inside another block.');
+        if (header[1].length > 100 || tracks.some((track) => track.key === header[1]))
+          return fail('Track names must be unique and at most 100 characters.');
+        const keyFrom = token.from + /^track\s+/.exec(token.text)![0].length;
+        current = {
+          key: header[1],
+          from: token.from,
+          to: token.to,
+          keyFrom,
+          keyTo: keyFrom + header[1].length,
+          firstLine: token.line,
+        };
+        stack.push('track');
+      } else if (/^track\b/.test(token.text) || /[{}]/.test(token.text)) {
+        return fail('A track header or brace is incomplete.');
+      }
+    } else if (token.kind === 'repeat-open') {
+      if (!current) return fail('A repeat is outside a track.');
+      stack.push('repeat');
+    } else if (['articulation-open', 'tuplet-open'].includes(token.kind)) {
+      if (!current) return fail('A grouped phrase is outside a track.');
+      stack.push('bracket');
+    } else if (token.kind === 'bracket-open') {
+      return fail('A bracket has no recognized phrase command.');
+    } else if (token.kind === 'block-close') {
+      if (stack.pop() !== 'bracket') return fail('A phrase bracket is unmatched.');
+    } else if (token.kind === 'brace-close') {
+      const scope = stack.pop();
+      if (scope === 'track' && current) {
+        tracks.push({ ...current, to: token.to });
+        current = null;
+      } else if (scope !== 'repeat') return fail('A closing brace is unmatched.');
+    }
+    if (stack.length > 64) return fail('Too many nested source blocks.');
+  }
+  if (current || stack.length) return fail('A track or phrase block is not closed.');
+  return { source, tracks, problem: null };
+}
+
+function currentView(source: string, index: ScoreViewIndex, key: string) {
+  // Offset reuse after a full-score/other-track edit could overwrite unrelated music.
+  if (source !== index.source)
+    throw new Error('The score changed. Select the track again before editing.');
+  const view = !index.problem && index.tracks.find((track) => track.key === key);
+  if (!view) throw new Error('Open All score to repair the track boundaries.');
+  return view;
+}
+
+export function editTrackView(source: string, index: ScoreViewIndex, key: string, value: string) {
+  const view = currentView(source, index, key);
+  const text = source.slice(0, view.from) + value + source.slice(view.to);
+  const local = indexScoreViews(value);
+  const only = !local.problem && local.tracks.length === 1 ? local.tracks[0] : null;
+  const whole = indexScoreViews(text);
+  // Incomplete typing is retained verbatim, then exposed in All score for recovery.
+  const trackKey =
+    only && !whole.problem && !(value.slice(0, only.from) + value.slice(only.to)).trim()
+      ? only.key
+      : null;
+  return { text, trackKey };
+}
+
+export function renameTrackSource(
+  source: string,
+  index: ScoreViewIndex,
+  key: string,
+  nextKey: string,
+) {
+  const view = currentView(source, index, key);
+  if (!SCORE_KEY.test(nextKey) || nextKey.length > 100)
+    throw new Error('Use a name starting with a letter, followed by letters, digits or _.');
+  if (nextKey !== key && index.tracks.some((track) => track.key === nextKey))
+    throw new Error('Another track already uses that name.');
+  return source.slice(0, view.keyFrom) + nextKey + source.slice(view.keyTo);
+}
+
+export function removeTrackSource(source: string, index: ScoreViewIndex, key: string) {
+  const view = currentView(source, index, key);
+  return source.slice(0, view.from) + source.slice(view.to);
+}
+
+/** Renaming a view must move owned instances, rather than re-copy a library preset. */
+export function moveTrackOwnership(project: Project, from: string, to: string): Project {
+  if (from === to) return project;
+  if (project.tracks.some((track) => track.key === to))
+    throw new Error('Another track already uses that name.');
+  const chains = { ...project.processing.tracks };
+  if (chains[from]) {
+    chains[to] = chains[from];
+    delete chains[from];
+  }
+  return {
+    ...project,
+    tracks: project.tracks.map((track) => (track.key === from ? { ...track, key: to } : track)),
+    processing: { ...project.processing, tracks: chains },
+    comparisonMaterial:
+      project.comparisonMaterial.trackKey === from
+        ? { ...project.comparisonMaterial, trackKey: to }
+        : project.comparisonMaterial,
+  };
+}
