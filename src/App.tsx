@@ -91,6 +91,13 @@ import { moveTrackOwnership, removeTrackOwnership } from './core/scoreWorkspace'
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import { PERCUSSION_PRESETS } from './core/instrumentPresets';
 import ComparisonPanel from './components/ComparisonPanel';
+import InstrumentLibrary from './components/InstrumentLibrary';
+import {
+  createInstrumentFolder,
+  moveInstrumentToFolder,
+  removeInstrumentFolder,
+  renameInstrumentFolder,
+} from './core/instrumentFolders';
 import { version } from '../package.json';
 import { applyTheme, resolveTheme, THEMES } from './core/themes';
 const ScoreWorkspace = lazy(() => import('./components/ScoreWorkspace'));
@@ -984,43 +991,39 @@ export default function App() {
               ))}
             </span>
           </label>
-          <div className="library-title">
-            <span className="sidebar-section-label">INSTRUMENT LIBRARY</span>
-            <button
-              className="icon-button"
-              aria-label="Save sound as new preset"
-              title="Save as new"
-              onClick={() => {
-                setPresetLabel('');
-                setPresetKey('');
-                setModalError('');
-                setNewPreset(true);
-              }}
-            >
-              <Plus size={15} />
-            </button>
-          </div>
-          <div className="preset-list">
-            {instruments.map((i) => (
-              <button
-                key={i.id}
-                onClick={() => {
-                  selectPreset(i.id);
-                  setView('instrument');
-                }}
-                className={`preset-item ${preset.id === i.id ? 'selected' : ''}`}
-              >
-                <span className="preset-mini">
-                  <MiniWave kind={i.key} sound={i.sound} />
-                </span>
-                <span>
-                  {i.label}
-                  <small>{i.key}</small>
-                </span>
-                {preset.id === i.id && <span className="preset-dot" />}
-              </button>
-            ))}
-          </div>
+          <InstrumentLibrary
+            instruments={instruments}
+            folders={project.instrumentFolders ?? []}
+            selectedId={preset.id}
+            thumbnail={(item) => <MiniWave kind={item.key} sound={item.sound} />}
+            onSelect={(id) => {
+              selectPreset(id);
+              setView('instrument');
+            }}
+            onSaveNew={() => {
+              setPresetLabel('');
+              setPresetKey('');
+              setModalError('');
+              setNewPreset(true);
+            }}
+            onCreateFolder={(label) => {
+              const next = createInstrumentFolder(project, label, crypto.randomUUID());
+              change(() => next);
+            }}
+            onRenameFolder={(id, label) => {
+              const next = renameInstrumentFolder(project, id, label);
+              change(() => next);
+            }}
+            onRemoveFolder={(id) => {
+              const next = removeInstrumentFolder(project, id);
+              change(() => next);
+              setToast('Folder removed. Its instruments are now unfiled.');
+            }}
+            onMove={(id, folderId) => {
+              const next = moveInstrumentToFolder(project, id, folderId);
+              change(() => next);
+            }}
+          />
           <div className="sidebar-bottom">
             <span className="version-label">FourPataka · v{version}</span>
           </div>
@@ -1103,6 +1106,28 @@ export default function App() {
                     {instruments.map((i) => (
                       <option key={i.id} value={i.id}>
                         {i.label} · {i.key}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="instrument-folder-picker">
+                  Library folder
+                  <select
+                    aria-label="Instrument folder"
+                    value={preset.folderId ?? ''}
+                    onChange={(e) => {
+                      const next = moveInstrumentToFolder(
+                        project,
+                        preset.id,
+                        e.target.value || null,
+                      );
+                      change(() => next);
+                    }}
+                  >
+                    <option value="">Unfiled</option>
+                    {(project.instrumentFolders ?? []).map((folder) => (
+                      <option key={folder.id} value={folder.id}>
+                        {folder.label}
                       </option>
                     ))}
                   </select>
