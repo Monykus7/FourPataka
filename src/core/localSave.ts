@@ -100,6 +100,12 @@ export function loadProject(storage?: LocalStore): {
         (preset) => !savedInstruments.some((saved: { key: string }) => saved.key === preset.key),
       );
       const messages: string[] = [];
+      const oldSnare = savedInstruments.find((preset: { id: string }) => preset.id === 'snare');
+      const newSnare = project.instruments.find((preset) => preset.id === 'snare');
+      if (oldSnare?.version < 3 && newSnare?.version === 3)
+        messages.push(
+          'Snare library preset updated. Existing tracks and A/B sounds are kept. Select Snare from the library, then Preview hit to hear the revised sound; Apply updates a track.',
+        );
       if (before?.version === 1 && after?.version === 2)
         messages.push(
           'Soft bass library preset updated. Existing tracks and A/B sounds are kept. Load Soft bass from the library to use the new shape.',

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { drumEditingWorkflow } from '../helpers/percussion';
+import { drumEditingWorkflow, snarePreviewWorkflow } from '../helpers/percussion';
 
 test('drum controls save pitch and separate decay with independent Apply and reload', async ({
   page,
@@ -144,5 +144,84 @@ test('kick has a falling low body and snare has an independent longer broadband 
     expect(result.peak).toBeLessThan(0.65);
     expect(result.finite).toBe(true);
     expect(result.tail).toBe(0);
+  }
+});
+
+test('snare hit preview uses its intended pitch and retains explicit track ownership', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await snarePreviewWorkflow(page);
+});
+
+test('snare rattle dominates its body at bass and snare pitches and preview matches the actual voice', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const results = await page.evaluate(async () => {
+    const { snarePreset } = await import('/src/core/' + 'instrumentPresets.ts');
+    const { createVoice } = await import('/src/audio/' + 'voice.ts');
+    const { renderHitPreview } = await import('/src/audio/' + 'hitPreview.ts');
+    const output = [];
+    for (const rate of [44100, 48000])
+      for (const frequency of [65.406391, 195.997718]) {
+        const sound = snarePreset();
+        const render = async (sound: any) => {
+          const context = new OfflineAudioContext(1, Math.ceil(0.44 * rate), rate);
+          const voice = createVoice(context, context.destination, sound, frequency, 0, 0.25);
+          const data = (await context.startRendering()).getChannelData(0);
+          voice.dispose();
+          return data;
+        };
+        const body = structuredClone(sound);
+        body.percussion!.noise = 0;
+        const noise = structuredClone(sound);
+        noise.harmonics.fill(0);
+        const data = await render(sound),
+          bodyData = await render(body),
+          noiseData = await render(noise);
+        const energy = (data: Float32Array) =>
+          data
+            .slice(Math.floor(0.005 * rate), Math.floor(0.04 * rate))
+            .reduce((sum, v) => sum + v * v, 0);
+        let previewError = 0;
+        if (rate === 44100) {
+          const preview = await renderHitPreview(sound, frequency);
+          for (let i = 0; i < 180; i++) {
+            const bucket = data.slice(
+              Math.floor((i * data.length) / 180),
+              Math.floor(((i + 1) * data.length) / 180),
+            );
+            previewError = Math.max(
+              previewError,
+              Math.abs(Math.min(0, ...bucket) - preview.bins[i].low),
+              Math.abs(Math.max(0, ...bucket) - preview.bins[i].high),
+            );
+          }
+        }
+        const darker = structuredClone(noise);
+        darker.percussion!.lowpass = 2000;
+        const darkData = await render(darker);
+        const brightness = (data: Float32Array) =>
+          data
+            .slice(0, Math.floor(0.1 * rate))
+            .reduce((sum, v, i) => sum + (i ? (v - data[i - 1]) ** 2 : 0), 0);
+        output.push({
+          rate,
+          frequency,
+          noiseToBody: Math.sqrt(energy(noiseData) / energy(bodyData)),
+          previewError,
+          brightnessRatio: brightness(darkData) / brightness(noiseData),
+          peak: Math.max(...Array.from(data, Math.abs)),
+        });
+      }
+    return output;
+  });
+  console.log(JSON.stringify(results));
+  for (const result of results) {
+    expect(result.noiseToBody).toBeGreaterThan(2.5);
+    expect(result.previewError).toBeLessThan(1e-6);
+    expect(result.brightnessRatio).toBeLessThan(0.3);
+    expect(result.peak).toBeLessThan(0.65);
   }
 });

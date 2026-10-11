@@ -1565,7 +1565,7 @@ export default function App() {
                           value={sound.percussion.decay * 1000}
                           min={10}
                           max={2000}
-                          step={5}
+                          step={1}
                           unit="ms"
                           onChange={(n) =>
                             changeSound(

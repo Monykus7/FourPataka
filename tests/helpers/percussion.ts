@@ -96,8 +96,8 @@ export async function drumEditingWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Kick kick', exact: true }).click();
   await expect(page.getByRole('slider', { name: 'Pitch decay', exact: true })).toHaveValue('35');
   await page.getByRole('button', { name: 'Snare snare', exact: true }).click();
-  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('45');
-  await expect(page.getByRole('slider', { name: 'Noise decay', exact: true })).toHaveValue('90');
+  await expect(page.getByRole('slider', { name: 'Hit decay', exact: true })).toHaveValue('22');
+  await expect(page.getByRole('slider', { name: 'Noise decay', exact: true })).toHaveValue('85');
   await page.getByRole('button', { name: 'Use hit preview', exact: true }).click();
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Listen', exact: true })).not.toHaveClass(
@@ -184,7 +184,7 @@ export async function percussionWorkflow(page: Page) {
         .getAttribute('d'))!,
     );
     await expect(page.locator('.percussion-hint')).toContainText(
-      key === 'hiHat' ? 'Filtered noise' : key === 'kick' ? 'Falling pitch' : 'noise rattle',
+      key === 'hiHat' ? 'Filtered noise' : key === 'kick' ? 'Falling pitch' : 'wire rattle',
     );
     if (key === 'hiHat') {
       await expect(
@@ -239,4 +239,62 @@ export async function percussionWorkflow(page: Page) {
   await expect(
     page.getByRole('button', { name: 'Closed hi-hat hiHat', exact: true }),
   ).toBeVisible();
+}
+
+export async function snarePreviewWorkflow(page: Page) {
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const source = 'track snares using snare {\n G3 quarter\n}';
+  await editor.fill(source);
+  const saved = () =>
+    page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
+  await expect.poll(async () => (await saved()).scoreText).toBe(source);
+  const before = await saved();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Audition pitch', exact: true }).selectOption('C2');
+  await page.getByRole('button', { name: 'Snare snare', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Audition pitch', exact: true })).toHaveValue(
+    'C2',
+  );
+  await expect(page.getByRole('slider', { name: 'Pitch drop', exact: true })).toHaveValue('0');
+  await expect(page.getByRole('slider', { name: 'Noise low-pass', exact: true })).toHaveValue(
+    '7800',
+  );
+  await page.getByRole('button', { name: 'Preview hit', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Audition pitch', exact: true })).toHaveValue(
+    'G3',
+  );
+  await expect(
+    page.getByRole('combobox', { name: 'Audition gate length', exact: true }),
+  ).toHaveValue('0.5');
+  const hit = page.getByRole('img', {
+    name: 'Rendered drum hit, including noise, pitch, envelope and trim',
+  });
+  await expect(hit).toHaveAttribute('data-ready', 'true');
+  expect((await hit.locator('path').getAttribute('d'))!.length).toBeGreaterThan(1000);
+  await expect(page.getByRole('button', { name: 'Listen', exact: true })).not.toHaveClass(
+    /playing/,
+  );
+  await page.getByRole('spinbutton', { name: 'Noise low-pass exact value' }).fill('6000');
+  await page.getByRole('button', { name: 'Save preset', exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        (await saved()).instruments.find((p: any) => p.key === 'snare').sound.percussion.lowpass,
+    )
+    .toBe(6000);
+  expect((await saved()).tracks).toEqual(before.tracks);
+  expect((await saved()).comparison.B).toEqual(before.comparison.B);
+  await page
+    .getByRole('combobox', { name: 'Apply destination', exact: true })
+    .selectOption('snares');
+  await page.getByRole('button', { name: 'Apply to snares', exact: true }).click();
+  await expect.poll(async () => (await saved()).tracks[0].sound.percussion.lowpass).toBe(6000);
+  await page.reload();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await expect(page.getByRole('slider', { name: 'Noise low-pass', exact: true })).toHaveValue(
+    '6000',
+  );
+  await expect(hit).toHaveAttribute('data-ready', 'true');
+  await page.screenshot({ path: '.test-results/snare-complete-hit.png', fullPage: true });
 }

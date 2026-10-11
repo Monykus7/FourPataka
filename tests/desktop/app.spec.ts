@@ -8,6 +8,7 @@ import {
   percussionAvailabilityWorkflow,
   hiHatEditingWorkflow,
   drumEditingWorkflow,
+  snarePreviewWorkflow,
   PERCUSSION_SCORE,
 } from '../helpers/percussion';
 import {
@@ -929,4 +930,19 @@ test('packaged drums retain pitch and noise settings through native JSON saving'
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
   expect(saved.tracks[0].sound.percussion.pitch).toEqual({ amount: 18, decay: 0.035 });
   expect(saved.tracks[0].sound.percussion.noiseDecay).toBe(0.02);
+});
+
+test('packaged snare previews the whole hit and retains its noise band through native JSON', async () => {
+  const page = await app.firstWindow();
+  await snarePreviewWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'snare.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved snare.fourpataka.json');
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.tracks[0].sound.percussion.lowpass).toBe(6000);
+  expect(saved.tracks[0].sound.percussion.pitch).toBeUndefined();
+  expect(saved.comparisonMaterial.note).toBe('G3');
 });

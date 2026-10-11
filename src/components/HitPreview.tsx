@@ -32,12 +32,22 @@ export default function HitPreview({
     };
   }, [key, frequency]);
   const data = preview?.key === key ? preview.data : null;
+  const width = compact ? 52 : 600;
+  const height = compact ? 36 : 140;
+  // Tiny library icons scale their drawing to reveal the transient. The large
+  // measurement graph retains its fixed amplitude scale and audio never changes.
+  const scale = compact
+    ? 15 / Math.max(0.001, ...(data?.bins.flatMap((b) => [Math.abs(b.low), b.high]) ?? []))
+    : 65;
   const lines = data?.bins
-    .map(({ low, high }, i) => `M${(i * 600) / 179},${70 - high * 65}V${70 - low * 65}`)
+    .map(
+      ({ low, high }, i) =>
+        `M${(i * width) / 179},${height / 2 - high * scale}V${height / 2 - low * scale}`,
+    )
     .join(' ');
   const graph = (
     <svg
-      viewBox="0 0 600 140"
+      viewBox={`0 0 ${width} ${height}`}
       className={compact ? undefined : 'wave-graph'}
       role={compact ? undefined : 'img'}
       aria-hidden={compact || undefined}
@@ -46,8 +56,8 @@ export default function HitPreview({
       }
       data-ready={!!data}
     >
-      <line x1="0" y1="70" x2="600" y2="70" className="graph-grid" />
-      <path d={lines} fill="none" stroke="currentColor" strokeWidth="2" />
+      <line x1="0" y1={height / 2} x2={width} y2={height / 2} className="graph-grid" />
+      <path d={lines} fill="none" stroke="currentColor" strokeWidth={compact ? 0.6 : 2} />
     </svg>
   );
   if (compact) return graph;
@@ -70,7 +80,7 @@ export default function HitPreview({
         <span>{data ? `${Math.round(data.duration * 1000)} ms` : ''}</span>
       </div>
       <p className="hint">
-        250 ms gate at {Math.round(frequency)} Hz, before pedals. Fourier editing below controls the
+        250 ms gate at {Math.round(frequency)} Hz, before pedals. Fourier controls edit only the
         pitched body.
       </p>
     </section>

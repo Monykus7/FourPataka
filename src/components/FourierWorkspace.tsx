@@ -230,7 +230,13 @@ export default function FourierWorkspace({
         </div>
         <div className={`fourier-waveform graph-card tool-${tool}`}>
           <div className="graph-heading">
-            <span>{mode === 'waveform' ? 'Source waveform' : 'Waveform preview'}</span>
+            <span>
+              {sound.percussion
+                ? 'Pitched body waveform'
+                : mode === 'waveform'
+                  ? 'Source waveform'
+                  : 'Waveform preview'}
+            </span>
             <span className="tag">ONE CYCLE</span>
           </div>
           {mode === 'waveform' && (

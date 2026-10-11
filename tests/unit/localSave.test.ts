@@ -1,3 +1,4 @@
+import { legacySnareV2Preset } from '../../src/core/instrumentPresets';
 import { expect, it } from 'vitest';
 import {
   loadProject,
@@ -155,4 +156,21 @@ it('exposes the latest damaged bytes directly when archival cannot write, ahead 
     project: null,
   });
   expect(storage.getItem(UNREADABLE_KEY)).toBe('{older damage');
+});
+
+it('announces a snare library refresh without replacing the current A/B sound', () => {
+  const storage = memoryStore();
+  const old = createProject();
+  const snare = old.instruments.find((p) => p.key === 'snare')!;
+  snare.version = 2;
+  snare.sound = legacySnareV2Preset();
+  old.comparison.A = legacySnareV2Preset();
+  old.editorPresetId = snare.id;
+  storage.setItem(STORAGE_KEY, JSON.stringify(old));
+  const loaded = loadProject(storage);
+  expect(loaded.warning).toContain('Select Snare from the library, then Preview hit');
+  expect(loaded.project.comparison.A).toEqual(old.comparison.A);
+  expect(loaded.project.tracks).toEqual(old.tracks);
+  saveLocalProject(loaded.project, storage);
+  expect(loadProject(storage).warning).toBeNull();
 });
