@@ -1,8 +1,11 @@
 import type { Articulation } from './articulation';
+import { indexScoreFiles, scoreFileAt, type ScoreFileIndex } from './scoreFiles';
 
 export interface ScoreToken {
   kind:
     | 'text'
+    | 'file-boundary'
+    | 'song-link'
     | 'articulation-open'
     | 'tuplet-open'
     | 'repeat-open'
@@ -23,13 +26,17 @@ export interface ScoreToken {
   nameFrom?: number;
   nameTo?: number;
   trimExpression?: string;
+  fileId?: string;
 }
 
 export const isScoreBraceOpen = (token: ScoreToken) =>
   ['repeat-open', 'section-open', 'ending-open'].includes(token.kind) ||
   (token.kind === 'text' && /^track\b.*\{$/.test(token.text));
 
-export function lexScore(text: string): ScoreToken[] {
+export function lexScore(
+  text: string,
+  fileIndex: ScoreFileIndex = indexScoreFiles(text),
+): ScoreToken[] {
   const tokens: ScoreToken[] = [];
   let offset = 0;
   text.split('\n').forEach((raw, index) => {
@@ -53,11 +60,29 @@ export function lexScore(text: string): ScoreToken[] {
         from,
         to: from + trimmed.length,
         line: index + 1,
+        fileId: scoreFileAt(fileIndex, from)?.id,
         ...(articulation ? { articulation } : {}),
         ...(modifier ? { modifier } : {}),
         ...(repeatCount !== undefined ? { repeatCount } : {}),
       });
     };
+    if (fileIndex.explicit && fileIndex.files.some((file) => file.markerFrom === offset)) {
+      tokens.push({
+        kind: 'file-boundary',
+        text: raw.trim(),
+        from: offset,
+        to: offset + raw.length,
+        line: index + 1,
+        fileId: scoreFileAt(fileIndex, offset)?.id,
+      });
+      offset += raw.length + 1;
+      return;
+    }
+    if (/^from\s+song\b/.test(source.trim())) {
+      emit(0, source.length, 'song-link');
+      offset += raw.length + 1;
+      return;
+    }
     // A preset/chain may legally be named repeat; a complete header owns its identifiers.
     if (/^track\s+\S+\s+using\s+\S+(?:\s+through\s+\S+)?\s*\{$/.test(source.trim())) {
       emit(0, source.length, 'text');

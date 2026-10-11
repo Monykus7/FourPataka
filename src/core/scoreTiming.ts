@@ -8,6 +8,10 @@ export function scoreTiming(tokens: ScoreToken[]) {
     depth = 0;
   const requested: { position: BeatFraction; meter: TimeSignature }[] = [];
   for (const token of tokens) {
+    if (token.kind === 'file-boundary') {
+      depth = 0;
+      continue;
+    }
     if (['repeat-open', 'section-open', 'ending-open'].includes(token.kind)) {
       depth++;
       continue;

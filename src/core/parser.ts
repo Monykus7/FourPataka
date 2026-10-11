@@ -3,6 +3,7 @@ import { beatExpression } from './beatExpression';
 import { scoreTiming, restToBar } from './scoreTiming';
 import { lexScore, type ScoreToken } from './scoreLexer';
 import { indexScoreSections, type SectionSource } from './scoreSections';
+import { indexScoreFiles, scoreFileAt } from './scoreFiles';
 import { compareBeats, minBeats, sectionCut, subtractBeats } from './sectionTiming';
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
@@ -17,6 +18,7 @@ import { expandChordSymbol, type ChordExpansion } from './chordSymbols';
 import { CHORD_SHAPES, type ChordShapeRegistry } from '../modules/chords';
 
 export interface Diagnostic {
+  fileId?: string;
   sectionCalls?: Pick<SectionInvocation, 'name' | 'from' | 'to' | 'line' | 'track'>[];
   from: number;
   to: number;
@@ -24,6 +26,7 @@ export interface Diagnostic {
   message: string;
 }
 export interface ScoreEvent {
+  fileId?: string;
   sectionEndingOf?: string[];
   sectionCalls?: SectionInvocation[];
   articulation?: Articulation;
@@ -42,6 +45,8 @@ export interface ScoreEvent {
   line: number;
 }
 export interface SectionInvocation {
+  fileId?: string;
+  definitionFileId?: string;
   id: string;
   track: string;
   name: string;
@@ -58,7 +63,18 @@ export interface SectionInvocation {
   retainedBeats: number;
   clippedByParent?: boolean;
 }
+export interface ScoreTrackPart {
+  fileId?: string;
+  from: number;
+  to: number;
+  instrumentFrom: number;
+  instrumentTo: number;
+  chainFrom?: number;
+  chainTo?: number;
+  bodyTo: number;
+}
 export interface ScoreTrack {
+  parts: ScoreTrackPart[];
   key: string;
   instrumentKey: string;
   instrumentFrom: number;
@@ -133,7 +149,9 @@ export function parseScore(
       });
     blocks.length = 0;
   };
-  const tokens = lexScore(text);
+  const fileIndex = indexScoreFiles(text);
+  result.diagnostics.push(...fileIndex.diagnostics);
+  const tokens = lexScore(text, fileIndex);
   const sectionIndex = indexScoreSections(text, tokens);
   result.sections = sectionIndex.sections;
   result.diagnostics.push(...sectionIndex.diagnostics);
@@ -170,6 +188,30 @@ export function parseScore(
         line: token.line,
         message,
       });
+    if (token.kind === 'file-boundary') {
+      if (current || blocks.length)
+        error('Close all track and phrase blocks before the next file.');
+      reportUnclosed();
+      current = null;
+      return;
+    }
+    if (token.kind === 'song-link') {
+      if (current || blocks.length)
+        error('from song belongs at the top of a file, outside tracks.');
+      else if (!/^from\s+song\s+[A-Za-z][A-Za-z0-9_]{0,99}$/.test(line))
+        error('Use from song <songKey>; letters, digits and _ are supported.');
+      else {
+        const file = fileIndex.files.find((file) => file.id === token.fileId);
+        const preceding =
+          file &&
+          text
+            .slice(file.from, token.from)
+            .split('\n')
+            .some((line) => line.split('//')[0].trim());
+        if (preceding) error('from song must be the first command in its file.');
+      }
+      return;
+    }
     if (token.kind === 'articulation-open' || token.kind === 'tuplet-open') {
       if (!current) error('Articulation and tuplet blocks belong inside a track.');
       else if (blocks.length >= 64) error('Score blocks may nest at most 64 levels.');
@@ -200,7 +242,11 @@ export function parseScore(
     if (line === '}') {
       reportUnclosed();
       if (!current) error('Unexpected closing brace.');
-      else current.bodyTo = from;
+      else {
+        current.bodyTo = from;
+        current.parts[current.parts.length - 1].bodyTo = from;
+        current.parts[current.parts.length - 1].to = to;
+      }
       current = null;
       return;
     }
@@ -268,7 +314,17 @@ export function parseScore(
         const [, key, instrumentKey, chain] = header;
         if (!SCORE_KEY.test(key))
           error('Track keys must start with a letter and contain only letters, digits, or _.');
-        if (tracks.has(key)) error(`Duplicate track “${key}”.`);
+        const existing = result.tracks.find((track) => track.key === key);
+        if (
+          existing &&
+          (!fileIndex.explicit || existing.parts.some((part) => part.fileId === token.fileId))
+        )
+          error(`Duplicate track “${key}” in this file.`);
+        else if (
+          existing &&
+          (existing.instrumentKey !== instrumentKey || existing.chainKey !== (chain ?? null))
+        )
+          error(`Track “${key}” must use the same instrument and pedal assignment in every file.`);
         tracks.add(key);
         if (tracks.size > 128) error('A project may contain at most 128 tracks.');
         if (!instrumentKeys.includes(instrumentKey))
@@ -283,7 +339,19 @@ export function parseScore(
             chainFrom,
             chainFrom + chain.length,
           );
-        current = {
+        const part: ScoreTrackPart = {
+          fileId: token.fileId,
+          from,
+          to,
+          instrumentFrom: from + prefix.length,
+          instrumentTo,
+          ...(chain ? { chainFrom, chainTo: chainFrom + chain.length } : {}),
+          bodyTo: to,
+        };
+        // Reopening a track in another file extends its clock and owned sound,
+        // rather than creating a parallel duplicate starting at beat zero.
+        current = existing ?? {
+          parts: [],
           key,
           instrumentKey,
           instrumentFrom: from + prefix.length,
@@ -294,7 +362,8 @@ export function parseScore(
           events: [],
           beats: 0,
         };
-        result.tracks.push(current);
+        current.parts.push(part);
+        if (!existing) result.tracks.push(current);
         return;
       }
       if (/^master\b/.test(line)) error('Use master through <pedalKey> outside track blocks.');
@@ -399,6 +468,7 @@ export function parseScore(
         return;
       }
       const compiled: ScoreEvent = {
+        fileId: token.fileId,
         ...(endingOwners.size ? { sectionEndingOf: [...endingOwners] } : {}),
         ...(callStack.length ? { sectionCalls: [...callStack] } : {}),
         id: `${current.key}:${current.events.length}`,
@@ -505,6 +575,8 @@ export function parseScore(
             continue;
           }
           const call: SectionInvocation = {
+            fileId: token.fileId,
+            definitionFileId: section.fileId,
             id: `${track.key}:section:${invocationId++}`,
             track: track.key,
             name: section.name,
@@ -718,6 +790,8 @@ export function parseScore(
   result.beats = Math.max(0, ...result.tracks.map((t) => t.beats));
   result.seconds = (result.beats * 60) / result.tempo;
   result.chordPreviews = [...chordPreviews.values()];
+  for (const diagnostic of result.diagnostics)
+    diagnostic.fileId = scoreFileAt(fileIndex, diagnostic.from)?.id;
   return result;
 }
 

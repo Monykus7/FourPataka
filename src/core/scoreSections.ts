@@ -2,6 +2,7 @@ import { SCORE_KEY } from './music';
 import { isScoreBraceOpen, lexScore, type ScoreToken } from './scoreLexer';
 
 export interface SectionSource {
+  fileId?: string;
   track: string;
   name: string;
   from: number;
@@ -45,6 +46,15 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
     result.diagnostics.push({ from: token.from, to: token.to, line: token.line, message });
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i];
+    if (token.kind === 'file-boundary') {
+      if (stack.length) {
+        report(token, 'Close all track and phrase blocks before the next file.');
+        result.complete = false;
+      }
+      stack.length = 0;
+      track = '';
+      continue;
+    }
     if (token.kind === 'text') {
       const header = /^track\s+(\S+)\s+using\b/.exec(token.text);
       if (header && /\{$/.test(token.text)) {
@@ -73,6 +83,7 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
         localNames.add(token.sectionName!);
         names.set(track, localNames);
         result.sections.push({
+          fileId: token.fileId,
           track,
           name: token.sectionName!,
           from: token.from,
