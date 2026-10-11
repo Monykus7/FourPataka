@@ -36,7 +36,7 @@ import { COMMANDS, type ScoreEvent, type Diagnostic } from '../core/parser';
 import { CHORD_SHAPES } from '../modules/chords';
 import { DURATIONS } from '../core/music';
 import { COMMON_METERS } from '../core/meter';
-import { sectionNamesAt } from '../core/scoreSections';
+import { sectionNamesAt, indexScoreSections } from '../core/scoreSections';
 
 type SymbolPreview = NonNullable<ScoreEvent['chordSymbol']>;
 const updateChords = StateEffect.define<SymbolPreview[]>();
@@ -113,7 +113,7 @@ const scoreLanguage = StreamLanguage.define({
     }
     if (
       stream.match(
-        /\b(?:tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|section|play|trim|at|triplet|tuplet|staccato|legato)\b/,
+        /\b(?:from|song|tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|section|play|trim|at|triplet|tuplet|staccato|legato)\b/,
       )
     )
       return 'keyword';
@@ -187,6 +187,8 @@ interface Props {
   onRedo: () => void;
   initialPosition?: ScoreEditorPosition;
   navigation?: { id: number; from: number; to: number };
+  sections?: { track: string; name: string }[];
+  songKey?: string;
   onPosition?: (position: ScoreEditorPosition) => void;
 }
 export default function ScoreEditor({
@@ -203,11 +205,15 @@ export default function ScoreEditor({
   initialPosition,
   navigation,
   onPosition,
+  sections = [],
+  songKey,
 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
   const callbacks = useRef({ onChange, onUndo, onRedo, onPosition });
   callbacks.current = { onChange, onUndo, onRedo, onPosition };
+  const shared = useRef({ sections, songKey });
+  shared.current = { sections, songKey };
   const remember = (editor: EditorView) =>
     callbacks.current.onPosition?.({
       anchor: editor.state.selection.main.anchor,
@@ -223,17 +229,44 @@ export default function ScoreEditor({
         ? [
             (context) => {
               const line = context.state.doc.lineAt(context.pos);
+              const song = /^\s*from\s+song\s+([A-Za-z0-9_]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (song)
+                return {
+                  from: context.pos - song[1].length,
+                  options: shared.current.songKey
+                    ? [
+                        {
+                          label: shared.current.songKey,
+                          type: 'variable',
+                          detail: 'Shared song key',
+                        },
+                      ]
+                    : [],
+                  validFor: /[A-Za-z0-9_]*/,
+                };
               const section = /^\s*play\s+([A-Za-z0-9_]*)$/.exec(
                 line.text.slice(0, context.pos - line.from),
               );
-              if (section)
+              if (section) {
+                const doc = context.state.doc.toString();
+                const track = indexScoreSections(doc)
+                  .tracks.filter((t) => t.from <= context.pos && t.to >= context.pos)
+                  .at(-1);
                 return {
                   from: context.pos - section[1].length,
-                  options: sectionNamesAt(context.state.doc.toString(), context.pos).map(
-                    (label) => ({ label, type: 'variable', detail: 'Section in this track' }),
-                  ),
+                  options: [
+                    ...new Set([
+                      ...sectionNamesAt(doc, context.pos),
+                      ...shared.current.sections
+                        .filter((s) => s.track === track?.key)
+                        .map((s) => s.name),
+                    ]),
+                  ].map((label) => ({ label, type: 'variable', detail: 'Section in this track' })),
                   validFor: /[A-Za-z0-9_]*/,
                 };
+              }
               if (/^\s*play\s+\S+\s+trim\b/.test(line.text.slice(0, context.pos - line.from)))
                 return null;
               const meter = /^\s*time\s+([\d/]*)$/.exec(

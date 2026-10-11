@@ -18,7 +18,7 @@ export interface ScoreViewIndex {
 }
 
 /** CodeMirror counts a CRLF as one character; source offsets count both. */
-export function projectScoreView(source: string, view?: TrackSourceView) {
+export function projectScoreView(source: string, view?: Pick<TrackSourceView, 'from' | 'to'>) {
   const from = view?.from ?? 0;
   const to = view?.to ?? source.length;
   const slice = source.slice(from, to);

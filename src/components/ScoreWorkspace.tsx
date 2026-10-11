@@ -11,6 +11,13 @@ import {
 import { appendTrack, nextTrackKey } from '../core/scoreTools';
 import { indexScoreSections, renameSectionSource } from '../core/scoreSections';
 import SectionNavigator from './SectionNavigator';
+import ScoreFileTabs from './ScoreFileTabs';
+import {
+  editScoreFile,
+  indexScoreFiles,
+  normalizeFileWorkspace,
+  type ScoreFileWorkspace,
+} from '../core/scoreFiles';
 
 export interface ScoreSourceChange {
   base: string;
@@ -18,6 +25,8 @@ export interface ScoreSourceChange {
   rename?: { from: string; to: string };
   operation?: boolean;
   remove?: string;
+  removeTracks?: string[];
+  workspace?: ScoreFileWorkspace;
 }
 interface Props {
   value: string;
@@ -32,11 +41,23 @@ interface Props {
   onRedo: () => void;
   onTrack: (key: string) => void;
   onView: () => void;
+  workspace?: ScoreFileWorkspace;
+  songKey: string;
+  onWorkspace: (workspace: ScoreFileWorkspace) => void;
 }
 
 export default function ScoreWorkspace(props: Props) {
   const { value, score, onChange, presetKeys, chainKeys } = props;
   const index = useMemo(() => indexScoreViews(value), [value]);
+  const fileIndex = useMemo(() => indexScoreFiles(value), [value]);
+  const workspace = useMemo(
+    () => normalizeFileWorkspace(value, props.workspace),
+    [value, props.workspace],
+  );
+  const file = !fileIndex.problem
+    ? fileIndex.files.find((file) => file.id === workspace.activeFile)
+    : undefined;
+  const fileTracks = file ? index.tracks.filter((track) => track.fileId === file.id) : [];
   const sectionIndex = useMemo(() => indexScoreSections(value), [value]);
   const [navigation, setNavigation] = useState<
     { id: number; from: number; to: number } | undefined
@@ -54,9 +75,10 @@ export default function ScoreWorkspace(props: Props) {
   const formInput = useRef<HTMLInputElement>(null);
   const operationForm = useRef<HTMLFormElement>(null);
   const operationTrigger = useRef<HTMLButtonElement | null>(null);
-  const active = !index.problem ? index.tracks.find((track) => track.key === selected) : undefined;
+  const active = !index.problem ? fileTracks.find((track) => track.key === selected) : undefined;
   const viewId = active ? `track-${active.key}` : 'all';
-  const projection = useMemo(() => projectScoreView(value, active), [value, active]);
+  const editorId = `${file?.id ?? 'files'}:${viewId}`;
+  const projection = useMemo(() => projectScoreView(value, active ?? file), [value, active, file]);
   const offset = projection.from;
   const end = projection.to;
   const text = projection.text;
@@ -82,6 +104,19 @@ export default function ScoreWorkspace(props: Props) {
     setNotice('');
     if (key) props.onTrack(key);
   };
+  const chooseWorkspace = (next: ScoreFileWorkspace) => {
+    props.onView();
+    if (next.activeFile !== workspace.activeFile) {
+      setSelected(null);
+      setNavigation(undefined);
+      setOperation(null);
+      setError('');
+      setNotice('');
+      const track = index.tracks.find((track) => track.fileId === next.activeFile);
+      if (track) props.onTrack(track.key);
+    }
+    props.onWorkspace(next);
+  };
   const apply = (change: ScoreSourceChange, key: string | null) => {
     if (!onChange(change)) {
       setRecovery((n) => n + 1);
@@ -89,8 +124,9 @@ export default function ScoreWorkspace(props: Props) {
       return;
     }
     if (change.rename) {
-      const saved = positions.current[`track-${change.rename.from}`];
-      if (saved) positions.current[`track-${change.rename.to}`] = saved;
+      for (const [id, saved] of Object.entries(positions.current))
+        if (id.endsWith(`:track-${change.rename.from}`))
+          positions.current[id.replace(/:track-[^:]+$/, `:track-${change.rename.to}`)] = saved;
     }
     setSelected(key);
     if (key) props.onTrack(key);
@@ -100,14 +136,21 @@ export default function ScoreWorkspace(props: Props) {
     setNavigation(undefined);
     const restored = projection.restore(next);
     try {
-      if (!active) apply({ base: value, text: restored }, null);
+      if (!active)
+        apply(
+          {
+            base: value,
+            text: file ? editScoreFile(value, fileIndex, file.id, restored) : restored,
+          },
+          null,
+        );
       else {
-        const result = editTrackView(value, index, active.key, restored);
+        const result = editTrackView(value, index, active.key, restored, file?.id);
         apply(
           {
             base: value,
             text: result.text,
-            ...(result.trackKey && result.trackKey !== active.key
+            ...(result.trackKey && result.renameOwnership
               ? { rename: { from: active.key, to: result.trackKey } }
               : {}),
           },
@@ -139,8 +182,23 @@ export default function ScoreWorkspace(props: Props) {
         apply(
           {
             base: value,
-            text: appendTrack(value, presetKeys, name.trim(), instrument, ['rest bar'], chainKeys),
+            text: appendTrack(
+              value,
+              presetKeys,
+              name.trim(),
+              instrument,
+              ['rest bar'],
+              chainKeys,
+              null,
+              file?.id ?? fileIndex.files[0]?.id,
+            ),
             operation: true,
+            workspace: {
+              openFiles: workspace.openFiles.includes(file?.id ?? fileIndex.files[0]?.id)
+                ? workspace.openFiles
+                : [...workspace.openFiles, fileIndex.files[0].id],
+              activeFile: file?.id ?? fileIndex.files[0]?.id ?? null,
+            },
           },
           name.trim(),
         );
@@ -155,12 +213,15 @@ export default function ScoreWorkspace(props: Props) {
           key,
         );
       } else if (active && operation === 'delete') {
+        const text = removeTrackSource(value, index, active.key, file?.id);
         apply(
           {
             base: value,
-            text: removeTrackSource(value, index, active.key),
+            text,
             operation: true,
-            remove: active.key,
+            ...(!indexScoreViews(text).tracks.some((track) => track.key === active.key)
+              ? { remove: active.key }
+              : {}),
           },
           null,
         );
@@ -196,200 +257,247 @@ export default function ScoreWorkspace(props: Props) {
           : ''),
       from: Math.max(0, projection.toLocal(d.from)),
       to: Math.min(text.length, projection.toLocal(d.to)),
-      line: d.line - (active?.firstLine ?? 1) + 1,
+      line: d.line - (active?.firstLine ?? file?.firstLine ?? 1) + 1,
     }));
   const lines = props.lines
-    .map((line) => line - (active?.firstLine ?? 1) + 1)
+    .map((line) => line - (active?.firstLine ?? file?.firstLine ?? 1) + 1)
     .filter((line) => line >= 1 && line <= text.split('\n').length);
   return (
     <div className="score-workspace">
-      <div className="score-view-toolbar">
-        <div
-          role="tablist"
-          aria-label="Score views"
-          className="score-view-tabs"
-          ref={tablist}
-          onKeyDown={(event) => {
-            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-            const tabs = [...tablist.current!.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
-            const at = tabs.indexOf(document.activeElement as HTMLButtonElement);
-            if (at < 0) return;
-            event.preventDefault();
-            tabs[
-              event.key === 'Home'
-                ? 0
-                : event.key === 'End'
-                  ? tabs.length - 1
-                  : (at + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
-            ].click();
-            tabs[
-              event.key === 'Home'
-                ? 0
-                : event.key === 'End'
-                  ? tabs.length - 1
-                  : (at + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
-            ].focus();
-          }}
-        >
-          {[null, ...index.tracks.map((t) => t.key)].map((key) => (
-            <button
-              key={key ? `track-${key}` : 'all'}
-              role="tab"
-              id={`score-view-${key ? `track-${key}` : 'all'}`}
-              aria-controls="score-view-panel"
-              aria-selected={key === (active?.key ?? null)}
-              tabIndex={key === (active?.key ?? null) ? 0 : -1}
-              onClick={() => select(key)}
-            >
-              {key ?? 'All score'}
-            </button>
-          ))}
-        </div>
-        <div className="score-view-actions">
-          <button
-            disabled={props.playing || (!valid && !empty) || !presetKeys.length}
-            onClick={() => begin('new')}
-          >
-            New track tab
-          </button>
-          <button disabled={props.playing || !valid || !active} onClick={() => begin('rename')}>
-            Rename track
-          </button>
-          <button disabled={props.playing || !valid || !active} onClick={() => begin('delete')}>
-            Remove track
-          </button>
-        </div>
-      </div>
-      <SectionNavigator
-        index={sectionIndex}
-        trackKey={active?.key}
+      <ScoreFileTabs
+        index={fileIndex}
+        workspace={workspace}
+        songKey={props.songKey}
         playing={props.playing}
-        onNavigate={(section) => {
-          select(section.track);
-          setNavigation({
-            id: ++navigationId.current,
-            from: section.nameFrom,
-            to: section.nameTo,
-          });
-        }}
-        onRename={(capture, section, nextName) => {
-          const renamed = renameSectionSource(
-            value,
-            capture,
-            section.track,
-            section.name,
-            nextName,
-          );
-          if (renamed === value) return;
-          if (!onChange({ base: value, text: renamed, operation: true }))
-            throw new Error('The score changed. Select the section again before renaming.');
+        onWorkspace={chooseWorkspace}
+        onChange={(base, text, nextWorkspace) => {
+          // Invalid musical text must not discard independently edited track sounds.
+          const after = indexScoreViews(text);
+          const removed = (after.problem ? [] : index.tracks)
+            .filter((track) => !after.tracks.some((next) => next.key === track.key))
+            .map((track) => track.key);
+          if (
+            !onChange({
+              base,
+              text,
+              workspace: nextWorkspace,
+              removeTracks: removed,
+              operation: true,
+            })
+          )
+            return false;
+          setSelected(null);
+          setNavigation(undefined);
+          props.onView();
+          return true;
         }}
       />
-      {operation && (
-        <form
-          className="score-view-form"
-          ref={operationForm}
-          aria-label={
-            operation === 'new'
-              ? 'New track tab'
-              : operation === 'rename'
-                ? 'Rename track'
-                : 'Remove track'
-          }
-          onSubmit={(event) => {
-            event.preventDefault();
-            submit();
-          }}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              event.preventDefault();
-              cancel();
-            }
-          }}
-        >
-          {operation === 'delete' ? (
-            <span>Remove {active?.key} from the score? Undo restores it and its sound.</span>
-          ) : (
-            <>
-              <label>
-                Track name
-                <input
-                  ref={formInput}
-                  aria-label="Track tab name"
-                  value={name}
-                  maxLength={100}
-                  onChange={(event) => setName(event.target.value)}
-                />
-              </label>
-              {operation === 'new' && (
-                <label>
-                  Instrument
-                  <select
-                    aria-label="New track instrument"
-                    value={instrument}
-                    onChange={(event) => setInstrument(event.target.value)}
-                  >
-                    {presetKeys.map((key) => (
-                      <option key={key}>{key}</option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            </>
-          )}
-          <button type="submit" disabled={props.playing}>
-            {operation === 'delete'
-              ? 'Confirm remove track'
-              : operation === 'rename'
-                ? 'Confirm rename track'
-                : 'Create track tab'}
-          </button>
-          <button type="button" onClick={cancel}>
-            Cancel track operation
-          </button>
-          {error && <span role="alert">{error}</span>}
-        </form>
-      )}
-      <p className="score-view-context" role="status">
-        {index.problem
-          ? `${index.problem} Edit All score to restore track tabs.`
-          : notice ||
-            (active
-              ? `${active.key} · one shared score file. Tempo, meter and master routing are in All score.`
-              : 'All tracks and shared tempo, meter and master routing.')}
-      </p>
       <div
         role="tabpanel"
-        id="score-view-panel"
-        aria-labelledby={`score-view-${viewId}`}
-        className="score-workspace-editor"
+        id="score-file-panel"
+        aria-labelledby={
+          workspace.activeFile ? `score-file-${workspace.activeFile}` : 'score-file-all'
+        }
       >
-        <ScoreEditor
-          key={`${viewId}:${recovery}`}
-          value={text}
-          onChange={edit}
-          diagnostics={diagnostics}
-          chords={chords}
-          autocomplete={props.autocomplete}
-          presetKeys={presetKeys}
-          chainKeys={chainKeys}
-          lines={lines}
-          onUndo={props.onUndo}
-          onRedo={props.onRedo}
-          initialPosition={positions.current[viewId]}
-          navigation={
-            navigation && navigation.from >= offset && navigation.to <= end
-              ? {
-                  id: navigation.id,
-                  from: projection.toLocal(navigation.from),
-                  to: projection.toLocal(navigation.to),
-                }
-              : undefined
-          }
-          onPosition={(position) => {
-            positions.current[viewId] = position;
+        <div className="score-view-toolbar">
+          <div
+            role="tablist"
+            aria-label="Score views"
+            className="score-view-tabs"
+            ref={tablist}
+            onKeyDown={(event) => {
+              if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+              const tabs = [
+                ...tablist.current!.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+              ];
+              const at = tabs.indexOf(document.activeElement as HTMLButtonElement);
+              if (at < 0) return;
+              event.preventDefault();
+              tabs[
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? tabs.length - 1
+                    : (at + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
+              ].click();
+              tabs[
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? tabs.length - 1
+                    : (at + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length
+              ].focus();
+            }}
+          >
+            {[null, ...fileTracks.map((t) => t.key)].map((key) => (
+              <button
+                key={key ? `track-${key}` : 'all'}
+                role="tab"
+                id={`score-view-${key ? `track-${key}` : 'all'}`}
+                aria-controls="score-view-panel"
+                aria-selected={key === (active?.key ?? null)}
+                tabIndex={key === (active?.key ?? null) ? 0 : -1}
+                onClick={() => select(key)}
+              >
+                {key ?? (fileIndex.explicit && file ? 'Whole file' : 'All score')}
+              </button>
+            ))}
+          </div>
+          <div className="score-view-actions">
+            <button
+              disabled={props.playing || (!valid && !empty) || !presetKeys.length}
+              onClick={() => begin('new')}
+            >
+              New track tab
+            </button>
+            <button disabled={props.playing || !valid || !active} onClick={() => begin('rename')}>
+              Rename track
+            </button>
+            <button disabled={props.playing || !valid || !active} onClick={() => begin('delete')}>
+              Remove track
+            </button>
+          </div>
+        </div>
+        <SectionNavigator
+          index={sectionIndex}
+          trackKey={active?.key}
+          playing={props.playing}
+          onNavigate={(section) => {
+            if (section.fileId && section.fileId !== file?.id)
+              chooseWorkspace({
+                openFiles: workspace.openFiles.includes(section.fileId)
+                  ? workspace.openFiles
+                  : [...workspace.openFiles, section.fileId],
+                activeFile: section.fileId,
+              });
+            select(section.track);
+            setNavigation({
+              id: ++navigationId.current,
+              from: section.nameFrom,
+              to: section.nameTo,
+            });
+          }}
+          onRename={(capture, section, nextName) => {
+            const renamed = renameSectionSource(
+              value,
+              capture,
+              section.track,
+              section.name,
+              nextName,
+            );
+            if (renamed === value) return;
+            if (!onChange({ base: value, text: renamed, operation: true }))
+              throw new Error('The score changed. Select the section again before renaming.');
           }}
         />
+        {operation && (
+          <form
+            className="score-view-form"
+            ref={operationForm}
+            aria-label={
+              operation === 'new'
+                ? 'New track tab'
+                : operation === 'rename'
+                  ? 'Rename track'
+                  : 'Remove track'
+            }
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit();
+            }}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.preventDefault();
+                cancel();
+              }
+            }}
+          >
+            {operation === 'delete' ? (
+              <span>Remove {active?.key} from the score? Undo restores it and its sound.</span>
+            ) : (
+              <>
+                <label>
+                  Track name
+                  <input
+                    ref={formInput}
+                    aria-label="Track tab name"
+                    value={name}
+                    maxLength={100}
+                    onChange={(event) => setName(event.target.value)}
+                  />
+                </label>
+                {operation === 'new' && (
+                  <label>
+                    Instrument
+                    <select
+                      aria-label="New track instrument"
+                      value={instrument}
+                      onChange={(event) => setInstrument(event.target.value)}
+                    >
+                      {presetKeys.map((key) => (
+                        <option key={key}>{key}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
+            )}
+            <button type="submit" disabled={props.playing}>
+              {operation === 'delete'
+                ? 'Confirm remove track'
+                : operation === 'rename'
+                  ? 'Confirm rename track'
+                  : 'Create track tab'}
+            </button>
+            <button type="button" onClick={cancel}>
+              Cancel track operation
+            </button>
+            {error && <span role="alert">{error}</span>}
+          </form>
+        )}
+        <p className="score-view-context" role="status">
+          {index.problem
+            ? `${index.problem} Edit All score to restore track tabs.`
+            : notice ||
+              (active
+                ? `${active.key} · ${file?.name ?? 'shared score'} · whole-song playback.`
+                : 'All tracks and shared tempo, meter and master routing.')}
+        </p>
+        <div
+          role="tabpanel"
+          id="score-view-panel"
+          aria-labelledby={`score-view-${viewId}`}
+          className="score-workspace-editor"
+        >
+          <ScoreEditor
+            key={`${editorId}:${recovery}`}
+            value={text}
+            sections={score.sections}
+            songKey={fileIndex.song}
+            onChange={edit}
+            diagnostics={diagnostics}
+            chords={chords}
+            autocomplete={props.autocomplete}
+            presetKeys={presetKeys}
+            chainKeys={chainKeys}
+            lines={lines}
+            onUndo={props.onUndo}
+            onRedo={props.onRedo}
+            initialPosition={positions.current[editorId]}
+            navigation={
+              navigation && navigation.from >= offset && navigation.to <= end
+                ? {
+                    id: navigation.id,
+                    from: projection.toLocal(navigation.from),
+                    to: projection.toLocal(navigation.to),
+                  }
+                : undefined
+            }
+            onPosition={(position) => {
+              positions.current[editorId] = position;
+            }}
+          />
+        </div>
       </div>
     </div>
   );

@@ -2873,6 +2873,114 @@ dd {
 .score-view-toolbar {
   padding: 10px 16px 0;
 }
+#score-file-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.score-file-bar {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: 38px;
+  flex-shrink: 0;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+.score-file-bar button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.score-file-tabs {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  overflow-x: auto;
+}
+.score-file-tab {
+  display: flex;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  border-bottom: 2px solid transparent;
+}
+.score-file-tab[data-active='true'],
+.score-file-tabs > [aria-selected='true'] {
+  border-bottom: 2px solid var(--accent);
+  background: var(--bg);
+}
+.score-file-tab button[role='tab'] {
+  max-width: 190px;
+  color: var(--text);
+}
+.score-file-tab button[role='tab'] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.score-file-tab svg {
+  flex-shrink: 0;
+  color: var(--tertiary-ink);
+}
+.score-file-tab .score-file-close {
+  padding-inline: 5px;
+}
+.score-file-bar button:hover,
+.score-file-entry button:hover {
+  background: var(--surface-2);
+}
+.score-file-menu {
+  padding: 9px 12px;
+  max-height: 220px;
+  flex-shrink: 0;
+  overflow: auto;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  background: var(--surface-1);
+}
+.score-file-entry {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin-top: 5px;
+}
+.score-file-entry button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+}
+.score-file-entry button:first-child {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.score-file-entry svg {
+  flex-shrink: 0;
+  color: var(--tertiary-ink);
+}
+.score-file-entry span {
+  color: var(--text-muted);
+}
+.score-file-form {
+  flex-shrink: 0;
+  max-height: 190px;
+  overflow: auto;
+}
 .score-view-tabs {
   display: flex;
   gap: 5px;

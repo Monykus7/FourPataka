@@ -172,11 +172,19 @@ export function addScoreFile(
   const song = index.song ?? fallbackSong;
   if (!SCORE_KEY.test(song) || song.length > 100)
     throw new Error('Use a song key starting with a letter, followed by letters, digits or _.');
-  const base = index.explicit
-    ? source
-    : marker('main', 'score.fourier') + '\n' + (index.song ? '' : `from song ${song}\n`) + source;
+  const base = ensureScoreFiles(source, index, song);
   return (
     base + (base.endsWith('\n') ? '' : '\n') + marker(id, name.trim()) + `\nfrom song ${song}\n\n`
+  );
+}
+export function ensureScoreFiles(source: string, index: ScoreFileIndex, fallbackSong: string) {
+  if (source !== index.source || index.problem)
+    throw new Error('Repair file boundaries before changing the workspace.');
+  if (index.explicit) return source;
+  const song = index.song ?? fallbackSong;
+  if (!SCORE_KEY.test(song) || song.length > 100) throw new Error('Use a valid song key.');
+  return (
+    marker('main', 'score.fourier') + '\n' + (index.song ? '' : `from song ${song}\n`) + source
   );
 }
 export function renameScoreFile(source: string, index: ScoreFileIndex, id: string, name: string) {

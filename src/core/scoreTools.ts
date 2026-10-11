@@ -170,6 +170,13 @@ export function insertCommand(
   const parsed = assertEditable(text, instrumentKeys, chainKeys);
   const command = COMMANDS.find((c) => c.name === name);
   if (!command) throw new Error('Unknown command card.');
+  if (name === 'from-song') {
+    const index = indexScoreFiles(text);
+    const file = index.files.find((f) => f.id === fileId) ?? index.files[0];
+    if (file?.song) return text;
+    const at = file?.from ?? 0;
+    return text.slice(0, at) + `from song ${index.song ?? 'Song'}\n` + text.slice(at);
+  }
   if (name === 'track')
     return appendTrack(
       text,

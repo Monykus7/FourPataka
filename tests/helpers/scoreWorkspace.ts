@@ -52,7 +52,7 @@ export async function trackOperationsWorkflow(page: Page) {
   );
   const tabs = page.getByRole('tablist', { name: 'Score views' });
   await tabs.getByRole('tab', { name: 'all', exact: true }).click();
-  await expect(page.getByRole('tabpanel')).toHaveAttribute(
+  await expect(page.locator('#score-view-panel')).toHaveAttribute(
     'aria-labelledby',
     'score-view-track-all',
   );

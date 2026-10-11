@@ -75,6 +75,12 @@ import {
   type RecoveryCopy,
 } from './core/localSave';
 import { commit, redo, undo, type History } from './core/history';
+import {
+  indexScoreFiles,
+  normalizeFileWorkspace,
+  restoreFileSelection,
+  type ScoreFileWorkspace,
+} from './core/scoreFiles';
 import SourceGraphs from './components/SourceGraphs';
 import FourierWorkspace from './components/FourierWorkspace';
 import Pedalboard from './components/Pedalboard';
@@ -364,6 +370,7 @@ export default function App() {
     editGroup.current = { key: '', time: 0 };
     setHistory((h) => {
       const next = direction === 'undo' ? undo(h) : redo(h);
+      next.present = restoreFileSelection(next.present, h.present);
       macroBaseline.current = structuredClone(
         next.present.comparison[next.present.comparison.active],
       );
@@ -762,8 +769,12 @@ export default function App() {
     [],
   );
 
+  const composeFiles = indexScoreFiles(project.scoreText);
+  const composeWorkspace = normalizeFileWorkspace(project.scoreText, project.scoreWorkspace);
+  const composeFileId = composeWorkspace.activeFile ?? composeFiles.files[0]?.id;
+  const composeTracks = score.tracks.filter((t) => t.parts.some((p) => p.fileId === composeFileId));
   const referenceTarget =
-    score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '';
+    composeTracks.find((t) => t.key === selectedTrack)?.key ?? composeTracks[0]?.key ?? '';
   const referenceSections = score.sections
     .filter((section) => section.track === referenceTarget)
     .map((section) => section.name);
@@ -775,6 +786,9 @@ export default function App() {
       open={commandsOpen}
       onOpen={setCommandsOpen}
       context={{
+        songKey: composeFiles.song,
+        fileName: composeFiles.files.find((f) => f.id === composeFileId)?.name,
+        hasSongLink: !!composeFiles.files.find((f) => f.id === composeFileId)?.song,
         sectionNames: referenceSections,
         sectionKey: referenceSection,
         instrumentKey: instruments.some((i) => i.key === commandInstrument)
@@ -786,12 +800,11 @@ export default function App() {
           project.scoreText,
           instruments.map((i) => i.key),
         ),
-        targetKey:
-          score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '',
+        targetKey: referenceTarget,
         playing: playback === 'score',
         invalid: score.diagnostics.some((d) => d.message !== 'Add a track to start composing.'),
       }}
-      tracks={score.tracks.map((t) => t.key)}
+      tracks={composeTracks.map((t) => t.key)}
       instruments={instruments}
       chains={project.processing.library}
       onTrack={setSelectedTrack}
@@ -800,8 +813,7 @@ export default function App() {
       onSection={setCommandSection}
       onInsert={(command) => {
         try {
-          const targetKey =
-            score.tracks.find((t) => t.key === selectedTrack)?.key ?? score.tracks[0]?.key ?? '';
+          const targetKey = referenceTarget;
           const text = insertCommand(
             project.scoreText,
             instruments.map((i) => i.key),
@@ -811,6 +823,7 @@ export default function App() {
             chainKeys,
             chainKeys.includes(commandChain) ? commandChain : chainKeys[0],
             referenceSection,
+            composeFileId,
           );
           change((p) => ({ ...p, scoreText: text }));
           setToast(
@@ -1746,7 +1759,31 @@ export default function App() {
                     <ScoreWorkspace
                       value={project.scoreText}
                       score={score}
-                      onChange={({ base, text, rename, operation, remove }) => {
+                      workspace={project.scoreWorkspace}
+                      songKey={(
+                        project.name.replace(/[^A-Za-z0-9_]+/g, '_').replace(/^[^A-Za-z]+/, '') ||
+                        'Song'
+                      ).slice(0, 100)}
+                      onWorkspace={(workspace: ScoreFileWorkspace) => {
+                        editGroup.current = { key: '', time: 0 };
+                        // Tab discovery/selection is saved presentation state, not a musical edit.
+                        setHistory((h) => ({
+                          ...h,
+                          present: {
+                            ...h.present,
+                            scoreWorkspace: normalizeFileWorkspace(h.present.scoreText, workspace),
+                          },
+                        }));
+                      }}
+                      onChange={({
+                        base,
+                        text,
+                        rename,
+                        operation,
+                        remove,
+                        removeTracks,
+                        workspace,
+                      }) => {
                         if (projectRef.current.scoreText !== base) {
                           setToast('The score changed. The current version has been retained.');
                           return false;
@@ -1760,8 +1797,12 @@ export default function App() {
                                     ? moveTrackOwnership(p, rename.from, rename.to)
                                     : remove
                                       ? removeTrackOwnership(p, remove)
-                                      : p),
+                                      : (removeTracks ?? []).reduce(
+                                          (project, key) => removeTrackOwnership(project, key),
+                                          p,
+                                        )),
                                   scoreText: text,
+                                  ...(workspace ? { scoreWorkspace: workspace } : {}),
                                 },
                           rename || operation ? '' : 'score-text',
                         );
@@ -2525,6 +2566,7 @@ export default function App() {
               events,
               chainKeys,
               chainKey,
+              composeFileId,
             );
             change((p) => ({ ...p, scoreText: text }));
             setSelectedTrack(key);

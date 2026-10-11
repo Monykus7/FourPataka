@@ -14,6 +14,17 @@ export interface CommandDefinition {
 // Metadata describes the parser's language; it never supplies playback semantics.
 export const COMMANDS: readonly CommandDefinition[] = [
   {
+    name: 'from-song',
+    group: 'Structure',
+    scope: 'project',
+    description: 'Link this virtual file to the shared song',
+    snippet: 'from song Song',
+    completionTemplate: 'from song ${}',
+    syntax: 'from song <songKey>',
+    rules:
+      'First non-comment command in each virtual file. One project contains one song; all files use the same key. Each file may contain multiple tracks. Matching track keys continue in file order with the same instrument and chain; different tracks play in parallel. Closing a file tab keeps its music in playback.',
+  },
+  {
     name: 'tempo',
     group: 'Timing',
     scope: 'project',
@@ -88,7 +99,7 @@ export const COMMANDS: readonly CommandDefinition[] = [
     completionTemplate: 'track ${} using ${} {\n\t${}\n}',
     syntax: 'track <trackKey> using <instrumentKey> [through <pedalKey>] {\n  <events>\n}',
     rules:
-      'Unique track keys start with a letter and use letters, digits or _. Put braces on their own header/end lines and one event per line. Tracks start together; events within each track are sequential.',
+      'Track keys start with a letter and use letters, digits or _. Keys are unique within each file; matching keys across song files continue the same track and must agree on instrument and chain. Put braces on their own header/end lines and one event per line. Distinct tracks start together; events within each track are sequential.',
   },
   {
     name: 'note',

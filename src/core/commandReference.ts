@@ -2,6 +2,9 @@ import { COMMANDS, type CommandDefinition } from './commands';
 import { nextSectionName } from './scoreSections';
 
 export interface ReferenceContext {
+  songKey?: string;
+  fileName?: string;
+  hasSongLink?: boolean;
   sectionNames?: string[];
   sectionKey?: string;
   meterChangeBeat?: number;
@@ -15,6 +18,8 @@ export interface ReferenceContext {
 
 export function referenceSnippet(command: CommandDefinition, context: ReferenceContext) {
   switch (command.name) {
+    case 'from-song':
+      return `from song ${context.songKey ?? 'Song'}`;
     case 'section':
       return `section ${nextSectionName(context.sectionNames ?? [])} {\n  C4 quarter\n  D4 quarter\n}`;
     case 'play':
@@ -39,6 +44,8 @@ export function referenceSnippet(command: CommandDefinition, context: ReferenceC
 export function insertionReason(command: CommandDefinition, context: ReferenceContext) {
   if (context.playing) return 'Stop score playback to insert commands.';
   if (context.invalid) return 'Fix score diagnostics before inserting commands.';
+  if (command.name === 'from-song' && context.hasSongLink)
+    return 'This file already links to the song.';
   if (command.scope === 'track' && !context.targetKey) return 'Create a track first.';
   if (['play', 'play-trim'].includes(command.name) && !context.sectionKey)
     return 'Define a section in this track first.';
@@ -50,9 +57,11 @@ export function insertionReason(command: CommandDefinition, context: ReferenceCo
 }
 
 export function insertionDestination(command: CommandDefinition, context: ReferenceContext) {
+  if (command.name === 'from-song') return `File: ${context.fileName ?? 'score.fourier'}`;
   if (command.scope === 'project') return command.name === 'master' ? 'Master mix' : 'Project';
-  if (command.scope === 'new-track') return `New track: ${context.newTrackKey}`;
-  return context.targetKey ? `Track: ${context.targetKey}` : 'Requires a track';
+  const file = context.fileName ? ` · ${context.fileName}` : '';
+  if (command.scope === 'new-track') return `New track: ${context.newTrackKey}${file}`;
+  return context.targetKey ? `Track: ${context.targetKey}${file}` : 'Requires a track';
 }
 
 export function matchesCommand(command: CommandDefinition, snippet: string, query: string) {
