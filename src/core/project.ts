@@ -7,6 +7,7 @@ import {
 } from './pedals';
 import { validateWavePoints } from './waveform';
 import { readInstrumentFolders, withDefaultInstrumentFolders } from './instrumentFolders';
+import { normalizeFileWorkspace, readFileWorkspace, type ScoreFileWorkspace } from './scoreFiles';
 import {
   HARMONIC_COUNT,
   LEGACY_HARMONIC_COUNT,
@@ -49,6 +50,7 @@ export interface Project {
   id: string;
   name: string;
   scoreText: string;
+  scoreWorkspace?: ScoreFileWorkspace;
   instruments: InstrumentPreset[];
   instrumentFolders?: InstrumentFolder[];
   tracks: TrackInstance[];
@@ -194,6 +196,11 @@ export function withPercussionPresets(project: Project): Project {
 }
 
 export function reconcileTracks(project: Project, score: CompiledScore): Project {
+  if (project.scoreWorkspace) {
+    const workspace = normalizeFileWorkspace(project.scoreText, project.scoreWorkspace);
+    if (JSON.stringify(workspace) !== JSON.stringify(project.scoreWorkspace))
+      project = { ...project, scoreWorkspace: workspace };
+  }
   if (score.diagnostics.length) return project;
   const tracks = score.tracks.map((track) => {
     const preset = project.instruments.find((i) => i.key === track.instrumentKey)!;
@@ -376,6 +383,7 @@ export function importProject(text: string): Project {
   stringValue(data.name, 'project name');
   if (typeof data.scoreText !== 'string' || data.scoreText.length > 200_000)
     throw new Error('Invalid score text (maximum 200,000 characters).');
+  const scoreWorkspace = readFileWorkspace(data.scoreWorkspace);
   numeric(data.mixGain, 0, 1, 'mix gain');
   if (!Array.isArray(data.instruments) || !data.instruments.length || data.instruments.length > 128)
     throw new Error('Expected 1–128 instrument presets.');
@@ -443,6 +451,9 @@ export function importProject(text: string): Project {
     id: project.id,
     name: project.name,
     scoreText: project.scoreText,
+    ...(scoreWorkspace
+      ? { scoreWorkspace: normalizeFileWorkspace(project.scoreText, scoreWorkspace) }
+      : {}),
     mixGain: project.mixGain,
     editorPresetId: project.editorPresetId,
     comparisonMaterial: {
@@ -513,6 +524,7 @@ export function withExampleScore(project: Project): Project {
   return {
     ...project,
     scoreText: EXAMPLE_SCORE,
+    scoreWorkspace: undefined,
     processing: {
       ...project.processing,
       library: [

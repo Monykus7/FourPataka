@@ -23,6 +23,7 @@ export interface ScoreFileWorkspace {
 }
 export const FILE_MARKER = '// @fourpataka-file ';
 const fileName = (name: string) =>
+  name === name.trim() &&
   name.trim().length > 0 &&
   name.length <= 100 &&
   !/[\\/\r\n\x00-\x1f]/.test(name) &&
@@ -141,6 +142,7 @@ function capturedFile(source: string, index: ScoreFileIndex, id: string) {
   return file;
 }
 function checkName(index: ScoreFileIndex, name: string, id?: string) {
+  name = name.trim();
   if (!fileName(name))
     throw new Error('Use a file name of 1–100 characters without path separators.');
   if (index.files.some((file) => file.id !== id && file.name.toLowerCase() === name.toLowerCase()))
@@ -231,4 +233,21 @@ export function readFileWorkspace(value: unknown): ScoreFileWorkspace | undefine
   )
     throw new Error('Invalid score file tab selection.');
   return { openFiles: [...openFiles] as string[], activeFile: activeFile as string | null };
+}
+
+/** Note undo keeps the current tab; filesystem undo restores the operation's saved tabs. */
+export function restoreFileSelection<
+  T extends { scoreText: string; scoreWorkspace?: ScoreFileWorkspace },
+>(next: T, previous: T): T {
+  if (!previous.scoreWorkspace) return next;
+  const ids = (text: string) =>
+    indexScoreFiles(text)
+      .files.map((file) => file.id)
+      .sort()
+      .join('\n');
+  if (ids(next.scoreText) !== ids(previous.scoreText)) return next;
+  return {
+    ...next,
+    scoreWorkspace: normalizeFileWorkspace(next.scoreText, previous.scoreWorkspace),
+  };
 }
