@@ -6,6 +6,8 @@ Status on 2026-10-05: plans/guides added; M1–M6 are all not started. The synth
 
 ## Start here
 
+- [Virtual song files](SCORE_FILES.md): implemented file tabs, multi-track/shared-clock source services, persistence and contributor diagrams.
+
 Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source contribution and verification workflow. The [authoritative milestone plan](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions) defines dependencies and acceptance gates; [implementation status](../../IMPLEMENTATION_STATUS.md) distinguishes plans from delivered behavior.
 
 - [Chord shapes](CHORD_SHAPES.md): implemented API-v1 registry, root-position symbols and runnable source example.

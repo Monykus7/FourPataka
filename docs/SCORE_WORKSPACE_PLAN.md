@@ -1,5 +1,9 @@
 # Score workspace follow-ups
 
+## Virtual song filesystem — implemented v0.28.0
+
+Named file tabs above the Compose IDE use `from song <key>` and share one canonical scoreText/project JSON. Each file supports several tracks. Matching keys continue in source order with shared sections and owned sounds; distinct tracks start in parallel. Create/rename/delete are source/history operations; closing keeps music and selection is presentation-only. Open/active state persists through save/open/recovery. Track Maker and commands target the selected file. All files retains boundary recovery. See [virtual song files](extensions/SCORE_FILES.md) for services, syntax, limits and diagrams. Variable swing and general M1–M6 remain planned.
+
 Status: track tabs are implemented in v0.24.0 (2026-10-10). Named sections and alternate endings are implemented in v0.27.0 (2026-10-11); variable swing remains a planned later feature. Their implementation gates remain separate. These milestones do not complete the modularity program or remaining physical listening/device/screen-reader gates.
 
 ## Shared-file track tabs

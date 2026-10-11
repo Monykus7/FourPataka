@@ -1,10 +1,27 @@
 import { expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { indexScoreFiles, addScoreFile, ensureScoreFiles } from '../../src/core/scoreFiles';
 import { parseScore } from '../../src/core/parser';
 import { insertCommand } from '../../src/core/scoreTools';
 
 const file = (i: number, body: string) =>
   `// @fourpataka-file {"id":"file${i}","name":"part${i}.fourier"}\nfrom song Demo\n${body}\n`;
+it('the contributor guide combines multiple tracks and shared sections into six quarter beats', () => {
+  const guide = readFileSync('docs/extensions/SCORE_FILES.md', 'utf8');
+  const bodies = [...guide.matchAll(/```text\r?\n([\s\S]*?)```/g)]
+    .slice(0, 2)
+    .map((match) => match[1]);
+  const source = bodies
+    .map((body, i) => file(i, body.replace(/^from song Study\r?\n/, '')))
+    .join('');
+  const score = parseScore(source, ['sine', 'softBass', 'kick']);
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks.map((t) => [t.key, t.beats])).toEqual([
+    ['melody', 6],
+    ['bass', 4],
+    ['drums', 4],
+  ]);
+});
 it('bounds file counts without losing the typed source or creating another track owner', () => {
   const source = Array.from({ length: 32 }, (_, i) =>
     file(i, 'track a using sine {\n C4 quarter\n}'),

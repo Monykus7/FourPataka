@@ -1,6 +1,6 @@
 # FourPataka — Fourier Music Studio build plan
 
-Updated: 2026-10-05
+Updated: 2026-10-11
 Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
@@ -804,3 +804,9 @@ Group recognized factory sine/square/saw/triangle under a collapsed Simple shape
 Persist optional schema2 instrumentFolders and per-library-preset folderId, with validated IDs/references and legacy seeding only when organization is absent. Explicit empty organization is respected. Whole-operation create/rename/remove/move undo must preserve preset identities/score keys/versions/Sound, source, track/A-B copies and the running phase clock; collapse is view state only. All compiler/selector/completion/WAV paths see the complete library even when groups are hidden. Demo restoration never imports another project's folder references. Runtime window titles identify the application version.
 
 Gate: immutable ownership/history and import bounds/references; migration and deleted-folder persistence; real pointer drags into collapsed groups and Unfiled; keyboard/narrow/focus/undo; running audition continuity; browser/native JSON round-trip and existing preset/recovery/keyboard/source workflows. Provide contributor data/ownership diagrams in [instrument library](docs/extensions/INSTRUMENT_LIBRARY.md), refresh project knowledge, aim for eight focused commits and open the verified x.x.0 portable. General M1–M6, swing, chamber acoustics and manual device/listening gates remain open; named sections ship separately in v0.27.0.
+
+## 20. Virtual song filesystem — implemented v0.28.0
+
+Named file tabs above the Compose IDE organize one song with `from song <key>` first in each file. Multiple tracks per file; matching keys continue in canonical file order with shared sections and one owned sound/chain, while distinct tracks remain parallel. Keep canonical scoreText and existing project JSON; reserved comment boundaries own IDs/names and optional scoreWorkspace retains open/active files. Legacy music remains unchanged until explicit file creation/rename. Close hides without deleting music; confirmed deletion/create/rename enter grouped history. Restore tabs through local/recovery/browser/native flows. All files permits boundary repair and retains malformed source. Selected-file Track Maker/reference/completion/navigation integrate with whole-song playback.
+
+Gate: bounded index/import/source guards, shared clocks/sections, owned copies/assignments/rename/removal, CRLF/provenance, undo/reload/closed-file playback, multiple tracks per file, selected-file insertion, keyboard/narrow layouts, WAV parity at44.1/48 kHz, native JSON/WAV and portable startup. [Contributor guide](docs/extensions/SCORE_FILES.md) documents current services and three diagrams. Actual verification is recorded in IMPLEMENTATION_STATUS.md. Swing, acoustics/effects, M1–M6 and manual device/listening/screen-reader gates remain separate.

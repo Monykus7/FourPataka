@@ -4,6 +4,8 @@ This guide distinguishes working source contracts from planned registries. It is
 
 ## Choose an implemented seam first
 
+[Virtual song files](SCORE_FILES.md), implemented in v0.28.0, extend the source-view seam with persistent tabs, shared track parts and clocks. Their guide includes three source/ownership/persistence diagrams and current host integrations. These remain provisional services pending general M5 contracts.
+
 The chord-shape API is the current versioned contribution contract: API1 definitions, an immutable validated registry, explicit assembly and shared parser/editor/playback consumers. The score workspace adds tested source-view services in v0.24.0; their public M5 contract is still provisional. Pedals, Fourier presets, synthesis engines and optional feature registries are planned M1–M5 work. Their current source recipes are linked below and require host integration today.
 
 ```mermaid

@@ -4,6 +4,8 @@ FourPataka is preparing for community contributions through a [six-milestone mod
 
 ## Start from a working checkout
 
+The [virtual song file guide](docs/extensions/SCORE_FILES.md) extends score views with persistent file tabs, multiple tracks per file and whole-song compilation. It documents the current source services and their verification requirements.
+
 Use Node.js 22.12+ and npm; this project has been developed with Node 24. From the repository folder:
 
 ```sh

@@ -4,6 +4,8 @@ Status: shared-file track views are implemented in v0.24.0. The functions below 
 
 ## One document, several views
 
+v0.28.0 adds named [virtual song files](SCORE_FILES.md) above track views. Whole file projects one file's body; its track tabs project its parts. All files remains the aggregate recovery editor. Matching keys across files continue one logical track in source order. The original v0.24.0 behavior below describes legacy single-file scores. Helpers now accept an optional fileId for part-specific edit/removal; guarded rename updates every same-key part.
+
 All score displays the canonical project.scoreText. A track tab displays its header and complete block, including nested repeat/articulation/tuplet scopes. Switching views never compiles a track as a separate song or creates a new saved file. Tempo, meter changes and master routing remain shared in All score.
 
 ```mermaid
