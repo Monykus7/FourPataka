@@ -2881,7 +2881,22 @@ dd {
   flex-direction: column;
 }
 .score-view-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
   padding: 10px 16px 0;
+}
+.score-track-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  min-width: 0;
+}
+.score-track-picker select {
+  max-width: 170px;
 }
 #score-file-panel {
   display: flex;
