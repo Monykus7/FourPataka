@@ -9,6 +9,8 @@ import {
   projectScoreView,
 } from '../core/scoreWorkspace';
 import { appendTrack, nextTrackKey } from '../core/scoreTools';
+import { indexScoreSections, renameSectionSource } from '../core/scoreSections';
+import SectionNavigator from './SectionNavigator';
 
 export interface ScoreSourceChange {
   base: string;
@@ -35,6 +37,11 @@ interface Props {
 export default function ScoreWorkspace(props: Props) {
   const { value, score, onChange, presetKeys, chainKeys } = props;
   const index = useMemo(() => indexScoreViews(value), [value]);
+  const sectionIndex = useMemo(() => indexScoreSections(value), [value]);
+  const [navigation, setNavigation] = useState<
+    { id: number; from: number; to: number } | undefined
+  >();
+  const navigationId = useRef(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const [operation, setOperation] = useState<'new' | 'rename' | 'delete' | null>(null);
@@ -67,6 +74,7 @@ export default function ScoreWorkspace(props: Props) {
     }
   }, [operation]);
   const select = (key: string | null) => {
+    setNavigation(undefined);
     props.onView();
     setSelected(key);
     setOperation(null);
@@ -89,6 +97,7 @@ export default function ScoreWorkspace(props: Props) {
   };
   const edit = (next: string) => {
     if (next === text) return;
+    setNavigation(undefined);
     const restored = projection.restore(next);
     try {
       if (!active) apply({ base: value, text: restored }, null);
@@ -247,6 +256,31 @@ export default function ScoreWorkspace(props: Props) {
           </button>
         </div>
       </div>
+      <SectionNavigator
+        index={sectionIndex}
+        trackKey={active?.key}
+        playing={props.playing}
+        onNavigate={(section) => {
+          select(section.track);
+          setNavigation({
+            id: ++navigationId.current,
+            from: section.nameFrom,
+            to: section.nameTo,
+          });
+        }}
+        onRename={(capture, section, nextName) => {
+          const renamed = renameSectionSource(
+            value,
+            capture,
+            section.track,
+            section.name,
+            nextName,
+          );
+          if (renamed === value) return;
+          if (!onChange({ base: value, text: renamed, operation: true }))
+            throw new Error('The score changed. Select the section again before renaming.');
+        }}
+      />
       {operation && (
         <form
           className="score-view-form"
@@ -339,6 +373,15 @@ export default function ScoreWorkspace(props: Props) {
           onUndo={props.onUndo}
           onRedo={props.onRedo}
           initialPosition={positions.current[viewId]}
+          navigation={
+            navigation && navigation.from >= offset && navigation.to <= end
+              ? {
+                  id: navigation.id,
+                  from: projection.toLocal(navigation.from),
+                  to: projection.toLocal(navigation.to),
+                }
+              : undefined
+          }
           onPosition={(position) => {
             positions.current[viewId] = position;
           }}

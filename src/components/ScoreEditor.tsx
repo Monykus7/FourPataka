@@ -36,6 +36,7 @@ import { COMMANDS, type ScoreEvent, type Diagnostic } from '../core/parser';
 import { CHORD_SHAPES } from '../modules/chords';
 import { DURATIONS } from '../core/music';
 import { COMMON_METERS } from '../core/meter';
+import { sectionNamesAt } from '../core/scoreSections';
 
 type SymbolPreview = NonNullable<ScoreEvent['chordSymbol']>;
 const updateChords = StateEffect.define<SymbolPreview[]>();
@@ -112,7 +113,7 @@ const scoreLanguage = StreamLanguage.define({
     }
     if (
       stream.match(
-        /\b(?:tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|at|triplet|tuplet|staccato|legato)\b/,
+        /\b(?:tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|section|play|trim|at|triplet|tuplet|staccato|legato)\b/,
       )
     )
       return 'keyword';
@@ -185,6 +186,7 @@ interface Props {
   onUndo: () => void;
   onRedo: () => void;
   initialPosition?: ScoreEditorPosition;
+  navigation?: { id: number; from: number; to: number };
   onPosition?: (position: ScoreEditorPosition) => void;
 }
 export default function ScoreEditor({
@@ -199,6 +201,7 @@ export default function ScoreEditor({
   onUndo,
   onRedo,
   initialPosition,
+  navigation,
   onPosition,
 }: Props) {
   const container = useRef<HTMLDivElement>(null);
@@ -220,6 +223,19 @@ export default function ScoreEditor({
         ? [
             (context) => {
               const line = context.state.doc.lineAt(context.pos);
+              const section = /^\s*play\s+([A-Za-z0-9_]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (section)
+                return {
+                  from: context.pos - section[1].length,
+                  options: sectionNamesAt(context.state.doc.toString(), context.pos).map(
+                    (label) => ({ label, type: 'variable', detail: 'Section in this track' }),
+                  ),
+                  validFor: /[A-Za-z0-9_]*/,
+                };
+              if (/^\s*play\s+\S+\s+trim\b/.test(line.text.slice(0, context.pos - line.from)))
+                return null;
               const meter = /^\s*time\s+([\d/]*)$/.exec(
                 line.text.slice(0, context.pos - line.from),
               );
@@ -399,6 +415,18 @@ export default function ScoreEditor({
       view.current = null;
     };
   }, []);
+  useEffect(() => {
+    if (!navigation || !view.current) return;
+    const editor = view.current;
+    editor.dispatch({
+      selection: {
+        anchor: Math.min(navigation.from, editor.state.doc.length),
+        head: Math.min(navigation.to, editor.state.doc.length),
+      },
+      scrollIntoView: true,
+    });
+    editor.focus();
+  }, [navigation?.id]);
   useEffect(() => {
     const editor = view.current;
     if (editor && editor.state.doc.toString() !== value)

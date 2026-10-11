@@ -717,7 +717,13 @@ export default function App() {
       ? timelineScore.events.filter((e) => beat >= e.beat && beat < e.beat + e.duration)
       : [];
   const stale = playback === 'score' && running?.text !== project.scoreText;
-  const highlightedLines = stale ? [] : activeEvents.map((e) => e.line);
+  const highlightedLines = stale
+    ? []
+    : [
+        ...new Set(
+          activeEvents.flatMap((e) => [e.line, ...(e.sectionCalls ?? []).map((call) => call.line)]),
+        ),
+      ];
   const menuActions = useRef<(action: string) => void>(() => {});
   menuActions.current = (action) => {
     if (action === 'open') void openNativeProject();
@@ -1997,6 +2003,18 @@ export default function App() {
                     <p>
                       {inspectedEvent.track} · line {inspectedEvent.line}
                     </p>
+                    {inspectedEvent.sectionCalls?.map((call) => (
+                      <p key={call.id} className="event-section-context">
+                        {call.name}
+                        {inspectedEvent.sectionEndingOf?.includes(call.id) ? ' ending' : ''} · call
+                        line {call.line} ·{' '}
+                        {call.duration.toLocaleString(undefined, { maximumFractionDigits: 6 })}{' '}
+                        quarter beats
+                        {call.trimmedBeats ? ` · cut ${call.trimmedBeats}` : ''}
+                        {call.endingDuration ? ` · ending ${call.endingDuration}` : ''}
+                        {call.clippedByParent ? ' · clipped by enclosing section' : ''}
+                      </p>
+                    ))}
                     <dl>
                       <div>
                         <dt>Start</dt>

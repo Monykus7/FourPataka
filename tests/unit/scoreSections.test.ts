@@ -1,6 +1,10 @@
 import { expect, it } from 'vitest';
 import { lexScore } from '../../src/core/scoreLexer';
-import { indexScoreSections, renameSectionSource } from '../../src/core/scoreSections';
+import {
+  indexScoreSections,
+  renameSectionSource,
+  sectionNamesAt,
+} from '../../src/core/scoreSections';
 import { indexScoreViews } from '../../src/core/scoreWorkspace';
 import { parseScore } from '../../src/core/parser';
 
@@ -49,6 +53,14 @@ it('renames only a track-local definition and its real references, guarding stal
   expect(() => renameSectionSource(source + '\n', index, 'melody', 'A', 'B')).toThrow(
     'score changed',
   );
+});
+
+it('offers only current-track section names even with an unfinished play command or track body', () => {
+  const text =
+    'track melody using sine {\n section Verse {\n C4 quarter\n}\n play \n}\ntrack bass using sine {\n section Bass {\n C2 quarter\n}\n play ';
+  expect(sectionNamesAt(text, text.indexOf('play ') + 5)).toEqual(['Verse']);
+  expect(sectionNamesAt(text, text.length)).toEqual(['Bass']);
+  expect(sectionNamesAt(text, 0)).toEqual(['Verse']);
 });
 
 it('header names and trim expressions are not re-tokenized as repeat or bracket commands', () => {

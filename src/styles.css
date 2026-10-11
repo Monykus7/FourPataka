@@ -316,6 +316,39 @@ button {
   display: flex;
   gap: 2px;
 }
+.score-section-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.score-section-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.score-section-controls select {
+  max-width: 220px;
+  min-width: 0;
+  font-size: 11px;
+}
+.score-section-controls button {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 6px 9px;
+  font-size: 10px;
+}
+.event-section-context {
+  border-left: 2px solid var(--tertiary);
+  padding-left: 8px;
+}
 .library-folder,
 .library-unfiled {
   border: 1px solid transparent;

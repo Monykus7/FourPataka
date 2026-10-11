@@ -22,7 +22,7 @@ export default function Timeline({
   const inspected = score.events.find((event) => event.id === selectedEvent?.id);
   const timing = (event: ScoreEvent) => {
     const position = measurePositionAt(event.beat, score.meter, score.meterChanges);
-    return `Bar ${position.bar} · beat ${position.beat} · ${event.duration.toLocaleString(undefined, { maximumFractionDigits: 6 })} quarter beats${event.tuplet ? ` · ${event.tuplet.notes}:${event.tuplet.inTimeOf}` : ''}${event.articulation ? ` · ${event.articulation}` : ''}`;
+    return `Bar ${position.bar} · beat ${position.beat} · ${event.duration.toLocaleString(undefined, { maximumFractionDigits: 6 })} quarter beats${event.tuplet ? ` · ${event.tuplet.notes}:${event.tuplet.inTimeOf}` : ''}${event.articulation ? ` · ${event.articulation}` : ''}${event.sectionCalls?.length ? ` · section ${event.sectionCalls.map((call) => call.name + (event.sectionEndingOf?.includes(call.id) ? ' ending' : '')).join(' → ')}` : ''}`;
   };
   return (
     <section className="panel timeline-panel" aria-label="Timeline">

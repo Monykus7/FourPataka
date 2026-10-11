@@ -18,6 +18,7 @@ export interface SectionReference {
   index: number;
 }
 export interface SectionSourceIndex {
+  tracks: { key: string; from: number; to: number }[];
   source: string;
   sections: SectionSource[];
   references: SectionReference[];
@@ -29,6 +30,7 @@ export interface SectionSourceIndex {
 /** One source index serves expansion, navigation and reference-aware rename. */
 export function indexScoreSections(source: string, tokens = lexScore(source)): SectionSourceIndex {
   const result: SectionSourceIndex = {
+    tracks: [],
     source,
     sections: [],
     references: [],
@@ -45,7 +47,10 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
     const token = tokens[i];
     if (token.kind === 'text') {
       const header = /^track\s+(\S+)\s+using\b/.exec(token.text);
-      if (header && /\{$/.test(token.text)) track = header[1];
+      if (header && /\{$/.test(token.text)) {
+        track = header[1];
+        result.tracks.push({ key: track, from: token.from, to: source.length });
+      }
     }
     if (token.kind === 'section-open') {
       const direct = !!track && stack.length === 1 && stack[0].token.kind === 'text';
@@ -126,7 +131,11 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
           section.to = token.to;
         }
       }
-      if (open.token.kind === 'text') track = '';
+      if (open.token.kind === 'text') {
+        const scope = result.tracks.find((t) => t.from === open.token.from);
+        if (scope) scope.to = token.to;
+        track = '';
+      }
     }
   }
   // Existing repeat/bracket diagnostics remain authoritative; named constructs
@@ -139,6 +148,12 @@ export function indexScoreSections(source: string, tokens = lexScore(source)): S
       );
   result.complete &&= stack.length === 0;
   return result;
+}
+
+export function sectionNamesAt(source: string, position: number) {
+  const index = indexScoreSections(source);
+  const track = index.tracks.filter((t) => t.from <= position && t.to >= position).at(-1);
+  return track ? index.sections.filter((s) => s.track === track.key).map((s) => s.name) : [];
 }
 
 export function renameSectionSource(
