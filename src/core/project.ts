@@ -6,6 +6,7 @@ import {
   type ChainInstance,
 } from './pedals';
 import { validateWavePoints } from './waveform';
+import { readInstrumentFolders, withDefaultInstrumentFolders } from './instrumentFolders';
 import {
   HARMONIC_COUNT,
   LEGACY_HARMONIC_COUNT,
@@ -165,7 +166,7 @@ export function createProject(): Project {
     mixGain: 0.8,
   };
   return reconcileTracks(
-    project,
+    withDefaultInstrumentFolders(project),
     parseScore(
       project.scoreText,
       instruments.map((i) => i.key),
@@ -379,6 +380,8 @@ export function importProject(text: string): Project {
     throw new Error('Expected 1–128 instrument presets.');
   const ids = new Set<string>();
   const keys = new Set<string>();
+  const instrumentFolders = readInstrumentFolders(data.instrumentFolders);
+  const folderIds = new Set(instrumentFolders?.map((folder) => folder.id));
   data.instruments.forEach((p) => {
     record(p);
     stringValue(p.id, 'preset ID');
@@ -391,6 +394,8 @@ export function importProject(text: string): Project {
     numeric(p.version, 1, 1_000_000, 'preset version');
     if (!Number.isInteger(p.version)) throw new Error('Preset version must be an integer.');
     validateSound(p.sound, sourceCount);
+    if (p.folderId !== undefined && (typeof p.folderId !== 'string' || !folderIds.has(p.folderId)))
+      throw new Error('Instrument folder reference is missing.');
   });
   if (!Array.isArray(data.tracks) || data.tracks.length > 128)
     throw new Error('Invalid track instances.');
@@ -459,8 +464,10 @@ export function importProject(text: string): Project {
         label: p.label,
         version: p.version,
         sound: migrateSound(p.sound),
+        ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
       }),
     ),
+    ...(instrumentFolders !== undefined ? { instrumentFolders } : {}),
     tracks: project.tracks.map((t) => ({
       key: t.key,
       presetId: t.presetId,
@@ -475,6 +482,7 @@ export function importProject(text: string): Project {
     (preset) => !clean.instruments.some((existing) => existing.key === preset.key),
   ).length;
   if (clean.instruments.length + missingPercussion <= 128) clean = withPercussionPresets(clean);
+  clean = withDefaultInstrumentFolders(clean);
   return reconcileTracks(
     clean,
     parseScore(

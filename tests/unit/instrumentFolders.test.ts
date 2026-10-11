@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { createProject } from '../../src/core/project';
+import { createProject, importProject } from '../../src/core/project';
 import {
   createInstrumentFolder,
   moveInstrumentToFolder,
@@ -13,6 +13,7 @@ import { commit, undo, redo } from '../../src/core/history';
 it('seeds only recognized factory shapes once and respects explicit unfiled organization', () => {
   const old = createProject();
   delete old.instrumentFolders;
+  for (const preset of old.instruments) delete preset.folderId;
   old.instruments.find((p) => p.key === 'sine')!.id = 'my-sine';
   const next = withDefaultInstrumentFolders(old);
   expect(next.instrumentFolders).toEqual([{ id: 'simple-shapes', label: 'Simple shapes' }]);
@@ -89,4 +90,44 @@ it('bounds and validates folder metadata and rejects stale move destinations', (
   expect(readInstrumentFolders([{ id: 'a', label: '  Drum kit ', unknown: true }])).toEqual([
     { id: 'a', label: 'Drum kit' },
   ]);
+});
+
+it('round-trips organization while legacy files gain a collapsed-ready Simple shapes group', () => {
+  const project = createProject();
+  expect(project.instrumentFolders).toEqual([{ id: 'simple-shapes', label: 'Simple shapes' }]);
+  const grouped = moveInstrumentToFolder(
+    createInstrumentFolder(project, 'Drums', 'drums'),
+    'snare',
+    'drums',
+  );
+  expect(importProject(JSON.stringify(grouped))).toEqual(grouped);
+  const legacy = structuredClone(project);
+  delete legacy.instrumentFolders;
+  for (const preset of legacy.instruments) delete preset.folderId;
+  expect(importProject(JSON.stringify(legacy))).toEqual(project);
+  const removed = removeInstrumentFolder(project, 'simple-shapes');
+  expect(importProject(JSON.stringify(removed))).toEqual(removed);
+});
+
+it('rejects dangling folder memberships and malformed folder metadata before replacing a project', () => {
+  const project = createProject();
+  for (const change of [
+    { instrumentFolders: null },
+    { instrumentFolders: [] },
+    { instrumentFolders: [{ id: 'simple-shapes', label: ' ' }] },
+    {
+      instruments: project.instruments.map((p) =>
+        p.id === 'kick' ? { ...p, folderId: 'missing' } : p,
+      ),
+    },
+    {
+      instruments: project.instruments.map((p) => (p.id === 'kick' ? { ...p, folderId: null } : p)),
+    },
+  ])
+    expect(() => importProject(JSON.stringify({ ...project, ...change }))).toThrow();
+  const extended = {
+    ...project,
+    instrumentFolders: project.instrumentFolders!.map((f) => ({ ...f, privateRuntime: true })),
+  };
+  expect(importProject(JSON.stringify(extended))).toEqual(project);
 });
