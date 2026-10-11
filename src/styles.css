@@ -312,6 +312,111 @@ button {
   justify-content: space-between;
   margin-bottom: 9px;
 }
+.library-actions {
+  display: flex;
+  gap: 2px;
+}
+.library-folder,
+.library-unfiled {
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.library-folder-heading {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.folder-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  flex: 1;
+  padding: 9px 3px;
+  background: transparent;
+  border: 0;
+  text-align: left;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.folder-toggle > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.folder-toggle small,
+.library-unfiled-heading small {
+  margin-left: auto;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+.folder-toggle svg {
+  flex-shrink: 0;
+  color: var(--tertiary);
+}
+.folder-toggle.contains-selected {
+  color: var(--accent-ink);
+}
+.folder-action {
+  padding: 4px;
+  opacity: 0.5;
+}
+.library-folder:hover .folder-action,
+.library-folder:focus-within .folder-action {
+  opacity: 1;
+}
+.folder-instruments {
+  border-left: 1px solid var(--border);
+  margin-left: 10px;
+}
+.library-unfiled-heading {
+  display: flex;
+  padding: 8px 9px 3px;
+  color: var(--text-muted);
+  font-size: 9px;
+}
+.library-empty {
+  display: block;
+  padding: 10px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.drop-target {
+  border-color: var(--tertiary);
+  background: color-mix(in srgb, var(--tertiary) 10%, transparent);
+}
+.preset-item.dragging {
+  opacity: 0.45;
+}
+.library-folder-form {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.library-folder-form input {
+  min-width: 0;
+  width: 100%;
+  padding: 7px;
+  font-size: 11px;
+}
+.library-error {
+  font-size: 10px;
+  color: var(--secondary);
+  margin-bottom: 8px;
+}
+.instrument-folder-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 22px 14px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.instrument-folder-picker select {
+  max-width: 240px;
+  min-width: 0;
+}
 .mobile-preset-picker {
   display: none;
 }
@@ -2310,6 +2415,7 @@ dd {
   }
   .sidebar > .sidebar-section-label,
   .library-title,
+  .instrument-library,
   .preset-list,
   .sidebar-bottom {
     display: none;
