@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { CHORD_SHAPES, createChordShapeRegistry, type ChordShape } from '../../src/modules/chords';
+import { parseScore } from '../../src/core/parser';
 
 const definition: ChordShape = {
   id: 'test:cluster',
@@ -18,6 +19,13 @@ it('assembles built-ins and an independently defined contributor example without
   expect(CHORD_SHAPES.find('open5')!.id).toBe('example:open-fifth');
   expect(CHORD_SHAPES.find('unavailable')).toBeUndefined();
   expect(CHORD_SHAPES.find('m')).not.toBe(CHORD_SHAPES.find('M'));
+});
+it('ships the documented wide-second contribution through the real registry and parser', () => {
+  expect(CHORD_SHAPES.find('wide2')!.id).toBe('example:wide-second');
+  const score = parseScore('track example using sine {\nchord:Cwide2@3 quarter\n}', ['sine']);
+  expect(score.diagnostics).toEqual([]);
+  expect(score.events[0].notes).toEqual(['C3', 'D4', 'G4']);
+  expect(score.events[0].chordSymbol!.shapeId).toBe('example:wide-second');
 });
 it('owns immutable definition copies while each registry is independent', () => {
   const source = structuredClone(definition);

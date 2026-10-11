@@ -4,6 +4,11 @@ export { createChordShapeRegistry } from './registry';
 import { createChordShapeRegistry } from './registry';
 import { BUILTIN_CHORD_SHAPES } from './builtins';
 import { OPEN_FIFTH } from './examples/openFifth';
+import { WIDE_SECOND } from './examples/wideSecond';
 
 // Explicit reviewed build assembly; project data never installs executable modules.
-export const CHORD_SHAPES = createChordShapeRegistry([...BUILTIN_CHORD_SHAPES, OPEN_FIFTH]);
+export const CHORD_SHAPES = createChordShapeRegistry([
+  ...BUILTIN_CHORD_SHAPES,
+  OPEN_FIFTH,
+  WIDE_SECOND,
+]);
