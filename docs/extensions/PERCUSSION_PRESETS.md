@@ -1,18 +1,18 @@
 # Percussion presets and noise hits
 
-The v0.25.0 source includes three editable percussion-inspired timbres: **Kick** (`kick`), **Closed hi-hat** (`hiHat`), and **Snare** (`snare`). v0.30.0 replaces the Kick and Snare factories with decaying drum bodies, falling pitch and filtered-noise transients. v0.29.0 replaces the factory Closed hi-hat with quiet metallic partials plus a filtered noise burst and automatic hit decay. This is a bundled preset contribution, not completion of the planned M3 module API or M4 synthesis engines.
+The v0.25.0 source includes three editable percussion-inspired timbres: **Kick** (`kick`), **Closed hi-hat** (`hiHat`), and **Snare** (`snare`). v0.31.0 corrects the bass-heavy Snare v2 with a noise-led v3 and complete-hit rendering. v0.30.0 replaced the Kick and Snare factories with decaying drum bodies, falling pitch and filtered-noise transients. v0.29.0 replaces the factory Closed hi-hat with quiet metallic partials plus a filtered noise burst and automatic hit decay. This is a bundled preset contribution, not completion of the planned M3 module API or M4 synthesis engines.
 
 ## Use them
 
 New projects include the three presets. Since v0.25.1, loading an existing local session, importing JSON or restoring recovery also adds missing bundled percussion before parsing. No separate setup action is required: they appear in Instrument and their score keys are available to the IDE. Occupied keys/custom presets, owned A/B/track sounds and source text remain intact; colliding IDs receive a suffix. If all missing templates cannot fit within 128 slots, the valid project still opens unchanged. **Add percussion presets** remains a strict manual fallback and reports the capacity limit instead of partially adding a set. The original v0.25.0 required this separate action, which left existing sessions without the feature until it ran.
 
-Select a preset, choose **Use hit preview**, then **Listen**. The preview changes the shared comparison material's pitch and gate length, leaving the score and owned track sounds intact. The gate length selector in Comparison works for any note/chord audition; A and B use the same duration. Selecting another preset or switching A/B does not automatically change the material or restart its clock. Explicitly changing material/replaying starts a new audition.
+Select a preset and choose **Preview hit** to set its suggested pitch/gate, disable partial solo and play the current editor sound in one action. **Use hit preview**, then **Listen**, remains available for setting up repeated comparisons. The preview changes the shared comparison material's pitch and gate length, leaving the score and owned track sounds intact. The gate length selector in Comparison works for any note/chord audition; A and B use the same duration. Selecting another preset or switching A/B does not automatically change the material or restart its clock. Explicitly changing material/replaying starts a new audition.
 
 - **Kick v2:** C2 preview, 250 ms gate, 5 ms attack, 240 ms release, −12 dB trim. A low Fourier body decays with a 120 ms e-fold time. A24-semitone initial rise falls toward the written pitch with 25 ms frequency decay; noise level 0.12 above 3000 Hz decays in 12 ms for the beater. Try C1–C2.
 - **Closed hi-hat v2:** C4 preview, 31.25 ms gate, 5 ms attack, 35 ms release, −12 dB trim. Filtered white noise (level 0.85, high-pass 6500 Hz, low-pass 14000 Hz) supplies the sizzle; six H13/H17/H19/H23/H29/H31 partials at 8% of the old magnitudes supply a quiet metallic edge. A45 ms e-fold decay shortens the hit even with a long written note.
-- **Snare v2:** G3 preview, 250 ms gate, 5 ms attack, 180 ms release, −12 dB trim. Four low partials provide a 45 ms body, with a 4-semitone initial rise and 18 ms pitch decay. Filtered noise level 0.8 above 1200 Hz decays independently over 90 ms, forming the rattle. Try D3–G3.
+- **Snare v3 (v0.31.0):** G3 preview, 250 ms gate, 5 ms attack, 180 ms release, −9 dB trim. The supporting Fourier body has coefficients [0.18, 0.1, 0.07, 0.025] and 22 ms decay, with no pitch drop. Noise level 1 through 700 Hz high-pass / 7800 Hz low-pass decays independently over 85 ms. This emphasizes the crack/rattle instead of a bass-like pitched body. Try D3–G3; noise color stays independent of the written pitch.
 
-The original v1 Kick and Snare were sustained periodic approximations. Current v2 factories decay during held notes. Note-off/release and articulation still bound the voice, so extremely short or staccato notes can choke a drum; use the 250 ms hit preview to hear its full shape. Hi-hat v2 is unchanged. All these timbres are editable synthesized drums; inharmonic membrane/cymbal models and broader engine contracts remain planned.
+The original v1 Kick and Snare were sustained periodic approximations. Current Kick v2 and Snare v3 factories decay during held notes. Note-off/release and articulation still bound the voice, so extremely short or staccato notes can choke a drum; use the 250 ms hit preview to hear its full shape. Hi-hat v2 is unchanged. All these timbres are editable synthesized drums; inharmonic membrane/cymbal models and broader engine contracts remain planned.
 
 ```text
 tempo 120
@@ -84,7 +84,7 @@ flowchart LR
 `Sound.percussion` is optional data inside the existing schema2 sound. Omitting it preserves sustained Fourier behavior. When present, all three fields are required and validated before import:
 
 - `noise`: linear white-noise level, 0–1. Zero retains decay on the Fourier body without audible noise.
-- `highpass`: high-pass cutoff in Hz, 20–16000. Runtime clamps it below Nyquist at the context's sample rate. A fixed 14000 Hz low-pass is similarly clamped; both filters use Q 0.707.
+- `highpass`: high-pass cutoff in Hz, 20–16000. Runtime clamps it below Nyquist at the context's sample rate. The low-pass defaults to 14000 Hz; optional `lowpass` (20–16000 Hz) overrides that ceiling. Both filters clamp below Nyquist and use Q 0.707. A low-pass below the high-pass is valid and attenuates the noise; it does not reverse the filter order.
 - `decay`: exponential e-fold time in seconds, 0.01–2. The builder displays milliseconds. At 45 ms, hit gain reaches about 37% after 45 ms and about 1.2% after 200 ms, before the ordinary attack/gate/release envelope.
 
 The instrument builder's **Percussive hit** toggle exposes these three controls for any sound. Disabling removes optional hit data; undo restores it. Noise is not represented by editable Fourier dots, harmonics or the steady source graph. Those graphs explicitly identify the Fourier component; playback/output monitoring includes both paths. Harmonic solo excludes noise. Saving a library template does not change applied tracks; use Apply or Apply to all using this preset.
@@ -175,3 +175,25 @@ flowchart LR
 [percussionSource.ts](../../src/audio/percussionSource.ts) now owns separate body/noise gain envelopes. Unchanged settings do not reschedule a decay. Changed settings analytically anchor the current gain before smoothing to the original-note-age target, preventing ramps from interpolating from the attack. Runtime sources/filter/envelope state remain voice-owned, sample-rate-aware, deterministic and fully disposable. Stop/stealing, release limits, routing latency and frozen export snapshots retain the existing policies.
 
 Factories v2 replace only exact untouched v1 Kick/Snare library templates. Edited templates, applied tracks and A/B remain independent copies. Select Kick/Snare and explicitly Apply to refresh an existing track. New assignments use v2 immediately; the owner's demo source is unchanged. Numerical checks measure a falling pitch, phase agreement during waveform edits, noise/body separation, different decay ratios, finite bounded headroom and silent tails at 44.1/48 kHz, plus units/import/copy/control/native persistence. Manual perceptual realism and device gates remain separate.
+
+
+## Noise-led snare and complete-hit preview (v0.31.0)
+
+Snare v2 retained too much low body and its thumbnail hid the rattle. v3 reduces the body, removes its falling pitch and uses stronger noise with an editable low-pass ceiling. The same filter runs in live notes and frozen WAV voices. Cutoff updates smooth on the existing filter without replacing the noise cursor, adding latency or resetting the note clock. Omitted low-pass retains old behavior.
+
+Only exact untouched v1/v2 Snare library factories upgrade to v3. Local startup reports a library refresh and explains that old owned playback copies remain until explicit loading/application. Kick remains v2 and the hi-hat is unchanged. Edited templates, track copies and A/B snapshots are preserved; selecting the library Snare loads the new sound, and explicit Apply updates an existing track. Preview hit auditions the current editor sound, including edits; it does not silently reload a factory or apply it to a track. Selecting presets alone and ordinary A/B switches keep their previous material/clock policy.
+
+[hitPreview.ts](../../src/audio/hitPreview.ts) renders the shared dry voice in an OfflineAudioContext at 44.1 kHz with a fixed 250 ms gate plus saved release and 10 ms silence. [HitPreview.tsx](../../src/components/HitPreview.tsx) uses 180 min/max buckets so short transients survive display reduction. The complete-hit graph includes noise, body, pitch, envelope and trim at the selected nominal fundamental; library thumbnails use each bundled hit's suggested pitch (G3 fallback for custom hits). It is a single-note reference, independent of phrase articulation, pedals, mix gain and device sample rate. The large graph uses a fixed ±1 amplitude scale. Compact library icons scale only their drawing to reveal the transient; audio gain is never normalized. Fourier graphs/dots remain the separately editable periodic body.
+
+```mermaid
+flowchart LR
+  Sound[Owned editor Sound] --> Voice[Shared dry voice factory]
+  Pitch[Reference pitch and 250 ms gate] --> Voice
+  Voice --> Offline[Private offline render at 44.1 kHz]
+  Offline --> Buckets[180 min and max amplitude buckets]
+  Buckets --> Graph[Complete hit graph and library thumbnail]
+  Sound --> Explicit[Explicit Preview hit]
+  Explicit --> Live[Suggested pitch and gate; solo off; live audition]
+```
+
+Display renders debounce edits by 120 ms, discard stale results and reuse a bounded 24-entry private promise cache. They never drive the transport or touch project data. No audio asset or network request is required. Regression proofs compare preview buckets to the actual voice, measure rattle/body balance at C2/G3 and both 44.1/48 kHz, exercise cutoff color and test native JSON ownership. These measurements verify the intended sound structure; they do not establish perceptual acoustic realism. Inharmonic drum engines, chamber acoustics and broader module contracts remain planned.
