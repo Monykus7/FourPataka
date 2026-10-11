@@ -50,6 +50,19 @@ describe('single-source track views', () => {
     expect(changed.text).toBe(source.replace('C4', 'G4'));
     expect(changed.trackKey).toBe('lead');
   });
+  it('keeps the compiler limits of 128 tracks and 64 nested phrases without counting the track as a phrase', () => {
+    const tracks = Array.from(
+      { length: 128 },
+      (_, i) => `track t${i} using sine {\n C4 quarter\n}`,
+    ).join('\n');
+    expect(indexScoreViews(tracks).tracks).toHaveLength(128);
+    expect(indexScoreViews(tracks + '\ntrack extra using sine {\nC4 quarter\n}').problem).toContain(
+      '128',
+    );
+    const scopes = `track t using sine {\n${'legato['.repeat(64)}C4 quarter${']'.repeat(64)}\n}`;
+    expect(indexScoreViews(scopes).problem).toBeNull();
+    expect(parseScore(scopes, ['sine']).diagnostics).toEqual([]);
+  });
   it('refuses stale revisions and ambiguous structure instead of guessing a patch', () => {
     const index = indexScoreViews(source);
     expect(() => editTrackView(source + '// new', index, 'lead', '')).toThrow('score changed');

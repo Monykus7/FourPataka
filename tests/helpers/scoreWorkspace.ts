@@ -57,6 +57,10 @@ export async function trackOperationsWorkflow(page: Page) {
     'score-view-track-all',
   );
   await page.getByRole('button', { name: 'Rename track', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Track tab name' })).toBeFocused();
+  await page.getByRole('textbox', { name: 'Track tab name' }).press('Escape');
+  await expect(page.getByRole('button', { name: 'Rename track', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Rename track', exact: true }).click();
   await page.getByRole('textbox', { name: 'Track tab name' }).fill('bass');
   await page.getByRole('button', { name: 'Confirm rename track' }).click();
   await expect(page.getByRole('alert')).toContainText('already');
@@ -78,6 +82,7 @@ export async function trackOperationsWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Create track tab' }).click();
   await expect(editor).toContainText('track harmony using triangle');
   await expect(editor).toContainText('rest bar');
+  await expect.poll(() => saved(page)).toContain('track harmony using triangle');
   const before = await saved(page);
   await editor.fill('track harmony using triangle {\n C4 quarter');
   await expect(tabs.getByRole('tab', { name: 'All score', exact: true })).toHaveAttribute(

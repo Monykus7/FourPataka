@@ -45,6 +45,8 @@ export default function ScoreWorkspace(props: Props) {
   const positions = useRef<Record<string, ScoreEditorPosition>>({});
   const tablist = useRef<HTMLDivElement>(null);
   const formInput = useRef<HTMLInputElement>(null);
+  const operationForm = useRef<HTMLFormElement>(null);
+  const operationTrigger = useRef<HTMLButtonElement | null>(null);
   const active = !index.problem ? index.tracks.find((track) => track.key === selected) : undefined;
   const viewId = active ? `track-${active.key}` : 'all';
   const projection = useMemo(() => projectScoreView(value, active), [value, active]);
@@ -58,7 +60,11 @@ export default function ScoreWorkspace(props: Props) {
     }
   }, [selected, active]);
   useEffect(() => {
-    if (operation) formInput.current?.focus();
+    if (operation) {
+      if (operation === 'delete')
+        operationForm.current?.querySelector<HTMLButtonElement>('[type=submit]')?.focus();
+      else formInput.current?.focus();
+    }
   }, [operation]);
   const select = (key: string | null) => {
     props.onView();
@@ -106,7 +112,13 @@ export default function ScoreWorkspace(props: Props) {
       setRecovery((n) => n + 1);
     }
   };
+  const cancel = () => {
+    setOperation(null);
+    setError('');
+    requestAnimationFrame(() => operationTrigger.current?.focus());
+  };
   const begin = (kind: 'new' | 'rename' | 'delete') => {
+    operationTrigger.current = document.activeElement as HTMLButtonElement;
     setOperation(kind);
     setError('');
     setName(kind === 'new' ? nextTrackKey(value, presetKeys) : (active?.key ?? ''));
@@ -238,6 +250,7 @@ export default function ScoreWorkspace(props: Props) {
       {operation && (
         <form
           className="score-view-form"
+          ref={operationForm}
           aria-label={
             operation === 'new'
               ? 'New track tab'
@@ -252,7 +265,7 @@ export default function ScoreWorkspace(props: Props) {
           onKeyDown={(event) => {
             if (event.key === 'Escape') {
               event.preventDefault();
-              setOperation(null);
+              cancel();
             }
           }}
         >
@@ -293,7 +306,7 @@ export default function ScoreWorkspace(props: Props) {
                 ? 'Confirm rename track'
                 : 'Create track tab'}
           </button>
-          <button type="button" onClick={() => setOperation(null)}>
+          <button type="button" onClick={cancel}>
             Cancel track operation
           </button>
           {error && <span role="alert">{error}</span>}

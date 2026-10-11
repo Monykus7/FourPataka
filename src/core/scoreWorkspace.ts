@@ -56,6 +56,7 @@ export function indexScoreViews(source: string): ScoreViewIndex {
           token.text,
         );
       if (header) {
+        if (tracks.length >= 128) return fail('A score may contain at most 128 tracks.');
         if (current || stack.length) return fail('A track header is inside another block.');
         if (header[1].length > 100 || tracks.some((track) => track.key === header[1]))
           return fail('Track names must be unique and at most 100 characters.');
@@ -89,7 +90,7 @@ export function indexScoreViews(source: string): ScoreViewIndex {
         current = null;
       } else if (scope !== 'repeat') return fail('A closing brace is unmatched.');
     }
-    if (stack.length > 64) return fail('Too many nested source blocks.');
+    if (stack.length > 65) return fail('Too many nested source blocks.');
   }
   if (current || stack.length) return fail('A track or phrase block is not closed.');
   return { source, tracks, problem: null };

@@ -2709,6 +2709,8 @@ dd {
   padding-bottom: 7px;
 }
 .score-view-tabs button {
+  background: var(--surface-1);
+  color: var(--text-muted);
   flex-shrink: 0;
   font-size: 11px;
   padding: 7px 10px;
@@ -2726,6 +2728,8 @@ dd {
   gap: 12px;
 }
 .score-view-actions button {
+  background: transparent;
+  border: 0;
   font-size: 10px;
   color: var(--text-muted);
   padding: 3px 0;
@@ -2766,6 +2770,8 @@ dd {
   width: 130px;
 }
 .score-view-form button {
+  background: var(--surface-1);
+  color: var(--text);
   padding: 7px;
   border: 1px solid var(--border);
   border-radius: 4px;
