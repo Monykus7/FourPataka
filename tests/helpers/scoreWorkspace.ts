@@ -5,6 +5,58 @@ const fixture =
 const saved = (page: Page) =>
   page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText);
 
+export async function unfinishedTrackWorkflow(page: Page) {
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const source =
+    'tempo 120\ntrack lead using sine {\n \n}\ntrack bass using softBass {\n C2 quarter\n}';
+  await editor.fill(source);
+  const tabs = page.getByRole('tablist', { name: 'Score views' });
+  await tabs.getByRole('tab', { name: 'lead', exact: true }).click();
+  await editor.press('Control+Home');
+  await editor.press('ArrowDown');
+  await editor.press('End');
+  await editor.pressSequentially('t');
+  await expect(tabs.getByRole('tab', { name: 'lead', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await editor.pressSequentially('riplet[');
+  await editor.press('Escape');
+  await editor.press('Enter');
+  for (const note of ['C4 8th', 'D4 8th', 'E4 8th']) {
+    await editor.pressSequentially(note);
+    await editor.press('Escape');
+    await editor.press('Enter');
+  }
+  await expect(tabs.getByRole('tab', { name: 'lead', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(editor).not.toContainText('track bass');
+  await expect.poll(() => saved(page)).toContain('track bass using softBass {\n C2 quarter\n}');
+  await editor.pressSequentially(']');
+  // basicSetup inserts a closing bracket while typing; explicitly repair the
+  // deliberately unfinished draft rather than inserting a second closing token.
+  await editor.fill('track lead using sine {\n triplet[\n C4 8th\n D4 8th\n E4 8th\n ]\n}');
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+  await editor.fill('track lead using sine {\n staccato[\n F4 quarter');
+  await page.getByRole('button', { name: 'Undo', exact: true }).click();
+  await expect(tabs.getByRole('tab', { name: 'lead', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await page.getByRole('button', { name: 'Redo', exact: true }).click();
+  await expect(tabs.getByRole('tab', { name: 'lead', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await editor.fill('track lead using sine {\n staccato[F4 quarter]\n}');
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
+  await tabs.getByRole('tab', { name: 'All score', exact: true }).click();
+  await expect(editor).toContainText('track bass');
+}
+
 export async function scoreWorkspaceWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
@@ -85,11 +137,11 @@ export async function trackOperationsWorkflow(page: Page) {
   await expect.poll(() => saved(page)).toContain('track harmony using triangle');
   const before = await saved(page);
   await editor.fill('track harmony using triangle {\n C4 quarter');
-  await expect(tabs.getByRole('tab', { name: 'All score', exact: true })).toHaveAttribute(
+  await expect(tabs.getByRole('tab', { name: 'harmony', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
   );
-  await expect(editor).toContainText('track bass');
+  await expect(editor).not.toContainText('track bass');
   await expect(page.locator('.diagnostics-list')).toBeVisible();
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect.poll(() => saved(page)).toBe(before);

@@ -3,7 +3,15 @@ import {
   scoreWorkspaceWorkflow,
   trackOperationsWorkflow,
   chordViewWorkflow,
+  unfinishedTrackWorkflow,
 } from '../helpers/scoreWorkspace';
+
+test('typing t and unfinished triplet groups stay in the selected track through undo and repair', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await unfinishedTrackWorkflow(page);
+});
 
 test('track views retain one source, cross-tab history, keyboard selection and whole-score playback', async ({
   page,
@@ -58,7 +66,7 @@ test('CRLF source stays canonical while editor chord offsets remain accurate', a
     )
     .toBe(source.replace('Cwide2', 'Fwide2'));
 });
-test('track tab creation rename deletion and invalid-source fallback are undoable', async ({
+test('track tab creation rename deletion and unfinished-source retention are undoable', async ({
   page,
 }) => {
   await page.goto('/');

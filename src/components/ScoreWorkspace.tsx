@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import ScoreEditor, { type ScoreEditorPosition } from './ScoreEditor';
 import type { CompiledScore } from '../core/parser';
 import {
-  editTrackView,
+  editTrackDraft,
+  resolveTrackDraft,
+  type TrackDraft,
   indexScoreViews,
   renameTrackSource,
   removeTrackSource,
@@ -64,6 +66,7 @@ export default function ScoreWorkspace(props: Props) {
   >();
   const navigationId = useRef(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const [draft, setDraft] = useState<TrackDraft | null>(null);
   const [notice, setNotice] = useState('');
   const [operation, setOperation] = useState<'new' | 'rename' | 'delete' | null>(null);
   const [name, setName] = useState('');
@@ -75,7 +78,18 @@ export default function ScoreWorkspace(props: Props) {
   const formInput = useRef<HTMLInputElement>(null);
   const operationForm = useRef<HTMLFormElement>(null);
   const operationTrigger = useRef<HTMLButtonElement | null>(null);
-  const active = !index.problem ? fileTracks.find((track) => track.key === selected) : undefined;
+  const retained =
+    draft && draft.view.key === selected && draft.view.fileId === file?.id
+      ? resolveTrackDraft(value, draft)
+      : undefined;
+  const active =
+    retained ?? (!index.problem ? fileTracks.find((track) => track.key === selected) : undefined);
+  const lastTracks = useRef(fileTracks);
+  if (!index.problem) lastTracks.current = fileTracks;
+  const visibleTracks =
+    index.problem && active
+      ? lastTracks.current.filter((track) => track.fileId === file?.id)
+      : fileTracks;
   const viewId = active ? `track-${active.key}` : 'all';
   const editorId = `${file?.id ?? 'files'}:${viewId}`;
   const projection = useMemo(() => projectScoreView(value, active ?? file), [value, active, file]);
@@ -99,6 +113,7 @@ export default function ScoreWorkspace(props: Props) {
     setNavigation(undefined);
     props.onView();
     setSelected(key);
+    setDraft(null);
     setOperation(null);
     setError('');
     setNotice('');
@@ -108,6 +123,7 @@ export default function ScoreWorkspace(props: Props) {
     props.onView();
     if (next.activeFile !== workspace.activeFile) {
       setSelected(null);
+      setDraft(null);
       setNavigation(undefined);
       setOperation(null);
       setError('');
@@ -121,7 +137,7 @@ export default function ScoreWorkspace(props: Props) {
     if (!onChange(change)) {
       setRecovery((n) => n + 1);
       setNotice('The score changed before this edit. The current score has been restored.');
-      return;
+      return false;
     }
     if (change.rename) {
       for (const [id, saved] of Object.entries(positions.current))
@@ -130,6 +146,7 @@ export default function ScoreWorkspace(props: Props) {
     }
     setSelected(key);
     if (key) props.onTrack(key);
+    return true;
   };
   const edit = (next: string) => {
     if (next === text) return;
@@ -145,19 +162,20 @@ export default function ScoreWorkspace(props: Props) {
           null,
         );
       else {
-        const result = editTrackView(value, index, active.key, restored, file?.id);
-        apply(
-          {
-            base: value,
-            text: result.text,
-            ...(result.trackKey && result.renameOwnership
-              ? { rename: { from: active.key, to: result.trackKey } }
-              : {}),
-          },
-          result.trackKey,
-        );
-        if (!result.trackKey)
-          setNotice('Track boundaries changed. Continue in All score; your edit is retained.');
+        const result = editTrackDraft(value, { source: value, view: active }, restored);
+        if (
+          apply(
+            {
+              base: value,
+              text: result.text,
+              ...(result.trackKey && result.renameOwnership
+                ? { rename: { from: active.key, to: result.trackKey } }
+                : {}),
+            },
+            result.trackKey ?? active.key,
+          )
+        )
+          setDraft(result.draft);
       }
     } catch (e) {
       setNotice((e as Error).message);
@@ -329,7 +347,7 @@ export default function ScoreWorkspace(props: Props) {
               ].focus();
             }}
           >
-            {[null, ...fileTracks.map((t) => t.key)].map((key) => (
+            {[null, ...visibleTracks.map((t) => t.key)].map((key) => (
               <button
                 key={key ? `track-${key}` : 'all'}
                 role="tab"
