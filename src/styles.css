@@ -312,6 +312,26 @@ button {
   justify-content: space-between;
   margin-bottom: 9px;
 }
+.mobile-preset-picker {
+  display: none;
+}
+.percussion-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 22px 14px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--tertiary);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.percussion-hint > span {
+  flex: 1;
+  min-width: 180px;
+}
 .library-title .sidebar-section-label {
   margin-bottom: 0;
   letter-spacing: 1px;
@@ -2238,6 +2258,18 @@ dd {
   }
 }
 @media (max-width: 760px) {
+  .mobile-preset-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 16px 14px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .mobile-preset-picker select {
+    flex: 1;
+    min-width: 0;
+  }
   .topbar {
     height: auto;
     min-height: 72px;

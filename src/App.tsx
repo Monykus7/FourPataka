@@ -61,6 +61,7 @@ import {
   applyPreset,
   createProject,
   withExampleScore,
+  withPercussionPresets,
   importProject,
   PREFERENCES_KEY,
   reconcileTracks,
@@ -88,6 +89,7 @@ import RecoveryDialog from './components/RecoveryDialog';
 import { appendTrack, insertCommand, nextTrackKey, setScoreChain } from './core/scoreTools';
 import { moveTrackOwnership, removeTrackOwnership } from './core/scoreWorkspace';
 import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
+import { PERCUSSION_PRESETS } from './core/instrumentPresets';
 import ComparisonPanel from './components/ComparisonPanel';
 import { version } from '../package.json';
 import { applyTheme, resolveTheme, THEMES } from './core/themes';
@@ -268,6 +270,14 @@ export default function App() {
   const instruments = project.instruments;
   const chainKeys = project.processing.library.map((p) => p.key);
   const preset = instruments.find((i) => i.id === project.editorPresetId)!;
+  const missingPercussion = PERCUSSION_PRESETS.some(
+    (definition) => !instruments.some((i) => i.key === definition.key),
+  );
+  const percussion = PERCUSSION_PRESETS.find(
+    (definition) =>
+      definition.key === preset.key &&
+      JSON.stringify(definition.createSound()) === JSON.stringify(preset.sound),
+  );
   const isCustom = JSON.stringify(sound) !== JSON.stringify(preset.sound);
   const score = useMemo(
     () =>
@@ -531,6 +541,17 @@ export default function App() {
       editorPresetId: id,
       comparison: { ...p.comparison, [p.comparison.active]: structuredClone(next.sound) },
     }));
+  };
+  const addPercussion = () => {
+    try {
+      const next = withPercussionPresets(project);
+      change(() => next);
+      setToast(
+        `Added ${next.instruments.length - instruments.length} percussion presets. Existing sounds kept.`,
+      );
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to add percussion presets.');
+    }
   };
   const selectAB = (side: 'A' | 'B') => {
     if (engine.current.mode === 'score')
@@ -1048,6 +1069,12 @@ export default function App() {
                     </div>
                   </div>
                   <div className="button-group">
+                    {missingPercussion && (
+                      <button className="secondary-button" onClick={addPercussion}>
+                        <Plus size={14} />
+                        Add percussion presets
+                      </button>
+                    )}
                     <button className="secondary-button" onClick={savePreset} disabled={!isCustom}>
                       <Save size={14} />
                       Save preset
@@ -1066,6 +1093,41 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+                <label className="mobile-preset-picker">
+                  Preset
+                  <select
+                    aria-label="Instrument preset"
+                    value={preset.id}
+                    onChange={(e) => selectPreset(e.target.value)}
+                  >
+                    {instruments.map((i) => (
+                      <option key={i.id} value={i.id}>
+                        {i.label} · {i.key}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {percussion && (
+                  <div className="percussion-hint">
+                    <span>{percussion.hint}. Fourier approximation; long notes sustain.</span>
+                    <button
+                      className="secondary-button"
+                      onClick={() =>
+                        change((p) => ({
+                          ...p,
+                          comparisonMaterial: {
+                            ...p.comparisonMaterial,
+                            kind: 'note',
+                            note: percussion.note,
+                            noteBeats: percussion.noteBeats,
+                          },
+                        }))
+                      }
+                    >
+                      Use hit preview
+                    </button>
+                  </div>
+                )}
                 <FourierWorkspace
                   sound={sound}
                   onChange={(next, group) => changeSound(() => next, group)}
