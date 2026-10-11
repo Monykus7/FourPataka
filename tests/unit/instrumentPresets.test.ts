@@ -1,11 +1,12 @@
 import { expect, it } from 'vitest';
 import {
   kickPreset,
+  createPercussionPresets,
   softBassPreset,
   legacySoftBassPreset,
   upgradeSoftBassTemplate,
 } from '../../src/core/instrumentPresets';
-import { mathematicalPreset, sourceSamples } from '../../src/core/music';
+import { dbToGain, mathematicalPreset, sourceSamples } from '../../src/core/music';
 import { createProject, importProject, validateSound } from '../../src/core/project';
 
 it('kick has a low body with audible beater partials and fresh editable banks', () => {
@@ -24,6 +25,29 @@ it('kick has a low body with audible beater partials and fresh editable banks', 
   });
   expect(kickPreset().polarity[0]).toBe(1);
   expect(kickPreset().undertones[0]).toBe(0);
+});
+
+it('percussion has distinct low, sparse-high and dense-high spectra with bounded gain', () => {
+  const presets = createPercussionPresets();
+  const [kick, hat, snare] = presets.map((p) => p.sound);
+  expect(hat.harmonics.slice(0, 12).every((v) => v === 0)).toBe(true);
+  expect(hat.harmonics.filter((v) => v > 0)).toHaveLength(6);
+  expect(snare.harmonics.slice(8).filter((v) => v > 0)).toHaveLength(24);
+  expect(snare.harmonics[0]).toBeGreaterThan(0);
+  expect(new Set(presets.map((p) => JSON.stringify(p.sound.harmonics))).size).toBe(3);
+  for (const preset of presets) {
+    validateSound(preset.sound);
+    // Sum of absolute coefficients bounds any phase/pitch peak, including
+    // Nyquist exclusions. This is headroom, not automatic gain normalization.
+    expect(
+      preset.sound.harmonics.reduce((a, b) => a + b, 0) * dbToGain(preset.sound.trim),
+    ).toBeLessThan(0.65);
+  }
+  expect(hat.release).toBeLessThan(snare.release);
+  expect(snare.release).toBeLessThan(kick.release);
+  presets[0].sound.harmonics[0] = 0;
+  expect(createPercussionPresets()[0].sound.harmonics[0]).toBe(1);
+  expect(presets[1].sound.harmonics).not.toBe(presets[2].sound.harmonics);
 });
 
 it('Soft bass has a distinct signed source and retains explicit envelope/gain settings', () => {
