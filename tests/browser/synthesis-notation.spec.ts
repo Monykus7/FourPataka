@@ -17,13 +17,15 @@ test('symbol completion has blank fields and shape choices insert only the selec
   const editor = await completeCommand(page, 'chord:', 'chord-symbol');
   await expect(editor).toHaveText('chord:@ ');
   await page.keyboard.insertText('Bbmaj7');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('3');
-  await editor.press('Tab');
+  await editor.press('F2');
   await page.keyboard.insertText('quarter');
   await expect(editor).toHaveText('chord:Bbmaj7@3 quarter');
   await editor.fill('chord:Cmaj');
   await editor.press('Control+Space');
+  // CodeMirror ignores pointer acceptance during its initial 75 ms activation window.
+  await page.waitForTimeout(100);
   await page
     .locator('.cm-tooltip-autocomplete')
     .getByRole('option', { name: /^maj13#11/ })

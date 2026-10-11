@@ -1,10 +1,15 @@
 import { expect, test } from '@playwright/test';
+const fixture =
+  'tempo 116\ntrack melody using sine {\n C4 quarter\n}\ntrack bass using softBass {\n F2 half\n}';
+const saved = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!).scoreText);
 
 test('track maker creates chords/rests, validates pitches, and undoes a whole track', async ({
   page,
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Score editor' }).fill(fixture);
   await page.getByRole('button', { name: 'Make a track', exact: true }).click();
   const maker = page.getByRole('dialog');
   await maker.getByRole('textbox', { name: 'New track name' }).fill('pad');
@@ -30,13 +35,13 @@ test('command cards insert into selected tracks and update globals without dupli
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Score editor' }).fill(fixture);
   await page.getByRole('combobox', { name: 'Command insertion track' }).selectOption('bass');
   await page.getByRole('button', { name: 'Insert chord command', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
-  await expect(editor).toContainText('F2 half\n  chord:(Bb D F)5 8th');
+  await expect.poll(() => saved(page)).toContain('F2 half\n  chord:(Bb D F)5 8th');
   await page.getByRole('button', { name: 'Insert tempo command', exact: true }).click();
-  const text = await editor.innerText();
-  expect(text.match(/tempo 120/g)).toHaveLength(1);
+  await expect.poll(async () => (await saved(page)).match(/tempo 120/g)?.length ?? 0).toBe(1);
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await expect(
     page.getByRole('button', { name: 'Insert note command', exact: true }),

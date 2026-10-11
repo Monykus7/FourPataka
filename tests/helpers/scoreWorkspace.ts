@@ -90,3 +90,24 @@ export async function trackOperationsWorkflow(page: Page) {
   await expect.poll(() => saved(page)).toBe(before);
   await expect(tabs.getByRole('tab', { name: 'harmony', exact: true })).toBeVisible();
 }
+
+export async function chordViewWorkflow(page: Page) {
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  const source =
+    'tempo 120\ntrack lead using sine {\n chord:Cwide2@3 quarter\n}\ntrack bass using softBass {\n C2 quarter\n}';
+  await page.getByRole('tab', { name: 'All score', exact: true }).click();
+  await editor.fill(source);
+  await page.getByRole('tab', { name: 'lead', exact: true }).click();
+  await editor.press('Control+Home');
+  await editor.press('ArrowDown');
+  await editor.press('Home');
+  for (let i = 0; i < 10; i++) await editor.press('ArrowRight');
+  await expect(page.locator('.chord-expansion')).toContainText('C3 · D4 · G4');
+  await page.getByRole('tab', { name: 'bass', exact: true }).click();
+  await page.getByRole('tab', { name: 'lead', exact: true }).click();
+  await editor.focus();
+  await expect(page.locator('.chord-expansion')).toContainText('C3 · D4 · G4');
+  await editor.fill('track lead using sine {\n chord:Fwide2@3 quarter\n}');
+  await expect.poll(() => saved(page)).toBe(source.replace('Cwide2', 'Fwide2'));
+}

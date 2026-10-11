@@ -8,7 +8,7 @@ import {
   projectScoreView,
   removeTrackOwnership,
 } from '../../src/core/scoreWorkspace';
-import { createProject, reconcileTracks } from '../../src/core/project';
+import { createProject, reconcileTracks, importProject } from '../../src/core/project';
 import { parseScore } from '../../src/core/parser';
 
 const source =
@@ -97,6 +97,10 @@ describe('single-source track views', () => {
     expect(result.tracks.some((t) => t.key === key)).toBe(false);
     expect(result.processing.tracks[key]).toBeUndefined();
     expect(project.tracks.some((t) => t.key === key)).toBe(true);
+    const empty = project.tracks.reduce((p, track) => removeTrackOwnership(p, track.key), project);
+    expect(importProject(JSON.stringify({ ...empty, scoreText: 'tempo 120\n' })).tracks).toEqual(
+      [],
+    );
   });
   it('moves owned sounds, levels, chains and comparison selection through rename and reconciliation', () => {
     let project = createProject();

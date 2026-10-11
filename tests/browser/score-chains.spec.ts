@@ -145,6 +145,9 @@ test('custom score keys survive GUI application and library saving without overw
   page,
 }) => {
   await page.goto('/');
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page.getByRole('textbox', { name: 'Score editor' }).fill(source);
+  await expect(page.locator('.editor-status')).toContainText('Ready to play');
   await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
   await page
     .getByRole('combobox', { name: 'Pedal preset', exact: true })
@@ -173,7 +176,7 @@ test('custom score keys survive GUI application and library saving without overw
       page.evaluate(() => {
         const p = JSON.parse(localStorage.getItem('fourpataka.project.v1')!);
         return [
-          p.processing.library.find((p: any) => p.key === 'myDrive').chain.pedals[0].params.drive,
+          p.processing.library.find((p: any) => p.key === 'myDrive')?.chain.pedals[0]?.params.drive,
           p.processing.tracks.melody.pedals[0]?.params.drive,
         ];
       }),

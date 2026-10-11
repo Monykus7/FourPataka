@@ -1,4 +1,9 @@
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
+import {
+  scoreWorkspaceWorkflow,
+  trackOperationsWorkflow,
+  chordViewWorkflow,
+} from '../helpers/scoreWorkspace';
 import { ideWorkflow } from '../helpers/ide';
 import { blockWorkflow } from '../helpers/blocks';
 import { demoWorkflow } from '../helpers/demo';
@@ -728,4 +733,26 @@ test('packaged articulation and grouped tuplet blocks play and preserve saved so
 
 test('packaged IDE indent repeat bar rests and adjacent panel preference', async () => {
   await ideWorkflow(await app.firstWindow());
+});
+
+test('packaged score views preserve canonical source playback and native JSON saving', async () => {
+  const page = await app.firstWindow();
+  await scoreWorkspaceWorkflow(page);
+  await chordViewWorkflow(page);
+  const savePath = resolve('.test-results', 'desktop', 'score-views.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved score-views.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.scoreText).toContain('track lead using sine');
+  expect(saved.scoreText).toContain('track bass using softBass');
+  expect(saved.scoreText).toContain('Fwide2@3');
+  expect(saved.tracks.map((track: any) => track.key)).toEqual(['lead', 'bass']);
+});
+test('packaged track operations keep rename deletion and malformed source undoable', async () => {
+  await trackOperationsWorkflow(await app.firstWindow());
 });

@@ -168,7 +168,10 @@ export function removeTrackOwnership(project: Project, key: string): Project {
     processing: { ...project.processing, tracks: chains },
     comparisonMaterial:
       project.comparisonMaterial.trackKey === key
-        ? { ...project.comparisonMaterial, trackKey: tracks[0]?.key ?? '' }
+        ? {
+            ...project.comparisonMaterial,
+            trackKey: tracks[0]?.key ?? project.comparisonMaterial.trackKey,
+          }
         : project.comparisonMaterial,
   };
 }
