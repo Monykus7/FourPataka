@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-10. Latest verified release: v0.24.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-10. Latest verified release: v0.25.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -460,4 +460,6 @@ Production TypeScript/bundle, formatting, diff whitespace, knowledge build/check
 
 Implemented fresh Kick (kick), Closed hi-hat (hiHat) and Snare (snare) Fourier presets, explicit conservative library import with whole-operation undo, short shared note/chord audition gates and suggested hit previews. Presets remain editable signed32-harmonic banks; no noise/automatic decay/pitch drop is introduced. Old projects retain their library and3.2-beat default gate until an explicit action; the authored demo and applied/A-B ownership are preserved. A mobile preset picker keeps the library usable when the sidebar is hidden. The contributor guide explains units, limitations, factories, import/copy scope and live/WAV routing with two diagrams. General M1–M6 and remaining Compose/acoustics/effect/device gates remain open.
 
-Verification is in progress; the latest fully verified release remains v0.24.0 until native/package checks finish.
+Verified: 202 unit checks, 28 distinct affected browser checks and four packaged desktop workflows passed. Coverage includes all three previews, library import/undo/redo and independent copies, mobile selection, optional gate persistence/old defaults, 44.1/48 kHz finite audio/silent tails, frozen owned WAV output, native JSON/WAV and existing Soft bass/sign/keyboard behavior. Initial test failures were corrected boot-autosave and multiline score fixtures; production parser grammar and the authored demo remain unchanged. Desktop/mobile screenshots were reviewed, fourteen contributor diagrams were syntax-checked/rendered (two new), and twenty-five affected documentation file links plus the exact tested score example were checked.
+
+Production build, format/diff checks, knowledge build/check and portable packaging passed. The native-tested v0.25.0 app.asar SHA-256 is DB1DF2E4B920CFF03E1EC2EBC98F2C8505BBDE7B26F42CC98E47956810215099. The portable application was opened visibly, and its extracted running app.asar matches that native-tested hash. The package remains unsigned with the default Electron icon; physical listening/device/screen-reader checks and general modularity gates are still open. Eight focused commits use Monykus7 and are pushed to origin/master.
