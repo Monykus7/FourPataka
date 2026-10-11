@@ -1,7 +1,14 @@
 import { indentWithTab } from '@codemirror/commands';
 import { useEffect, useRef } from 'react';
 import { basicSetup } from 'codemirror';
-import { Compartment, EditorState, StateEffect, StateField, Prec } from '@codemirror/state';
+import {
+  Annotation,
+  Compartment,
+  EditorState,
+  StateEffect,
+  StateField,
+  Prec,
+} from '@codemirror/state';
 import {
   Decoration,
   EditorView,
@@ -159,6 +166,13 @@ const colors = HighlightStyle.define([
   { tag: tags.comment, color: 'var(--text-muted)', fontStyle: 'italic' },
 ]);
 
+export interface ScoreEditorPosition {
+  anchor: number;
+  head: number;
+  scrollTop: number;
+  scrollLeft: number;
+}
+const hostUpdate = Annotation.define<boolean>();
 interface Props {
   value: string;
   onChange: (value: string) => void;
@@ -170,6 +184,8 @@ interface Props {
   lines: number[];
   onUndo: () => void;
   onRedo: () => void;
+  initialPosition?: ScoreEditorPosition;
+  onPosition?: (position: ScoreEditorPosition) => void;
 }
 export default function ScoreEditor({
   value,
@@ -182,11 +198,20 @@ export default function ScoreEditor({
   lines,
   onUndo,
   onRedo,
+  initialPosition,
+  onPosition,
 }: Props) {
   const container = useRef<HTMLDivElement>(null);
   const view = useRef<EditorView | null>(null);
-  const callbacks = useRef({ onChange, onUndo, onRedo });
-  callbacks.current = { onChange, onUndo, onRedo };
+  const callbacks = useRef({ onChange, onUndo, onRedo, onPosition });
+  callbacks.current = { onChange, onUndo, onRedo, onPosition };
+  const remember = (editor: EditorView) =>
+    callbacks.current.onPosition?.({
+      anchor: editor.state.selection.main.anchor,
+      head: editor.state.selection.main.head,
+      scrollTop: editor.scrollDOM.scrollTop,
+      scrollLeft: editor.scrollDOM.scrollLeft,
+    });
   const completion = useRef(new Compartment());
   const completionExtension = () =>
     autocompletion({
@@ -297,6 +322,12 @@ export default function ScoreEditor({
       parent: container.current!,
       state: EditorState.create({
         doc: value,
+        selection: initialPosition
+          ? {
+              anchor: Math.min(initialPosition.anchor, value.length),
+              head: Math.min(initialPosition.head, value.length),
+            }
+          : undefined,
         extensions: [
           EditorState.tabSize.of(2),
           indentUnit.of('  '),
@@ -340,12 +371,30 @@ export default function ScoreEditor({
           completion.current.of(completionExtension()),
           EditorView.contentAttributes.of({ 'aria-label': 'Score editor', spellcheck: 'false' }),
           EditorView.updateListener.of((update) => {
-            if (update.docChanged) callbacks.current.onChange(update.state.doc.toString());
+            // A host projection/reload is not a new source gesture or history entry.
+            if (update.docChanged && !update.transactions.some((t) => t.annotation(hostUpdate)))
+              callbacks.current.onChange(update.state.doc.toString());
+            if (update.selectionSet || update.docChanged) remember(update.view);
+          }),
+          EditorView.domEventHandlers({
+            scroll: (_event, editor) => {
+              remember(editor);
+              return false;
+            },
           }),
         ],
       }),
     });
+    const editor = view.current;
+    const frame = requestAnimationFrame(() => {
+      if (initialPosition) {
+        editor.scrollDOM.scrollTop = initialPosition.scrollTop;
+        editor.scrollDOM.scrollLeft = initialPosition.scrollLeft;
+      }
+    });
     return () => {
+      cancelAnimationFrame(frame);
+      if (view.current) remember(view.current);
       view.current?.destroy();
       view.current = null;
     };
@@ -353,7 +402,10 @@ export default function ScoreEditor({
   useEffect(() => {
     const editor = view.current;
     if (editor && editor.state.doc.toString() !== value)
-      editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } });
+      editor.dispatch({
+        changes: { from: 0, to: editor.state.doc.length, insert: value },
+        annotations: hostUpdate.of(true),
+      });
   }, [value]);
   useEffect(() => {
     const editor = view.current;
