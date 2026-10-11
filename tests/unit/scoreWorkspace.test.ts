@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   indexScoreViews,
   editTrackView,
+  editTrackDraft,
+  resolveTrackDraft,
   renameTrackSource,
   removeTrackSource,
   moveTrackOwnership,
@@ -79,13 +81,23 @@ describe('single-source track views', () => {
       expect(indexScoreViews(text).tracks, text).toEqual([]);
     }
   });
-  it('retains incomplete edits and exposes boundary changes in the full score', () => {
+  it('retains incomplete edits in a guarded canonical slice through repair and undo', () => {
     const index = indexScoreViews(source),
       view = index.tracks[0];
     const unfinished = source.slice(view.from, view.to - 1);
     const result = editTrackView(source, index, 'lead', unfinished);
     expect(result.text).toBe(source.slice(0, view.from) + unfinished + source.slice(view.to));
     expect(result.trackKey).toBeNull();
+    const typing = editTrackDraft(result.text, result.draft, unfinished + '\r\n triplet[');
+    expect(typing.text.endsWith(source.slice(view.to))).toBe(true);
+    const repaired = editTrackDraft(typing.text, typing.draft, source.slice(view.from, view.to));
+    expect(repaired.text).toBe(source);
+    expect(repaired.trackKey).toBe('lead');
+    expect(resolveTrackDraft(result.text, typing.draft)?.to).toBe(view.from + unfinished.length);
+    expect(resolveTrackDraft(typing.text.replace('C2', 'D2'), typing.draft)).toBeUndefined();
+    expect(() => editTrackDraft(typing.text.replace('C2', 'D2'), typing.draft, '')).toThrow(
+      'score changed',
+    );
     expect(
       editTrackView(source, index, 'lead', 'track lead using sine {\nC4 quarter\n}\ntempo 120')
         .trackKey,

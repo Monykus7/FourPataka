@@ -16,6 +16,23 @@ export interface ScoreViewIndex {
   tracks: TrackSourceView[];
   problem: string | null;
 }
+export interface TrackDraft {
+  source: string;
+  view: TrackSourceView;
+}
+
+/** Retain an unfinished slice only while both outside regions are unchanged. */
+export function resolveTrackDraft(source: string, draft: TrackDraft): TrackSourceView | undefined {
+  const prefix = draft.source.slice(0, draft.view.from);
+  const suffix = draft.source.slice(draft.view.to);
+  if (
+    source.length < prefix.length + suffix.length ||
+    !source.startsWith(prefix) ||
+    !source.endsWith(suffix)
+  )
+    return undefined;
+  return { ...draft.view, to: source.length - suffix.length };
+}
 
 /** CodeMirror counts a CRLF as one character; source offsets count both. */
 export function projectScoreView(source: string, view?: Pick<TrackSourceView, 'from' | 'to'>) {
@@ -128,6 +145,13 @@ export function editTrackView(
   fileId?: string,
 ) {
   const view = currentView(source, index, key, fileId);
+  return editTrackDraft(source, { source, view }, value);
+}
+
+export function editTrackDraft(source: string, draft: TrackDraft, value: string) {
+  const view = resolveTrackDraft(source, draft);
+  if (!view) throw new Error('The score changed. Select the track again before editing.');
+  const key = view.key;
   // A projected track cannot create a hidden sibling file through a pasted boundary.
   if (value.split('\n').some((line) => line.trim().startsWith('// @fourpataka-file')))
     throw new Error('Edit file boundaries in All files, or use New file.');
@@ -135,7 +159,8 @@ export function editTrackView(
   const local = indexScoreViews(value);
   const only = !local.problem && local.tracks.length === 1 ? local.tracks[0] : null;
   const whole = indexScoreViews(text);
-  // Incomplete typing is retained verbatim, then exposed in All score for recovery.
+  // Parsing may fail between keystrokes. Keep the captured, length-adjusted slice
+  // editable; it addresses canonical source and never guesses sibling boundaries.
   const trackKey =
     only && !whole.problem && !(value.slice(0, only.from) + value.slice(only.to)).trim()
       ? only.key
@@ -143,6 +168,7 @@ export function editTrackView(
   return {
     text,
     trackKey,
+    draft: { source: text, view: { ...view, key: trackKey ?? key, to: view.from + value.length } },
     renameOwnership:
       !!trackKey && trackKey !== key && !whole.tracks.some((track) => track.key === key),
   };
