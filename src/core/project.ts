@@ -1,3 +1,4 @@
+import { instrumentModules } from '../modules/assembly';
 import {
   defaultProcessing,
   importProcessing,
@@ -140,21 +141,8 @@ track bass using softBass {
 }
 `;
 export function createProject(): Project {
-  const bright = mathematicalPreset('square');
-  bright.harmonics = bright.harmonics.map((m, i) => (i === 0 ? 1 : m * 0.78));
-  const bass = softBassPreset();
-  const instruments: InstrumentPreset[] = [
-    ...(['sine', 'square', 'saw', 'triangle'] as const).map((key) => ({
-      id: key,
-      key,
-      label: { sine: 'Pure sine', square: 'Square', saw: 'Sawtooth', triangle: 'Triangle' }[key],
-      version: 1,
-      sound: mathematicalPreset(key),
-    })),
-    { id: 'bright-reed', key: 'brightReed', label: 'Bright reed', version: 1, sound: bright },
-    { id: 'soft-bass', key: 'softBass', label: 'Soft bass', version: 2, sound: bass },
-    ...createPercussionPresets(),
-  ];
+  const instruments = instrumentModules.createTemplates();
+  const bright = instruments.find((p) => p.key === 'brightReed')!.sound;
   const project: Project = {
     processing: defaultProcessing(),
     schemaVersion: 3,

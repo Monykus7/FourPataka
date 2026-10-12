@@ -1,3 +1,5 @@
+import { builtInPresetDefinitions } from './instruments/catalogue';
+import { createFourierPresetRegistry } from './index';
 import { createModuleRegistry, createPedalRegistry } from './index';
 import { eqModule } from './pedals/eq';
 import { compressorModule } from './pedals/compressor';
@@ -12,4 +14,9 @@ export const pedalModules = createPedalRegistry(definitions, builtInIds);
 export const bundledModules = createModuleRegistry(definitions, { builtInIds });
 export const LEGACY_MODULE_IDS = Object.freeze(
   Object.fromEntries(builtIns.map((d) => [d.legacyKind!, d.id])),
+);
+
+export const instrumentModules = createFourierPresetRegistry(
+  builtInPresetDefinitions,
+  builtInPresetDefinitions.map((d) => d.id),
 );
