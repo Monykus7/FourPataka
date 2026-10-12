@@ -1,4 +1,4 @@
-// Public M1 data boundary; no React, core project, DSP or native imports.
+// Public bundled-source contracts; no React, core project or native imports.
 export * from './foundation/contracts';
 export {
   defineNumericModule,
@@ -7,3 +7,10 @@ export {
   validateModuleSettings,
   moduleControlRanges,
 } from './foundation/registry';
+
+export * from './foundation/pedals';
+export {
+  createMixedProcessor,
+  type ProcessorPorts,
+  type ProcessorBehavior,
+} from './foundation/processor';
