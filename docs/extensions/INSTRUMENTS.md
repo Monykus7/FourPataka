@@ -1,6 +1,6 @@
 # Adding instruments and synthesis engines
 
-Status: M3 Fourier preset modules are implemented in v0.34.0. Follow the [current preset API/tutorial](FOURIER_PRESETS.md), including registry-backed factories, Mellow pluck and explicit discovery for old projects. The recipes below retain historical source context and planned M4 engine requirements; there is no runtime installer or independent-engine API yet.
+Status: M3 Fourier preset modules are implemented in v0.34.0. Follow the [current preset API/tutorial](FOURIER_PRESETS.md), including registry-backed factories, Mellow pluck and explicit discovery for old projects. The recipes below retain historical source context and planned M4 engine requirements; [M4a public engine foundation](ENGINE_FOUNDATION.md) is implemented in v0.35.0. Its Basic Tone example is code/test-only; selectable/saved engines and recovery are the next M4b gate. There is no runtime installer.
 
 ## Historical Fourier source contribution
 

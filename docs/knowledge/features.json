@@ -5,11 +5,7 @@
       "id": "project",
       "title": "FourPataka",
       "summary": "FourPataka v0.34.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 engines is next. M4-M6, swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.",
-      "paths": [
-        "README.md",
-        "IMPLEMENTATION_STATUS.md",
-        "BUILD_PLAN.md"
-      ]
+      "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
       "id": "modularity",
@@ -94,7 +90,7 @@
       "id": "modularity-presets",
       "parent": "modularity",
       "title": "M3 registry-backed Fourier presets",
-      "summary": "Implemented v0.34.0: public FourierSound/validation/shape helpers, validated deterministic preset definitions and immutable registry, nine existing factories and an independent Mellow pluck folder plus assembly entry. Separate module/API/data identity from editable library IDs/keys/template versions. Fresh factories return independent captured copies with 32 signed absolute coefficients, five undertones and existing envelope/trim/hit fields. All new projects discover registered templates; existing libraries receive missing keys only via explicit Add bundled presets with capacity/collision/occupied-key/undo guards. Existing conservative factory upgrades preserve customized/applied/A-B/folder/source data. Registry preview metadata feeds current hit previews without a per-preset App branch. Settings are baked in schema 3; missing preset code does not disable saved sounds, and no schema/voice/parser special case or automatic update is added. M4 engines and M6 licensing/CI/publication remain planned.",
+      "summary": "Implemented v0.34.0: public FourierSound/validation/shape helpers, validated deterministic preset definitions and immutable registry, nine existing factories and an independent Mellow pluck folder plus assembly entry. Separate module/API/data identity from editable library IDs/keys/template versions. Fresh factories return independent captured copies with 32 signed absolute coefficients, five undertones and existing envelope/trim/hit fields. All new projects discover registered templates; existing libraries receive missing keys only via explicit Add bundled presets with capacity/collision/occupied-key/undo guards. Existing conservative factory upgrades preserve customized/applied/A-B/folder/source data. Registry preview metadata feeds current hit previews without a per-preset App branch. Settings are baked in schema 3; missing preset code does not disable saved sounds, and no schema/voice/parser special case or automatic update is added. M4a engine foundation is implemented; M4b integration and M6 licensing/CI/publication remain planned.",
       "paths": [
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
@@ -117,12 +113,24 @@
     {
       "id": "modularity-engines",
       "parent": "modularity",
-      "title": "M4 synthesis engine capability contracts (planned)",
-      "summary": "Planned, not started; depends on M1/M3. Host-clock voice factory wraps Fourier first, then independent minimal engine example. Versioned settings, truthful Fourier inspector capabilities, deterministic live/offline factories, envelope/release/retirement/disposal, resource limits, migration and unavailable-engine handling. No new engine or 32-harmonic capability implemented by this plan. Tutorial, lifecycle and native/WAV/phase proofs required.",
+      "title": "M4 synthesis engines: foundation implemented, application integration next",
+      "summary": "M4a implemented v0.35.0: public API-1 engine definitions, bounded settings/default copies, immutable registry, host-clock note/end/update/retirement/disposal, live/offline/sample-rate checks and truthful capabilities/randomness/resource estimates. Existing Fourier audition/track/A-B/WAV callers use the registered adapter with unchanged phase/envelope/fixed-noise behavior. Independent Basic Tone has its own attack/release/trim/detune settings and native oscillator; registered for source/test use only, not library/parser/persistence. Schema 3 stays Fourier-only. M4b next: engine-backed saved instruments, migrations/unavailable recovery, capability-driven editor and selection, cross-engine comparison and full app/native/WAV/resource gates. Estimates do not prove CPU/memory bounds; no engine latency compensation or runtime loader.",
       "paths": [
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
-        "docs/extensions/INSTRUMENTS.md"
+        "docs/extensions/INSTRUMENTS.md",
+        "docs/extensions/ENGINE_FOUNDATION.md",
+        "src/modules/foundation/engines.ts",
+        "src/modules/foundation/fourierVoice.ts",
+        "src/modules/foundation/fourierComponents.ts",
+        "src/modules/foundation/percussionSource.ts",
+        "src/modules/foundation/pitchEnvelope.ts",
+        "src/modules/engines/fourier/index.ts",
+        "src/modules/examples/basicTone/index.ts",
+        "src/modules/assembly.ts",
+        "src/audio/voice.ts",
+        "tests/unit/engineModules.test.ts",
+        "tests/browser/engines.spec.ts"
       ]
     },
     {
@@ -130,11 +138,7 @@
       "parent": "modularity",
       "title": "M5 feature modules and host workflow services (planned)",
       "summary": "Planned, not started; depends on M1, reuses M2/M3 services, engine-specific panels also need M4. Extract narrow root workflow services and optional panel/experiment/command metadata registration, preserving host source edits/copies/history/revision/measurement/focus/files. Migrate one existing view and independent feature example without root switches/listener leaks; publish tested host API and settings guide. Metadata alone does not add score grammar.",
-      "paths": [
-        "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md",
-        "docs/extensions/FEATURE_MODULES.md"
-      ]
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/extensions/FEATURE_MODULES.md"]
     },
     {
       "id": "modularity-release",
@@ -159,7 +163,7 @@
       "id": "synthesis",
       "parent": "sound",
       "title": "Sine-bank synthesis and voices",
-      "summary": "Thirty-two signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/\u2212 toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop. Separate lifecycle ownership includes retired/future and silent voices until cleanup, so Stop disposes every source.",
+      "summary": "Thirty-two signed harmonics and optional undertones retain absolute amplitude. Oscillator replacements preserve the original voice phase; envelopes and a 32-voice cap bound playback. Monitor volume stays outside saved mix settings. Each harmonic has a +/− toggle and an explicit inspector Sign selector; signed coefficient previews, silent-value sign retention and separate undo agree with source/audio phase-continuous updates. Live/offline admission counts releasing overlaps at scheduled audio time, with a 10 ms oldest-voice retirement fade and 15 ms oscillator stop. Separate lifecycle ownership includes retired/future and silent voices until cleanup, so Stop disposes every source.",
       "paths": [
         "src/core/music.ts",
         "src/audio/voice.ts",
@@ -175,7 +179,7 @@
       "id": "instrument-presets",
       "parent": "sound",
       "title": "Instrument presets and source thumbnails",
-      "summary": "Library templates, applied tracks and A/B are independent Sound copies; Save never applies to tracks. Pure factories create fresh 32-partial banks. Soft bass v2 differs from signed Triangle. Kick v2 has a120 ms body,24-semitone/25 ms falling pitch and12 ms beater. Closed hi-hat v2 uses filtered noise and quiet metallic partials with45 ms decay. Snare v3 uses a quiet22 ms body, no pitch drop and dominant85 ms noise at700\u20137800 Hz,\u22129 dB trim. Optional percussion data validates noise0\u20131, filters20\u201316000 Hz, body decay0.01\u20132 s, noiseDecay0.005\u20132 s, pitch0\u201348 st/0.005\u20130.5 s; omitted lowpass defaults14000 Hz. Live/WAV share original-age voices, phase/cursor continuity and Stop. Only exact untouched legacy library factories migrate; owned/custom sounds remain until explicit Select/Apply. Missing bundled keys are added conservatively before parser discovery. Preview hit sets suggested pitch/gate and clears solo; complete-hit renders include noise/envelope/trim, while Fourier editing controls the body. See PERCUSSION_PRESETS.md for limits, migration and preview details. M3 preset modules is implemented; M4 engines remains planned. Snare audition/Compose matching: suggested G3/250 ms = G3 eighth at120 BPM, ordinary Listen retains material (default C4/1.6 s), new tracks use75% versus audition unity and owned copies require explicit Apply after changes. Match track/audition/master chains and disable solo; IDE does not set track level or drum parameters.",
+      "summary": "Library templates, applied tracks and A/B are independent Sound copies; Save never applies to tracks. Pure factories create fresh 32-partial banks. Soft bass v2 differs from signed Triangle. Kick v2 has a120 ms body,24-semitone/25 ms falling pitch and12 ms beater. Closed hi-hat v2 uses filtered noise and quiet metallic partials with45 ms decay. Snare v3 uses a quiet22 ms body, no pitch drop and dominant85 ms noise at700–7800 Hz,−9 dB trim. Optional percussion data validates noise0–1, filters20–16000 Hz, body decay0.01–2 s, noiseDecay0.005–2 s, pitch0–48 st/0.005–0.5 s; omitted lowpass defaults14000 Hz. Live/WAV share original-age voices, phase/cursor continuity and Stop. Only exact untouched legacy library factories migrate; owned/custom sounds remain until explicit Select/Apply. Missing bundled keys are added conservatively before parser discovery. Preview hit sets suggested pitch/gate and clears solo; complete-hit renders include noise/envelope/trim, while Fourier editing controls the body. See PERCUSSION_PRESETS.md for limits, migration and preview details. M3 preset modules is implemented; M4a engine foundation is implemented; M4b application integration remains planned. Snare audition/Compose matching: suggested G3/250 ms = G3 eighth at120 BPM, ordinary Listen retains material (default C4/1.6 s), new tracks use75% versus audition unity and owned copies require explicit Apply after changes. Match track/audition/master chains and disable solo; IDE does not set track level or drum parameters.",
       "paths": [
         "src/core/instrumentPresets.ts",
         "src/core/project.ts",
@@ -205,7 +209,7 @@
       "id": "instrument-folders",
       "parent": "sound",
       "title": "Instrument library folders",
-      "summary": "v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Recognized sine/square/saw/triangle factory IDs and keys seed Simple shapes in new and legacy projects; explicit empty organization is respected. Create/rename/remove (32 folders, unique names1\u2013100) and internal preset-ID drag/drop or keyboard/touch selector moves are independent whole-operation history edits. Removing a folder unfiles its instruments; Save as new stays unfiled. Optional schema2/3 instrumentFolders and preset.folderId validate/whitelist IDs and references; metadata persists through local/JSON/native/recovery. Preset IDs/score keys/versions/Sound, source, applied/A-B copies and running audio phase/clock stay unchanged. Closed folder keys remain available to compiler/autocomplete/assignment/WAV; demo imports strip source-project folder references. Collapse is local view state, reset on reload, not musical history. Nested folders/manual ordering and general M3 preset registry remain outside this release. Window titles show runtime version to identify old builds.",
+      "summary": "v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Recognized sine/square/saw/triangle factory IDs and keys seed Simple shapes in new and legacy projects; explicit empty organization is respected. Create/rename/remove (32 folders, unique names1–100) and internal preset-ID drag/drop or keyboard/touch selector moves are independent whole-operation history edits. Removing a folder unfiles its instruments; Save as new stays unfiled. Optional schema2/3 instrumentFolders and preset.folderId validate/whitelist IDs and references; metadata persists through local/JSON/native/recovery. Preset IDs/score keys/versions/Sound, source, applied/A-B copies and running audio phase/clock stay unchanged. Closed folder keys remain available to compiler/autocomplete/assignment/WAV; demo imports strip source-project folder references. Collapse is local view state, reset on reload, not musical history. Nested folders/manual ordering and general M3 preset registry remain outside this release. Window titles show runtime version to identify old builds.",
       "paths": [
         "src/core/instrumentFolders.ts",
         "src/core/project.ts",
@@ -224,7 +228,7 @@
       "id": "harmonic-expansion",
       "parent": "sound",
       "title": "32-harmonic Fourier bank",
-      "summary": "Implemented synthesis/notation pilot: signed absolute H1\u2013H32 coefficients, primary H1\u2013H16 plus collapsible H17\u2013H32 controls. Waveform projection and shared live/WAV PeriodicWave include all 32; coefficients at or above Nyquist remain saved but do not sound. Current schema 3 imports schemas 1/2, with schema 1 migrated by zero-padding magnitudes and +1 signs independently across libraries, tracks and A/B; lower coefficients, waveform points, trim, source and macro brightness response remain intact. Storage keys remain stable. Fresh mathematical presets use 32; legacy applied sounds retain their old timbre. Broader engine modules/chamber acoustics remain planned.",
+      "summary": "Implemented synthesis/notation pilot: signed absolute H1–H32 coefficients, primary H1–H16 plus collapsible H17–H32 controls. Waveform projection and shared live/WAV PeriodicWave include all 32; coefficients at or above Nyquist remain saved but do not sound. Current schema 3 imports schemas 1/2, with schema 1 migrated by zero-padding magnitudes and +1 signs independently across libraries, tracks and A/B; lower coefficients, waveform points, trim, source and macro brightness response remain intact. Storage keys remain stable. Fresh mathematical presets use 32; legacy applied sounds retain their old timbre. Broader engine modules/chamber acoustics remain planned.",
       "paths": [
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
@@ -243,11 +247,7 @@
       "parent": "sound",
       "title": "Instrument acoustics (planned)",
       "summary": "Deferred, not implemented: an Instrument-builder algorithmic tiny chamber representing instrument body acoustics, without impulse-response (IR) files. Proposed enable/reset, wet/dry, chamber size, decay and damping controls live in saved instrument settings and independent track/A/B copies. The planned chamber sits before track pedals while source inspectors retain raw Fourier authority. Audio-proof gates cover dry unity, bounded feedback, latency, continuous clock/phase, finite tails and Stop, legacy-off migration, copy isolation and offline/WAV agreement. Current main-feature and export priorities remain unchanged.",
-      "paths": [
-        "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md",
-        "docs/knowledge/DECISIONS.md"
-      ]
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
     },
     {
       "id": "waveform",
@@ -277,7 +277,7 @@
       "id": "pedals",
       "parent": "sound",
       "title": "Pedalboard and processing",
-      "summary": "Compressor, overdrive, three-band EQ and delay use independent A/B, track and master boards. Equipment drag/drop places pedals on a4\u00d72 Velcro grid; rotating dials and exact inspector inputs share grouped undo. Mouse/keyboard cables define a validated serial path; unconnected output is silent unless bypassed. Legacy boards load prewired. Delay time20\u20132000 ms, feedback\u226495%, linear wet/dry mix and output trim; bypass closes its input but retains echoes and dry unity, while Stop disposes buffers. Delay adds no compensation latency. Routing edits wait for replay; audition parameters/bypass update live, score parameters freeze. Stable score keys drive through/master assignments into owned copies; saving the library does not apply. Keyboard equipment navigation, placement focus and Escape preserve playback/history. Phaser, chorus and reverb remain planned. Detailed lifecycle/latency and contributor gates live in the pedal guides. M2 v0.33.0 derives metadata and DSP dispatch from a public registry, adds Level in Equipment and schema-3 unavailable-pedal recovery; source/cable/ownership/clock policies remain unchanged. See the M2 tutorial.",
+      "summary": "Compressor, overdrive, three-band EQ and delay use independent A/B, track and master boards. Equipment drag/drop places pedals on a4×2 Velcro grid; rotating dials and exact inspector inputs share grouped undo. Mouse/keyboard cables define a validated serial path; unconnected output is silent unless bypassed. Legacy boards load prewired. Delay time20–2000 ms, feedback≤95%, linear wet/dry mix and output trim; bypass closes its input but retains echoes and dry unity, while Stop disposes buffers. Delay adds no compensation latency. Routing edits wait for replay; audition parameters/bypass update live, score parameters freeze. Stable score keys drive through/master assignments into owned copies; saving the library does not apply. Keyboard equipment navigation, placement focus and Escape preserve playback/history. Phaser, chorus and reverb remain planned. Detailed lifecycle/latency and contributor gates live in the pedal guides. M2 v0.33.0 derives metadata and DSP dispatch from a public registry, adds Level in Equipment and schema-3 unavailable-pedal recovery; source/cable/ownership/clock policies remain unchanged. See the M2 tutorial.",
       "paths": [
         "src/core/pedals.ts",
         "src/core/board.ts",
@@ -370,7 +370,7 @@
       "id": "timing",
       "parent": "composition",
       "title": "Tempo, meter and timeline",
-      "summary": "Tempo always counts quarter notes. Meters support 1\u201332 over 1/2/4/8/16; notes may cross bars. Edit timing in the IDE; the form is removed. Numeric timing expressions use +,-,*,/ and parentheses with conventional precedence, never eval; changes are positive finite quarter-beat positions \u22641,000,000, capped at64 and distinct preceding-meter bar boundaries. Bar rests use the active map even when directives appear below tracks, advance a full bar at a boundary and are not rescaled by tuplets. Repeated bar rests recompute each pass using exact fractions. Timeline/transport use frozen playing revisions; source edits apply on replay. Dense timeline keyboard inspection does not seek or edit source.",
+      "summary": "Tempo always counts quarter notes. Meters support 1–32 over 1/2/4/8/16; notes may cross bars. Edit timing in the IDE; the form is removed. Numeric timing expressions use +,-,*,/ and parentheses with conventional precedence, never eval; changes are positive finite quarter-beat positions ≤1,000,000, capped at64 and distinct preceding-meter bar boundaries. Bar rests use the active map even when directives appear below tracks, advance a full bar at a boundary and are not rescaled by tuplets. Repeated bar rests recompute each pass using exact fractions. Timeline/transport use frozen playing revisions; source edits apply on replay. Dense timeline keyboard inspection does not seek or edit source.",
       "paths": [
         "src/core/meter.ts",
         "src/core/timeline.ts",
@@ -502,7 +502,7 @@
       "id": "wav-export",
       "parent": "project",
       "title": "Project mix WAV export",
-      "summary": "v0.19.0 exports frozen source and applied independent sound/processing copies through shared voice/effect/score graph factories. Cable routing, track/master processing, bypass, levels and project mix are included; monitor and A/B overrides are excluded. PCM16 defaults to 48 kHz stereo with 44.1 kHz/mono alternatives. Duration keeps rests, max release, measured latency and 100 ms settling plus a default 5 s echo budget bounded 0\u201330 s. Conservative decay warns of possible cutoff, capped tails fade 20 ms and measured cap activity is reported. Peaks and clipping are shown; Save requires a safe explicit export level or opt-in -1 dBFS normalization. Non-finite audio fails and silence stays silent. A 256 MiB conservative memory preflight precedes allocation. Browser downloads and validated native saving preserve JSON, playback and history. Native cancellation retains the render; closing drops background results. The stage 6 automated functional gate passes in tested Chromium/Electron workflows; physical listening and other browser/device gates remain open. v0.21.0 shares articulation timing with live voices, caps staccato release and includes legato sounding extent even beyond a tiny final note; written rests, clocks and export resource/tail limits remain.",
+      "summary": "v0.19.0 exports frozen source and applied independent sound/processing copies through shared voice/effect/score graph factories. Cable routing, track/master processing, bypass, levels and project mix are included; monitor and A/B overrides are excluded. PCM16 defaults to 48 kHz stereo with 44.1 kHz/mono alternatives. Duration keeps rests, max release, measured latency and 100 ms settling plus a default 5 s echo budget bounded 0–30 s. Conservative decay warns of possible cutoff, capped tails fade 20 ms and measured cap activity is reported. Peaks and clipping are shown; Save requires a safe explicit export level or opt-in -1 dBFS normalization. Non-finite audio fails and silence stays silent. A 256 MiB conservative memory preflight precedes allocation. Browser downloads and validated native saving preserve JSON, playback and history. Native cancellation retains the render; closing drops background results. The stage 6 automated functional gate passes in tested Chromium/Electron workflows; physical listening and other browser/device gates remain open. v0.21.0 shares articulation timing with live voices, caps staccato release and includes legato sounding extent even beyond a tiny final note; written rests, clocks and export resource/tail limits remain.",
       "paths": [
         "src/audio/export.ts",
         "src/audio/scoreGraph.ts",
@@ -524,17 +524,13 @@
       "parent": "pedals",
       "title": "Phaser, chorus and algorithmic reverb (planned)",
       "summary": "Requested, planned and not implemented. Later stage 8 sequence proposes phaser (all-pass notches, rate/depth/center/stages/bounded feedback), chorus (short modulated delay voices, rate/base delay/depth, initially no feedback), then algorithmic reverb (generated reflections and bounded damped network, pre-delay/-60 dB decay/size/damping). All include explicit output/mix, compact dials/inspector, cable-defined order, independent library/A-B/track/master settings and shared playback/WAV factories. Modulation preserves session-relative clock/LFO continuity; intentional phase/delay is distinct from measured processing latency. Reverb is an IR-free track/master space effect separate from instrument-body chamber acoustics. Future gates include dry/mix gain, extrema stability, finite tails/cap warnings, bypass versus Stop, copy/import/undo/native/keyboard/export and physical listening. Old projects stay unchanged with effects absent. Current stage 7 learning/measurement priority remains.",
-      "paths": [
-        "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md",
-        "docs/knowledge/DECISIONS.md"
-      ]
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
     },
     {
       "id": "rhythm",
       "parent": "composition",
       "title": "Articulation, tuplets and score meter changes",
-      "summary": "staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2\u201332/M1\u201332, no enforced event count. Dots and whole\u201364th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1\u2013128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing, envelope carry/glide and per-track meters remain planned.",
+      "summary": "staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2–32/M1–32, no enforced event count. Dots and whole–64th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1–128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing, envelope carry/glide and per-track meters remain planned.",
       "paths": [
         "src/core/rhythm.ts",
         "src/core/articulation.ts",
@@ -571,7 +567,7 @@
       "id": "track-tabs",
       "parent": "composition",
       "title": "Track operations in the named file editor",
-      "summary": "v0.30.0 removes automatic per-track and All score/Whole file subtabs. User-created named files show all contained tracks in one editor; names/IDs are independent of track keys. Track in file selects operation/command targets only. Add track to file preserves tab count/name/selection; guarded rename moves owned sound/chain/comparison identity across parts; removal preserves surviving-part ownership. Editor identity depends on file ID, so t, partial headers/groups and diagnostics do not switch files or remount a track editor. File-level CRLF/UTF-16 projections, canonical revision/paste guards and source/undo remain. Track forms capture revision/file ID. Legacy track draft/projection helpers remain tested source services, not active UI or public M5 SDK. Whole-song live/WAV/comparison uses frozen source and independent sounds, preserving phase/clock/latency. General M1\u2013M6, swing and manual gates remain open.",
+      "summary": "v0.30.0 removes automatic per-track and All score/Whole file subtabs. User-created named files show all contained tracks in one editor; names/IDs are independent of track keys. Track in file selects operation/command targets only. Add track to file preserves tab count/name/selection; guarded rename moves owned sound/chain/comparison identity across parts; removal preserves surviving-part ownership. Editor identity depends on file ID, so t, partial headers/groups and diagnostics do not switch files or remount a track editor. File-level CRLF/UTF-16 projections, canonical revision/paste guards and source/undo remain. Track forms capture revision/file ID. Legacy track draft/projection helpers remain tested source services, not active UI or public M5 SDK. Whole-song live/WAV/comparison uses frozen source and independent sounds, preserving phase/clock/latency. General M1–M6, swing and manual gates remain open.",
       "paths": [
         "src/core/scoreWorkspace.ts",
         "src/components/ScoreWorkspace.tsx",
@@ -592,19 +588,15 @@
     {
       "id": "swing",
       "parent": "composition",
-      "title": "Variable swing \u2014 planned",
+      "title": "Variable swing — planned",
       "summary": "Planned variable eighth/sixteenth swing, with proposed long-subdivision share units (50% straight, about66.7% 2:1). Bounds/syntax/scope are provisional; no runtime swing command exists. Written rational beats and fixed pair/bar endpoints remain; shared performance timing for live/WAV/comparison must avoid drift and preserve frozen clocks, phase, latency, copies and finite tails. Tuplets/chords/rests/dots/articulation/repeats and odd-meter boundaries require explicit proof and manual listening.",
-      "paths": [
-        "docs/SCORE_WORKSPACE_PLAN.md",
-        "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md"
-      ]
+      "paths": ["docs/SCORE_WORKSPACE_PLAN.md", "BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md"]
     },
     {
       "id": "named-sections",
       "parent": "composition",
       "title": "Named sections and alternate endings",
-      "summary": "Implemented v0.27.0: section A declares track-local source without playing; explicit play A supports forward calls, repeats and invocation-local trim expressions with optional endings. Exact rational cuts shorten spanning notes/chords/rests without a new attack, recalculate staccato gates and retained legato scope, resolve positional bar rests before cutting and expose actual call duration. Definitions and other calls stay unchanged; nested metadata reflects parent clipping. Original UTF-16 definition/call spans, CRLF-safe guarded scoped rename/history, local completion, contextual command cards, declared/trimmed chord previews and frozen-source playback highlights share canonical scoreText. Unused definitions validate in scratch tracks at beat zero without output; undefined/duplicate/cyclic references and depth/call/event/token budgets diagnose. Live/WAV/comparison consume the whole performed score and owned copies, preserving phase/clock/latency and finite tails. General M1\u2013M6, swing and manual gates remain planned.",
+      "summary": "Implemented v0.27.0: section A declares track-local source without playing; explicit play A supports forward calls, repeats and invocation-local trim expressions with optional endings. Exact rational cuts shorten spanning notes/chords/rests without a new attack, recalculate staccato gates and retained legato scope, resolve positional bar rests before cutting and expose actual call duration. Definitions and other calls stay unchanged; nested metadata reflects parent clipping. Original UTF-16 definition/call spans, CRLF-safe guarded scoped rename/history, local completion, contextual command cards, declared/trimmed chord previews and frozen-source playback highlights share canonical scoreText. Unused definitions validate in scratch tracks at beat zero without output; undefined/duplicate/cyclic references and depth/call/event/token budgets diagnose. Live/WAV/comparison consume the whole performed score and owned copies, preserving phase/clock/latency and finite tails. General M1–M6, swing and manual gates remain planned.",
       "paths": [
         "src/core/scoreSections.ts",
         "src/core/sectionTiming.ts",
@@ -634,7 +626,7 @@
       "id": "score-files",
       "parent": "composition",
       "title": "Virtual song files and shared track parts",
-      "summary": "Implemented v0.28.0: named file tabs plus Files browser create/rename/delete/close/reopen around one canonical scoreText. Reserved comment boundaries own stable IDs/names and from song links enforce one song/project. Each file supports multiple tracks; matching keys continue exact clocks and share scoped sections/owned sound/chain in source order, while distinct tracks remain parallel. Consistent assignments update all parts; removing one keeps ownership and final explicit removal is undoable. Optional schema2/3 presentation state retains open/active files through JSON/local/recovery/native reopen without music buffers. Revision guards, CRLF projections, cross-file completion/navigation, filename/local-line provenance and selected-file Track Maker/reference retain source authority. Closing/switching does not mute music or enter musical history; frozen whole-song live/WAV/comparison retains phase/clock/seconds latency. At most32 files/128 logical tracks with song-wide expansion budgets. General M1\u2013M6, swing and manual gates remain planned. v0.30.0 makes these the only editor tabs: independent names and multiple tracks per file, target dropdown without projection, no automatic tab changes while typing. Track creation preserves the existing file count and view; section Go navigates whole files.",
+      "summary": "Implemented v0.28.0: named file tabs plus Files browser create/rename/delete/close/reopen around one canonical scoreText. Reserved comment boundaries own stable IDs/names and from song links enforce one song/project. Each file supports multiple tracks; matching keys continue exact clocks and share scoped sections/owned sound/chain in source order, while distinct tracks remain parallel. Consistent assignments update all parts; removing one keeps ownership and final explicit removal is undoable. Optional schema2/3 presentation state retains open/active files through JSON/local/recovery/native reopen without music buffers. Revision guards, CRLF projections, cross-file completion/navigation, filename/local-line provenance and selected-file Track Maker/reference retain source authority. Closing/switching does not mute music or enter musical history; frozen whole-song live/WAV/comparison retains phase/clock/seconds latency. At most32 files/128 logical tracks with song-wide expansion budgets. General M1–M6, swing and manual gates remain planned. v0.30.0 makes these the only editor tabs: independent names and multiple tracks per file, target dropdown without projection, no automatic tab changes while typing. Track creation preserves the existing file count and view; section Go navigates whole files.",
       "paths": [
         "src/core/scoreFiles.ts",
         "src/core/scoreLexer.ts",

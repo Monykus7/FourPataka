@@ -1,6 +1,6 @@
 # FourPataka — Fourier Music Studio build plan
 
-Updated: 2026-10-11
+Updated: 2026-10-12
 Status: implementation started. The playable audio/project foundation, selected instrument tools, composition helpers, and Windows application foundation are implemented; see `IMPLEMENTATION_STATUS.md` for verification and remaining gates.
 
 This is the authoritative project plan. It consolidates the expanded plan from `FOURIER_MUSIC_STUDIO_BUILD_PLAN.md`, the original conversation, the quality review, and the user's latest answers. The roadmap below replaces the earlier milestone lists.
@@ -9,7 +9,7 @@ This is the authoritative project plan. It consolidates the expanded plan from `
 
 Build a personal studio, available in the browser and as a desktop application, for shaping instruments with Fourier harmonics and optional undertones, processing them through a visible pedalboard, and composing with readable note and chord commands. Mathematical changes should be easy to hear and inspect.
 
-The long-term goal now includes an open-source project that other people can extend with pedals, instruments and other features. Modularity is a major program split into six separately releasable milestones, M1–M6, in section 14. It must have contributor-facing contracts, tutorials, runnable examples and compatibility proofs; directory cleanup alone is insufficient. M1 remains the next module-foundation work. Shared-file track tabs ship in v0.24.0 (section15); named sections/alternate endings ship in v0.27.0 (section17); variable swing remains the next planned Compose follow-up (section16).
+The long-term goal now includes an open-source project that other people can extend with pedals, instruments and other features. Modularity is a major program split into six separately releasable milestones, M1–M6, in section 14. It must have contributor-facing contracts, tutorials, runnable examples and compatibility proofs; directory cleanup alone is insufficient. M1–M3 are implemented. M4a engine foundation is implemented; M4b application integration is next. Shared-file track tabs ship in v0.24.0 (section15); named sections/alternate endings ship in v0.27.0 (section17); variable swing remains the next planned Compose follow-up (section16).
 
 The central loop is:
 
@@ -707,6 +707,11 @@ Dependency: M1 and M3; a separate larger synthesis milestone.
 Wrap the Fourier engine in a host-scheduled voice contract before adding an independent minimal engine example. Define validated engine settings, deterministic randomness where needed, note/release/end metadata, resource budgets, retirement/disposal and shared live/offline factories. Declare Fourier inspector/dot/solo capabilities honestly; do not force arbitrary engines into a sine-coefficient editor. Preserve current envelope, trim, voice admission and source/output policies. Implement engine-data migration/unavailable-engine handling before persisting it.
 
 Gate: the independent engine can audition, compare, play a source track, stop/replay, save/reload and export through public contracts without new scheduler branches. Prove reference pitches, sample rates, updates/phase, envelope/retirement, CPU/memory limits, repeatable offline output and complete cleanup. Publish the engine tutorial, capability/lifecycle reference, migration cases and runnable example. Planned realism features remain separately scoped.
+
+M4 is split into two releases:
+
+- **M4a — public engine foundation (implemented v0.35.0).** Validated API-1 settings/lifecycle/capabilities, registered Fourier adapter preserving current behavior, independent Basic Tone engine available to public code/test harness, and a [contributor tutorial with lifecycle/ownership diagrams](docs/extensions/ENGINE_FOUNDATION.md). Schema 3 remains Fourier-only; no independent-engine library item or parser key ships here.
+- **M4b — application engine integration (next).** Versioned engine-backed instrument settings, legacy migration and lossless unavailable/incompatible-engine recovery before persistence; capability-driven controls and selection; audition/source tracks/A-B continuous comparison/Stop/reload/WAV through shared services. Prove resource budgets and decide latency policy. The full M4 acceptance gate above remains open until these pass.
 
 ### M5 — optional feature modules and host workflow services
 

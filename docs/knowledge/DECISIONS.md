@@ -455,3 +455,13 @@ Store complete supported Fourier settings as before in schema 3, without a prese
 <!-- features: instrument-presets, comparison, playback -->
 
 Clarify existing behavior, without changing playback: ordinary Listen keeps the selected material, while hit preview explicitly sets G3/0.5 beats at120 BPM and clears solo. Score and audition share the voice factory but have independent sound/chain ownership; score adds track level and master processing. New track level0.75 differs from audition unity. Matching note/gate alone cannot refresh an old applied Snare or reproduce different pedal/master settings. Document the clean IDE reference and the explicit UI Apply/level steps; no parser, DSP, schema or roadmap gate changes.
+
+## M4a public engine foundation (v0.35.0)
+
+<!-- features: modularity, modularity-engines, sound, playback -->
+
+Split M4 to land a usable voice API before changing saved instruments. Reviewed definitions import the public barrel; host assembly freezes API/data/capability/rate/randomness/resource metadata and validates bounded copied settings plus audio-clock requests. Host retains transport/admission/snapshots/copy/routing/Stop/export/native ownership; engines own allocated nodes and idempotent cleanup. Captured callbacks/metadata prevent later definition edits from changing guards. Estimates are not measured CPU/memory guarantees.
+
+Move Fourier math, deterministic shared-noise cache, integrated hit pitch and existing voice into the host-independent foundation. Legacy audition/track/A-B/WAV callers dispatch through the registered adapter, preserving phase/envelope/noise/trim and diagnostic ports. Basic Tone uses its own settings/native oscillator with phase-continuous detune/trim and owned retirement; no Fourier array conversion or parser special case. Both engines have zero intentional latency; generalized engine compensation is not shipped.
+
+Schema 3 remains Fourier-only. Registered Basic Tone is a public code/test example, not a selectable library instrument or saved score key. M4b must land engine-backed data migration, lossless missing/incompatible recovery and capability-driven controls before exposing saved non-Fourier sounds, then prove full comparison/source-track/reload/WAV/resource gates. M4 is partial; M5/M6, runtime installation, licensing and manual listening/device gates remain open.

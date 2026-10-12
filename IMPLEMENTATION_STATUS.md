@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-11. Latest verified release: v0.30.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-12. Latest verified release: v0.34.0; v0.35.0 release verification in progress. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -587,3 +587,11 @@ Release verification:273 unit checks across44 files and29 distinct affected Chro
 Seven native workflows pass against the final packaged v0.34.0 bundle with isolated profiles: instrument folders/native saving; old-session percussion keys; native WAV binary/cancel/save; harmonic signs and distinct Soft bass/native JSON; assets/renderer isolation/playback/menu; fixed schema-1 project migration/native saving; and the contributed preset's selection/listening/notation/native JSON/reopening/playback with independent baked settings. Native checks are distinct from manual physical listening/device/screen-reader approval.
 
 The portable was opened visibly as FourPataka v0.34.0. Its extracted running app.asar matches the native-tested SHA-256:B5142E9D0C6EDCAB689C0255AA694E210FFB593BE426279027710C0D3B87F960. Portable SHA-256:F43DDC974D71A6B31C6A83AF511D989DEB71374B6E81403BB6D52CBA0D5F2324. Artifact:release/FourPataka-0.34.0-win-x64.exe. Eight focused milestone commits use Monykus7 and are pushed to origin/master. M3 preset modules is complete; M4 synthesis engines is next. Existing libraries can add the example with Add bundled presets. M4-M6, owner licensing/CI/publication, runtime loading, unsigned/default-icon packaging and manual/device/perceptual gates remain open.
+
+## M4a synthesis engine foundation — v0.35.0
+
+Implemented API-1 engine definitions and immutable registry, bounded validated independent settings/defaults, host-clock note/end/update/retirement/disposal, live/offline/rate/randomness/capability declarations and resource estimates. Existing Fourier audition/transport/A-B/WAV callers use one registered adapter; pure signal/noise/pitch/voice code lives in the public foundation, retaining original phase/envelope/fixed-noise behavior. Basic Tone is an independent native-oscillator source example with its own attack/release/trim/detune settings and owned lifecycle; it is registered for code/test consumers, not selectable or saved in the application.
+
+M4 remains partial. M4b is next: engine-backed saved instrument data, migration/lossless unavailable recovery, capability-driven controls/selection, independent-engine source tracks/A-B/reload/WAV and full resource/latency gates. Schema 3 stays Fourier-only; the authored demo and owned track sounds are unchanged. Runtime loading, M5/M6, licensing/contributor CI/publication and manual/device/perceptual gates remain open. Contributor tutorial includes public imports, a runnable offline example, three rendered diagrams, lifecycle/ownership/units and the persistence boundary.
+
+Initial validation:277 unit checks across45 files pass. All28 existing affected Chrome audio regressions pass through the adapter, covering continuous phase/A-B clocks, silent/retired cleanup, drum pitch/noise at44.1/48 kHz, explicit Apply ownership, frozen WAV/polyphony/routing/tails. The new Tone proof first corrected a partial-cycle analysis window, then exposed an early future-retirement fade; explicit planned-gain anchoring at the supplied audio time fixes it. Native/package/startup verification follows before release completion.
