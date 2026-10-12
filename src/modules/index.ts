@@ -27,3 +27,9 @@ export {
   type FourierPoint,
   type WavePreset,
 } from './foundation/fourier';
+
+export {
+  defineFourierPreset,
+  createFourierPresetRegistry,
+  type FourierPresetModule,
+} from './foundation/presets';
