@@ -86,11 +86,11 @@ flowchart TD
   Library -. Save template alone does not overwrite .-> Track
 ```
 
-This ownership diagram applies to implemented M2 pedals, M3 preset factories and M4a engine voices; selectable/saved independent engines remain M4b work. Parameters have explicit units and bounds. A preset version is not a module API version; a score key is not a stable module ID. A library update requires an explicit application scope. A module factory cannot capture shared mutable coefficients, delay buffers, envelopes or oscillator state across voices/instances.
+This ownership diagram applies to implemented M2 pedals, M3 preset factories and M4a engine voices; selectable/saved independent engines ship in M4b. Parameters have explicit units and bounds. A preset version is not a module API version; a score key is not a stable module ID. A library update requires an explicit application scope. A module factory cannot capture shared mutable coefficients, delay buffers, envelopes or oscillator state across voices/instances.
 
 ## Current and planned audio contribution path
 
-For a pedal, use the implemented [M2 public factory and assembly recipe](PEDAL_MODULES.md). For a Fourier preset, use the [M3 preset factory tutorial](FOURIER_PRESETS.md). For an independent synthesis algorithm, use the [M4a engine contract and Basic Tone example](ENGINE_FOUNDATION.md). Engine registration is available to source/test consumers; M4b must add saved-engine recovery and suitable controls before exposing it as a library instrument.
+For a pedal, use the implemented [M2 public factory and assembly recipe](PEDAL_MODULES.md). For a Fourier preset, use the [M3 preset factory tutorial](FOURIER_PRESETS.md). For an independent synthesis algorithm, use the [M4a engine contract and Basic Tone example](ENGINE_FOUNDATION.md). M4b in v0.36.0 derives numeric engine controls/selection from assembly and supports schema4 settings/recovery, explicit library Save/Apply and shared playback/export.
 
 ```mermaid
 flowchart LR

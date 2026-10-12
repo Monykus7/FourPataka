@@ -473,3 +473,13 @@ Schema 3 remains Fourier-only. Registered Basic Tone is a public code/test examp
 Plan local recording analysis/resynthesis in two milestones: W1 reviews one isolated note/hit and maps only supported parameters into an owned Fourier instrument; W2 evolving spectral/transient engines follows M4b saved-data/recovery/capability integration. Pitch, onset/envelope regions and note-off need manual overrides/confidence. Keep attack/release and natural decay distinct, coefficients/phase fit separate from trim, and show residual noise/inharmonic/time-varying limitations rather than claim exact reconstruction from32 signed sines.
 
 Original crop remains a review reference; explicit library creation preserves independent track/A-B/source ownership and undo. Initial playback saves derived settings without a WAV/path dependency. Bound local decoding/analysis, cancellation and stale results before implementation. No runtime behavior, schema/version or next-step sequencing changes in this planning task.
+
+## M4b owned saved engines and continuous comparison (v0.36.0)
+
+<!-- features: modularity-engines, storage, comparison, playback -->
+
+Use a real InstrumentSound union: legacy Fourier data stays flat; independent engines store ID/API/data/settings in schema4. Import1/2/3 copies/migrates Fourier exactly. Bound opaque missing/newer engine settings and extra fields, mark unavailable and block affected audible paths rather than invent a fallback. Exact compatible reimport revalidates and clears the marker; malformed/exact-invalid settings reject atomically. No executable installation or version-migration callback is supplied.
+
+Registry numeric controls derive from frozen metadata/defaults; only live+offline phase-continuous zero-latency engines enter application selection. Envelope budget is explicit releaseSeconds. Fourier controls/solo/source descriptors are not shown as independent-engine data. Library Save, track Apply, A/B and source ownership remain distinct. Engine selection changes only an owned active snapshot.
+
+Host branches allocate replacement before retiring current sound, crossfade gains20ms and preserve original start/gate/clock. Basic Tone seeds phase from note age. Host end reads collect muted branches; Stop owns all sources and transient ownership is capped8 pervoice. Offline export directly creates saved engines and budgets32-voice engine+pedal estimates before graph allocation; estimates are not measured device CPU guarantees. Nonzero engine latency/custom panels, broad profiling and manual listening remain separate gates; M5 feature modules is next.

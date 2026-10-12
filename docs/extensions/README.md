@@ -2,11 +2,11 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a engine foundation is implemented in v0.35.0; M4b saved-engine/UI integration is next. Feature APIs, runtime loading, licensing and contributor CI remain planned.
+Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a foundation ships in v0.35.0 and M4b selectable/saved engine instruments ships in v0.36.0; M5 feature modules is next. Feature APIs, runtime loading, licensing and contributor CI remain planned.
 
 ## Start here
 
-- [Synthesis engine foundation](ENGINE_FOUNDATION.md): implemented lifecycle/capability API, Fourier adapter, independent Basic Tone, diagrams and the remaining M4b application gate.
+- [Synthesis engine foundation](ENGINE_FOUNDATION.md): implemented lifecycle/capability API, selectable/saved Basic Tone, schema4 recovery and cross-engine comparison diagrams.
 
 - [Fourier preset modules](FOURIER_PRESETS.md): implemented API, Mellow pluck example, explicit discovery and baked-data compatibility.
 
@@ -26,7 +26,7 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source cont
 1. **M1 — Contracts and compatibility foundation.** Typed definitions, validated assembly/registry, public import boundary, one built-in metadata slice and legacy fixtures. Implemented as the API-1 numeric metadata foundation in v0.32.0; complete pedal DSP registration follows in M2.
 2. **M2 — Pedal modules (implemented v0.33.0).** All four built-ins use contributor contracts; one independent utility example works through a folder and registration, with tutorial and live/WAV/native proofs.
 3. **M3 — Fourier preset modules (implemented v0.34.0).** Registry-backed timbres with an independent example, documented units/schema and preserved applied copies. New synthesis engines are separate.
-4. **M4 — Synthesis engines.** M4a public lifecycle, Fourier adapter and independent code example ship in v0.35.0. M4b selectable/saved engines, capability controls, migration/recovery and full application proofs are next.
+4. **M4 — Synthesis engines.** M4a public lifecycle, Fourier adapter and independent code example ship in v0.35.0. M4b selectable/saved engines, capability controls, migration/recovery and shared application playback/export ship in v0.36.0.
 5. **M5 — Feature modules.** Optional views/experiments/command metadata through narrow host services, one migrated view and a tested feature example.
 6. **M6 — Open-source readiness.** Owner-approved license/attribution, contributor/maintainer policies, supported APIs/examples and repeatable browser/native/package CI.
 
