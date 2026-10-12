@@ -1,3 +1,4 @@
+import { instrumentModules } from './modules/assembly';
 import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
@@ -62,6 +63,7 @@ import {
   createProject,
   withExampleScore,
   withPercussionPresets,
+  withBundledPresets,
   importProject,
   PREFERENCES_KEY,
   reconcileTracks,
@@ -294,6 +296,9 @@ export default function App() {
   const instruments = project.instruments;
   const chainKeys = project.processing.library.map((p) => p.key);
   const preset = instruments.find((i) => i.id === project.editorPresetId)!;
+  const missingBundled = instrumentModules.definitions.some(
+    (d) => !instruments.some((p) => p.key === d.scoreKey),
+  );
   const missingPercussion = PERCUSSION_PRESETS.some(
     (definition) => !instruments.some((i) => i.key === definition.key),
   );
@@ -584,6 +589,17 @@ export default function App() {
       );
     } catch (error) {
       setToast(error instanceof Error ? error.message : 'Unable to add percussion presets.');
+    }
+  };
+  const addBundled = () => {
+    try {
+      const next = withBundledPresets(project);
+      change(() => next);
+      setToast(
+        `Added ${next.instruments.length - instruments.length} bundled presets. Existing sounds kept.`,
+      );
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Unable to add bundled presets.');
     }
   };
   const selectAB = (side: 'A' | 'B') => {
@@ -1136,6 +1152,12 @@ export default function App() {
                     </div>
                   </div>
                   <div className="button-group">
+                    {missingBundled && (
+                      <button className="secondary-button" onClick={addBundled}>
+                        <Plus size={14} />
+                        Add bundled presets
+                      </button>
+                    )}
                     {missingPercussion && (
                       <button className="secondary-button" onClick={addPercussion}>
                         <Plus size={14} />

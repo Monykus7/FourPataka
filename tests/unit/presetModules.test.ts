@@ -52,3 +52,54 @@ it('rejects duplicate reserved incompatible invalid and impure factory definitio
     }),
   ).toThrow('deterministic');
 });
+
+it('discovers the example explicitly without overwriting existing templates source or copies', async () => {
+  const { createProject, withBundledPresets, importProject } =
+    await import('../../src/core/project');
+  const { instrumentModules } = await import('../../src/modules/assembly');
+  const project = createProject();
+  expect(project.instruments.find((p) => p.key === 'mellowPluck')).toBeTruthy();
+  const old = {
+    ...structuredClone(project),
+    instruments: project.instruments.filter((p) => p.key !== 'mellowPluck'),
+  };
+  const restored = importProject(JSON.stringify(old));
+  expect(restored.instruments.some((p) => p.key === 'mellowPluck')).toBe(false);
+  restored.instruments[0].sound.trim = -23;
+  const before = structuredClone(restored);
+  restored.instruments.push({
+    ...structuredClone(restored.instruments[0]),
+    id: 'mellow-pluck',
+    key: 'personal',
+  });
+  const added = withBundledPresets(restored);
+  const example = added.instruments.find((p) => p.key === 'mellowPluck')!;
+  expect(example.id).toBe('mellow-pluck-2');
+  expect(added.instruments[0].sound.trim).toBe(-23);
+  expect(added.scoreText).toBe(before.scoreText);
+  expect(added.tracks).toEqual(before.tracks);
+  expect(added.comparison).toEqual(before.comparison);
+  expect(withBundledPresets(added)).toBe(added);
+  expect(importProject(JSON.stringify(added))).toEqual(added);
+  const module = instrumentModules.get('example:instrument/mellow-pluck');
+  example.sound.harmonics[0] = 0;
+  expect(module.createSound().harmonics[0]).toBe(1);
+});
+it('preserves occupied keys and fails capacity atomically', async () => {
+  const { createProject, withBundledPresets } = await import('../../src/core/project');
+  const project = createProject();
+  const example = project.instruments.find((p) => p.key === 'mellowPluck')!;
+  example.sound.trim = -22;
+  expect(withBundledPresets(project)).toBe(project);
+  expect(example.sound.trim).toBe(-22);
+  project.instruments = project.instruments.filter((p) => p.key !== 'mellowPluck');
+  while (project.instruments.length < 128)
+    project.instruments.push({
+      ...structuredClone(project.instruments[0]),
+      id: `custom-${project.instruments.length}`,
+      key: `custom${project.instruments.length}`,
+    });
+  const original = JSON.stringify(project);
+  expect(() => withBundledPresets(project)).toThrow('128');
+  expect(JSON.stringify(project)).toBe(original);
+});

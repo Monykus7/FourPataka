@@ -184,6 +184,23 @@ export function withPercussionPresets(project: Project): Project {
   return { ...project, instruments: [...project.instruments, ...additions] };
 }
 
+/** Explicit discovery only: never overwrite keys, templates, folders or applied copies. */
+export function withBundledPresets(project: Project): Project {
+  const keys = new Set(project.instruments.map((p) => p.key));
+  const missing = instrumentModules.createTemplates().filter((p) => !keys.has(p.key));
+  if (!missing.length) return project;
+  if (project.instruments.length + missing.length > 128)
+    throw new Error('Adding bundled presets would exceed the 128-preset limit.');
+  const ids = new Set(project.instruments.map((p) => p.id));
+  const additions = missing.map((p) => {
+    let id = p.id;
+    for (let suffix = 2; ids.has(id); suffix++) id = `${p.id}-${suffix}`;
+    ids.add(id);
+    return { ...p, id };
+  });
+  return { ...project, instruments: [...project.instruments, ...additions] };
+}
+
 export function reconcileTracks(project: Project, score: CompiledScore): Project {
   if (project.scoreWorkspace) {
     const workspace = normalizeFileWorkspace(project.scoreText, project.scoreWorkspace);

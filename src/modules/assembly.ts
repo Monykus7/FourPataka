@@ -1,3 +1,4 @@
+import { mellowPluck } from './examples/mellowPluck/index';
 import { builtInPresetDefinitions } from './instruments/catalogue';
 import { createFourierPresetRegistry } from './index';
 import { createModuleRegistry, createPedalRegistry } from './index';
@@ -17,6 +18,6 @@ export const LEGACY_MODULE_IDS = Object.freeze(
 );
 
 export const instrumentModules = createFourierPresetRegistry(
-  builtInPresetDefinitions,
+  [...builtInPresetDefinitions, mellowPluck],
   builtInPresetDefinitions.map((d) => d.id),
 );

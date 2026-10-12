@@ -171,7 +171,7 @@ it('percussion combines distinct low bodies and noisy transients with bounded Fo
 
 it('existing projects gain missing bundled percussion before parser key discovery without replacing owned sounds', () => {
   const old = createProject();
-  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare', 'mellowPluck'].includes(p.key));
   const before = structuredClone(old);
   const restored = importProject(JSON.stringify(old));
   expect(restored.instruments.map((p) => p.key)).toEqual([
@@ -219,7 +219,7 @@ it('explicit percussion import preserves colliding keys, resolves IDs, and is at
 
 it('old score files resolve kick hiHat and snare into distinct owned tracks after loading', () => {
   const old = createProject();
-  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare', 'mellowPluck'].includes(p.key));
   old.scoreText =
     'tempo 120\ntrack drums using kick {\n C2 16th\n}\ntrack hats using hiHat {\n C4 64th\n}\ntrack snares using snare {\n D3 32nd\n}';
   const restored = importProject(JSON.stringify(old));
@@ -246,7 +246,7 @@ it('a full old library remains valid and customized percussion keys/IDs survive 
   expect(restored.instruments.find((p) => p.key === 'kick')!.sound.trim).toBe(-23);
   expect(restored.instruments.find((p) => p.key === 'hiHat')!.id).toBe('hi-hat-2');
   const full = createProject();
-  full.instruments = full.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  full.instruments = full.instruments.filter((p) => !['kick', 'hiHat', 'snare', 'mellowPluck'].includes(p.key));
   const template = full.instruments[0];
   while (full.instruments.length < 128) {
     const suffix = full.instruments.length;

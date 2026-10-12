@@ -22,7 +22,7 @@ function memoryStore(): LocalStore & { values: Map<string, string> } {
 it('loads an old session with bundled percussion available while preserving original recovery bytes', () => {
   const storage = memoryStore();
   const old = createProject();
-  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare'].includes(p.key));
+  old.instruments = old.instruments.filter((p) => !['kick', 'hiHat', 'snare', 'mellowPluck'].includes(p.key));
   const bytes = JSON.stringify(old);
   const checkpoint = JSON.stringify({ ...old, name: 'Previous session' }, null, 2);
   storage.setItem(STORAGE_KEY, bytes);
