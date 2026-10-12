@@ -33,3 +33,5 @@ export {
   createFourierPresetRegistry,
   type FourierPresetModule,
 } from './foundation/presets';
+
+export * from './foundation/engines';
