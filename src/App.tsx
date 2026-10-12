@@ -1,4 +1,4 @@
-import { instrumentModules } from './modules/assembly';
+import { instrumentModules, factoryPreviews } from './modules/assembly';
 import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
 import { keepMatchingWavePoints } from './core/waveform';
@@ -136,7 +136,7 @@ function readPreferences() {
 }
 function MiniWave({ kind, sound }: { kind: string; sound?: Sound }) {
   if (sound?.percussion) {
-    const note = PERCUSSION_PRESETS.find((p) => p.key === kind)?.note ?? 'G3';
+    const note = factoryPreviews.find((p) => p.key === kind)?.note ?? 'G3';
     return <HitPreview sound={sound} frequency={pitch(note).frequency} compact />;
   }
   const shapes: Record<string, string> = {
@@ -302,7 +302,7 @@ export default function App() {
   const missingPercussion = PERCUSSION_PRESETS.some(
     (definition) => !instruments.some((i) => i.key === definition.key),
   );
-  const percussion = PERCUSSION_PRESETS.find(
+  const percussion = factoryPreviews.find(
     (definition) =>
       definition.key === preset.key &&
       JSON.stringify(definition.createSound()) === JSON.stringify(preset.sound),

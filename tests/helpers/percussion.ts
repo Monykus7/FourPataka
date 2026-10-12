@@ -113,7 +113,7 @@ export async function percussionAvailabilityWorkflow(page: Page) {
   const old = await page.evaluate(() => {
     const project = JSON.parse(localStorage.getItem('fourpataka.project.v1')!);
     project.instruments = project.instruments.filter(
-      (p: any) => !['kick', 'hiHat', 'snare'].includes(p.key),
+      (p: any) => !['kick', 'hiHat', 'snare', 'mellowPluck'].includes(p.key),
     );
     project.instruments.find((p: any) => p.key === 'softBass').sound.trim = -17;
     project.tracks.find((t: any) => t.key === 'bass').sound.trim = -25;

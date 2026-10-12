@@ -21,3 +21,7 @@ export const instrumentModules = createFourierPresetRegistry(
   [...builtInPresetDefinitions, mellowPluck],
   builtInPresetDefinitions.map((d) => d.id),
 );
+
+export const factoryPreviews = instrumentModules.definitions
+  .filter((d) => d.preview)
+  .map((d) => ({ key: d.scoreKey, createSound: d.createSound, ...d.preview! }));

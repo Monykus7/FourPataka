@@ -664,7 +664,7 @@ Use focused verification for meaningful risks:
 - Offline/live model agreement, release/tail duration, and export level handling.
 - Keyboard operation, readable layout, and the chosen palette's contrast.
 
-Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M3, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
+Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M4, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
 
 Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
 
@@ -672,7 +672,7 @@ Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongs
 
 ## 14. Modularity and open-source contributions
 
-Requested major program on 2026-10-05, explicitly split into multiple milestones. M1 ships the numeric metadata/registry foundation in v0.32.0; M2 playable pedal modules ship in v0.33.0. M3–M6 remain planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
+Requested major program on 2026-10-05, explicitly split into multiple milestones. M1 ships the numeric metadata/registry foundation in v0.32.0; M2 playable pedal modules ship in v0.33.0. M3 registry-backed Fourier presets ships in v0.34.0; M4–M6 remain planned. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
 
 Detailed contributor guides: [index](docs/extensions/README.md), [architecture](docs/extensions/ARCHITECTURE.md), [pedals](docs/extensions/PEDALS.md), [instruments](docs/extensions/INSTRUMENTS.md), [feature modules](docs/extensions/FEATURE_MODULES.md), [compatibility](docs/extensions/COMPATIBILITY.md) and [contribution workflow](CONTRIBUTING.md).
 
@@ -694,7 +694,7 @@ Gate: an independent small utility pedal is added by one module directory and ex
 
 ### M3 — modular Fourier instrument presets
 
-Dependency: M1; can follow M2 without depending on M4. Separately release the preset contribution API.
+Dependency: M1/M2. Implemented v0.34.0: validated deterministic Fourier preset registry, existing factory catalogue, independent Mellow pluck folder/assembly entry, shared public sound validation and registry-derived preview metadata. Fresh projects include registered presets; old projects add missing keys explicitly without overwriting templates/owned copies/source. Saved sounds remain baked schema-3 data with no preset-module dependency. See [the contributor tutorial](docs/extensions/FOURIER_PRESETS.md). M4 engines is next; M6 licensing/CI/publication and manual gates remain open.
 
 Register the current factory presets and an independent example timbre through pure factories and immutable metadata. Separate module identity from project preset ID/key/template version. Populate new libraries deliberately; preserve customized templates, applied tracks and A/B. Existing Fourier synthesis remains the engine, with its 32-harmonic schema 2 and schema-1 zero-padding migration.
 

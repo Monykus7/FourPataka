@@ -4,7 +4,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "FourPataka v0.33.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 registry-backed Fourier presets is next. M3-M6, swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.",
+      "summary": "FourPataka v0.34.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 engines is next. M4-M6, swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.",
       "paths": [
         "README.md",
         "IMPLEMENTATION_STATUS.md",
@@ -14,8 +14,8 @@
     {
       "id": "modularity",
       "parent": "project",
-      "title": "Modular contributor program (M1-M2 implemented)",
-      "summary": "M1 numeric metadata and M2 playable pedal APIs are implemented. Four original factories and independent Level share reviewed explicit assembly, generic equipment/controls/defaults/validation, live/offline dispatch, seconds-based latency/tails and resource estimates. Schema 3 imports schemas 1/2, preserves unknown/incompatible raw module payloads in visible recovery placeholders and blocks affected routed paths. Source authority, independent library/track/A-B/master copies, ongoing clocks/phase, finite tails/Stop and frozen WAV remain host policies. Tested public examples, contributor diagrams and bounded version/ownership checks support these APIs. M3 Fourier presets is next, followed by M4 engines/M5 features and M6 licensing/CI/publication. Runtime loading and owner license/manual listening/device gates remain open.",
+      "title": "Modular contributor program (M1-M3 implemented)",
+      "summary": "M1 numeric metadata and M2 playable pedal APIs are implemented. Four original factories and independent Level share reviewed explicit assembly, generic equipment/controls/defaults/validation, live/offline dispatch, seconds-based latency/tails and resource estimates. Schema 3 imports schemas 1/2, preserves unknown/incompatible raw module payloads in visible recovery placeholders and blocks affected routed paths. Source authority, independent library/track/A-B/master copies, ongoing clocks/phase, finite tails/Stop and frozen WAV remain host policies. Tested public examples, contributor diagrams and bounded version/ownership checks support these APIs. M3 Fourier presets adds pure data factories, all existing timbres, Mellow pluck and explicit conservative library discovery; saved sounds play without module source. M4 engines is next, followed by M5 features and M6 licensing/CI/publication. Runtime loading and owner license/manual listening/device gates remain open.",
       "paths": [
         "docs/extensions/ARCHITECTURE.md",
         "BUILD_PLAN.md",
@@ -32,7 +32,8 @@
         "docs/extensions/MODULE_FOUNDATION.md",
         "src/modules/index.ts",
         "src/modules/assembly.ts",
-        "docs/extensions/PEDAL_MODULES.md"
+        "docs/extensions/PEDAL_MODULES.md",
+        "docs/extensions/FOURIER_PRESETS.md"
       ]
     },
     {
@@ -92,12 +93,25 @@
     {
       "id": "modularity-presets",
       "parent": "modularity",
-      "title": "M3 modular Fourier instrument presets (planned)",
-      "summary": "Planned, not started; depends on M1, independently releasable from engines. Registry-backed factory timbres and one contributor preset through fresh pure factories; separate type identity and project preset keys/versions. Preserve customized libraries and applied A/B/track copies, signed absolute coefficients, previews, source assignments and phase-continuous shared live/WAV output. Tutorial/units/schema/upgrade tests required. The Fourier bank now supports 32 harmonics introduced in schema 2 and retained in schema 3; the preset-module API remains planned.",
+      "title": "M3 registry-backed Fourier presets",
+      "summary": "Implemented v0.34.0: public FourierSound/validation/shape helpers, validated deterministic preset definitions and immutable registry, nine existing factories and an independent Mellow pluck folder plus assembly entry. Separate module/API/data identity from editable library IDs/keys/template versions. Fresh factories return independent captured copies with 32 signed absolute coefficients, five undertones and existing envelope/trim/hit fields. All new projects discover registered templates; existing libraries receive missing keys only via explicit Add bundled presets with capacity/collision/occupied-key/undo guards. Existing conservative factory upgrades preserve customized/applied/A-B/folder/source data. Registry preview metadata feeds current hit previews without a per-preset App branch. Settings are baked in schema 3; missing preset code does not disable saved sounds, and no schema/voice/parser special case or automatic update is added. M4 engines and M6 licensing/CI/publication remain planned.",
       "paths": [
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
-        "docs/extensions/INSTRUMENTS.md"
+        "docs/extensions/INSTRUMENTS.md",
+        "src/modules/foundation/fourier.ts",
+        "src/modules/foundation/presets.ts",
+        "src/modules/instruments/catalogue.ts",
+        "src/modules/examples/mellowPluck/index.ts",
+        "src/modules/assembly.ts",
+        "src/core/project.ts",
+        "src/core/instrumentPresets.ts",
+        "src/core/music.ts",
+        "src/App.tsx",
+        "docs/extensions/FOURIER_PRESETS.md",
+        "tests/unit/presetModules.test.ts",
+        "tests/browser/preset-modules.spec.ts",
+        "tests/helpers/presetModules.ts"
       ]
     },
     {

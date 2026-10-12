@@ -1,12 +1,12 @@
 # Adding instruments and synthesis engines
 
-Status: Fourier presets can be contributed through current source changes. Preset registration is planned for M3; an extensible synthesis-engine contract is separately planned for M4. Neither is an implemented public module API. See [architecture](ARCHITECTURE.md), [compatibility](COMPATIBILITY.md) and [the milestone plan](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
+Status: M3 Fourier preset modules are implemented in v0.34.0. Follow the [current preset API/tutorial](FOURIER_PRESETS.md), including registry-backed factories, Mellow pluck and explicit discovery for old projects. The recipes below retain historical source context and planned M4 engine requirements; there is no runtime installer or independent-engine API yet.
 
-## Current Fourier preset contribution
+## Historical Fourier source contribution
 
 [Library folders](INSTRUMENT_LIBRARY.md) organize project presets independently of their score keys, template versions and applied sound copies. Preset contributions must leave this host metadata intact.
 
-The [percussion preset walkthrough](PERCUSSION_PRESETS.md) is a working source example with fresh factories, safe bundled availability for existing projects, short-hit preview units, gain/copy tests and routing diagrams. It adds bundled Fourier timbres without declaring the planned M3 registry implemented.
+The [percussion preset walkthrough](PERCUSSION_PRESETS.md) is a working source example with fresh factories, safe bundled availability for existing projects, short-hit preview units, gain/copy tests and routing diagrams. Its original factories now participate in M3 registration; follow the current preset tutorial for assembly changes.
 
 1. Construct a fresh `Sound` using [music.ts](../../src/core/music.ts), with a timbre factory where appropriate in [instrumentPresets.ts](../../src/core/instrumentPresets.ts). Existing mathematical presets are useful starting points; do not mutate a shared template.
 2. Supply exactly 32 harmonic magnitudes, 32 signs and five undertone magnitudes today. Magnitudes are 0–1; signs are +1/-1 even for silent partials. Undertones have a separate enable flag. Attack/release are seconds and output trim is dB.
@@ -15,9 +15,9 @@ The [percussion preset walkthrough](PERCUSSION_PRESETS.md) is a working source e
 5. Check thumbnail/source inspection, saving, copying, Apply/Apply to all, Track Maker, command reference, completion and live/WAV playback. Saving a template does not reapply it to existing tracks.
 6. Document gain/reference choices and add numerical and copy/import/keyboard proofs. Updating a factory preset must not overwrite customized templates, A/B or owned track sounds. The current conservative Soft bass upgrade is an example of this ownership policy.
 
-The current engine uses signed sine coefficients, optional undertones, a shared envelope and explicit trim. v0.29.0 adds an optional filtered-noise/hit-decay layer; v0.30.0 extends it with independent noise decay and a phase-aware falling pitch envelope; its validated data, ownership, lifecycle and contributor example are documented in [percussion presets](PERCUSSION_PRESETS.md#noise-hit-source-contract-v0290). This remains a narrow source contribution, not the M4 engine API. Nyquist exclusions depend on pitch and sample rate; preserve saved coefficients even when a partial cannot currently play. Source thumbnails may scale for display, but audio does not normalize coefficients automatically. The bank now supports 32 harmonics in project schema 2; schema-1 imports are zero-padded. Tiny-chamber acoustics and other engines remain planned.
+The current engine uses signed sine coefficients, optional undertones, a shared envelope and explicit trim. v0.29.0 adds an optional filtered-noise/hit-decay layer; v0.30.0 extends it with independent noise decay and a phase-aware falling pitch envelope; its validated data, ownership, lifecycle and contributor example are documented in [percussion presets](PERCUSSION_PRESETS.md#noise-hit-source-contract-v0290). This remains a narrow source contribution, not the M4 engine API. Nyquist exclusions depend on pitch and sample rate; preserve saved coefficients even when a partial cannot currently play. Source thumbnails may scale for display, but audio does not normalize coefficients automatically. The bank supports 32 harmonics in current project schema 3; schema-1 imports are zero-padded. Tiny-chamber acoustics and other engines remain planned.
 
-## Planned M3 preset module recipe
+## Implemented M3 preset module recipe
 
 Declare immutable preset metadata and a pure factory for new settings using the supported Fourier schema. Register through the instrument-preset registry once; the host derives library discovery, previews and score-key suggestions. Keep module/type identity separate from a project's independently editable preset ID, score key and template version.
 
