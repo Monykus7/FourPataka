@@ -29,6 +29,8 @@ export interface ScoreSourceChange {
 }
 interface Props {
   value: string;
+  navigation?: { id: number; from: number; to: number; source: string };
+  onNavigationApplied?: () => void;
   score: CompiledScore;
   onChange: (change: ScoreSourceChange) => boolean;
   autocomplete: boolean;
@@ -62,6 +64,14 @@ export default function ScoreWorkspace(props: Props) {
     { id: number; from: number; to: number } | undefined
   >();
   const navigationId = useRef(0);
+  useEffect(() => {
+    const request = props.navigation;
+    if (!request) return;
+    // A later edit/undo must never reveal a span from a stale canonical document.
+    if (request.source === value)
+      setNavigation({ id: ++navigationId.current, from: request.from, to: request.to });
+    props.onNavigationApplied?.();
+  }, [props.navigation?.id, value]);
   const [selected, setSelected] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const [operation, setOperation] = useState<'new' | 'rename' | 'delete' | null>(null);

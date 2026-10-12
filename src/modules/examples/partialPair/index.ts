@@ -44,7 +44,7 @@ export const partialPair = defineFeature<{ h2: number }>({
       completionTemplate: 'chord:(${} ${}) ${}',
       syntax: 'chord:(<note> <note>) <duration>',
       rules:
-        'Uses existing explicit-chord syntax. Edit pitches and duration after insertion; no new parser grammar.',
+        'Two explicit notes sound together. Change their pitches and duration after insertion.',
     },
   ],
   view(snapshot) {

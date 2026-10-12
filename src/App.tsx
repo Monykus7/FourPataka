@@ -279,7 +279,13 @@ export default function App() {
   const [elapsed, setElapsed] = useState(0);
   const [peak, setPeak] = useState(0);
   const [rms, setRms] = useState(0);
-  const [featureFocus, setFeatureFocus] = useState(0);
+  const [featureNavigation, setFeatureNavigation] = useState<{
+    id: number;
+    from: number;
+    to: number;
+    source: string;
+  }>();
+  const featureNavigationId = useRef(0);
   const [sampleRate, setSampleRate] = useState(48000);
   const [newPreset, setNewPreset] = useState(false);
   const [wavProject, setWavProject] = useState<Project | null>(null);
@@ -958,16 +964,17 @@ export default function App() {
       throw new Error('The command does not produce a valid score. No source was changed.');
     change((p) => ({ ...p, scoreText: text }));
     setView('compose');
-    setFeatureFocus((n) => n + 1);
+    // Canonical UTF-16 spans stay host-owned and are translated by the file editor.
+    let from = 0;
+    while (from < current.scoreText.length && current.scoreText[from] === text[from]) from++;
+    setFeatureNavigation({
+      id: ++featureNavigationId.current,
+      from,
+      to: from + text.length - current.scoreText.length,
+      source: text,
+    });
     setToast(`Inserted ${request.name} into ${request.targetTrack}.`);
   };
-  useEffect(() => {
-    if (!featureFocus || view !== 'compose') return;
-    const frame = requestAnimationFrame(() =>
-      scorePanel.current?.querySelector<HTMLElement>('.cm-content')?.focus(),
-    );
-    return () => cancelAnimationFrame(frame);
-  }, [featureFocus, view]);
   const referencePanel = (
     <CommandReference
       open={commandsOpen}
@@ -2244,6 +2251,8 @@ export default function App() {
                   <Suspense fallback={<div className="editor-loading">Opening score editor…</div>}>
                     <ScoreWorkspace
                       value={project.scoreText}
+                      navigation={featureNavigation}
+                      onNavigationApplied={() => setFeatureNavigation(undefined)}
                       score={score}
                       workspace={project.scoreWorkspace}
                       songKey={(

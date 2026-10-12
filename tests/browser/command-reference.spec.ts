@@ -1,3 +1,4 @@
+import { COMMANDS } from '../../src/core/commands';
 import { expect, test } from '@playwright/test';
 import { referenceSearchWorkflow } from '../helpers/referenceSearch';
 
@@ -157,7 +158,7 @@ test('reference matches the score height while search stays reachable on desktop
       width === 390 ? 'matrix(0, 1, -1, 0, 0, 0)' : 'none',
     );
     await search.fill('');
-    await expect(reference.locator('.command-card')).toHaveCount(24);
+    await expect(reference.locator('.command-card')).toHaveCount(COMMANDS.length);
     await expect
       .poll(async () => {
         const referenceBox = (await reference.boundingBox())!;

@@ -1,3 +1,4 @@
+import { COMMANDS } from '../../src/core/commands';
 import { expect, type Page } from '@playwright/test';
 
 export async function referenceSearchWorkflow(page: Page) {
@@ -17,5 +18,5 @@ export async function referenceSearchWorkflow(page: Page) {
     reference.getByRole('button', { name: 'Insert rest-bar command', exact: true }),
   ).toBeVisible();
   await search.fill('');
-  await expect(reference.locator('.command-card')).toHaveCount(24);
+  await expect(reference.locator('.command-card')).toHaveCount(COMMANDS.length);
 }

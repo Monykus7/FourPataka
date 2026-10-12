@@ -92,6 +92,7 @@ function freeze<T>(value: T): T {
 export function defineFeature<S>(input: FeatureDefinition<S>): FeatureDefinition<S> {
   if (
     !input ||
+    typeof input.id !== 'string' ||
     !FEATURE_ID.test(input.id) ||
     input.id.length > 160 ||
     input.apiVersion !== MODULE_API_VERSION ||
@@ -138,7 +139,8 @@ export function defineFeature<S>(input: FeatureDefinition<S>): FeatureDefinition
     if ((defaults as Record<string, unknown>)[key] !== p.defaultValue)
       throw new Error('Feature control default mismatch.');
   const commands = structuredClone(input.commands ?? []);
-  if (commands.length > 32) throw new Error('Too many feature commands.');
+  if (!Array.isArray(commands) || commands.length > 32)
+    throw new Error('Invalid feature commands.');
   for (const c of commands) {
     if (
       !c ||
@@ -204,6 +206,7 @@ export function createFeatureRegistry(
   inputs: readonly FeatureDefinition<any>[],
   builtInIds: readonly string[] = [],
 ) {
+  if (inputs.length > 64) throw new Error('Too many registered features.');
   const definitions = inputs.map(defineFeature);
   const map = new Map<string, FeatureDefinition<any>>(),
     commandNames = new Set<string>();

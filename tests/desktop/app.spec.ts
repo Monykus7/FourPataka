@@ -1,3 +1,4 @@
+import { featureModuleWorkflow } from '../helpers/featureModules';
 import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
@@ -1114,4 +1115,26 @@ test('packaged independent engine edits Apply and native JSON preserve settings'
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+});
+
+test('packaged feature panels retain settings native JSON and source authority', async () => {
+  const page = await app.firstWindow();
+  await featureModuleWorkflow(page);
+  const path = resolve('.test-results', 'desktop', 'feature-modules.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, path);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved feature-modules');
+  const saved = JSON.parse(await readFile(path, 'utf8'));
+  expect(saved.schemaVersion).toBe(5);
+  expect(saved.featureSettings['example:feature/partial-pair'].settings.h2).toBe(0.6);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, path);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Learn', exact: true }).click();
+  await expect(
+    page.getByRole('spinbutton', { name: 'Partial pair H2 strength exact value' }),
+  ).toHaveValue('0.6');
 });

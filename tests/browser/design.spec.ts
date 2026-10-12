@@ -8,7 +8,7 @@ test('dark studio has three primary views, a smaller Learn link, and no mobile o
   await expect(
     page.getByRole('navigation', { name: 'Studio views' }).getByRole('button'),
   ).toHaveCount(3);
-  const primary = await page.getByRole('button', { name: 'Instrument' }).boundingBox();
+  const primary = await page.getByRole('button', { name: 'Instrument', exact: true }).boundingBox();
   const learn = await page.getByRole('button', { name: 'Learn', exact: true }).boundingBox();
   expect(learn!.height).toBeLessThan(primary!.height * 0.65);
   expect(
@@ -16,7 +16,7 @@ test('dark studio has three primary views, a smaller Learn link, and no mobile o
       .locator('.panel')
       .first()
       .evaluate((el) => getComputedStyle(el, '::after').backgroundImage),
-  ).toContain('wrinkled-paper.png');
+  ).toBe('none');
   await page.screenshot({ path: '.test-results/studio-desktop.png', fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
