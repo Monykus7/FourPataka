@@ -1,7 +1,13 @@
-import { createModuleRegistry } from './index';
+import { createModuleRegistry, createPedalRegistry } from './index';
 import { eqModule } from './pedals/eq';
-
-// Reviewed, explicit source assembly. Data registration does not install DSP,
-// add equipment or enable a new persisted kind; those are M2 host responsibilities.
-export const bundledModules = createModuleRegistry([eqModule], { builtInIds: [eqModule.id] });
-export const LEGACY_MODULE_IDS = Object.freeze({ eq: eqModule.id });
+import { compressorModule } from './pedals/compressor';
+import { overdriveModule } from './pedals/overdrive';
+import { delayModule } from './pedals/delay';
+const definitions = [compressorModule, overdriveModule, eqModule, delayModule];
+const builtInIds = definitions.map((definition) => definition.id);
+// Reviewed source is registered once. Project data cannot register executable code.
+export const pedalModules = createPedalRegistry(definitions, builtInIds);
+export const bundledModules = createModuleRegistry(definitions, { builtInIds });
+export const LEGACY_MODULE_IDS = Object.freeze(
+  Object.fromEntries(definitions.map((d) => [d.legacyKind!, d.id])),
+);
