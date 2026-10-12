@@ -1,47 +1,23 @@
 import { clamp, SCORE_KEY } from './music';
 import { boardRoute, validateBoard, type BoardLayout } from './board';
-import { bundledModules, LEGACY_MODULE_IDS } from '../modules/assembly';
-import { defaultModuleSettings, moduleControlRanges } from '../modules';
-const eqDefinition = bundledModules.get(LEGACY_MODULE_IDS.eq);
-export type PedalKind = 'compressor' | 'overdrive' | 'eq' | 'delay';
-export const DELAY_DEFAULTS = { time: 300, feedback: 30, output: 0, mix: 35 } as const;
-// Count the first echo too. Feedback is bounded below unity; this estimates
-// decay below -60 dB, not a scheduling latency that should pad other tracks.
-export function delayTail(time: number, feedback: number) {
-  const repeats = feedback > 0 ? Math.ceil(Math.log(0.001) / Math.log(feedback / 100)) : 0;
-  return (time / 1000) * (1 + repeats);
-}
+import { pedalModules } from '../modules/assembly';
+import { defaultModuleSettings, moduleControlRanges, delayTailSeconds } from '../modules';
+export type PedalKind = string;
+export const delayTail = delayTailSeconds;
+export const DELAY_DEFAULTS = Object.freeze(defaultModuleSettings(pedalModules.get('delay')));
 export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
-export const EQ_DEFAULTS = Object.freeze(defaultModuleSettings(eqDefinition));
-export const PEDAL_NAMES: Record<PedalKind, string> = {
-  compressor: 'Compressor',
-  overdrive: 'Overdrive',
-  eq: eqDefinition.label,
-  delay: 'Delay',
-};
-export const PEDAL_CONTROLS = {
-  compressor: {
-    threshold: [-60, 0, 1, 'dB'],
-    ratio: [1, 20, 0.1, ':1'],
-    attack: [0, 100, 1, 'ms'],
-    release: [10, 2000, 10, 'ms'],
-    output: [-24, 12, 0.5, 'dB'],
-    mix: [0, 100, 1, '%'],
-  },
-  overdrive: {
-    drive: [0, 24, 0.5, 'dB'],
-    tone: [80, 16000, 20, 'Hz'],
-    output: [-24, 12, 0.5, 'dB'],
-    mix: [0, 100, 1, '%'],
-  },
-  eq: moduleControlRanges(eqDefinition),
-  delay: {
-    time: [20, 2000, 10, 'ms'],
-    feedback: [0, 95, 1, '%'],
-    output: [-24, 12, 0.5, 'dB'],
-    mix: [0, 100, 1, '%'],
-  },
-} as const;
+export const EQ_DEFAULTS = Object.freeze(defaultModuleSettings(pedalModules.get('eq')));
+export const PEDAL_KINDS = Object.freeze(pedalModules.definitions.map((d) => d.legacyKind ?? d.id));
+export const PEDAL_NAMES: Readonly<Record<string, string>> = Object.freeze(
+  Object.fromEntries(pedalModules.definitions.map((d) => [d.legacyKind ?? d.id, d.label])),
+);
+export const PEDAL_CONTROLS: Readonly<Record<string, ReturnType<typeof moduleControlRanges>>> =
+  Object.freeze(
+    Object.fromEntries(
+      pedalModules.definitions.map((d) => [d.legacyKind ?? d.id, moduleControlRanges(d)]),
+    ),
+  );
+export const pedalName = (kind: string) => PEDAL_NAMES[kind] ?? `Unavailable: ${kind}`;
 export interface Pedal {
   id: string;
   kind: PedalKind;
@@ -89,14 +65,7 @@ export function makePedal(kind: PedalKind): Pedal {
     id: crypto.randomUUID(),
     kind,
     bypassed: false,
-    params:
-      kind === 'compressor'
-        ? { threshold: -24, ratio: 4, attack: 10, release: 250, output: 0, mix: 100 }
-        : kind === 'overdrive'
-          ? { drive: 6, tone: 6000, output: -6, mix: 100 }
-          : kind === 'eq'
-            ? { ...EQ_DEFAULTS }
-            : { ...DELAY_DEFAULTS },
+    params: defaultModuleSettings(pedalModules.get(kind)),
   };
 }
 export function defaultProcessing(): Processing {

@@ -1,8 +1,10 @@
+import { pedalModules } from '../modules/assembly';
+import { checkedSeconds } from '../modules';
 import { playbackTiming } from '../core/articulation';
 import { parseScore } from '../core/parser';
 import { reconcileTracks, type Project } from '../core/project';
 import { boardRoute } from '../core/board';
-import { delayTail, emptyChain, type Chain } from '../core/pedals';
+import { emptyChain, type Chain } from '../core/pedals';
 import { exportSize, inspectSamples, type WavOptions } from '../core/wav';
 import { chainLatency, measureCompressorLatency, measureOversamplingLatency } from './effects';
 import { createScoreGraph } from './scoreGraph';
@@ -15,8 +17,8 @@ const routedTail = (chain: Chain) =>
     : boardRoute(chain).pedals.reduce(
         (sum, pedal) =>
           sum +
-          (pedal.kind === 'delay' && !pedal.bypassed && pedal.params.mix > 0
-            ? delayTail(pedal.params.time, pedal.params.feedback)
+          (!pedal.bypassed
+            ? checkedSeconds(pedalModules.get(pedal.kind).exportTail(pedal.params), pedal.kind)
             : 0),
         0,
       );

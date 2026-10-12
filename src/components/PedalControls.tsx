@@ -1,11 +1,10 @@
+import { pedalModules } from '../modules/assembly';
+import { defaultModuleSettings } from '../modules';
 import RotaryDial from './RotaryDial';
-import { EQ_DEFAULTS, PEDAL_CONTROLS, PEDAL_NAMES, type Pedal } from '../core/pedals';
+import { PEDAL_CONTROLS, pedalName, type Pedal } from '../core/pedals';
 
 export const pedalParameterLabel = (kind: Pedal['kind'], key: string) =>
-  kind === 'eq'
-    ? ({ low: 'low gain', mid: 'mid gain', high: 'high gain', frequency: 'mid frequency' }[key] ??
-      key)
-    : key;
+  pedalModules.find(kind)?.parameters[key]?.label ?? key;
 export type ParameterChange = (id: string, key: string, value: number, group?: string) => void;
 
 export function SmallPedalDials({
@@ -19,7 +18,7 @@ export function SmallPedalDials({
 }) {
   return (
     <div className="small-pedal-dials">
-      {Object.entries(PEDAL_CONTROLS[pedal.kind]).map(([key, [min, max, step, unit]]) => (
+      {Object.entries(PEDAL_CONTROLS[pedal.kind] ?? {}).map(([key, [min, max, step, unit]]) => (
         <div key={key} className="small-dial-control">
           <RotaryDial
             label={`${pedal.kind} ${index + 1} ${pedalParameterLabel(pedal.kind, key)}`}
@@ -58,68 +57,71 @@ export default function PedalControls({
       aria-label="Selected pedal controls"
     >
       <span className="eyebrow">SELECTED PEDAL</span>
-      <h3>{pedal ? PEDAL_NAMES[pedal.kind] : 'No pedal selected'}</h3>
+      <h3>{pedal ? pedalName(pedal.kind) : 'No pedal selected'}</h3>
       {pedal ? (
         <>
           <div className="pedal-parameters">
-            {Object.entries(PEDAL_CONTROLS[pedal.kind]).map(([key, [min, max, step, unit]]) => {
-              const label = pedalParameterLabel(pedal.kind, key),
-                controlName = `${pedal.kind} ${index + 1} ${label}`;
-              return (
-                <label key={key} className="range-control">
-                  <span className="range-title">
-                    {label}
-                    <span className="numeric-value">
-                      <input
-                        type="number"
-                        aria-label={`${controlName} exact value`}
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={pedal.params[key]}
-                        onChange={(e) => {
-                          if (e.target.value !== '' && Number.isFinite(Number(e.target.value)))
-                            onChange(
-                              pedal.id,
-                              key,
-                              Math.min(max, Math.max(min, Number(e.target.value))),
-                            );
-                        }}
-                      />
-                      {unit}
+            {Object.entries(PEDAL_CONTROLS[pedal.kind] ?? {}).map(
+              ([key, [min, max, step, unit]]) => {
+                const label = pedalParameterLabel(pedal.kind, key),
+                  controlName = `${pedal.kind} ${index + 1} ${label}`;
+                return (
+                  <label key={key} className="range-control">
+                    <span className="range-title">
+                      {label}
+                      <span className="numeric-value">
+                        <input
+                          type="number"
+                          aria-label={`${controlName} exact value`}
+                          min={min}
+                          max={max}
+                          step={step}
+                          value={pedal.params[key]}
+                          onChange={(e) => {
+                            if (e.target.value !== '' && Number.isFinite(Number(e.target.value)))
+                              onChange(
+                                pedal.id,
+                                key,
+                                Math.min(max, Math.max(min, Number(e.target.value))),
+                              );
+                          }}
+                        />
+                        {unit}
+                      </span>
                     </span>
-                  </span>
-                  <input
-                    type="range"
-                    aria-label={controlName}
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={pedal.params[key]}
-                    onChange={(e) => onChange(pedal.id, key, Number(e.target.value))}
-                  />
-                </label>
-              );
-            })}
+                    <input
+                      type="range"
+                      aria-label={controlName}
+                      min={min}
+                      max={max}
+                      step={step}
+                      value={pedal.params[key]}
+                      onChange={(e) => onChange(pedal.id, key, Number(e.target.value))}
+                    />
+                  </label>
+                );
+              },
+            )}
           </div>
-          {pedal.kind === 'eq' && (
-            <>
-              <p className="eq-shape">Shelves 200 Hz / 4 kHz · mid Q 1</p>
-              <button
-                className="secondary-button"
-                aria-label={`Reset EQ ${index + 1} to flat`}
-                onClick={() => onReplace({ ...pedal, params: { ...EQ_DEFAULTS } })}
-              >
-                Reset to flat
-              </button>
-            </>
-          )}
-          {pedal.kind === 'delay' && (
-            <p className="delay-note">
+          {pedalModules.find(pedal.kind)?.note && (
+            <p className="eq-shape">
               {tailActive
                 ? 'Tail active · stored echoes are finishing.'
-                : 'Bypass stops new echoes; existing echoes finish. Stop clears them.'}
+                : pedalModules.get(pedal.kind).note}
             </p>
+          )}
+          {pedalModules.find(pedal.kind)?.reset && (
+            <button
+              className="secondary-button"
+              aria-label={pedalModules
+                .get(pedal.kind)
+                .reset!.accessibleLabel.replace('{index}', String(index + 1))}
+              onClick={() =>
+                onReplace({ ...pedal, params: defaultModuleSettings(pedalModules.get(pedal.kind)) })
+              }
+            >
+              {pedalModules.get(pedal.kind).reset!.label}
+            </button>
           )}
           <button
             className="text-button"

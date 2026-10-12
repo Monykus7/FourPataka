@@ -8,7 +8,13 @@ import {
   connectCable,
   type BoardCell,
 } from '../core/board';
-import { makePedal, PEDAL_NAMES, type ChainInstance, type PedalKind } from '../core/pedals';
+import {
+  makePedal,
+  PEDAL_KINDS,
+  pedalName,
+  type ChainInstance,
+  type PedalKind,
+} from '../core/pedals';
 import { SmallPedalDials, type ParameterChange } from './PedalControls';
 
 const CELL_WIDTH = 160,
@@ -123,7 +129,7 @@ export default function PedalBoardSurface({
       ? output
         ? 'Board input'
         : 'Board output'
-      : `${PEDAL_NAMES[chain.pedals.find((p) => p.id === id)!.kind]} ${chain.pedals.findIndex((p) => p.id === id) + 1}`;
+      : `${pedalName(chain.pedals.find((p) => p.id === id)!.kind)} ${chain.pedals.findIndex((p) => p.id === id) + 1}`;
   const relative = (x: number, y: number) => {
     const box = canvas.current!.getBoundingClientRect();
     return { x: x - box.left, y: y - box.top };
@@ -298,7 +304,7 @@ export default function PedalBoardSurface({
                 }
               }}
             >
-              {(['compressor', 'overdrive', 'eq', 'delay'] as const).map((kind) => (
+              {PEDAL_KINDS.map((kind) => (
                 <button
                   key={kind}
                   role="menuitem"
@@ -329,7 +335,7 @@ export default function PedalBoardSurface({
                     setDraft(null);
                   }}
                 >
-                  {PEDAL_NAMES[kind]}
+                  {pedalName(kind)}
                 </button>
               ))}
               <button
@@ -351,10 +357,10 @@ export default function PedalBoardSurface({
         </div>
         <span>
           {tool === 'cable'
-            ? 'Output jack → input jack'
+            ? 'Output jack â†’ input jack'
             : tool
-              ? `Place ${PEDAL_NAMES[tool]}`
-              : 'Choose equipment · drag handles to move'}
+              ? `Place ${pedalName(tool)}`
+              : 'Choose equipment Â· drag handles to move'}
         </span>
         {tool && (
           <button
@@ -407,13 +413,7 @@ export default function PedalBoardSurface({
                 onDrop={(e) => {
                   e.preventDefault();
                   const kind = e.dataTransfer.getData('application/x-fourpataka-pedal');
-                  if (
-                    kind === 'compressor' ||
-                    kind === 'overdrive' ||
-                    kind === 'eq' ||
-                    kind === 'delay'
-                  )
-                    place(kind, cell);
+                  if (PEDAL_KINDS.includes(kind)) place(kind, cell);
                   clearEquipmentDrag();
                   setTool(null);
                   setMenu(false);
@@ -544,10 +544,10 @@ export default function PedalBoardSurface({
                 >
                   <GripVertical size={13} />
                   <span>
-                    {index + 1} · {order < 0 ? 'UNPATCHED' : `PATH ${order + 1}`}
+                    {index + 1} Â· {order < 0 ? 'UNPATCHED' : `PATH ${order + 1}`}
                   </span>
                 </button>
-                <strong className="compact-pedal-title">{PEDAL_NAMES[pedal.kind]}</strong>
+                <strong className="compact-pedal-title">{pedalName(pedal.kind)}</strong>
                 {jack(pedal.id, false, `${pedal.kind} ${index + 1} input jack`)}
                 {jack(pedal.id, true, `${pedal.kind} ${index + 1} output jack`)}
                 <SmallPedalDials pedal={pedal} index={index} onChange={onParameter} />
@@ -581,7 +581,7 @@ export default function PedalBoardSurface({
       </div>
       <div className="board-footer">
         <span role="status">
-          {notice || 'Velcro grid · 4 × 2 · arrow keys move a focused handle'}
+          {notice || 'Velcro grid Â· 4 Ã— 2 Â· arrow keys move a focused handle'}
         </span>
         {cableSelected && (
           <button
