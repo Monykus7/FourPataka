@@ -3133,3 +3133,67 @@ dd {
 .instrument-lower.engine-layout .lower-main {
   display: none;
 }
+
+.feature-workspace {
+  display: grid;
+  gap: 20px;
+  margin: 20px 0;
+}
+.feature-visibility {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 8px;
+}
+.feature-visibility legend {
+  color: var(--text-muted);
+  padding: 0 6px;
+}
+.feature-visibility label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.feature-panel {
+  padding: 24px;
+}
+.feature-panel > p {
+  line-height: 1.6;
+}
+.feature-panel .experiment-grid {
+  margin: 20px 0;
+}
+.feature-panel .analysis-metrics {
+  margin: 16px 0;
+}
+.feature-panel dd {
+  margin: 8px 0 0;
+  font-size: 20px;
+}
+.feature-control {
+  display: grid;
+  grid-template-columns: 1fr minmax(100px, 2fr) 90px;
+  gap: 12px;
+  align-items: center;
+  margin: 18px 0;
+}
+.feature-control input[type='number'] {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .feature-panel {
+    padding: 18px;
+  }
+  .feature-control {
+    grid-template-columns: 1fr 80px;
+  }
+  .feature-control small {
+    display: none;
+  }
+  .feature-control input[type='range'] {
+    grid-column: 1;
+  }
+}

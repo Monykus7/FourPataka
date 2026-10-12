@@ -1,3 +1,11 @@
+import FeaturePanels from './components/FeaturePanels';
+import {
+  featureAnalysis,
+  featureSettingsEntry,
+  guardFeatureSource,
+  readFeatureVisibility,
+} from './core/featureHost';
+import type { FeatureSnapshot, FeatureRequest } from './modules';
 import {
   isFourierSound,
   createEngineSound,
@@ -5,7 +13,7 @@ import {
   type InstrumentSound,
   type EngineSound,
 } from './core/engineSound';
-import { engineModules } from './modules/assembly';
+import { engineModules, featureModules } from './modules/assembly';
 import { instrumentModules, factoryPreviews } from './modules/assembly';
 import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
@@ -54,7 +62,6 @@ import {
   clamp,
   coefficientDb,
   components,
-  descriptors,
   mathematicalPreset,
   setHarmonicPolarity,
   NEUTRAL_MACROS,
@@ -125,6 +132,7 @@ function readPreferences() {
     const saved = JSON.parse(localStorage.getItem(PREFERENCES_KEY) ?? '{}');
     return {
       autocomplete: saved.autocomplete !== false,
+      featureVisibility: readFeatureVisibility(saved.featureVisibility),
       composeSide:
         saved.composeSide === 'timeline' ? ('timeline' as const) : ('reference' as const),
       theme: resolveTheme(saved.theme).id,
@@ -136,6 +144,7 @@ function readPreferences() {
   } catch {
     return {
       autocomplete: true,
+      featureVisibility: {} as Record<string, boolean>,
       composeSide: 'reference' as 'reference' | 'timeline',
       monitor: 0.35,
       theme: 'original',
@@ -246,6 +255,10 @@ export default function App() {
   const project = history.present;
   const projectRef = useRef(project);
   projectRef.current = project;
+  // Source revisions advance across undo/import too, never for UI-only changes.
+  const featureRevision = useRef({ text: project.scoreText, value: 0 });
+  if (featureRevision.current.text !== project.scoreText)
+    featureRevision.current = { text: project.scoreText, value: featureRevision.current.value + 1 };
   const [view, setView] = useState<View>('instrument');
   const [preferences, setPreferences] = useState(readPreferences);
   const [toast, setToast] = useState<string | null>(initial.warning);
@@ -265,6 +278,8 @@ export default function App() {
   const [running, setRunning] = useState<{ text: string; score: CompiledScore } | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [peak, setPeak] = useState(0);
+  const [rms, setRms] = useState(0);
+  const [featureFocus, setFeatureFocus] = useState(0);
   const [sampleRate, setSampleRate] = useState(48000);
   const [newPreset, setNewPreset] = useState(false);
   const [wavProject, setWavProject] = useState<Project | null>(null);
@@ -348,7 +363,10 @@ export default function App() {
   const partial = components(sound, fundamental, sampleRate).find(
     (c) => c.label === selectedPartial,
   )!;
-  const metrics = descriptors(sound, fundamental, sampleRate);
+  const featureSource = useMemo(
+    () => featureAnalysis(instrumentSound, fundamental, sampleRate),
+    [instrumentSound, fundamental, sampleRate],
+  );
   const track = project.tracks.find((t) => t.key === selectedTrack) ?? project.tracks[0];
   const associated = project.tracks.filter((t) => t.presetId === preset.id);
   const pedalPath =
@@ -465,10 +483,13 @@ export default function App() {
       setPlayback(null);
       setElapsed(0);
       setPeak(0);
+      setRms(0);
     };
     const timer = setInterval(() => {
       setElapsed(engine.current.progress);
-      setPeak(engine.current.measure().peak);
+      const measured = engine.current.measure();
+      setPeak(measured.peak);
+      setRms(measured.rms);
       setPlayback(engine.current.mode);
       setSampleRate(engine.current.sampleRate);
     }, 50);
@@ -864,6 +885,89 @@ export default function App() {
   const referenceSection = referenceSections.includes(commandSection)
     ? commandSection
     : referenceSections[0];
+  const featureSnapshot: FeatureSnapshot = {
+    sourceRevision: featureRevision.current.value,
+    targetTrack: referenceTarget,
+    targetFile: composeFileId,
+    sourceEditable: score.diagnostics.length === 0 && playback !== 'score',
+    referenceNote,
+    analysis: featureSource,
+    measurement: {
+      peak,
+      rms,
+      sampleRateHz: sampleRate,
+      windowSamples: 2048,
+      cadenceMs: 50,
+      playing: !!playback,
+      mode: playback,
+      positionSeconds: elapsed,
+      staleScore: playback === 'score' && !!running && running.text !== project.scoreText,
+    },
+  };
+  const featureContext = useRef(featureSnapshot);
+  featureContext.current = featureSnapshot;
+  const performFeatureRequest = (id: string, request: FeatureRequest) => {
+    const definition = featureModules.get(id);
+    if (
+      (request.type === 'load-sound' || request.type === 'open-instrument') &&
+      !definition.capabilities.includes('instrument')
+    )
+      throw new Error('Feature instrument action unavailable.');
+    if (request.type === 'open-instrument') {
+      setView('instrument');
+      return;
+    }
+    if (request.type === 'load-sound') {
+      const next = structuredClone(request.sound);
+      resetMacros(next);
+      setSolo(false);
+      change((p) => ({ ...p, comparison: { ...p.comparison, [p.comparison.active]: next } }));
+      setView('instrument');
+      if (request.openUndertones) setUndertonesOpen(true);
+      setToast('Experiment loaded. Undo restores the previous snapshot; tracks are unchanged.');
+      return;
+    }
+    if (
+      !definition.capabilities.includes('source') ||
+      !definition.commands?.some((c) => c.name === request.name)
+    )
+      throw new Error('Feature source action unavailable.');
+    guardFeatureSource(request, {
+      ...featureContext.current,
+      sourceEditable: featureContext.current.sourceEditable && engine.current.mode !== 'score',
+    });
+    const current = projectRef.current;
+    const currentPreset = current.instruments.find((i) => i.id === current.editorPresetId)!;
+    const text = insertCommand(
+      current.scoreText,
+      current.instruments.map((i) => i.key),
+      request.name,
+      request.targetTrack,
+      currentPreset.key,
+      current.processing.library.map((p) => p.key),
+      undefined,
+      undefined,
+      request.targetFile,
+    );
+    const parsed = parseScore(
+      text,
+      current.instruments.map((i) => i.key),
+      current.processing.library.map((p) => p.key),
+    );
+    if (parsed.diagnostics.length)
+      throw new Error('The command does not produce a valid score. No source was changed.');
+    change((p) => ({ ...p, scoreText: text }));
+    setView('compose');
+    setFeatureFocus((n) => n + 1);
+    setToast(`Inserted ${request.name} into ${request.targetTrack}.`);
+  };
+  useEffect(() => {
+    if (!featureFocus || view !== 'compose') return;
+    const frame = requestAnimationFrame(() =>
+      scorePanel.current?.querySelector<HTMLElement>('.cm-content')?.focus(),
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [featureFocus, view]);
   const referencePanel = (
     <CommandReference
       open={commandsOpen}
@@ -2501,147 +2605,27 @@ export default function App() {
             </>
           )}
 
-          {view === 'learn' && (
-            <>
-              <section className="learn-intro">
-                <span className="learn-equation">
-                  x(t) = <span>Σ</span> aₕ sin(2πhf₀t)
-                </span>
-                <div>
-                  <h2>Fourier source</h2>
-                  <p>
-                    Every harmonic is a sine wave. Its frequency decides where it sits; its
-                    magnitude decides how much it contributes. Combine a handful and a new timbre
-                    appears.
-                  </p>
-                  <button className="text-button" onClick={() => setView('instrument')}>
-                    Open instrument
-                    <ArrowRight size={15} />
-                  </button>
-                </div>
-              </section>
-              <div className="experiment-grid">
-                {[
-                  {
-                    n: '01',
-                    title: 'Build a square',
-                    detail:
-                      'Keep only odd harmonics, with magnitudes 1/h. Listen to how thirty-two terms approximate the sharp edges.',
-                    kind: 'square' as WavePreset,
-                    action: (s: Sound) => s,
-                  },
-                  {
-                    n: '02',
-                    title: 'Soften the edges',
-                    detail:
-                      'The triangle uses 1/h² and alternating signs. Higher partials fade much faster than in a square.',
-                    kind: 'triangle' as WavePreset,
-                    action: (s: Sound) => s,
-                  },
-                  {
-                    n: '03',
-                    title: 'The missing fundamental',
-                    detail:
-                      'Remove H1 from a square approximation. The remaining pattern can still suggest the original pitch.',
-                    kind: 'square' as WavePreset,
-                    action: (s: Sound) => ({
-                      ...s,
-                      harmonics: s.harmonics.map((v, i) => (i === 0 ? 0 : v)),
-                    }),
-                  },
-                  {
-                    n: '04',
-                    title: 'Go an octave below',
-                    detail:
-                      'Add a quiet f₀/2 beneath a sine. Compare with the bank disabled: this component sits below the reference note.',
-                    kind: 'sine' as WavePreset,
-                    action: (s: Sound) => ({
-                      ...s,
-                      undertonesEnabled: true,
-                      undertones: [0.25, 0, 0, 0, 0],
-                    }),
-                  },
-                ].map((experiment) => (
-                  <section className="panel experiment-card" key={experiment.n}>
-                    <div className="experiment-top">
-                      <span>{experiment.n}</span>
-                      <MiniWave kind={experiment.kind} />
-                    </div>
-                    <h3>{experiment.title}</h3>
-                    <p>{experiment.detail}</p>
-                    <button
-                      className="secondary-button"
-                      onClick={() => {
-                        const next = experiment.action(mathematicalPreset(experiment.kind));
-                        resetMacros(next);
-                        change((p) => ({
-                          ...p,
-                          comparison: { ...p.comparison, [p.comparison.active]: next },
-                        }));
-                        setView('instrument');
-                        if (experiment.n === '04') setUndertonesOpen(true);
-                        setToast(
-                          'Experiment loaded. All controls are editable; Undo restores your previous sound.',
-                        );
-                      }}
-                    >
-                      Load experiment
-                      <ArrowRight size={14} />
-                    </button>
-                  </section>
-                ))}
-              </div>
-              <section className="panel analysis-panel">
-                <div className="section-title">
-                  <h3>Your source, measured</h3>
-                  <span className="tag">STEADY MODEL · {referenceNote}</span>
-                </div>
-                {fourier && metrics.power ? (
-                  <div className="analysis-metrics">
-                    <div>
-                      <span>Power-weighted centroid</span>
-                      <strong>
-                        {Math.round(metrics.centroid!)}
-                        <small> Hz</small>
-                      </strong>
-                    </div>
-                    <div>
-                      <span>Odd harmonic power · includes H1</span>
-                      <strong>
-                        {Math.round(metrics.oddShare * 100)}
-                        <small>%</small>
-                      </strong>
-                    </div>
-                    <div>
-                      <span>Subharmonic power share</span>
-                      <strong>
-                        {Math.round(metrics.subShare * 100)}
-                        <small>%</small>
-                      </strong>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="silence-state">
-                    {fourier
-                      ? 'Silence · no effective components. Centroid and power shares are undefined.'
-                      : 'Fourier source descriptors are unavailable for this engine.'}
-                  </p>
-                )}
-                <p className="footnote">
-                  Computed from available source coefficients before trim and envelope. These
-                  describe the mathematical source, not measured loudness or a processed recording.
-                </p>
-              </section>
-              <div className="learn-note">
-                <BookOpen size={18} />
-                <p>
-                  FourPataka starts with finite Fourier approximations. Thirty-two partials suggest
-                  a shape; they don’t reproduce an ideal discontinuity or an acoustic instrument
-                  exactly.
-                </p>
-              </div>
-            </>
-          )}
+          <FeaturePanels
+            placement={view}
+            snapshot={featureSnapshot}
+            saved={project.featureSettings ?? {}}
+            visibility={preferences.featureVisibility}
+            onVisibility={(id, visible) =>
+              setPreferences((p) => ({
+                ...p,
+                featureVisibility: { ...p.featureVisibility, [id]: visible },
+              }))
+            }
+            onSettings={(id, settings, group) => {
+              const entry = featureSettingsEntry(id, settings);
+              change(
+                (p) => ({ ...p, featureSettings: { ...p.featureSettings, [id]: entry } }),
+                group,
+              );
+            }}
+            onRequest={performFeatureRequest}
+            onError={setToast}
+          />
 
           <footer className="workspace-footer">
             <span>
