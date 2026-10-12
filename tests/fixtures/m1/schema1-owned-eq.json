@@ -1,0 +1,438 @@
+{
+  "schemaVersion": 1,
+  "id": "m1-legacy-baseline",
+  "name": "M1 legacy fixture",
+  "scoreText": "// Preserve CRLF and personal keys\r\ntempo 120\r\nmaster through eqBoard\r\ntrack legacy using personal through eqBoard {\r\n C3 quarter\r\n}\r\n",
+  "instruments": [
+    {
+      "id": "personal-template",
+      "key": "personal",
+      "label": "Personal sound",
+      "version": 4,
+      "sound": {
+        "harmonics": [
+          0.6,
+          0,
+          0.2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "polarity": [
+          1,
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "undertones": [
+          0.1,
+          0.05,
+          0,
+          0,
+          0
+        ],
+        "undertonesEnabled": true,
+        "attack": 0.02,
+        "release": 0.18,
+        "trim": -15
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "key": "legacy",
+      "presetId": "personal-template",
+      "appliedVersion": 3,
+      "sound": {
+        "harmonics": [
+          0.45,
+          0,
+          0.2,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "polarity": [
+          1,
+          1,
+          -1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "undertones": [
+          0.1,
+          0.05,
+          0,
+          0,
+          0
+        ],
+        "undertonesEnabled": true,
+        "attack": 0.02,
+        "release": 0.18,
+        "trim": -15
+      },
+      "level": 0.65
+    }
+  ],
+  "editorPresetId": "personal-template",
+  "comparison": {
+    "active": "A",
+    "A": {
+      "harmonics": [
+        0.6,
+        0,
+        0.2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "polarity": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "undertones": [
+        0.1,
+        0.05,
+        0,
+        0,
+        0
+      ],
+      "undertonesEnabled": true,
+      "attack": 0.02,
+      "release": 0.18,
+      "trim": -21
+    },
+    "B": {
+      "harmonics": [
+        0.6,
+        0,
+        0.2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "polarity": [
+        1,
+        1,
+        -1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "undertones": [
+        0.1,
+        0.05,
+        0,
+        0,
+        0
+      ],
+      "undertonesEnabled": true,
+      "attack": 0.02,
+      "release": 0.18,
+      "trim": -15
+    }
+  },
+  "comparisonMaterial": {
+    "kind": "note",
+    "note": "C3",
+    "trackKey": "legacy",
+    "fromBeat": 0,
+    "toBeat": null
+  },
+  "mixGain": 0.8,
+  "processing": {
+    "library": [
+      {
+        "id": "eq-board",
+        "key": "eqBoard",
+        "label": "Personal EQ",
+        "chain": {
+          "presetId": "eq-board",
+          "bypassed": false,
+          "pedals": [
+            {
+              "id": "eq-instance",
+              "kind": "eq",
+              "bypassed": false,
+              "params": {
+                "low": 2,
+                "mid": -3,
+                "high": 1.5,
+                "frequency": 731.5,
+                "output": -2,
+                "mix": 62.5
+              }
+            }
+          ],
+          "board": {
+            "positions": {
+              "eq-instance": {
+                "column": 2,
+                "row": 1
+              }
+            },
+            "cables": [
+              {
+                "id": "in",
+                "from": null,
+                "to": "eq-instance"
+              },
+              {
+                "id": "out",
+                "from": "eq-instance",
+                "to": null
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "audition": {
+      "A": {
+        "presetId": "eq-board",
+        "bypassed": false,
+        "pedals": [
+          {
+            "id": "eq-instance",
+            "kind": "eq",
+            "bypassed": false,
+            "params": {
+              "low": 4,
+              "mid": -3,
+              "high": 1.5,
+              "frequency": 731.5,
+              "output": -2,
+              "mix": 62.5
+            }
+          }
+        ],
+        "board": {
+          "positions": {
+            "eq-instance": {
+              "column": 2,
+              "row": 1
+            }
+          },
+          "cables": [
+            {
+              "id": "in",
+              "from": null,
+              "to": "eq-instance"
+            },
+            {
+              "id": "out",
+              "from": "eq-instance",
+              "to": null
+            }
+          ]
+        }
+      },
+      "B": {
+        "presetId": "eq-board",
+        "bypassed": false,
+        "pedals": [
+          {
+            "id": "eq-instance",
+            "kind": "eq",
+            "bypassed": false,
+            "params": {
+              "low": 2,
+              "mid": 6,
+              "high": 1.5,
+              "frequency": 731.5,
+              "output": -2,
+              "mix": 62.5
+            }
+          }
+        ],
+        "board": {
+          "positions": {
+            "eq-instance": {
+              "column": 2,
+              "row": 1
+            }
+          },
+          "cables": [
+            {
+              "id": "in",
+              "from": null,
+              "to": "eq-instance"
+            },
+            {
+              "id": "out",
+              "from": "eq-instance",
+              "to": null
+            }
+          ]
+        }
+      }
+    },
+    "master": {
+      "presetId": "eq-board",
+      "bypassed": false,
+      "pedals": [
+        {
+          "id": "eq-instance",
+          "kind": "eq",
+          "bypassed": false,
+          "params": {
+            "low": 2,
+            "mid": -3,
+            "high": 1.5,
+            "frequency": 731.5,
+            "output": -5,
+            "mix": 62.5
+          }
+        }
+      ],
+      "board": {
+        "positions": {
+          "eq-instance": {
+            "column": 2,
+            "row": 1
+          }
+        },
+        "cables": [
+          {
+            "id": "in",
+            "from": null,
+            "to": "eq-instance"
+          },
+          {
+            "id": "out",
+            "from": "eq-instance",
+            "to": null
+          }
+        ]
+      }
+    },
+    "tracks": {
+      "legacy": {
+        "presetId": "eq-board",
+        "bypassed": false,
+        "pedals": [
+          {
+            "id": "eq-instance",
+            "kind": "eq",
+            "bypassed": false,
+            "params": {
+              "low": 2,
+              "mid": -3,
+              "high": 1.5,
+              "frequency": 731.5,
+              "output": -2,
+              "mix": 62.5
+            }
+          }
+        ],
+        "board": {
+          "positions": {
+            "eq-instance": {
+              "column": 2,
+              "row": 1
+            }
+          },
+          "cables": [
+            {
+              "id": "in",
+              "from": null,
+              "to": "eq-instance"
+            },
+            {
+              "id": "out",
+              "from": "eq-instance",
+              "to": null
+            }
+          ]
+        }
+      }
+    }
+  }
+}
