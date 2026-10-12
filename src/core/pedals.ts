@@ -1,5 +1,8 @@
 import { clamp, SCORE_KEY } from './music';
 import { boardRoute, validateBoard, type BoardLayout } from './board';
+import { bundledModules, LEGACY_MODULE_IDS } from '../modules/assembly';
+import { defaultModuleSettings, moduleControlRanges } from '../modules';
+const eqDefinition = bundledModules.get(LEGACY_MODULE_IDS.eq);
 export type PedalKind = 'compressor' | 'overdrive' | 'eq' | 'delay';
 export const DELAY_DEFAULTS = { time: 300, feedback: 30, output: 0, mix: 35 } as const;
 // Count the first echo too. Feedback is bounded below unity; this estimates
@@ -9,18 +12,11 @@ export function delayTail(time: number, feedback: number) {
   return (time / 1000) * (1 + repeats);
 }
 export const EQ_SHAPE = { lowFrequency: 200, highFrequency: 4000, midQ: 1 } as const;
-export const EQ_DEFAULTS = {
-  low: 0,
-  mid: 0,
-  high: 0,
-  frequency: 1000,
-  output: 0,
-  mix: 100,
-} as const;
+export const EQ_DEFAULTS = Object.freeze(defaultModuleSettings(eqDefinition));
 export const PEDAL_NAMES: Record<PedalKind, string> = {
   compressor: 'Compressor',
   overdrive: 'Overdrive',
-  eq: 'Three-band EQ',
+  eq: eqDefinition.label,
   delay: 'Delay',
 };
 export const PEDAL_CONTROLS = {
@@ -38,14 +34,7 @@ export const PEDAL_CONTROLS = {
     output: [-24, 12, 0.5, 'dB'],
     mix: [0, 100, 1, '%'],
   },
-  eq: {
-    low: [-12, 12, 0.5, 'dB'],
-    mid: [-12, 12, 0.5, 'dB'],
-    high: [-12, 12, 0.5, 'dB'],
-    frequency: [150, 4000, 10, 'Hz'],
-    output: [-24, 12, 0.5, 'dB'],
-    mix: [0, 100, 1, '%'],
-  },
+  eq: moduleControlRanges(eqDefinition),
   delay: {
     time: [20, 2000, 10, 'ms'],
     feedback: [0, 95, 1, '%'],
