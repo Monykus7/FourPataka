@@ -23,7 +23,7 @@ it('migrates schema 1 with silent upper partials and independent owned copies', 
     { x: 1, y: 0 },
   ];
   const restored = importProject(JSON.stringify(old));
-  expect(restored.schemaVersion).toBe(3);
+  expect(restored.schemaVersion).toBe(4);
   expect(restored.scoreText).toBe(old.scoreText);
   expect(restored.tracks[0].sound.waveformPoints).toEqual(old.tracks[0].sound.waveformPoints);
   expect(restored.tracks[0].sound.harmonics.slice(0, 16)).toEqual(old.tracks[0].sound.harmonics);

@@ -1,3 +1,4 @@
+import { isFourierSound, readInstrumentSound, type InstrumentSound } from './engineSound';
 import { instrumentModules } from '../modules/assembly';
 import {
   defaultProcessing,
@@ -32,7 +33,7 @@ export interface InstrumentPreset {
   key: string;
   label: string;
   version: number;
-  sound: Sound;
+  sound: InstrumentSound;
   folderId?: string;
 }
 export interface InstrumentFolder {
@@ -43,12 +44,12 @@ export interface TrackInstance {
   key: string;
   presetId: string;
   appliedVersion: number;
-  sound: Sound;
+  sound: InstrumentSound;
   level: number;
 }
 export interface Project {
   processing: Processing;
-  schemaVersion: 3;
+  schemaVersion: 4;
   id: string;
   name: string;
   scoreText: string;
@@ -57,7 +58,7 @@ export interface Project {
   instrumentFolders?: InstrumentFolder[];
   tracks: TrackInstance[];
   editorPresetId: string;
-  comparison: { active: 'A' | 'B'; A: Sound; B: Sound };
+  comparison: { active: 'A' | 'B'; A: InstrumentSound; B: InstrumentSound };
   comparisonMaterial: ComparisonMaterial;
   mixGain: number;
 }
@@ -145,7 +146,7 @@ export function createProject(): Project {
   const bright = instruments.find((p) => p.key === 'brightReed')!.sound;
   const project: Project = {
     processing: defaultProcessing(),
-    schemaVersion: 3,
+    schemaVersion: 4,
     id: crypto.randomUUID(),
     name: 'Untitled session',
     scoreText: EXAMPLE_SCORE,
@@ -262,7 +263,7 @@ export function reconcileTracks(project: Project, score: CompiledScore): Project
 export function applyPreset(
   project: Project,
   presetId: string,
-  sound: Sound,
+  sound: InstrumentSound,
   targets: string[],
 ): Project {
   const preset = project.instruments.find((p) => p.id === presetId)!;
@@ -349,11 +350,16 @@ export function importProject(text: string): Project {
   if (text.length > 2_000_000) throw new Error('Project file is too large (maximum 2 MB).');
   const data: unknown = JSON.parse(text);
   record(data);
-  if (data.schemaVersion !== 1 && data.schemaVersion !== 2 && data.schemaVersion !== 3)
+  if (
+    data.schemaVersion !== 1 &&
+    data.schemaVersion !== 2 &&
+    data.schemaVersion !== 3 &&
+    data.schemaVersion !== 4
+  )
     throw new Error(
-      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2 and 3.`,
+      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2, 3 and 4.`,
     );
-  if (data.schemaVersion !== 3 && data.processing) {
+  if (data.schemaVersion < 3 && data.processing) {
     const processing = data.processing as Processing;
     const chains = [
       ...(processing.library ?? []).map((p) => p.chain),
@@ -367,11 +373,14 @@ export function importProject(text: string): Project {
   }
   const sourceCount = data.schemaVersion === 1 ? LEGACY_HARMONIC_COUNT : HARMONIC_COUNT;
   // Pad owned copies independently. Migration never regenerates their timbres.
-  const migrateSound = (sound: Sound): Sound => ({
-    ...structuredClone(sound),
-    harmonics: [...sound.harmonics, ...Array(HARMONIC_COUNT - sourceCount).fill(0)],
-    polarity: [...sound.polarity, ...Array(HARMONIC_COUNT - sourceCount).fill(1)],
-  });
+  const migrateSound = (sound: InstrumentSound): InstrumentSound => {
+    if (!isFourierSound(sound)) return readInstrumentSound(sound);
+    return {
+      ...structuredClone(sound),
+      harmonics: [...sound.harmonics, ...Array(HARMONIC_COUNT - sourceCount).fill(0)],
+      polarity: [...sound.polarity, ...Array(HARMONIC_COUNT - sourceCount).fill(1)],
+    };
+  };
   stringValue(data.id, 'project ID');
   stringValue(data.name, 'project name');
   if (typeof data.scoreText !== 'string' || data.scoreText.length > 200_000)
@@ -395,7 +404,9 @@ export function importProject(text: string): Project {
     keys.add(p.key);
     numeric(p.version, 1, 1_000_000, 'preset version');
     if (!Number.isInteger(p.version)) throw new Error('Preset version must be an integer.');
-    validateSound(p.sound, sourceCount);
+    if (data.schemaVersion !== 4 && p.sound && typeof p.sound === 'object' && 'engine' in p.sound)
+      throw new Error('Engine sounds require schema 4.');
+    readInstrumentSound(p.sound, sourceCount);
     if (p.folderId !== undefined && (typeof p.folderId !== 'string' || !folderIds.has(p.folderId)))
       throw new Error('Instrument folder reference is missing.');
   });
@@ -410,7 +421,9 @@ export function importProject(text: string): Project {
     trackKeys.add(t.key);
     numeric(t.appliedVersion, 1, 1_000_000, 'applied preset version');
     if (!Number.isInteger(t.appliedVersion)) throw new Error('Applied version must be an integer.');
-    validateSound(t.sound, sourceCount);
+    if (data.schemaVersion !== 4 && t.sound && typeof t.sound === 'object' && 'engine' in t.sound)
+      throw new Error('Engine sounds require schema 4.');
+    readInstrumentSound(t.sound, sourceCount);
     numeric(t.level, 0, 1, 'track level');
   });
   if (!ids.has(data.editorPresetId as string))
@@ -418,8 +431,11 @@ export function importProject(text: string): Project {
   record(data.comparison);
   if (data.comparison.active !== 'A' && data.comparison.active !== 'B')
     throw new Error('Invalid comparison selection.');
-  validateSound(data.comparison.A, sourceCount);
-  validateSound(data.comparison.B, sourceCount);
+  for (const sound of [data.comparison.A, data.comparison.B]) {
+    if (data.schemaVersion !== 4 && sound && typeof sound === 'object' && 'engine' in sound)
+      throw new Error('Engine sounds require schema 4.');
+    readInstrumentSound(sound, sourceCount);
+  }
   const material = data.comparisonMaterial ?? structuredClone(DEFAULT_MATERIAL);
   record(material);
   if (!['note', 'chord', 'phrase'].includes(material.kind as string))
@@ -440,7 +456,7 @@ export function importProject(text: string): Project {
   const project = data as unknown as Project;
   let clean: Project = {
     processing: importProcessing(data.processing),
-    schemaVersion: 3,
+    schemaVersion: 4,
     id: project.id,
     name: project.name,
     scoreText: project.scoreText,
@@ -463,18 +479,27 @@ export function importProject(text: string): Project {
       B: migrateSound(project.comparison.B),
     },
     instruments: project.instruments.map((p) =>
-      upgradeDrumTemplate(
-        upgradeHiHatTemplate(
-          upgradeSoftBassTemplate({
+      !isFourierSound(p.sound)
+        ? {
             id: p.id,
             key: p.key,
             label: p.label,
             version: p.version,
-            sound: migrateSound(p.sound),
+            sound: readInstrumentSound(p.sound),
             ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
-          }),
-        ),
-      ),
+          }
+        : upgradeDrumTemplate(
+            upgradeHiHatTemplate(
+              upgradeSoftBassTemplate({
+                id: p.id,
+                key: p.key,
+                label: p.label,
+                version: p.version,
+                sound: migrateSound(p.sound) as Sound,
+                ...(p.folderId !== undefined ? { folderId: p.folderId } : {}),
+              }),
+            ),
+          ),
     ),
     ...(instrumentFolders !== undefined ? { instrumentFolders } : {}),
     tracks: project.tracks.map((t) => ({
