@@ -5,7 +5,6 @@ import {
   type Processing,
   type ChainInstance,
 } from './pedals';
-import { validateWavePoints } from './waveform';
 import { readInstrumentFolders, withDefaultInstrumentFolders } from './instrumentFolders';
 import { normalizeFileWorkspace, readFileWorkspace, type ScoreFileWorkspace } from './scoreFiles';
 import {
@@ -339,48 +338,8 @@ function stringValue(value: unknown, label: string, max = 100): asserts value is
   if (typeof value !== 'string' || value.length === 0 || value.length > max)
     throw new Error(`Invalid ${label}.`);
 }
-export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts value is Sound {
-  record(value);
-  if (value.percussion !== undefined) {
-    record(value.percussion);
-    numeric(value.percussion.noise, 0, 1, 'noise level');
-    numeric(value.percussion.highpass, 20, 16000, 'noise high-pass Hz');
-    if (value.percussion.lowpass !== undefined)
-      numeric(value.percussion.lowpass, 20, 16000, 'noise low-pass Hz');
-    numeric(value.percussion.decay, 0.01, 2, 'hit decay seconds');
-    if (value.percussion.noiseDecay !== undefined)
-      numeric(value.percussion.noiseDecay, 0.005, 2, 'noise decay seconds');
-    if (value.percussion.pitch !== undefined) {
-      record(value.percussion.pitch);
-      numeric(value.percussion.pitch.amount, 0, 48, 'pitch drop semitones');
-      numeric(value.percussion.pitch.decay, 0.005, 0.5, 'pitch decay seconds');
-    }
-  }
-  if (value.waveformPoints !== undefined) validateWavePoints(value.waveformPoints, count);
-  for (const [name, size] of [
-    ['harmonics', count],
-    ['undertones', 5],
-    ['polarity', count],
-  ] as const) {
-    const array = value[name];
-    if (!Array.isArray(array) || array.length !== size)
-      throw new Error(`${name} must have ${size} values.`);
-    array.forEach((n) =>
-      name === 'polarity'
-        ? n === 1 || n === -1
-          ? undefined
-          : (() => {
-              throw new Error('Polarity must be +1 or −1.');
-            })()
-        : numeric(n, 0, 1, name),
-    );
-  }
-  if (typeof value.undertonesEnabled !== 'boolean')
-    throw new Error('Invalid undertone enable state.');
-  numeric(value.attack, 0.005, 2, 'attack');
-  numeric(value.release, 0.01, 3, 'release');
-  numeric(value.trim, -36, 0, 'output trim');
-}
+export { validateFourierSound as validateSound } from '../modules';
+import { validateFourierSound as validateSound } from '../modules';
 export function importProject(text: string): Project {
   if (text.length > 2_000_000) throw new Error('Project file is too large (maximum 2 MB).');
   const data: unknown = JSON.parse(text);

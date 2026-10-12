@@ -16,3 +16,14 @@ export {
 } from './foundation/processor';
 
 export { readSavedPedal, type SavedPedal, type ModuleReference } from './foundation/savedPedals';
+
+export {
+  fourierShape,
+  validateFourierSound,
+  validateWavePoints,
+  HARMONIC_COUNT,
+  LEGACY_HARMONIC_COUNT,
+  type FourierSound,
+  type FourierPoint,
+  type WavePreset,
+} from './foundation/fourier';

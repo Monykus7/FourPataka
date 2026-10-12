@@ -27,26 +27,8 @@ export function pitch(note: string): { midi: number; frequency: number; name: st
   return { midi, frequency: 440 * 2 ** ((midi - 69) / 12), name: note };
 }
 
-export interface Sound {
-  /** Optional aperiodic hit: linear noise level, high-pass Hz, e-fold decay seconds. */
-  percussion?: {
-    noise: number;
-    highpass: number;
-    lowpass?: number; // Hz; omission retains the original 14000 Hz noise ceiling.
-    decay: number;
-    noiseDecay?: number;
-    pitch?: { amount: number; decay: number };
-  };
-  waveformPoints?: import('./waveform').WavePoint[];
-  harmonics: number[];
-  polarity: number[];
-  undertones: number[];
-  undertonesEnabled: boolean;
-  attack: number;
-  release: number;
-  trim: number;
-}
-export type WavePreset = 'sine' | 'square' | 'saw' | 'triangle';
+export type { FourierSound as Sound, WavePreset } from '../modules';
+import { fourierShape, type FourierSound as Sound, type WavePreset } from '../modules';
 export type HarmonicPolarity = 1 | -1;
 
 export function setHarmonicPolarity(
@@ -62,25 +44,7 @@ export function setHarmonicPolarity(
   // so an editor change cannot mutate another snapshot or library template.
   return { ...sound, polarity: sound.polarity.map((value, i) => (i === index ? polarity : value)) };
 }
-export function mathematicalPreset(kind: WavePreset): Sound {
-  return {
-    harmonics: Array.from({ length: HARMONIC_COUNT }, (_, i) => {
-      const h = i + 1;
-      if (kind === 'sine') return i === 0 ? 1 : 0;
-      if (kind === 'saw') return 1 / h;
-      if (h % 2 === 0) return 0;
-      return kind === 'square' ? 1 / h : 1 / h ** 2;
-    }),
-    polarity: Array.from({ length: HARMONIC_COUNT }, (_, i) =>
-      kind === 'triangle' && i % 4 === 2 ? -1 : 1,
-    ),
-    undertones: [0, 0, 0, 0, 0],
-    undertonesEnabled: false,
-    attack: 0.015,
-    release: 0.25,
-    trim: -12,
-  };
-}
+export const mathematicalPreset = fourierShape;
 
 export interface Component {
   kind: 'harmonic' | 'undertone';

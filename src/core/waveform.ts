@@ -39,27 +39,8 @@ export interface WavePoint {
   y: number;
 }
 
-export function validateWavePoints(
-  points: unknown,
-  maxAmplitude = HARMONIC_COUNT,
-): asserts points is WavePoint[] {
-  if (!Array.isArray(points) || points.length < 3 || points.length > 32)
-    throw new Error('Waveform requires 3–32 points.');
-  points.forEach((point, i) => {
-    if (
-      !point ||
-      !Number.isFinite(point.x) ||
-      !Number.isFinite(point.y) ||
-      point.x < 0 ||
-      point.x > 1 ||
-      Math.abs(point.y) > maxAmplitude ||
-      (i > 0 && point.x - points[i - 1].x < 0.005 - 1e-10)
-    )
-      throw new Error('Invalid waveform point position or amplitude.');
-  });
-  if (points[0].x !== 0 || points[0].y !== 0 || points.at(-1)!.x !== 1 || points.at(-1)!.y !== 0)
-    throw new Error('Waveform endpoints must be fixed at zero.');
-}
+export { validateWavePoints } from '../modules';
+import { validateWavePoints } from '../modules';
 
 // Shape-preserving cubic Hermite interpolation: flat tangents at turns and
 // weighted harmonic-mean tangents elsewhere avoid overshoot between anchors.
