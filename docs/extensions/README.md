@@ -2,7 +2,7 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Status on 2026-10-05: plans/guides added; M1–M6 are all not started. The synthesis/notation pilot implements a narrow chord-shape API-v1 registry and bundled example ahead of general M1. General category registries, SDK, missing-module preservation and contributor CI remain future deliverables. Source contributions can use the existing integration recipes today; the proposed directories/interfaces are not available imports.
+Status in v0.32.0: M1 implements the numeric metadata API/validated registry, an EQ adapter, a public contributor example and legacy compatibility fixtures. See the [implemented foundation](MODULE_FOUNDATION.md) for real imports and limitations. The earlier chord-shape API remains separate. M2–M6, complete category runtime contracts, SDK, missing-module preservation and contributor CI remain planned.
 
 ## Start here
 
@@ -19,8 +19,8 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source cont
 
 ## Separately releasable milestones
 
-1. **M1 — Contracts and compatibility foundation.** Typed definitions, validated assembly/registry, public import boundary, one built-in metadata slice and legacy fixtures. Next major implementation milestone.
-2. **M2 — Pedal modules.** All four built-ins use contributor contracts; one independent utility example works through a folder and registration, with tutorial and live/WAV/native proofs.
+1. **M1 — Contracts and compatibility foundation.** Typed definitions, validated assembly/registry, public import boundary, one built-in metadata slice and legacy fixtures. Implemented as the API-1 numeric metadata foundation in v0.32.0; complete pedal DSP registration follows in M2.
+2. **M2 — Pedal modules (next).** All four built-ins use contributor contracts; one independent utility example works through a folder and registration, with tutorial and live/WAV/native proofs.
 3. **M3 — Fourier preset modules.** Registry-backed timbres with an independent example, documented units/schema and preserved applied copies. New synthesis engines are separate.
 4. **M4 — Synthesis engines.** Host-scheduled voice lifecycle/capabilities, Fourier adaptation and a minimal independent engine with migration and live/offline proofs.
 5. **M5 — Feature modules.** Optional views/experiments/command metadata through narrow host services, one migrated view and a tested feature example.

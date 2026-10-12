@@ -1,5 +1,7 @@
 # Creating a FourPataka module
 
+For the implemented general numeric metadata boundary, use the [M1 foundation tutorial](MODULE_FOUNDATION.md). The full pedal/engine/feature APIs in this guide remain planned.
+
 This guide distinguishes working source contracts from planned registries. It is not an installer, marketplace or a released general SDK. The repository has no approved open-source license yet; owner-approved licensing/attribution remains a publication gate. You can prepare reviewed source contributions and run the existing examples without claiming that those future gates are complete.
 
 ## Choose an implemented seam first

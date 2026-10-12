@@ -1,6 +1,6 @@
 # Module identity, project compatibility and lifecycle
 
-Status: required contracts for M1 and subsequent module milestones, planned and not implemented. Current imports accept project schemas 1 and 2; schema 1 preserves all original 16 coefficients/signs and appends silent upper partials independently. Imports validate the known pedal kinds and fixed Fourier `Sound`, and reject unsupported schemas/kinds. The preservation workflow below is a new milestone requirement, not current behavior.
+Status: M1 numeric metadata validation and legacy/owned-copy fixtures are implemented in v0.32.0; see the [foundation compatibility matrix](MODULE_FOUNDATION.md#compatibility-matrix). Persisted module envelopes, migrations and unavailable-module preservation described below remain future gates. Current imports accept project schemas 1 and 2; schema 1 preserves all original 16 coefficients/signs and appends silent upper partials independently. Imports validate the known pedal kinds and fixed Fourier `Sound`, and reject unsupported schemas/kinds. The preservation workflow below is a new milestone requirement, not current behavior.
 
 ## Keep identities and versions separate
 

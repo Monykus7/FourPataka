@@ -664,7 +664,7 @@ Use focused verification for meaningful risks:
 - Offline/live model agreement, release/tail duration, and export level handling.
 - Keyboard operation, readable layout, and the chosen palette's contrast.
 
-Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M1, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
+Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M2, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
 
 Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
 
@@ -672,13 +672,13 @@ Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongs
 
 ## 14. Modularity and open-source contributions
 
-Requested major program on 2026-10-05, explicitly split into multiple milestones. All M1–M6 are planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
+Requested major program on 2026-10-05, explicitly split into multiple milestones. M1 ships the numeric metadata/registry foundation in v0.32.0; M2–M6 remain planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
 
 Detailed contributor guides: [index](docs/extensions/README.md), [architecture](docs/extensions/ARCHITECTURE.md), [pedals](docs/extensions/PEDALS.md), [instruments](docs/extensions/INSTRUMENTS.md), [feature modules](docs/extensions/FEATURE_MODULES.md), [compatibility](docs/extensions/COMPATIBILITY.md) and [contribution workflow](CONTRIBUTING.md).
 
 ### M1 — contracts, registry foundation and compatibility baseline
 
-Dependency: current verified audio/project foundation. This is the next major implementation milestone.
+Dependency: current verified audio/project foundation. Implemented in v0.32.0 as the numeric metadata foundation: explicit validated assembly, public imports, EQ defaults/control adapter, contributor example, fixed legacy fixture and compatibility matrix. See [the API guide](docs/extensions/MODULE_FOUNDATION.md). Complete DSP/persistence APIs follow in M2; owner license selection remains an open M6 publication gate.
 
 Deliver typed module definitions, explicit assembly/registry validation, stable namespaced IDs, API/data-version rules, parameter descriptors/units, pure data validation/defaults and public-versus-private import boundaries. Separate data/audio contracts from React and native adapters. Preserve the current schema; capture schema-v1/copy/latency/tail/WAV fixtures and define future unavailable-module preservation before new persisted types ship. Route one existing built-in pedal's metadata through the foundation as a narrow vertical slice; do not claim a complete pedal API yet.
 

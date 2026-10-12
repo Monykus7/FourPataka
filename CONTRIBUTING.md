@@ -1,5 +1,7 @@
 # Contributing to FourPataka
 
+The implemented [M1 numeric module tutorial](docs/extensions/MODULE_FOUNDATION.md) provides a public import, tested example and compatibility matrix. Complete pedal modules are the next milestone.
+
 FourPataka is preparing for community contributions through a [six-milestone modularity program](BUILD_PLAN.md#14-modularity-and-open-source-contributions). The application works today; the general category registries and public SDK described in [extension architecture](docs/extensions/ARCHITECTURE.md) remain planned. Chord API1 and the tested score-view source services are implemented; their guides identify the supported boundaries. Until those milestones ship, contributions are reviewed source changes using the existing integration points.
 
 ## Start from a working checkout

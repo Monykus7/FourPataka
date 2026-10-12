@@ -1,6 +1,7 @@
 # Adding a pedal
 
-Status: the current source integration below works through existing application code; the public module contract is planned for milestones M1/M2. There is no runtime pedal installer or public registration API yet. Read [architecture](ARCHITECTURE.md), [compatibility](COMPATIBILITY.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md) first.
+M1 in v0.32.0 supplies a [public numeric metadata API](MODULE_FOUNDATION.md) and routes EQ names/defaults/controls through it. Audio factories, new equipment registration and saved module types still require M2.
+Status: the current source integration below works through existing application code; the public numeric metadata foundation is implemented in M1. The complete pedal DSP/registration contract remains planned for M2; there is no runtime pedal installer. Read [architecture](ARCHITECTURE.md), [compatibility](COMPATIBILITY.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md) first.
 
 ## Current source integration
 
