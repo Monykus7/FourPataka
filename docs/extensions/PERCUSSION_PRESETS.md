@@ -12,6 +12,24 @@ Select a preset and choose **Preview hit** to set its suggested pitch/gate, disa
 - **Closed hi-hat v2:** C4 preview, 31.25 ms gate, 5 ms attack, 35 ms release, −12 dB trim. Filtered white noise (level 0.85, high-pass 6500 Hz, low-pass 14000 Hz) supplies the sizzle; six H13/H17/H19/H23/H29/H31 partials at 8% of the old magnitudes supply a quiet metallic edge. A45 ms e-fold decay shortens the hit even with a long written note.
 - **Snare v3 (v0.31.0):** G3 preview, 250 ms gate, 5 ms attack, 180 ms release, −9 dB trim. The supporting Fourier body has coefficients [0.18, 0.1, 0.07, 0.025] and 22 ms decay, with no pitch drop. Noise level 1 through 700 Hz high-pass / 7800 Hz low-pass decays independently over 85 ms. This emphasizes the crack/rattle instead of a bass-like pitched body. Try D3–G3; noise color stays independent of the written pitch.
 
+## Match Snare Listen in Compose
+
+Use **Use hit preview** (or **Preview hit**) to establish Snare's suggested G3 pitch and 0.5 quarter-beat gate at the fixed120 BPM audition tempo. Ordinary **Listen** retains the current Comparison/Audition material; merely selecting Snare does not change it. Default note material is C4 with3.2 beats (1.6 seconds), so Listen is not always the suggested hit preview.
+
+For a fresh, unarticulated 250 ms score hit:
+
+```text
+tempo 120
+master through clean
+track snareTest using snare through clean {
+  G3 eighth
+}
+```
+
+Set the Compose track level to100% to match audition's unity track gain (new score tracks default75%). Use empty Clean chains or match the audition chain; Compose additionally includes its master chain. Both paths share project mix and monitor controls. At another tempo, match the same duration in seconds rather than assuming an eighth is always250 ms. Avoid staccato if matching the full gate; it shortens note-off.
+
+Compose plays an independently owned sound copy. An existing track using snare does not automatically refresh after a factory/library/editor change. Save an edited Snare template and explicitly Apply the current sound to the intended track, or use a fresh track key for comparison. Disable partial solo for a full Listen comparison. The IDE chooses note/time/library key/chain; it does not currently set track level or the drum's noise/body/envelope parameters. Those belong to the saved instrument/track controls. No separate Compose snare synthesis algorithm is used.
+
 The original v1 Kick and Snare were sustained periodic approximations. Current Kick v2 and Snare v3 factories decay during held notes. Note-off/release and articulation still bound the voice, so extremely short or staccato notes can choke a drum; use the 250 ms hit preview to hear its full shape. Hi-hat v2 is unchanged. All these timbres are editable synthesized drums; inharmonic membrane/cymbal models and broader engine contracts remain planned.
 
 ```text
