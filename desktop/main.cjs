@@ -115,10 +115,10 @@ app.whenReady().then(() => {
       throw new Error('Invalid project or project exceeds 2 MB.');
     const project = JSON.parse(text);
     // The renderer validates musical data; this origin-checked file bridge
-    // accepts both the legacy bank and the current 32-partial document envelope.
+    // accepts legacy banks and the current module-aware document envelope.
     if (
       !project ||
-      ![1, 2].includes(project.schemaVersion) ||
+      ![1, 2, 3].includes(project.schemaVersion) ||
       typeof project.scoreText !== 'string'
     )
       throw new Error('Invalid FourPataka project.');

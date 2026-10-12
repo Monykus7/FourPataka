@@ -32,5 +32,4 @@ export async function levelModuleWorkflow(page: Page) {
   await expect(output).toHaveValue('0');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await expect(output).toHaveValue('-6');
-  await page.screenshot({ path: '.test-results/level-module-desktop.png', fullPage: true });
 }

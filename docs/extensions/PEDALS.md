@@ -1,22 +1,14 @@
 # Adding a pedal
 
-M1 in v0.32.0 supplies a [public numeric metadata API](MODULE_FOUNDATION.md) and routes EQ names/defaults/controls through it. Audio factories, new equipment registration and saved module types still require M2.
-Status: the current source integration below works through existing application code; the public numeric metadata foundation is implemented in M1. The complete pedal DSP/registration contract remains planned for M2; there is no runtime pedal installer. Read [architecture](ARCHITECTURE.md), [compatibility](COMPATIBILITY.md) and [CONTRIBUTING.md](../../CONTRIBUTING.md) first.
+Implemented v0.33.0: follow the [playable pedal tutorial](PEDAL_MODULES.md) and [public contract](../../src/modules/foundation/pedals.ts). All four original pedals and Level use one registry/factory boundary. Add a module folder and explicit assembly entry; equipment, controls, settings validation, audio and WAV estimates consume it. Existing source keys, ownership, phase/clock, routing and measured processor behavior remain host policies. There is no runtime package installer.
 
-## Current source integration
+## Historical integration
 
-1. Define the kind, defaults, label and numeric controls in [pedals.ts](../../src/core/pedals.ts). Update construction, validation, import and any topology/musical-settings comparisons affected by the new parameters. Defaults must pass the same validation as imported values.
-2. Implement the processor in [effects.ts](../../src/audio/effects.ts). Cover both factory construction and parameter/bypass updates. Update `chainLatency` for any true processing latency; all graph latency/tail values are seconds, even when a control displays milliseconds.
-3. Add equipment discovery and recognized drag kinds in [PedalBoardSurface.tsx](../../src/components/PedalBoardSurface.tsx). Existing serial cable routing and the eight-pedal board limit remain host behavior. A physical position does not determine audio order.
-4. Check the generic compact dials and exact/sliding inspector in [PedalControls.tsx](../../src/components/PedalControls.tsx) and [Pedalboard.tsx](../../src/components/Pedalboard.tsx). Add custom labels/reset behavior only where needed, with keyboard alternatives and theme tokens.
-5. Extend conservative export-tail estimation in [export.ts](../../src/audio/export.ts) where applicable. Live and WAV graphs must use the same factory through [scoreGraph.ts](../../src/audio/scoreGraph.ts), not a separate export approximation of the sound.
-6. Add schema/copy, numeric/audio, equipment/keyboard and packaged-workflow proofs. Update the plan, status, module documentation and knowledge summaries together.
+Before M2, a new pedal needed host kind/default/control, DSP, drag-menu, import and export switches. Those steps are no longer the contributor recipe. Existing source integration points are documented in [architecture](ARCHITECTURE.md); use the actual public imports in the tutorial.
 
-This list explains why registry work is required: adding a kind currently touches several host files. It is not the intended long-term contributor API.
+## M2 contribution requirements
 
-## Planned M2 contribution recipe
-
-Once M1 contracts are available, create one pedal directory containing its immutable definition, DSP factory, optional inspector, example settings and tests. Import only the public module contract, register it once in the explicit assembly, and let the host derive equipment, validation, generic controls and documentation from the definition. The exact filenames/import path and commands must be published with M2 rather than guessed here.
+Create a module folder with its definition/factory and tests, importing the public barrel. Register it in src/modules/assembly.ts. The [Level example](../../src/modules/examples/level/index.ts) is playable from Equipment; exact commands and lifecycle rules are in the tutorial. Custom inspector components remain future UI work; this release supplies descriptor-driven generic controls.
 
 Supply the following:
 
@@ -39,6 +31,6 @@ Do not access another track's mutable state or replace the host clock. Settings 
 - Cable order, disconnected-output behavior, compact dials, exact values, keyboard placement and real mouse drag onto the first slot.
 - Shared playback/WAV behavior, frozen exports, sample-rate agreement, tail-cap warning/end fade, clipping review and resource preflight.
 
-The first independent example should be a small utility processor with easy numeric expectations. It must work through one module registration without new kind branches in host DSP, menus, validation or export. Keep example-only equipment out of the default build unless it is intentionally promoted.
+The independent Level example ships deliberately in Equipment with analytic gain/mix proofs. It needs no kind branches in host DSP, menus, validation or export.
 
 Phaser, chorus and algorithmic reverb are future users of these contracts, not implementations delivered by this guide. Their modulation/stability/bypass and finite-tail requirements remain in [BUILD_PLAN.md section 7](../../BUILD_PLAN.md#7-pedalboard-and-audio-routing).

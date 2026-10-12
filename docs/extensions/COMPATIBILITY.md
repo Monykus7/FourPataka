@@ -1,6 +1,6 @@
 # Module identity, project compatibility and lifecycle
 
-Status: M1 numeric metadata validation and legacy/owned-copy fixtures are implemented in v0.32.0; see the [foundation compatibility matrix](MODULE_FOUNDATION.md#compatibility-matrix). Persisted module envelopes, migrations and unavailable-module preservation described below remain future gates. Current imports accept project schemas 1 and 2; schema 1 preserves all original 16 coefficients/signs and appends silent upper partials independently. Imports validate the known pedal kinds and fixed Fourier `Sound`, and reject unsupported schemas/kinds. The preservation workflow below is a new milestone requirement, not current behavior.
+Status: M1 metadata and M2 playable pedal compatibility are implemented. Current imports accept project schemas 1, 2 and 3 and save schema 3. Schema 1 preserves its original 16 signed harmonics and pads silent upper partials. Registered contributed pedals use namespaced kinds and API/data references; missing/incompatible payloads are retained in bounded unavailable placeholders, visible in the inspector and blocked on affected routed playback/WAV paths. Existing built-in kinds keep their legacy representation. See the [current wire format and recovery contract](PEDAL_MODULES.md#saved-data-and-compatibility). Other module categories and automatic settings-version migrations remain future work.
 
 ## Keep identities and versions separate
 
@@ -25,7 +25,7 @@ Older application versions may reject a new schema; do not claim backwards reada
 
 ## Missing or incompatible modules
 
-The planned behavior is to preserve bounded, structurally valid unknown module envelopes unchanged in memory and saved JSON, display an unavailable-module placeholder with ID/version/reason, and allow inspection/recovery/export of the original data. Missing code is different from malformed data: invalid or oversized documents still fail validation safely.
+Implemented for pedals: preserve bounded, structurally valid unknown raw instances in unavailable.original through memory and saved JSON, display an unavailable-module placeholder with ID/version/reason, and allow inspection/recovery/export of the original data. Missing code is different from malformed data: invalid or oversized documents still fail validation safely.
 
 Do not silently remove a pedal, substitute a sine, treat an unknown engine as a Fourier preset or change routing. Playback/comparison/WAV for an affected destination is explicitly blocked until the required module is available or the user makes an explicit undoable removal/replacement. Host Stop and raw project recovery remain available. An unused unavailable library item can be preserved without blocking an unrelated supported destination; track these requirements per destination rather than disable everything indiscriminately.
 

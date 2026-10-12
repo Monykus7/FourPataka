@@ -664,7 +664,7 @@ Use focused verification for meaningful risks:
 - Offline/live model agreement, release/tail duration, and export level handling.
 - Keyboard operation, readable layout, and the chosen palette's contrast.
 
-Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M2, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
+Stage 0 audio proof is the historical foundation of the application. The current next foundation milestone is modularity M3, with the remaining release/music-feature gates retained above and the separate modularity milestones below.
 
 Personal version-control workflow: aim for eight focused commits per milestone, push each completed checkpoint using the configured author identity, and launch the verified portable application after every completed x.x.0 release.
 
@@ -672,7 +672,7 @@ Maintain the local [project knowledge map](docs/knowledge/PROJECT_MAP.md) alongs
 
 ## 14. Modularity and open-source contributions
 
-Requested major program on 2026-10-05, explicitly split into multiple milestones. M1 ships the numeric metadata/registry foundation in v0.32.0; M2–M6 remain planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
+Requested major program on 2026-10-05, explicitly split into multiple milestones. M1 ships the numeric metadata/registry foundation in v0.32.0; M2 playable pedal modules ship in v0.33.0. M3–M6 remain planned and not started. These are separate architecture/contributor milestones, not a renumbering or completion of historical music stages 0–8. The planning baseline was v0.19.3; subsequent notation/rhythm releases are recorded below. This planning work itself does not implement a registry, SDK, new project schema, loader or publishing change.
 
 Detailed contributor guides: [index](docs/extensions/README.md), [architecture](docs/extensions/ARCHITECTURE.md), [pedals](docs/extensions/PEDALS.md), [instruments](docs/extensions/INSTRUMENTS.md), [feature modules](docs/extensions/FEATURE_MODULES.md), [compatibility](docs/extensions/COMPATIBILITY.md) and [contribution workflow](CONTRIBUTING.md).
 
@@ -686,7 +686,7 @@ Gate: deterministic duplicate/incompatible-definition failures; valid defaults/d
 
 ### M2 — complete pedal modules and contributor example
 
-Dependency: M1. Separately release the pedal contribution API.
+Dependency: M1. Implemented v0.33.0: four built-in factories and the independent Level utility use one public contract/assembly, generic equipment/controls and latency/tail/resource preflight. Schema 3 migrates legacy projects and preserves missing/incompatible raw module payloads visibly, blocking affected paths until recovery/removal. The [tutorial](docs/extensions/PEDAL_MODULES.md) has real imports, examples and diagrams. Native/portable verification is recorded in IMPLEMENTATION_STATUS.md; licensing/CI/publication and later modulation/reverb remain open.
 
 Move compressor, overdrive, EQ and delay definitions/factories behind the same contract. Derive equipment, drag acceptance, controls/labels/reset, validation, true latency and export tail/resource estimates from definitions rather than host kind switches. Retain cable routing, copy/application scope, score freezing and existing measured processor behavior. Implement any envelope/schema migration and unavailable-pedal preservation needed before saving new contributed kinds.
 

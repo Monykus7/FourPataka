@@ -1,6 +1,6 @@
 # Modular FourPataka architecture
 
-Status: M1 implements the [numeric metadata foundation](MODULE_FOUNDATION.md), validated assembly and an existing EQ adapter in v0.32.0. M2–M6 and the complete runtime category APIs described below remain planned. The synthesis/notation pilot implements a narrow [chord-shape contract](CHORD_SHAPES.md) ahead of this general program. These are design requirements, not an available plugin SDK. The milestone sequence and acceptance gates are in [BUILD_PLAN.md](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
+Status: M1 implements the [numeric metadata foundation](MODULE_FOUNDATION.md), validated assembly and an existing EQ adapter in v0.32.0. M2 in v0.33.0 supplies the [playable pedal API](PEDAL_MODULES.md), including all built-ins, Level and saved-data recovery. M3–M6 and other runtime category APIs described below remain planned. The synthesis/notation pilot implements a narrow [chord-shape contract](CHORD_SHAPES.md) ahead of this general program. These are design requirements, not an available plugin SDK. The milestone sequence and acceptance gates are in [BUILD_PLAN.md](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
 
 ## Intended contributor experience
 

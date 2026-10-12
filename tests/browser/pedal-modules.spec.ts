@@ -6,6 +6,7 @@ test('independent level module drags patches adjusts resets and keeps owned copi
 }) => {
   await page.goto('/');
   await levelModuleWorkflow(page);
+  await page.screenshot({ path: '.test-results/level-module-desktop.png', fullPage: true });
   await expect
     .poll(() =>
       page.evaluate(

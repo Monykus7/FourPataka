@@ -1,6 +1,6 @@
 # Numeric module foundation — API 1
 
-Implemented in v0.32.0 as M1's deliberately narrow foundation. The public entry point is [src/modules/index.ts](../../src/modules/index.ts). It supports immutable numeric metadata, validated explicit registration and fresh settings. The existing EQ consumes this boundary for its name, defaults and control ranges. Audio factories, equipment discovery and persisted pedal kinds still use their current host interfaces. M2 adds the complete pedal contract; this release does not make an arbitrary registered definition playable.
+Implemented in v0.32.0 as M1's deliberately narrow foundation. Its compatibility matrix below records that release. v0.33.0 extends it with the [M2 playable pedal API and schema-3 recovery](PEDAL_MODULES.md); use that tutorial for current DSP/assembly/persistence work. The public entry point is [src/modules/index.ts](../../src/modules/index.ts). It supports immutable numeric metadata, validated explicit registration and fresh settings. The existing EQ consumes this boundary for its name, defaults and control ranges. Audio factories, equipment discovery and persisted pedal kinds still use their current host interfaces. M2 adds the complete pedal contract; this release does not make an arbitrary registered definition playable.
 
 ## Dependency boundary
 
