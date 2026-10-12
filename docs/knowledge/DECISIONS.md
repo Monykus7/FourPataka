@@ -465,3 +465,11 @@ Split M4 to land a usable voice API before changing saved instruments. Reviewed 
 Move Fourier math, deterministic shared-noise cache, integrated hit pitch and existing voice into the host-independent foundation. Legacy audition/track/A-B/WAV callers dispatch through the registered adapter, preserving phase/envelope/noise/trim and diagnostic ports. Basic Tone uses its own settings/native oscillator with phase-continuous detune/trim and owned retirement; no Fourier array conversion or parser special case. Both engines have zero intentional latency; generalized engine compensation is not shipped.
 
 Schema 3 remains Fourier-only. Registered Basic Tone is a public code/test example, not a selectable library instrument or saved score key. M4b must land engine-backed data migration, lossless missing/incompatible recovery and capability-driven controls before exposing saved non-Fourier sounds, then prove full comparison/source-track/reload/WAV/resource gates. M4 is partial; M5/M6, runtime installation, licensing and manual listening/device gates remain open.
+
+## WAV-to-instrument analysis plan
+
+<!-- features: wav-instrument-analysis, sound, instrument-presets -->
+
+Plan local recording analysis/resynthesis in two milestones: W1 reviews one isolated note/hit and maps only supported parameters into an owned Fourier instrument; W2 evolving spectral/transient engines follows M4b saved-data/recovery/capability integration. Pitch, onset/envelope regions and note-off need manual overrides/confidence. Keep attack/release and natural decay distinct, coefficients/phase fit separate from trim, and show residual noise/inharmonic/time-varying limitations rather than claim exact reconstruction from32 signed sines.
+
+Original crop remains a review reference; explicit library creation preserves independent track/A-B/source ownership and undo. Initial playback saves derived settings without a WAV/path dependency. Bound local decoding/analysis, cancellation and stale results before implementation. No runtime behavior, schema/version or next-step sequencing changes in this planning task.

@@ -655,6 +655,13 @@
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md"
       ]
+    },
+    {
+      "id": "wav-instrument-analysis",
+      "parent": "sound",
+      "title": "WAV-to-instrument analysis (planned)",
+      "summary": "Planned, not implemented: local WAV analysis/resynthesis into editable instruments. W1 selects one note/hit, detects onset/body/decay with manual crop/channel/pitch/note-off overrides, estimates reference fundamental and representative H1-H32 plus supported envelope/optional hit-noise parameters, and exposes confidence/residual/phase/scaling limitations. Review original versus reconstruction with matched reference material before explicit undoable library creation; preserve track/A-B/source ownership, independent settings, parser discovery and save/reload/WAV without original-file dependency. Bound decoding/analysis resources and use cancellation/stale guards off audio/UI scheduling paths. Static signed sines cannot reproduce arbitrary phases, inharmonic noise or changing spectra exactly. W2 evolving spectral/transient engines depends on M4b migration/unavailable recovery/capability UI; polyphonic separation and multi-sample capture are separate. No version/schema/audio behavior changes from planning; M4b remains next.",
+      "paths": ["BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md", "docs/knowledge/DECISIONS.md"]
     }
   ]
 }

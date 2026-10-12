@@ -6,6 +6,7 @@ FourPataka v0.35.0: browser/Electron studio with 32 signed harmonics, noise-hit 
 
 - Instrument factories/migrations: [instrumentPresets.ts](../../src/core/instrumentPresets.ts), [project.ts](../../src/core/project.ts); [percussion contract](../extensions/PERCUSSION_PRESETS.md).
 - Waveform editing/signs: [FourierWorkspace.tsx](../../src/components/FourierWorkspace.tsx), [music.ts](../../src/core/music.ts), [waveform.ts](../../src/core/waveform.ts).
+- WAV-to-instrument analysis (planned): [BUILD_PLAN section24](../../BUILD_PLAN.md#24-wav-to-instrument-analysis--planned); feature `wav-instrument-analysis`. W1 static reconstruction, W2 evolving engines; M4b stays next.
 - Engines/lifecycle: [engine contract](../../src/modules/foundation/engines.ts), [Fourier implementation](../../src/modules/foundation/fourierVoice.ts), [Basic Tone example](../../src/modules/examples/basicTone/index.ts); [engine tutorial](../extensions/ENGINE_FOUNDATION.md).
 - Hit audio/phase: [voice.ts](../../src/audio/voice.ts), [percussionSource.ts](../../src/audio/percussionSource.ts), [pitchEnvelope.ts](../../src/audio/pitchEnvelope.ts).
 - Score grammar/rhythm: [parser.ts](../../src/core/parser.ts), [scoreLexer.ts](../../src/core/scoreLexer.ts); [chord shapes](../extensions/CHORD_SHAPES.md).
