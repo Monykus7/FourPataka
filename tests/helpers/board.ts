@@ -4,6 +4,7 @@ const equipmentNames = {
   overdrive: 'Overdrive',
   eq: 'Three-band EQ',
   delay: 'Delay',
+  level: 'Level',
 };
 
 export async function beginEquipmentDrag(page: Page, kind: keyof typeof equipmentNames) {
@@ -55,7 +56,9 @@ export async function patchBoard(page: Page, order?: number[]) {
     .locator('.compact-pedal')
     .evaluateAll((els) =>
       els.map((el) =>
-        ['compressor', 'overdrive', 'eq', 'delay'].find((kind) => el.classList.contains(kind))!,
+        ['compressor', 'overdrive', 'eq', 'delay', 'example:pedal/level'].find((kind) =>
+          el.classList.contains(kind),
+        )!,
       ),
     );
   const path = order ?? kinds.map((_, i) => i);

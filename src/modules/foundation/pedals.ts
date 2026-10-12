@@ -43,8 +43,12 @@ export function definePedalModule(input: PedalModule): PedalModule {
   const metadata = defineNumericModule(input);
   if (
     metadata.category !== 'pedal' ||
-    !input.author?.trim() ||
-    !input.attribution?.trim() ||
+    typeof input.author !== 'string' ||
+    !input.author.trim() ||
+    input.author.length > 200 ||
+    typeof input.attribution !== 'string' ||
+    !input.attribution.trim() ||
+    input.attribution.length > 2000 ||
     !['dry', 'drain'].includes(input.bypass) ||
     !Number.isSafeInteger(input.nodes) ||
     input.nodes < 1 ||

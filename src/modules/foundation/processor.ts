@@ -35,19 +35,25 @@ export function createMixedProcessor(
     disposed = false,
     settings = { ...initial },
     bypass = bypassed;
-  const behavior = setup({
-    input,
-    output,
-    dry,
-    wet,
-    makeup,
-    own: (...owned) => nodes.push(...owned),
-    set: (parameter, value) => {
-      // Set initial values directly; subsequent edits smooth on the audio clock.
-      if (!initialized) parameter.value = value;
-      else parameter.setTargetAtTime(value, context.currentTime, 0.015);
-    },
-  });
+  let behavior: ProcessorBehavior;
+  try {
+    behavior = setup({
+      input,
+      output,
+      dry,
+      wet,
+      makeup,
+      own: (...owned) => nodes.push(...owned),
+      set: (parameter, value) => {
+        // Set initial values directly; subsequent edits smooth on the audio clock.
+        if (!initialized) parameter.value = value;
+        else parameter.setTargetAtTime(value, context.currentTime, 0.015);
+      },
+    });
+  } catch (error) {
+    nodes.forEach((node) => node.disconnect());
+    throw error;
+  }
   const set = (parameter: AudioParam, value: number) => {
     if (!initialized) parameter.value = value;
     else parameter.setTargetAtTime(value, context.currentTime, 0.015);
@@ -63,7 +69,12 @@ export function createMixedProcessor(
     set(wet.gain, mix);
     initialized = true;
   };
-  update(initial, bypassed);
+  try {
+    update(initial, bypassed);
+  } catch (error) {
+    nodes.forEach((node) => node.disconnect());
+    throw error;
+  }
   return {
     input,
     output,

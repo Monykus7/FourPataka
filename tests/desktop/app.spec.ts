@@ -1,3 +1,4 @@
+import { levelModuleWorkflow } from '../helpers/pedalModules';
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { sectionsWorkflow } from '../helpers/sections';
 import { fileTabsWorkflow } from '../helpers/fileTabs';
@@ -303,7 +304,7 @@ test('native recovery menu exports exact damaged bytes and restores a checkpoint
     prior.comparison.A.harmonics[0] = 0.37;
     prior.processing.master.bypassed = true;
     const raw = JSON.stringify(prior, null, 2);
-    const damaged = '{broken Î©\n';
+    const damaged = '{broken ÃŽÂ©\n';
     localStorage.setItem('fourpataka.project.recovery.v1', raw);
     localStorage.setItem('fourpataka.project.unreadable.v1', damaged);
     return { raw, damaged };
@@ -374,10 +375,10 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   await expect(sign).toHaveText('+');
   await expect(page.getByRole('combobox', { name: 'H3 polarity', exact: true })).toHaveValue('1');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(sign).toHaveText('âˆ’');
+  await expect(sign).toHaveText('Ã¢Ë†â€™');
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17â€“H32/ }).click();
+  await page.getByRole('button', { name: /^Show H17Ã¢â‚¬â€œH32/ }).click();
   await page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }).fill('.42');
   await page.getByRole('button', { name: 'H32 inverted polarity', exact: true }).click();
   const savePath = resolve('.test-results', 'desktop', 'harmonic-sign.fourpataka.json');
@@ -397,7 +398,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   expect(saved.instruments.find((p: any) => p.key === 'triangle').sound.polarity[2]).toBe(-1);
   await page.reload();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17â€“H32/ }).click();
+  await page.getByRole('button', { name: /^Show H17Ã¢â‚¬â€œH32/ }).click();
   await expect(
     page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }),
   ).toHaveValue('0.42');
@@ -991,4 +992,58 @@ test('packaged snare previews the whole hit and retains its noise band through n
   expect(saved.tracks[0].sound.percussion.lowpass).toBe(6000);
   expect(saved.tracks[0].sound.percussion.pitch).toBeUndefined();
   expect(saved.comparisonMaterial.note).toBe('G3');
+});
+
+test('packaged contributed level pedal retains native saving reopening and owned copies', async () => {
+  const page = await app.firstWindow();
+  await levelModuleWorkflow(page);
+  const path = resolve('.test-results', 'desktop', 'module-level.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, path);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved module-level');
+  const saved = JSON.parse(await readFile(path, 'utf8'));
+  expect(saved.schemaVersion).toBe(3);
+  expect(saved.processing.master.pedals[0].module).toEqual({
+    id: 'example:pedal/level',
+    apiVersion: 1,
+    dataVersion: 1,
+  });
+  expect(saved.processing.master.pedals[0].params.output).toBe(-6);
+  expect(saved.processing.audition.A.pedals[0].params.output).toBe(-12);
+  expect(saved.processing.audition.B.pedals[0].params.output).toBe(-6);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, path);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('master');
+  await expect(
+    page.getByRole('spinbutton', { name: 'example:pedal/level 1 output exact value', exact: true }),
+  ).toHaveValue('-6');
+  // A later unavailable data version is preserved by the packaged importer.
+  const raw = {
+    id: 'future-owned',
+    kind: 'future:pedal/color',
+    bypassed: false,
+    module: { id: 'future:pedal/color', apiVersion: 2, dataVersion: 4 },
+    params: { curve: [0, 1], mode: 'warm' },
+  };
+  saved.processing.master.pedals = [raw];
+  delete saved.processing.master.board;
+  await writeFile(path, JSON.stringify(saved));
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Selected pedal controls' })).toContainText(
+    'Settings are retained for recovery',
+  );
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect
+    .poll(
+      async () =>
+        JSON.parse(await readFile(path, 'utf8')).processing.master.pedals[0].unavailable?.original
+          .params,
+    )
+    .toEqual(raw.params);
 });
