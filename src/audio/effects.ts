@@ -1,4 +1,3 @@
-import { pedalModules } from '../modules/assembly';
 import { checkedSeconds } from '../modules';
 import {
   chainTopology,
@@ -41,14 +40,25 @@ export function createEffect(
 ): EffectGraph {
   const definition = requirePedalModule(original);
   const environment = { sampleRate: context.sampleRate, oversamplingLatency, compressorLatency };
-  if (context.sampleRate < definition.minimumSampleRate)
+  if (
+    context.sampleRate < definition.minimumSampleRate ||
+    context.sampleRate > definition.maximumSampleRate
+  )
     throw new Error(`Unsupported sample rate for ${definition.id}.`);
+  const expectedLatency = checkedSeconds(definition.latency(environment), definition.id);
   const runtime = definition.create(
     context,
     clampPedal(original).params,
     original.bypassed,
     environment,
   );
+  try {
+    if (Math.abs(checkedSeconds(runtime.latency, definition.id) - expectedLatency) > 1e-9)
+      throw new Error(`Latency contract mismatch for ${definition.id}.`);
+  } catch (error) {
+    runtime.dispose();
+    throw error;
+  }
   return {
     input: runtime.input,
     output: runtime.output,
@@ -59,8 +69,10 @@ export function createEffect(
     get tailActive() {
       return runtime.tailActive;
     },
-    update: (pedal, chainBypass = false) =>
-      runtime.update(clampPedal(pedal).params, chainBypass || pedal.bypassed),
+    update: (pedal, chainBypass = false) => {
+      requirePedalModule(pedal);
+      runtime.update(clampPedal(pedal).params, chainBypass || pedal.bypassed);
+    },
     dispose: () => runtime.dispose(),
   };
 }
@@ -76,12 +88,31 @@ export interface ChainGraph {
   update: (chain: Chain, bypassOnly?: boolean) => boolean;
   dispose: () => void;
 }
-export function chainLatency(chain: Chain, oversamplingLatency: number, compressorLatency = 0.006) {
-  const environment = { sampleRate: 48000, oversamplingLatency, compressorLatency };
+export function chainLatency(
+  chain: Chain,
+  oversamplingLatency: number,
+  compressorLatency = 0.006,
+  sampleRate = 48000,
+) {
+  const environment = { sampleRate, oversamplingLatency, compressorLatency };
   return boardRoute(chain).pedals.reduce((sum, pedal) => {
     const definition = requirePedalModule(pedal);
     return sum + checkedSeconds(definition.latency(environment), definition.id);
   }, 0);
+}
+export function chainResources(chain: Chain, sampleRate: number) {
+  return boardRoute(chain).pedals.reduce(
+    (cost, pedal) => {
+      const definition = requirePedalModule(pedal);
+      if (sampleRate < definition.minimumSampleRate || sampleRate > definition.maximumSampleRate)
+        throw new Error(`Unsupported sample rate for ${definition.id}.`);
+      return {
+        nodes: cost.nodes + definition.nodes,
+        memoryBytes: cost.memoryBytes + definition.memoryBytes,
+      };
+    },
+    { nodes: 4, memoryBytes: 8192 },
+  );
 }
 export function createChain(
   context: BaseAudioContext,
@@ -89,7 +120,7 @@ export function createChain(
   oversamplingLatency = 0,
   compressorLatency = 0.006,
 ): ChainGraph {
-  chainLatency(chain, oversamplingLatency, compressorLatency); // Reject unavailable routed nodes before allocation.
+  chainResources(chain, context.sampleRate); // Reject unavailable routed nodes before allocation.
   const input = context.createGain(),
     output = context.createGain(),
     analyser = context.createAnalyser();
@@ -122,7 +153,7 @@ export function createChain(
     input,
     output,
     analyser,
-    latency: chainLatency(chain, oversamplingLatency, compressorLatency),
+    latency: chainLatency(chain, oversamplingLatency, compressorLatency, context.sampleRate),
     get tail() {
       return effects.reduce((sum, effect) => sum + effect.tail, 0);
     },

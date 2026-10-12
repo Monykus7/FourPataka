@@ -18,6 +18,7 @@ export const overdriveModule = definePedalModule({
   nodes: 11,
   memoryBytes: 16396,
   minimumSampleRate: 3000,
+  maximumSampleRate: 192000,
   parameters: {
     drive: {
       label: 'drive',

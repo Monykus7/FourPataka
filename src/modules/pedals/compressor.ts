@@ -18,6 +18,7 @@ export const compressorModule = definePedalModule({
   nodes: 9,
   memoryBytes: 0,
   minimumSampleRate: 3000,
+  maximumSampleRate: 192000,
   parameters: {
     threshold: {
       label: 'threshold',

@@ -25,6 +25,7 @@ export interface PedalModule extends NumericModuleDefinition {
   readonly nodes: number;
   readonly memoryBytes: number;
   readonly minimumSampleRate: number;
+  readonly maximumSampleRate: number;
   readonly note?: string;
   readonly reset?: { readonly label: string; readonly accessibleLabel: string };
   latency: (environment: PedalEnvironment) => number;
@@ -53,6 +54,9 @@ export function definePedalModule(input: PedalModule): PedalModule {
     input.memoryBytes > 16_777_216 ||
     !Number.isFinite(input.minimumSampleRate) ||
     input.minimumSampleRate < 3000 ||
+    !Number.isFinite(input.maximumSampleRate) ||
+    input.maximumSampleRate < input.minimumSampleRate ||
+    input.maximumSampleRate > 192000 ||
     ![input.latency, input.tail, input.exportTail, input.create].every(
       (f) => typeof f === 'function',
     ) ||
@@ -70,6 +74,7 @@ export function definePedalModule(input: PedalModule): PedalModule {
     nodes: input.nodes,
     memoryBytes: input.memoryBytes,
     minimumSampleRate: input.minimumSampleRate,
+    maximumSampleRate: input.maximumSampleRate,
     note: input.note,
     reset: input.reset ? Object.freeze({ ...input.reset }) : undefined,
     latency: input.latency,

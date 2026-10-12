@@ -84,7 +84,7 @@ export function readSavedPedal(
   if (!definition && !reference)
     throw new Error('Invalid pedal instance: missing module reference.');
   if (definition && !definition.legacyKind && !reference)
-    throw new Error('Missing contributed pedal module reference.');
+    throw new Error('Invalid pedal: missing contributed module reference.');
   const unavailable =
     !definition ||
     (reference &&

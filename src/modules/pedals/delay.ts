@@ -18,6 +18,7 @@ export const delayModule = definePedalModule({
   nodes: 12,
   memoryBytes: 6152192,
   minimumSampleRate: 3000,
+  maximumSampleRate: 192000,
   note: 'Bypass stops new echoes; existing echoes finish. Stop clears them.',
   parameters: {
     time: {

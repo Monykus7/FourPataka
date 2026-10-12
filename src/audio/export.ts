@@ -6,7 +6,12 @@ import { reconcileTracks, type Project } from '../core/project';
 import { boardRoute } from '../core/board';
 import { emptyChain, type Chain } from '../core/pedals';
 import { exportSize, inspectSamples, type WavOptions } from '../core/wav';
-import { chainLatency, measureCompressorLatency, measureOversamplingLatency } from './effects';
+import {
+  chainLatency,
+  chainResources,
+  measureCompressorLatency,
+  measureOversamplingLatency,
+} from './effects';
 import { createScoreGraph } from './scoreGraph';
 import { createVoice, type Voice } from './voice';
 import { admitVoice } from './voiceLimit';
@@ -41,8 +46,22 @@ export function prepareExport(
   const master = snapshot.processing.master;
   const trackChains = snapshot.tracks.map((t) => snapshot.processing.tracks[t.key] ?? emptyChain());
   const latency =
-    chainLatency(master, driveLatency, compressorLatency) +
-    Math.max(0, ...trackChains.map((c) => chainLatency(c, driveLatency, compressorLatency)));
+    chainLatency(master, driveLatency, compressorLatency, options.sampleRate) +
+    Math.max(
+      0,
+      ...trackChains.map((c) =>
+        chainLatency(c, driveLatency, compressorLatency, options.sampleRate),
+      ),
+    );
+  const resources = [master, ...trackChains].reduce(
+    (total, chain) => {
+      const cost = chainResources(chain, options.sampleRate);
+      return { nodes: total.nodes + cost.nodes, memoryBytes: total.memoryBytes + cost.memoryBytes };
+    },
+    { nodes: 0, memoryBytes: 0 },
+  );
+  if (resources.nodes > 4096 || resources.memoryBytes > 128 * 1024 * 1024)
+    throw new Error('Pedal resource estimate exceeds export limits (4096 nodes / 128 MiB).');
   const release = Math.max(0, ...snapshot.tracks.map((t) => t.sound.release));
   const estimatedTail = routedTail(master) + Math.max(0, ...trackChains.map(routedTail));
   const voices = score.events.reduce((count, event) => count + event.frequencies.length, 0);
@@ -65,6 +84,7 @@ export function prepareExport(
   );
   return {
     snapshot,
+    resources,
     score,
     latency,
     release,

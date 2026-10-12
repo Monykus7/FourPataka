@@ -1,6 +1,6 @@
 import type { TrackInstance } from '../core/project';
 import { emptyChain, chainMusicalSettings, type Processing } from '../core/pedals';
-import { createChain, chainLatency, type ChainGraph } from './effects';
+import { createChain, chainLatency, chainResources, type ChainGraph } from './effects';
 
 // Both playback and export consume applied copies, never library templates or
 // the audition sandbox. Shorter track paths are padded before the master bus.
@@ -17,6 +17,15 @@ export function createScoreGraph(
   const buses = new Map<string, GainNode>();
   const nodes: AudioNode[] = [];
   const masterChain = processing?.master ?? emptyChain();
+  // Preflight every routed track before creating any nodes, so a missing module
+  // cannot leave a partly constructed master/track graph running after failure.
+  for (const chain of [
+    masterChain,
+    ...tracks.map((t) => processing?.tracks[t.key] ?? emptyChain()),
+  ]) {
+    chainResources(chain, context.sampleRate);
+    chainLatency(chain, oversamplingLatency, compressorLatency, context.sampleRate);
+  }
   const master = createChain(context, masterChain, oversamplingLatency, compressorLatency);
   master.output.connect(destination);
   chains.set('master', master);
@@ -28,6 +37,7 @@ export function createScoreGraph(
         processing?.tracks[t.key] ?? emptyChain(),
         oversamplingLatency,
         compressorLatency,
+        context.sampleRate,
       ),
     ),
   );

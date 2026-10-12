@@ -17,6 +17,7 @@ const definition: PedalModule = {
   nodes: 5,
   memoryBytes: 0,
   minimumSampleRate: 3000,
+  maximumSampleRate: 192000,
   latency: () => 0,
   tail: () => 0,
   exportTail: () => 0,
@@ -103,4 +104,24 @@ it('migrates old projects atomically and retains unavailable modules in independ
   expect(loaded.processing.audition.A.pedals[0].unavailable!.original.params).toEqual(raw.params);
   expect(() => importProject(JSON.stringify({ ...data, schemaVersion: 2 }))).toThrow('schema 3');
   expect(data.processing.master.pedals[0]).toEqual(raw);
+});
+
+it('discovers the independent level contribution and validates its saved settings generically', async () => {
+  const { makePedal, PEDAL_KINDS, PEDAL_CONTROLS, importProcessing, defaultProcessing } =
+    await import('../../src/core/pedals');
+  const { pedalModules } = await import('../../src/modules/assembly');
+  const first = makePedal('example:pedal/level'),
+    second = makePedal(first.kind);
+  first.params.output = -6;
+  expect(second.params.output).toBe(0);
+  expect(PEDAL_KINDS).toContain(first.kind);
+  expect(PEDAL_CONTROLS[first.kind].output).toEqual([-24, 12, 0.5, 'dB']);
+  const processing = defaultProcessing();
+  processing.master.pedals.push(first);
+  const imported = importProcessing(JSON.parse(JSON.stringify(processing)));
+  expect(imported.master.pedals[0]).toEqual(first);
+  expect(pedalModules.get(first.kind).nodes).toBe(5);
+  const invalid = structuredClone(processing);
+  invalid.master.pedals[0].params.output = 30;
+  expect(() => importProcessing(invalid)).toThrow('Invalid setting');
 });

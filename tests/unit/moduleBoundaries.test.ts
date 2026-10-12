@@ -25,7 +25,7 @@ it('keeps M1 module imports acyclic and contributors on the public data boundary
       const dependency = resolve(dirname(file), request + '.ts');
       expect(graph.has(dependency), `${file} imports private host code ${request}`).toBe(true);
       if (file.includes(sep + 'examples' + sep) || file.includes(sep + 'pedals' + sep))
-        expect(request).toBe('../index');
+        expect(dependency).toBe(resolve(root, 'index.ts'));
       graph.get(file)!.push(dependency);
     }
   }
