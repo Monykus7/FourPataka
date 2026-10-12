@@ -2,7 +2,7 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-Open-source extensibility is now a major planned program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. The synthesis/notation pilot adds the first implemented [chord-shape contribution contract](docs/extensions/CHORD_SHAPES.md) and 32 harmonics. General pedal/preset/engine/feature registries, SDK and an open-source license remain planned.
+Open-source extensibility is a major program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. The synthesis/notation pilot adds the first implemented [chord-shape contribution contract](docs/extensions/CHORD_SHAPES.md) and 32 harmonics. v0.32.0 implements the [M1 numeric metadata foundation](docs/extensions/MODULE_FOUNDATION.md), validated assembly and an EQ adapter with a tested contributor example. Complete pedal DSP modules are next in M2; full preset/engine/feature APIs, SDK and an owner-selected open-source license remain planned.
 
 ## Run locally
 
@@ -29,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The latest verified portable build is `release/FourPataka-0.31.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.32.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
