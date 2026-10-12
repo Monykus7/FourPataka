@@ -839,6 +839,52 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
   expect(prohibited).toBe(404);
 });
 
+test('packaged module foundation preserves a legacy owned EQ project through native import and save', async () => {
+  const page = await app.firstWindow();
+  const fixturePath = resolve('tests/fixtures/m1/schema1-owned-eq.json');
+  const original = await readFile(fixturePath, 'utf8');
+  const legacy = JSON.parse(original);
+  await app.evaluate(({ dialog }, path) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [path] });
+  }, fixturePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Project name' })).toHaveValue(legacy.name);
+  const savePath = resolve('.test-results', 'desktop', 'm1-legacy-roundtrip.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, savePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved m1-legacy-roundtrip');
+  const saved = JSON.parse(await readFile(savePath, 'utf8'));
+  expect(saved.schemaVersion).toBe(2);
+  expect(saved.scoreText).toBe(legacy.scoreText);
+  expect(saved.tracks[0].level).toBe(legacy.tracks[0].level);
+  for (const [sound, originalSound] of [
+    [saved.instruments.find((p: any) => p.key === 'personal').sound, legacy.instruments[0].sound],
+    [saved.tracks[0].sound, legacy.tracks[0].sound],
+    [saved.comparison.A, legacy.comparison.A],
+    [saved.comparison.B, legacy.comparison.B],
+  ]) {
+    expect(sound.harmonics).toEqual([...originalSound.harmonics, ...Array(16).fill(0)]);
+    expect(sound.polarity.slice(0, 16)).toEqual(originalSound.polarity);
+    expect(sound.trim).toBe(originalSound.trim);
+  }
+  for (const key of ['A', 'B'])
+    expect(saved.processing.audition[key]).toEqual(legacy.processing.audition[key]);
+  expect(saved.processing.master).toEqual({
+    ...legacy.processing.master,
+    assignmentKey: 'eqBoard',
+  });
+  expect(saved.processing.tracks.legacy).toEqual({
+    ...legacy.processing.tracks.legacy,
+    assignmentKey: 'eqBoard',
+  });
+  // The existing host stores templates without an owned-instance preset reference.
+  const { presetId: _instanceReference, ...template } = legacy.processing.library[0].chain;
+  expect(saved.processing.library[0].chain).toEqual(template);
+  expect(await readFile(fixturePath, 'utf8')).toBe(original);
+});
+
 test('native project dialogs round-trip a project, preserve canceled operations, and reject oversize data', async () => {
   const page = await app.firstWindow();
   await expect(page.getByRole('button', { name: 'Save project', exact: true })).toBeVisible();
