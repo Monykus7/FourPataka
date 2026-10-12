@@ -137,7 +137,9 @@
         "tests/helpers/engineInstruments.ts",
         "src/App.tsx",
         "src/audio/engine.ts",
-        "src/audio/export.ts"
+        "src/audio/export.ts",
+        "desktop/main.cjs",
+        "tests/desktop/app.spec.ts"
       ]
     },
     {
