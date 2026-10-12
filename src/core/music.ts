@@ -28,7 +28,7 @@ export function pitch(note: string): { midi: number; frequency: number; name: st
 }
 
 export type { FourierSound as Sound, WavePreset } from '../modules';
-import { fourierShape, type FourierSound as Sound, type WavePreset } from '../modules';
+import { components, fourierShape, type FourierSound as Sound, type WavePreset } from '../modules';
 export type HarmonicPolarity = 1 | -1;
 
 export function setHarmonicPolarity(
@@ -46,37 +46,7 @@ export function setHarmonicPolarity(
 }
 export const mathematicalPreset = fourierShape;
 
-export interface Component {
-  kind: 'harmonic' | 'undertone';
-  index: number;
-  label: string;
-  frequency: number;
-  magnitude: number;
-  polarity: number;
-  available: boolean;
-}
-export function components(sound: Sound, fundamental: number, sampleRate = 48000): Component[] {
-  return [
-    ...sound.harmonics.map((magnitude, i) => ({
-      kind: 'harmonic' as const,
-      index: i,
-      label: `H${i + 1}`,
-      frequency: fundamental * (i + 1),
-      magnitude,
-      polarity: sound.polarity[i],
-      available: fundamental * (i + 1) < sampleRate / 2,
-    })),
-    ...sound.undertones.map((magnitude, i) => ({
-      kind: 'undertone' as const,
-      index: i,
-      label: `f₀/${i + 2}`,
-      frequency: fundamental / (i + 2),
-      magnitude: sound.undertonesEnabled ? magnitude : 0,
-      polarity: 1,
-      available: fundamental / (i + 2) < sampleRate / 2,
-    })),
-  ];
-}
+export { components, type Component } from '../modules';
 export function sourceSamples(sound: Sound, fundamental: number, sampleRate = 48000, length = 600) {
   const seconds = (sound.undertonesEnabled ? 6 : 2) / fundamental;
   const partials = components(sound, fundamental, sampleRate).filter(

@@ -35,3 +35,10 @@ export {
 } from './foundation/presets';
 
 export * from './foundation/engines';
+
+export { components, dbToGain, type Component } from './foundation/fourierComponents';
+export {
+  createFourierVoice,
+  holdParameter,
+  type Voice as FourierVoice,
+} from './foundation/fourierVoice';
