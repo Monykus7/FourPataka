@@ -1,3 +1,4 @@
+import { engineRelease, requireEngine } from '../core/engineSound';
 import { pedalModules } from '../modules/assembly';
 import { checkedSeconds } from '../modules';
 import { playbackTiming } from '../core/articulation';
@@ -43,6 +44,10 @@ export function prepareExport(
   if (!score.events.some((event) => event.frequencies.length))
     throw new Error('Add at least one note before exporting WAV.');
   const snapshot = reconcileTracks(structuredClone(project), score);
+  const soundingTracks = snapshot.tracks.filter((track) =>
+    score.events.some((event) => event.track === track.key && event.frequencies.length),
+  );
+  soundingTracks.forEach((track) => requireEngine(track.sound));
   const master = snapshot.processing.master;
   const trackChains = snapshot.tracks.map((t) => snapshot.processing.tracks[t.key] ?? emptyChain());
   const latency =
@@ -60,9 +65,13 @@ export function prepareExport(
     },
     { nodes: 0, memoryBytes: 0 },
   );
+  // Offline admission caps active voices at32; preflight engine estimates too.
+  const engineCosts = soundingTracks.map((t) => requireEngine(t.sound).resources);
+  resources.nodes += 32 * Math.max(0, ...engineCosts.map((r) => r.estimatedNodesPerVoice + 1));
+  resources.memoryBytes += 32 * Math.max(0, ...engineCosts.map((r) => r.estimatedBytesPerVoice));
   if (resources.nodes > 4096 || resources.memoryBytes > 128 * 1024 * 1024)
-    throw new Error('Pedal resource estimate exceeds export limits (4096 nodes / 128 MiB).');
-  const release = Math.max(0, ...snapshot.tracks.map((t) => t.sound.release));
+    throw new Error('Audio resource estimate exceeds export limits (4096 nodes / 128 MiB).');
+  const release = Math.max(0, ...soundingTracks.map((t) => engineRelease(t.sound)));
   const estimatedTail = routedTail(master) + Math.max(0, ...trackChains.map(routedTail));
   const voices = score.events.reduce((count, event) => count + event.frequencies.length, 0);
   // Preserve score rests, releases and processing latency. A small settling

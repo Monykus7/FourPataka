@@ -1,5 +1,5 @@
 import { playbackTiming } from '../core/articulation';
-import type { Sound } from '../core/music';
+import { engineRelease, requireEngine, type InstrumentSound as Sound } from '../core/engineSound';
 import { createVoice, holdParameter, type Voice } from './voice';
 export { createVoice } from './voice';
 import { createScoreGraph } from './scoreGraph';
@@ -237,11 +237,12 @@ export class AudioEngine {
   ) {
     // Context preparation is asynchronous. Stop or a newer Play invalidates
     // this request so a late resume cannot resurrect an already-canceled note.
+    requireEngine(sound);
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
     const snapshot = structuredClone(sound);
-    const session = this.begin('audition', 1.6 + snapshot.release);
+    const session = this.begin('audition', 1.6 + engineRelease(snapshot));
     session.auditionSound = snapshot;
     session.auditionInput = this.context!.createGain();
     session.nodes.push(session.auditionInput);
@@ -259,7 +260,7 @@ export class AudioEngine {
           : end,
       session.phraseSeconds,
     );
-    session.duration = session.soundingSeconds + snapshot.release + session.processingTail;
+    session.duration = session.soundingSeconds + engineRelease(snapshot) + session.processingTail;
     const frozen = structuredClone(phrase);
     let cursor = 0;
     const schedule = () => {
@@ -296,7 +297,7 @@ export class AudioEngine {
     session.solo = solo;
     session.voices.forEach((v) => v.update(sound, solo));
     session.duration = Math.max(
-      session.soundingSeconds + sound.release + session.processingTail,
+      session.soundingSeconds + engineRelease(sound) + session.processingTail,
       ...session.voices.map((v) => v.end - session.start + session.processingTail),
     );
   }
@@ -329,7 +330,7 @@ export class AudioEngine {
     update(trackKey, sound);
     session.duration = Math.max(
       session.duration,
-      session.soundingSeconds + sound.release + session.processingTail,
+      session.soundingSeconds + engineRelease(sound) + session.processingTail,
       ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
     );
   }
@@ -337,11 +338,15 @@ export class AudioEngine {
     return this.session?.comparisonTrack ?? null;
   }
   async play(score: CompiledScore, instances: TrackInstance[], processing?: Processing) {
+    instances.forEach((track) => {
+      if (score.events.some((event) => event.track === track.key && event.frequencies.length))
+        requireEngine(track.sound);
+    });
     const revision = ++this.revision;
     await this.ready();
     if (revision !== this.revision) return;
     const tracks = structuredClone(instances);
-    const maxRelease = Math.max(0, ...tracks.map((t) => t.sound.release));
+    const maxRelease = Math.max(0, ...tracks.map((t) => engineRelease(t.sound)));
     // A prior legato voice may outlast a tiny final event; keep the written clock separate.
     const soundingSeconds = score.events.reduce(
       (end, event) =>
@@ -467,7 +472,9 @@ export class AudioEngine {
     session.processingTail = Math.max(session.processingTail, remaining);
     session.duration = Math.max(
       session.duration,
-      session.soundingSeconds + (session.auditionSound?.release ?? 0) + session.processingTail,
+      session.soundingSeconds +
+        (session.auditionSound ? engineRelease(session.auditionSound) : 0) +
+        session.processingTail,
       ...session.voices.map((voice) => voice.end - session.start + session.processingTail),
     );
   }
