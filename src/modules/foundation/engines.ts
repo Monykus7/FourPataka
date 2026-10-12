@@ -1,4 +1,5 @@
-import { MODULE_API_VERSION } from './contracts';
+import { MODULE_API_VERSION, type NumericParameter } from './contracts';
+import { defineNumericModule } from './registry';
 export interface EngineNote<S = unknown> {
   context: BaseAudioContext;
   destination: AudioNode;
@@ -28,6 +29,7 @@ export interface EngineDefinition<S = unknown> {
   readonly attribution: string;
   readonly minimumSampleRate: number;
   readonly maximumSampleRate: number;
+  readonly latencySeconds: 0;
   readonly supportsLive: boolean;
   readonly supportsOffline: boolean;
   readonly randomness: 'none' | 'fixed' | 'seeded';
@@ -41,11 +43,13 @@ export interface EngineDefinition<S = unknown> {
     readonly estimatedNodesPerVoice: number;
     readonly estimatedBytesPerVoice: number;
   };
+  readonly parameters?: Readonly<Record<string, NumericParameter>>;
+  releaseSeconds: (settings: S) => number;
   defaults: () => S;
   validateSettings: (settings: unknown) => void;
   create: (note: EngineNote<S>) => EngineVoice<S>;
 }
-function serializable(value: unknown, depth = 0): void {
+export function validateEngineData(value: unknown, depth = 0): void {
   if (depth > 8) throw new Error('Engine settings exceed serialization bounds.');
   if (
     value === null ||
@@ -55,7 +59,7 @@ function serializable(value: unknown, depth = 0): void {
     return;
   if (typeof value === 'string' && value.length <= 4096) return;
   if (Array.isArray(value) && value.length <= 128) {
-    for (const item of value) serializable(item, depth + 1);
+    for (const item of value) validateEngineData(item, depth + 1);
     return;
   }
   if (
@@ -67,7 +71,7 @@ function serializable(value: unknown, depth = 0): void {
     for (const [key, item] of Object.entries(value)) {
       if (key.length > 160 || ['__proto__', 'constructor', 'prototype'].includes(key))
         throw new Error('Unsafe engine settings key.');
-      serializable(item, depth + 1);
+      validateEngineData(item, depth + 1);
     }
     return;
   }
@@ -93,6 +97,7 @@ export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S>
     !Number.isFinite(input.maximumSampleRate) ||
     input.maximumSampleRate < input.minimumSampleRate ||
     input.maximumSampleRate > 384000 ||
+    input.latencySeconds !== 0 ||
     typeof input.supportsLive !== 'boolean' ||
     typeof input.supportsOffline !== 'boolean' ||
     (!input.supportsLive && !input.supportsOffline) ||
@@ -108,22 +113,44 @@ export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S>
     !Number.isSafeInteger(b.estimatedBytesPerVoice) ||
     b.estimatedBytesPerVoice < 0 ||
     b.estimatedBytesPerVoice > 16777216 ||
-    ![input.defaults, input.validateSettings, input.create].every((f) => typeof f === 'function')
+    ![input.defaults, input.validateSettings, input.create, input.releaseSeconds].every(
+      (f) => typeof f === 'function',
+    )
   )
     throw new Error('Invalid engine definition.');
   // Capture callbacks and metadata once; later caller edits cannot change guards.
   c = Object.freeze({ ...c });
   b = Object.freeze({ ...b });
   input = Object.freeze({ ...input, capabilities: c, resources: b });
+  const parameters = input.parameters ?? {};
+  const controls: Readonly<Record<string, NumericParameter>> = Object.keys(parameters).length
+    ? defineNumericModule({
+        id: input.id,
+        category: 'engine',
+        apiVersion: input.apiVersion,
+        dataVersion: input.dataVersion,
+        label: input.label,
+        parameters,
+      }).parameters
+    : Object.freeze({});
   const snapshot = structuredClone(input.defaults());
-  serializable(snapshot);
+  validateEngineData(snapshot);
   input.validateSettings(snapshot);
+  const defaultsRecord = snapshot as Record<string, unknown>;
+  for (const [key, control] of Object.entries(controls)) {
+    if (defaultsRecord?.[key] !== control.defaultValue)
+      throw new Error('Engine control default does not match settings.');
+  }
+  const release = input.releaseSeconds(snapshot);
+  if (!Number.isFinite(release) || release < 0 || release > 10)
+    throw new Error('Engine release must be finite seconds in 0–10.');
   const validate = (settings: S) => {
-    serializable(settings);
+    validateEngineData(settings);
     input.validateSettings(settings);
   };
   return Object.freeze({
     ...input,
+    parameters: controls,
     capabilities: Object.freeze({ ...c }),
     resources: Object.freeze({ ...b }),
     defaults: () => structuredClone(snapshot),

@@ -17,6 +17,7 @@ export const fourierEngine = defineEngine<FourierSound>({
   attribution: 'FourPataka Fourier synthesis',
   minimumSampleRate: 3000,
   maximumSampleRate: 384000,
+  latencySeconds: 0,
   supportsLive: true,
   supportsOffline: true,
   randomness: 'fixed',
@@ -24,6 +25,7 @@ export const fourierEngine = defineEngine<FourierSound>({
   // Conservative steady-voice estimates, excluding temporary edit crossfades.
   // Noise storage is shared per context, rather than duplicated per voice.
   resources: { estimatedNodesPerVoice: 24, estimatedBytesPerVoice: 1536000 },
+  releaseSeconds: (settings) => settings.release,
   defaults: () => fourierShape('sine'),
   validateSettings: validateFourierSound,
   create: (note) =>

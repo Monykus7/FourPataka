@@ -9,6 +9,7 @@ const definition: EngineDefinition<{ gain: number }> = {
   attribution: 'Test source',
   minimumSampleRate: 3000,
   maximumSampleRate: 192000,
+  latencySeconds: 0,
   supportsLive: true,
   supportsOffline: true,
   randomness: 'none',
@@ -19,6 +20,7 @@ const definition: EngineDefinition<{ gain: number }> = {
     update: 'phase-continuous',
   },
   resources: { estimatedNodesPerVoice: 3, estimatedBytesPerVoice: 0 },
+  releaseSeconds: () => 0,
   defaults: () => ({ gain: 0.5 }),
   validateSettings(v: any) {
     if (!v || !Number.isFinite(v.gain) || v.gain < 0 || v.gain > 1) throw new Error('Invalid gain');

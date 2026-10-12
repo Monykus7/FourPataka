@@ -15,6 +15,7 @@ export const basicTone = defineEngine<BasicToneSettings>({
   attribution: 'FourPataka engine extension tutorial',
   minimumSampleRate: 3000,
   maximumSampleRate: 384000,
+  latencySeconds: 0,
   supportsLive: true,
   supportsOffline: true,
   randomness: 'none',
@@ -25,6 +26,49 @@ export const basicTone = defineEngine<BasicToneSettings>({
     update: 'phase-continuous',
   },
   resources: { estimatedNodesPerVoice: 3, estimatedBytesPerVoice: 0 },
+  parameters: {
+    attack: {
+      label: 'Attack',
+      description: 'Attack seconds',
+      min: 0.005,
+      max: 2,
+      step: 0.005,
+      unit: 's',
+      defaultValue: 0.015,
+      update: 'continuous',
+    },
+    release: {
+      label: 'Release',
+      description: 'Release seconds',
+      min: 0.01,
+      max: 3,
+      step: 0.01,
+      unit: 's',
+      defaultValue: 0.25,
+      update: 'continuous',
+    },
+    trim: {
+      label: 'Output trim',
+      description: 'Output decibels',
+      min: -36,
+      max: 0,
+      step: 0.5,
+      unit: 'dB',
+      defaultValue: -12,
+      update: 'continuous',
+    },
+    detune: {
+      label: 'Detune (cents)',
+      description: 'Pitch offset in cents',
+      min: -1200,
+      max: 1200,
+      step: 1,
+      unit: 'linear',
+      defaultValue: 0,
+      update: 'continuous',
+    },
+  },
+  releaseSeconds: (settings) => settings.release,
   defaults: () => ({ attack: 0.015, release: 0.25, trim: -12, detune: 0 }),
   validateSettings(value) {
     if (!value || typeof value !== 'object') throw new Error('Invalid Basic Tone settings.');
@@ -53,6 +97,20 @@ export const basicTone = defineEngine<BasicToneSettings>({
     let current = settings;
     let disposed = false;
     oscillator.type = 'sine';
+    const begins = Math.max(start, context.currentTime);
+    if (begins > start) {
+      // Cross-engine comparison joins the original note age instead of starting
+      // this independent sine at phase zero on a running transport.
+      const phase =
+        2 * Math.PI * note.frequencyHz * 2 ** (settings.detune / 1200) * (begins - start);
+      oscillator.setPeriodicWave(
+        context.createPeriodicWave(
+          new Float32Array([0, Math.sin(phase)]),
+          new Float32Array([0, Math.cos(phase)]),
+          { disableNormalization: true },
+        ),
+      );
+    }
     oscillator.frequency.value = note.frequencyHz;
     oscillator.detune.value = settings.detune;
     trim.gain.value = dbToGain(settings.trim);
@@ -96,7 +154,7 @@ export const basicTone = defineEngine<BasicToneSettings>({
       disposed = true;
     };
     oscillator.onended = disconnect;
-    oscillator.start(start);
+    oscillator.start(begins);
     oscillator.stop(end + 0.005);
     return {
       envelope,
