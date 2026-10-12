@@ -1,7 +1,13 @@
 import { clamp, SCORE_KEY } from './music';
 import { boardRoute, validateBoard, type BoardLayout } from './board';
 import { pedalModules } from '../modules/assembly';
-import { defaultModuleSettings, moduleControlRanges, delayTailSeconds } from '../modules';
+import {
+  defaultModuleSettings,
+  moduleControlRanges,
+  delayTailSeconds,
+  readSavedPedal,
+  type SavedPedal,
+} from '../modules';
 export type PedalKind = string;
 export const delayTail = delayTailSeconds;
 export const DELAY_DEFAULTS = Object.freeze(defaultModuleSettings(pedalModules.get('delay')));
@@ -18,11 +24,13 @@ export const PEDAL_CONTROLS: Readonly<Record<string, ReturnType<typeof moduleCon
     ),
   );
 export const pedalName = (kind: string) => PEDAL_NAMES[kind] ?? `Unavailable: ${kind}`;
-export interface Pedal {
-  id: string;
-  kind: PedalKind;
-  bypassed: boolean;
-  params: Record<string, number>;
+export interface Pedal extends SavedPedal {}
+export function requirePedalModule(pedal: Pedal) {
+  if (pedal.unavailable)
+    throw new Error(
+      `Unavailable pedal ${pedal.kind}: ${pedal.unavailable.reason} Restore the module or remove the pedal before playback/export.`,
+    );
+  return pedalModules.get(pedal.kind);
 }
 export interface Chain {
   pedals: Pedal[];
@@ -66,6 +74,15 @@ export function makePedal(kind: PedalKind): Pedal {
     kind,
     bypassed: false,
     params: defaultModuleSettings(pedalModules.get(kind)),
+    ...(!pedalModules.get(kind).legacyKind
+      ? {
+          module: {
+            id: kind,
+            apiVersion: pedalModules.get(kind).apiVersion,
+            dataVersion: pedalModules.get(kind).dataVersion,
+          },
+        }
+      : {}),
   };
 }
 export function defaultProcessing(): Processing {
@@ -91,6 +108,7 @@ export function defaultProcessing(): Processing {
   };
 }
 export function clampPedal(pedal: Pedal): Pedal {
+  if (pedal.unavailable) return structuredClone(pedal);
   return {
     ...pedal,
     params: Object.fromEntries(
@@ -126,23 +144,9 @@ export function validateChain(value: unknown): asserts value is ChainInstance {
     throw new Error('Invalid score chain assignment.');
   const ids = new Set<string>();
   chain.pedals.forEach((p) => {
-    if (
-      !p ||
-      !Object.hasOwn(PEDAL_CONTROLS, p.kind) ||
-      typeof p.id !== 'string' ||
-      !p.id ||
-      p.id.length > 100 ||
-      ids.has(p.id) ||
-      typeof p.bypassed !== 'boolean' ||
-      !p.params ||
-      typeof p.params !== 'object'
-    )
-      throw new Error('Invalid pedal instance.');
-    ids.add(p.id);
-    Object.entries(PEDAL_CONTROLS[p.kind]).forEach(([key, [min, max]]) => {
-      const n = p.params[key];
-      if (!Number.isFinite(n) || n < min || n > max) throw new Error(`Invalid pedal ${key}.`);
-    });
+    const pedal = readSavedPedal(p, pedalModules.find);
+    if (ids.has(pedal.id)) throw new Error('Duplicate pedal instance.');
+    ids.add(pedal.id);
   });
   if (chain.board !== undefined) validateBoard(chain.board, [...ids]);
 }
@@ -205,9 +209,7 @@ export function importProcessing(value: unknown): Processing {
     ...(chain.assignmentKey !== undefined ? { assignmentKey: chain.assignmentKey } : {}),
     bypassed: chain.bypassed,
     ...(chain.board ? { board: structuredClone(chain.board) } : {}),
-    pedals: chain.pedals.map((p) =>
-      clampPedal({ id: p.id, kind: p.kind, bypassed: p.bypassed, params: { ...p.params } }),
-    ),
+    pedals: chain.pedals.map((p) => readSavedPedal(p, pedalModules.find)),
   });
   return {
     library: p.library.map((p) => ({

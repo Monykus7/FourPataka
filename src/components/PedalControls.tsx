@@ -16,6 +16,7 @@ export function SmallPedalDials({
   index: number;
   onChange: ParameterChange;
 }) {
+  if (pedal.unavailable) return <p role="status">Unavailable module</p>;
   return (
     <div className="small-pedal-dials">
       {Object.entries(PEDAL_CONTROLS[pedal.kind] ?? {}).map(([key, [min, max, step, unit]]) => (
@@ -51,6 +52,23 @@ export default function PedalControls({
   onRemove: () => void;
   tailActive: boolean;
 }) {
+  if (pedal?.unavailable)
+    return (
+      <section className="board-inspector" aria-label="Selected pedal controls">
+        <h3>Unavailable: {pedal.kind}</h3>
+        <p role="status">
+          {pedal.unavailable.reason} Settings are retained for recovery. Playback/export is blocked
+          while this pedal is in the signal path.
+        </p>
+        <button
+          className="text-button"
+          aria-label={`Remove ${pedal.kind} ${index + 1}`}
+          onClick={onRemove}
+        >
+          Remove pedal
+        </button>
+      </section>
+    );
   return (
     <section
       className={`board-inspector ${pedal?.kind ?? ''}`}
@@ -106,7 +124,7 @@ export default function PedalControls({
           {pedalModules.find(pedal.kind)?.note && (
             <p className="eq-shape">
               {tailActive
-                ? 'Tail active · stored echoes are finishing.'
+                ? 'Tail active Â· stored echoes are finishing.'
                 : pedalModules.get(pedal.kind).note}
             </p>
           )}

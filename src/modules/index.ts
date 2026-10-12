@@ -14,3 +14,5 @@ export {
   type ProcessorPorts,
   type ProcessorBehavior,
 } from './foundation/processor';
+
+export { readSavedPedal, type SavedPedal, type ModuleReference } from './foundation/savedPedals';

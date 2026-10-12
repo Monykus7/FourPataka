@@ -48,7 +48,7 @@ export interface TrackInstance {
 }
 export interface Project {
   processing: Processing;
-  schemaVersion: 2;
+  schemaVersion: 3;
   id: string;
   name: string;
   scoreText: string;
@@ -114,7 +114,7 @@ track melody using sine through clean{
 }
 
 track bass using softBass {
-  // Bars 1–2, 4/4.
+  // Bars 1â€“2, 4/4.
   staccato[
     C3 quarter
     F3 quarter
@@ -126,7 +126,7 @@ track bass using softBass {
     G3 quarter.
   ]
 
-  // Bars 3–4, 7/8.
+  // Bars 3â€“4, 7/8.
    C2 quarter
    F2 quarter
    E2 quarter.
@@ -158,7 +158,7 @@ export function createProject(): Project {
   ];
   const project: Project = {
     processing: defaultProcessing(),
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: crypto.randomUUID(),
     name: 'Untitled session',
     scoreText: EXAMPLE_SCORE,
@@ -333,7 +333,7 @@ function numeric(
   label: string,
 ): asserts value is number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < low || value > high)
-    throw new Error(`Invalid ${label}: expected ${low}–${high}.`);
+    throw new Error(`Invalid ${label}: expected ${low}â€“${high}.`);
 }
 function stringValue(value: unknown, label: string, max = 100): asserts value is string {
   if (typeof value !== 'string' || value.length === 0 || value.length > max)
@@ -370,7 +370,7 @@ export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts v
         ? n === 1 || n === -1
           ? undefined
           : (() => {
-              throw new Error('Polarity must be +1 or −1.');
+              throw new Error('Polarity must be +1 or âˆ’1.');
             })()
         : numeric(n, 0, 1, name),
     );
@@ -385,10 +385,22 @@ export function importProject(text: string): Project {
   if (text.length > 2_000_000) throw new Error('Project file is too large (maximum 2 MB).');
   const data: unknown = JSON.parse(text);
   record(data);
-  if (data.schemaVersion !== 1 && data.schemaVersion !== 2)
+  if (data.schemaVersion !== 1 && data.schemaVersion !== 2 && data.schemaVersion !== 3)
     throw new Error(
-      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1 and 2.`,
+      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2 and 3.`,
     );
+  if (data.schemaVersion !== 3 && data.processing) {
+    const processing = data.processing as Processing;
+    const chains = [
+      ...(processing.library ?? []).map((p) => p.chain),
+      processing.audition?.A,
+      processing.audition?.B,
+      processing.master,
+      ...Object.values(processing.tracks ?? {}),
+    ];
+    if (chains.some((chain) => chain?.pedals?.some((p) => p.module || p.unavailable)))
+      throw new Error('Pedal module envelopes require project schema 3.');
+  }
   const sourceCount = data.schemaVersion === 1 ? LEGACY_HARMONIC_COUNT : HARMONIC_COUNT;
   // Pad owned copies independently. Migration never regenerates their timbres.
   const migrateSound = (sound: Sound): Sound => ({
@@ -403,7 +415,7 @@ export function importProject(text: string): Project {
   const scoreWorkspace = readFileWorkspace(data.scoreWorkspace);
   numeric(data.mixGain, 0, 1, 'mix gain');
   if (!Array.isArray(data.instruments) || !data.instruments.length || data.instruments.length > 128)
-    throw new Error('Expected 1–128 instrument presets.');
+    throw new Error('Expected 1â€“128 instrument presets.');
   const ids = new Set<string>();
   const keys = new Set<string>();
   const instrumentFolders = readInstrumentFolders(data.instrumentFolders);
@@ -464,7 +476,7 @@ export function importProject(text: string): Project {
   const project = data as unknown as Project;
   let clean: Project = {
     processing: importProcessing(data.processing),
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: project.id,
     name: project.name,
     scoreText: project.scoreText,

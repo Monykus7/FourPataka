@@ -303,7 +303,7 @@ test('native recovery menu exports exact damaged bytes and restores a checkpoint
     prior.comparison.A.harmonics[0] = 0.37;
     prior.processing.master.bypassed = true;
     const raw = JSON.stringify(prior, null, 2);
-    const damaged = '{broken Ω\n';
+    const damaged = '{broken Î©\n';
     localStorage.setItem('fourpataka.project.recovery.v1', raw);
     localStorage.setItem('fourpataka.project.unreadable.v1', damaged);
     return { raw, damaged };
@@ -374,10 +374,10 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   await expect(sign).toHaveText('+');
   await expect(page.getByRole('combobox', { name: 'H3 polarity', exact: true })).toHaveValue('1');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(sign).toHaveText('−');
+  await expect(sign).toHaveText('âˆ’');
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
+  await page.getByRole('button', { name: /^Show H17â€“H32/ }).click();
   await page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }).fill('.42');
   await page.getByRole('button', { name: 'H32 inverted polarity', exact: true }).click();
   const savePath = resolve('.test-results', 'desktop', 'harmonic-sign.fourpataka.json');
@@ -389,7 +389,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
     'Saved harmonic-sign.fourpataka.json',
   );
   let saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(2);
+  expect(saved.schemaVersion).toBe(3);
   expect(saved.comparison.A.harmonics).toHaveLength(32);
   expect(saved.comparison.A.harmonics[31]).toBe(0.42);
   expect(saved.comparison.A.polarity[31]).toBe(-1);
@@ -397,7 +397,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   expect(saved.instruments.find((p: any) => p.key === 'triangle').sound.polarity[2]).toBe(-1);
   await page.reload();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
+  await page.getByRole('button', { name: /^Show H17â€“H32/ }).click();
   await expect(
     page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }),
   ).toHaveValue('0.42');
@@ -856,7 +856,7 @@ test('packaged module foundation preserves a legacy owned EQ project through nat
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved m1-legacy-roundtrip');
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(2);
+  expect(saved.schemaVersion).toBe(3);
   expect(saved.scoreText).toBe(legacy.scoreText);
   expect(saved.tracks[0].level).toBe(legacy.tracks[0].level);
   for (const [sound, originalSound] of [

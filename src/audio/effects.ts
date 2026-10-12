@@ -4,6 +4,7 @@ import {
   chainTopology,
   chainMusicalSettings,
   clampPedal,
+  requirePedalModule,
   type Chain,
   type Pedal,
 } from '../core/pedals';
@@ -38,7 +39,7 @@ export function createEffect(
   oversamplingLatency = 0,
   compressorLatency = 0.006,
 ): EffectGraph {
-  const definition = pedalModules.get(original.kind);
+  const definition = requirePedalModule(original);
   const environment = { sampleRate: context.sampleRate, oversamplingLatency, compressorLatency };
   if (context.sampleRate < definition.minimumSampleRate)
     throw new Error(`Unsupported sample rate for ${definition.id}.`);
@@ -78,7 +79,7 @@ export interface ChainGraph {
 export function chainLatency(chain: Chain, oversamplingLatency: number, compressorLatency = 0.006) {
   const environment = { sampleRate: 48000, oversamplingLatency, compressorLatency };
   return boardRoute(chain).pedals.reduce((sum, pedal) => {
-    const definition = pedalModules.get(pedal.kind);
+    const definition = requirePedalModule(pedal);
     return sum + checkedSeconds(definition.latency(environment), definition.id);
   }, 0);
 }
@@ -88,6 +89,7 @@ export function createChain(
   oversamplingLatency = 0,
   compressorLatency = 0.006,
 ): ChainGraph {
+  chainLatency(chain, oversamplingLatency, compressorLatency); // Reject unavailable routed nodes before allocation.
   const input = context.createGain(),
     output = context.createGain(),
     analyser = context.createAnalyser();
