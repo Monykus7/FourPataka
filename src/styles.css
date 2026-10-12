@@ -3101,3 +3101,27 @@ dd {
     margin-inline: 10px;
   }
 }
+
+/* Engine controls do not imply Fourier coefficients or partial selection. */
+.engine-controls {
+  margin: 1rem 0;
+}
+.engine-controls .control-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(80px, 2fr) 90px;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 0;
+}
+.engine-controls input[type='number'] {
+  width: 100%;
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .engine-controls .control-row {
+    grid-template-columns: 1fr 80px;
+  }
+  .engine-controls .control-row label {
+    grid-column: 1 / -1;
+  }
+}

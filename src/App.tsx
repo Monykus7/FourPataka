@@ -1,3 +1,11 @@
+import {
+  isFourierSound,
+  createEngineSound,
+  readInstrumentSound,
+  type InstrumentSound,
+  type EngineSound,
+} from './core/engineSound';
+import { engineModules } from './modules/assembly';
 import { instrumentModules, factoryPreviews } from './modules/assembly';
 import { measurePositionAt, meterLabel, nextMeterBoundary } from './core/meter';
 import Timeline from './components/Timeline';
@@ -134,7 +142,9 @@ function readPreferences() {
     };
   }
 }
-function MiniWave({ kind, sound }: { kind: string; sound?: Sound }) {
+function MiniWave({ kind, sound }: { kind: string; sound?: InstrumentSound }) {
+  if (sound && !isFourierSound(sound))
+    return <span className="eyebrow">{sound.unavailable ? 'Unavailable' : 'Engine'}</span>;
   if (sound?.percussion) {
     const note = factoryPreviews.find((p) => p.key === kind)?.note ?? 'G3';
     return <HitPreview sound={sound} frequency={pitch(note).frequency} compact />;
@@ -291,7 +301,13 @@ export default function App() {
   const [hitPreviewRequest, setHitPreviewRequest] = useState(0);
   const editGroup = useRef({ key: '', time: 0 });
   const active = project.comparison.active;
-  const sound = project.comparison[active];
+  const instrumentSound = project.comparison[active];
+  const fourier = isFourierSound(instrumentSound);
+  // Fourier-only UI computations are inert when the independent editor is shown.
+  const sound = fourier ? instrumentSound : mathematicalPreset('sine');
+  useEffect(() => {
+    if (!fourier) setSolo(false);
+  }, [fourier]);
   const macroBaseline = useRef<Sound>(structuredClone(sound));
   const instruments = project.instruments;
   const chainKeys = project.processing.library.map((p) => p.key);
@@ -307,7 +323,7 @@ export default function App() {
       definition.key === preset.key &&
       JSON.stringify(definition.createSound()) === JSON.stringify(preset.sound),
   );
-  const isCustom = JSON.stringify(sound) !== JSON.stringify(preset.sound);
+  const isCustom = JSON.stringify(instrumentSound) !== JSON.stringify(preset.sound);
   const score = useMemo(
     () =>
       parseScore(
@@ -364,8 +380,10 @@ export default function App() {
       return commit(h, reconcileTracks(updated, parsed), grouped);
     });
   }, []);
-  const resetMacros = (next: Sound) => {
-    macroBaseline.current = structuredClone(next);
+  const resetMacros = (next: InstrumentSound) => {
+    macroBaseline.current = structuredClone(
+      isFourierSound(next) ? next : mathematicalPreset('sine'),
+    );
     setMacros({ ...NEUTRAL_MACROS });
   };
   const changeSound = (mutate: (s: Sound) => Sound, key = '', manual = true) => {
@@ -384,7 +402,9 @@ export default function App() {
       const next = direction === 'undo' ? undo(h) : redo(h);
       next.present = restoreFileSelection(next.present, h.present);
       macroBaseline.current = structuredClone(
-        next.present.comparison[next.present.comparison.active],
+        isFourierSound(next.present.comparison[next.present.comparison.active])
+          ? (next.present.comparison[next.present.comparison.active] as Sound)
+          : mathematicalPreset('sine'),
       );
       setMacros({ ...NEUTRAL_MACROS });
       return next;
@@ -485,7 +505,7 @@ export default function App() {
       setToast(`Audio could not start: ${(e as Error).message}`);
     }
   };
-  const audition = async (next = sound) => {
+  const audition = async (next = instrumentSound) => {
     if (!comparison.phrase) {
       auditionRequested.current = false;
       engine.current.stop();
@@ -518,18 +538,24 @@ export default function App() {
     if (engine.current.mode !== 'audition' || previous.material !== material) {
       void actionRef.current.audition();
     } else {
-      if (previous.active !== active)
-        engine.current.switchAudition(
-          sound,
-          project.processing.audition[active],
-          solo ? selectedPartial : undefined,
-        );
-      else {
-        engine.current.updateAudition(sound, solo ? selectedPartial : undefined);
-        engine.current.updateProcessing(project.processing, active);
+      try {
+        if (previous.active !== active)
+          engine.current.switchAudition(
+            instrumentSound,
+            project.processing.audition[active],
+            solo ? selectedPartial : undefined,
+          );
+        else {
+          engine.current.updateAudition(instrumentSound, solo ? selectedPartial : undefined);
+          engine.current.updateProcessing(project.processing, active);
+        }
+      } catch (error) {
+        engine.current.stop();
+        auditionRequested.current = false;
+        setToast((error as Error).message);
       }
     }
-  }, [active, material, preset.id, sound, solo, selectedPartial, project.processing]);
+  }, [active, material, preset.id, instrumentSound, solo, selectedPartial, project.processing]);
   useEffect(() => {
     if (!hitPreviewRequest || !pendingHitPreview.current) return;
     pendingHitPreview.current = false;
@@ -541,9 +567,14 @@ export default function App() {
     if (engine.current.mode === 'score') {
       engine.current.updateProcessing(project.processing, active);
       if (engine.current.comparisonTrack)
-        engine.current.updateScoreComparison(sound, selectedTrack);
+        try {
+          engine.current.updateScoreComparison(instrumentSound, selectedTrack);
+        } catch (error) {
+          engine.current.stop();
+          setToast((error as Error).message);
+        }
     }
-  }, [project.processing, active, sound, selectedTrack]);
+  }, [project.processing, active, instrumentSound, selectedTrack]);
   useEffect(() => {
     const keyboard = (e: KeyboardEvent) => {
       if (e.defaultPrevented) return;
@@ -604,7 +635,12 @@ export default function App() {
   };
   const selectAB = (side: 'A' | 'B') => {
     if (engine.current.mode === 'score')
-      engine.current.updateScoreComparison(project.comparison[side], selectedTrack);
+      try {
+        engine.current.updateScoreComparison(project.comparison[side], selectedTrack);
+      } catch (error) {
+        engine.current.stop();
+        setToast((error as Error).message);
+      }
     if (side === active) return;
     resetMacros(project.comparison[side]);
     change((p) => ({ ...p, comparison: { ...p.comparison, active: side } }));
@@ -697,7 +733,9 @@ export default function App() {
     change((p) => ({
       ...p,
       instruments: p.instruments.map((i) =>
-        i.id === preset.id ? { ...i, sound: structuredClone(sound), version: i.version + 1 } : i,
+        i.id === preset.id
+          ? { ...i, sound: structuredClone(instrumentSound), version: i.version + 1 }
+          : i,
       ),
     }));
     setToast(`${preset.label} saved. Track copies are unchanged; use Apply to update them.`);
@@ -731,7 +769,7 @@ export default function App() {
           key: presetKey,
           label: presetLabel.trim(),
           version: 1,
-          sound: structuredClone(sound),
+          sound: structuredClone(instrumentSound),
         },
       ],
     }));
@@ -740,7 +778,7 @@ export default function App() {
   };
   const apply = (all: boolean) => {
     const targets = all ? associated.map((t) => t.key) : track ? [track.key] : [];
-    change((p) => applyPreset(p, preset.id, sound, targets));
+    change((p) => applyPreset(p, preset.id, instrumentSound, targets));
     setToast(`Applied to ${targets.join(', ')}. Undo restores the previous sounds.`);
   };
   const updateMacro = (key: keyof Macros, value: number) => {
@@ -1137,7 +1175,7 @@ export default function App() {
                 <div className="panel-header instrument-header">
                   <div className="instrument-title">
                     <span className="title-wave">
-                      <MiniWave kind={preset.key} sound={sound} />
+                      <MiniWave kind={preset.key} sound={instrumentSound} />
                     </span>
                     <div>
                       <div className="context-label">
@@ -1218,7 +1256,118 @@ export default function App() {
                     ))}
                   </select>
                 </label>
-                {percussion && (
+                <label className="track-select-label">
+                  Synthesis engine
+                  <select
+                    aria-label="Synthesis engine"
+                    value={fourier ? 'fourpataka:engine/fourier' : instrumentSound.engine.id}
+                    onChange={(e) => {
+                      setSolo(false);
+                      const next =
+                        e.target.value === 'fourpataka:engine/fourier'
+                          ? mathematicalPreset('sine')
+                          : createEngineSound(e.target.value);
+                      resetMacros(next);
+                      change((p) => ({ ...p, comparison: { ...p.comparison, [active]: next } }));
+                    }}
+                  >
+                    {engineModules.definitions
+                      .filter(
+                        (d) =>
+                          d.supportsLive &&
+                          d.supportsOffline &&
+                          d.capabilities.update === 'phase-continuous',
+                      )
+                      .map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    {!fourier && instrumentSound.unavailable && (
+                      <option value={instrumentSound.engine.id}>
+                        {instrumentSound.engine.id} (unavailable)
+                      </option>
+                    )}
+                  </select>
+                </label>
+                {!fourier && (
+                  <section className="panel envelope-panel engine-controls">
+                    <h3>Engine controls</h3>
+                    {instrumentSound.unavailable ? (
+                      <p role="alert">
+                        {instrumentSound.unavailable}. Original settings are preserved. Choose
+                        another engine to replace this active snapshot.
+                      </p>
+                    ) : (
+                      Object.entries(
+                        engineModules.get(instrumentSound.engine.id).parameters ?? {},
+                      ).map(([key, parameter]) => {
+                        const settings = instrumentSound.engine.settings as Record<string, number>;
+                        const edit = (value: number) => {
+                          try {
+                            const next = readInstrumentSound({
+                              ...instrumentSound,
+                              engine: {
+                                ...instrumentSound.engine,
+                                settings: { ...settings, [key]: value },
+                              },
+                            });
+                            change(
+                              (p) => ({ ...p, comparison: { ...p.comparison, [active]: next } }),
+                              `engine:${key}`,
+                            );
+                          } catch (error) {
+                            setToast((error as Error).message);
+                          }
+                        };
+                        return (
+                          <div className="control-row" key={key}>
+                            <label>
+                              {parameter.label} <small>{parameter.unit}</small>
+                            </label>
+                            <input
+                              type="range"
+                              aria-label={`${parameter.label} engine control`}
+                              min={parameter.min}
+                              max={parameter.max}
+                              step={parameter.step}
+                              value={settings[key]}
+                              onChange={(e) => edit(Number(e.target.value))}
+                            />
+                            <input
+                              type="number"
+                              aria-label={`${parameter.label} exact engine value`}
+                              min={parameter.min}
+                              max={parameter.max}
+                              step={parameter.step}
+                              value={settings[key]}
+                              onChange={(e) => {
+                                if (e.target.value !== '') edit(Number(e.target.value));
+                              }}
+                            />
+                          </div>
+                        );
+                      })
+                    )}
+                    {!instrumentSound.unavailable && (
+                      <button
+                        className="text-button"
+                        onClick={() =>
+                          change((p) => ({
+                            ...p,
+                            comparison: {
+                              ...p.comparison,
+                              [active]: createEngineSound(instrumentSound.engine.id),
+                            },
+                          }))
+                        }
+                      >
+                        Reset engine controls
+                      </button>
+                    )}
+                  </section>
+                )}
+                {fourier && percussion && (
                   <div className="percussion-hint">
                     <span>{percussion.hint}.</span>
                     <button
@@ -1258,208 +1407,214 @@ export default function App() {
                     </button>
                   </div>
                 )}
-                <FourierWorkspace
-                  sound={sound}
-                  onChange={(next, group) => changeSound(() => next, group)}
-                >
-                  <div className="harmonics-heading">
-                    <div>
-                      <h3>
-                        Harmonic mixer <span>32 partials</span>
-                      </h3>
-                      <p>Each bar adds a sine wave at a multiple of your note.</p>
-                    </div>
-                    <span className="small-label">MAGNITUDE 0—1</span>
-                  </div>
-                  <button
-                    className="secondary-button"
-                    aria-expanded={upperHarmonicsOpen}
-                    onClick={() => setUpperHarmonicsOpen(!upperHarmonicsOpen)}
-                  >
-                    {upperHarmonicsOpen ? 'Hide' : 'Show'} H17–H32 ·{' '}
-                    {sound.harmonics.slice(16).filter((value) => value > 0).length} active
-                  </button>
-                  {[0, ...(upperHarmonicsOpen ? [16] : [])].map((bankStart) => (
-                    <div
-                      className="harmonic-mixer"
-                      key={bankStart}
-                      aria-label={`H${bankStart + 1}–H${bankStart + 16} controls`}
+                {fourier && (
+                  <>
+                    <FourierWorkspace
+                      sound={sound}
+                      onChange={(next, group) => changeSound(() => next, group)}
                     >
-                      <div className="mixer-axis">
-                        <span>1.0</span>
-                        <span>0.5</span>
-                        <span>0.0</span>
+                      <div className="harmonics-heading">
+                        <div>
+                          <h3>
+                            Harmonic mixer <span>32 partials</span>
+                          </h3>
+                          <p>Each bar adds a sine wave at a multiple of your note.</p>
+                        </div>
+                        <span className="small-label">MAGNITUDE 0—1</span>
                       </div>
-                      <div className="harmonic-bars">
-                        {sound.harmonics
-                          .slice(bankStart, bankStart + 16)
-                          .map((magnitude, bankIndex) => {
-                            const i = bankStart + bankIndex;
-                            const component = components(sound, fundamental, sampleRate)[i];
-                            const selected = selectedPartial === component.label;
-                            return (
-                              <div
-                                key={i}
-                                className={`harmonic-column ${selected ? 'selected' : ''} ${!component.available ? 'unavailable' : ''}`}
-                              >
-                                <input
-                                  className="harmonic-number"
-                                  aria-label={`H${i + 1} exact magnitude`}
-                                  type="number"
-                                  min="0"
-                                  max="1"
-                                  step=".01"
-                                  value={Number(magnitude.toFixed(3))}
-                                  onFocus={() => setSelectedPartial(component.label)}
-                                  onChange={(e) => {
-                                    if (e.target.value !== '')
-                                      changeSound(
-                                        (s) => ({
-                                          ...s,
-                                          harmonics: s.harmonics.map((v, index) =>
-                                            index === i ? clamp(Number(e.target.value), 0, 1) : v,
-                                          ),
-                                        }),
-                                        `harmonic:${i}`,
-                                      );
-                                  }}
-                                />
-                                <div className="bar-track">
+                      <button
+                        className="secondary-button"
+                        aria-expanded={upperHarmonicsOpen}
+                        onClick={() => setUpperHarmonicsOpen(!upperHarmonicsOpen)}
+                      >
+                        {upperHarmonicsOpen ? 'Hide' : 'Show'} H17–H32 ·{' '}
+                        {sound.harmonics.slice(16).filter((value) => value > 0).length} active
+                      </button>
+                      {[0, ...(upperHarmonicsOpen ? [16] : [])].map((bankStart) => (
+                        <div
+                          className="harmonic-mixer"
+                          key={bankStart}
+                          aria-label={`H${bankStart + 1}–H${bankStart + 16} controls`}
+                        >
+                          <div className="mixer-axis">
+                            <span>1.0</span>
+                            <span>0.5</span>
+                            <span>0.0</span>
+                          </div>
+                          <div className="harmonic-bars">
+                            {sound.harmonics
+                              .slice(bankStart, bankStart + 16)
+                              .map((magnitude, bankIndex) => {
+                                const i = bankStart + bankIndex;
+                                const component = components(sound, fundamental, sampleRate)[i];
+                                const selected = selectedPartial === component.label;
+                                return (
                                   <div
-                                    className="bar-fill"
-                                    style={{ height: `${magnitude * 100}%` }}
-                                  />
-                                  <div
-                                    className="bar-handle"
-                                    style={{ bottom: `${magnitude * 100}%` }}
-                                  />
-                                  <input
-                                    type="range"
-                                    className="vertical-range"
-                                    aria-label={`H${i + 1} magnitude`}
-                                    min="0"
-                                    max="1"
-                                    step=".01"
-                                    value={magnitude}
-                                    onFocus={() => setSelectedPartial(component.label)}
-                                    onPointerDown={() => setSelectedPartial(component.label)}
-                                    onChange={(e) =>
-                                      changeSound(
-                                        (s) => ({
-                                          ...s,
-                                          harmonics: s.harmonics.map((v, index) =>
-                                            index === i ? Number(e.target.value) : v,
-                                          ),
-                                        }),
-                                        `harmonic:${i}`,
-                                      )
-                                    }
-                                  />
-                                </div>
-                                <button
-                                  className="harmonic-label"
-                                  onClick={() => setSelectedPartial(component.label)}
-                                  aria-pressed={selected}
-                                >
-                                  H{i + 1}
-                                  {sound.polarity[i] === -1 && <sup>−</sup>}
-                                </button>
-                                <HarmonicPolarity
-                                  harmonic={component.label}
-                                  value={sound.polarity[i]}
-                                  compact
-                                  onChange={(polarity) => changePolarity(i, polarity)}
-                                />
-                                <span className="partial-frequency">
-                                  {component.frequency >= 1000
-                                    ? `${(component.frequency / 1000).toFixed(1)}k`
-                                    : Math.round(component.frequency)}
-                                  <small>Hz</small>
-                                </span>
-                              </div>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  ))}
-                  <div className="mixer-bottom">
-                    <span>
-                      <span className="orange-dot" />
-                      H1 = f₀ · H2–H32 = 2f₀–32f₀
-                      <span className="sign-guide"> · + / − changes sign</span>
-                    </span>
-                    <button
-                      className="text-button"
-                      onClick={() => {
-                        changeSound(() => mathematicalPreset('sine'));
-                        setToast('Reset to a pure sine. Undo brings back your sound.');
-                      }}
-                    >
-                      <RotateCcw size={13} />
-                      Reset to sine
-                    </button>
-                  </div>
-                </FourierWorkspace>
-                <div className="undertone-section">
-                  <div className="disclosure-row">
-                    <button
-                      className="disclosure-button"
-                      onClick={() => setUndertonesOpen(!undertonesOpen)}
-                      aria-expanded={undertonesOpen}
-                    >
-                      {undertonesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      <span>Undertones</span>
-                      <span className="tag pink">OPTIONAL</span>
-                      <span className="disclosure-detail">Explore below the fundamental</span>
-                    </button>
-                    <button
-                      className={`toggle ${sound.undertonesEnabled ? 'on pink-toggle' : ''}`}
-                      aria-label="Enable undertone bank"
-                      role="switch"
-                      aria-checked={sound.undertonesEnabled}
-                      onClick={() =>
-                        changeSound((s) => ({ ...s, undertonesEnabled: !s.undertonesEnabled }))
-                      }
-                    >
-                      <span />
-                    </button>
-                  </div>
-                  {undertonesOpen && (
-                    <div className="undertone-controls">
-                      {sound.undertones.map((value, i) => (
-                        <div key={i}>
-                          <button
-                            className={`text-button pink-text ${selectedPartial === `f₀/${i + 2}` ? 'selected' : ''}`}
-                            onClick={() => setSelectedPartial(`f₀/${i + 2}`)}
-                          >
-                            f₀/{i + 2} · {(fundamental / (i + 2)).toFixed(2)} Hz
-                          </button>
-                          <RangeControl
-                            label={`Undertone ${i + 2}`}
-                            value={value}
-                            min={0}
-                            max={1}
-                            step={0.01}
-                            onChange={(n) =>
-                              changeSound(
-                                (s) => ({
-                                  ...s,
-                                  undertones: s.undertones.map((v, j) => (i === j ? n : v)),
-                                }),
-                                `sub:${i}`,
-                              )
-                            }
-                          />
+                                    key={i}
+                                    className={`harmonic-column ${selected ? 'selected' : ''} ${!component.available ? 'unavailable' : ''}`}
+                                  >
+                                    <input
+                                      className="harmonic-number"
+                                      aria-label={`H${i + 1} exact magnitude`}
+                                      type="number"
+                                      min="0"
+                                      max="1"
+                                      step=".01"
+                                      value={Number(magnitude.toFixed(3))}
+                                      onFocus={() => setSelectedPartial(component.label)}
+                                      onChange={(e) => {
+                                        if (e.target.value !== '')
+                                          changeSound(
+                                            (s) => ({
+                                              ...s,
+                                              harmonics: s.harmonics.map((v, index) =>
+                                                index === i
+                                                  ? clamp(Number(e.target.value), 0, 1)
+                                                  : v,
+                                              ),
+                                            }),
+                                            `harmonic:${i}`,
+                                          );
+                                      }}
+                                    />
+                                    <div className="bar-track">
+                                      <div
+                                        className="bar-fill"
+                                        style={{ height: `${magnitude * 100}%` }}
+                                      />
+                                      <div
+                                        className="bar-handle"
+                                        style={{ bottom: `${magnitude * 100}%` }}
+                                      />
+                                      <input
+                                        type="range"
+                                        className="vertical-range"
+                                        aria-label={`H${i + 1} magnitude`}
+                                        min="0"
+                                        max="1"
+                                        step=".01"
+                                        value={magnitude}
+                                        onFocus={() => setSelectedPartial(component.label)}
+                                        onPointerDown={() => setSelectedPartial(component.label)}
+                                        onChange={(e) =>
+                                          changeSound(
+                                            (s) => ({
+                                              ...s,
+                                              harmonics: s.harmonics.map((v, index) =>
+                                                index === i ? Number(e.target.value) : v,
+                                              ),
+                                            }),
+                                            `harmonic:${i}`,
+                                          )
+                                        }
+                                      />
+                                    </div>
+                                    <button
+                                      className="harmonic-label"
+                                      onClick={() => setSelectedPartial(component.label)}
+                                      aria-pressed={selected}
+                                    >
+                                      H{i + 1}
+                                      {sound.polarity[i] === -1 && <sup>−</sup>}
+                                    </button>
+                                    <HarmonicPolarity
+                                      harmonic={component.label}
+                                      value={sound.polarity[i]}
+                                      compact
+                                      onChange={(polarity) => changePolarity(i, polarity)}
+                                    />
+                                    <span className="partial-frequency">
+                                      {component.frequency >= 1000
+                                        ? `${(component.frequency / 1000).toFixed(1)}k`
+                                        : Math.round(component.frequency)}
+                                      <small>Hz</small>
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                          </div>
                         </div>
                       ))}
-                      <p className="footnote">
-                        {sound.undertonesEnabled
-                          ? 'Bank enabled. These lower components may change the perceived pitch.'
-                          : 'Bank disabled. Saved slider values are preserved and produce no sound.'}
-                      </p>
+                      <div className="mixer-bottom">
+                        <span>
+                          <span className="orange-dot" />
+                          H1 = f₀ · H2–H32 = 2f₀–32f₀
+                          <span className="sign-guide"> · + / − changes sign</span>
+                        </span>
+                        <button
+                          className="text-button"
+                          onClick={() => {
+                            changeSound(() => mathematicalPreset('sine'));
+                            setToast('Reset to a pure sine. Undo brings back your sound.');
+                          }}
+                        >
+                          <RotateCcw size={13} />
+                          Reset to sine
+                        </button>
+                      </div>
+                    </FourierWorkspace>
+                    <div className="undertone-section">
+                      <div className="disclosure-row">
+                        <button
+                          className="disclosure-button"
+                          onClick={() => setUndertonesOpen(!undertonesOpen)}
+                          aria-expanded={undertonesOpen}
+                        >
+                          {undertonesOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          <span>Undertones</span>
+                          <span className="tag pink">OPTIONAL</span>
+                          <span className="disclosure-detail">Explore below the fundamental</span>
+                        </button>
+                        <button
+                          className={`toggle ${sound.undertonesEnabled ? 'on pink-toggle' : ''}`}
+                          aria-label="Enable undertone bank"
+                          role="switch"
+                          aria-checked={sound.undertonesEnabled}
+                          onClick={() =>
+                            changeSound((s) => ({ ...s, undertonesEnabled: !s.undertonesEnabled }))
+                          }
+                        >
+                          <span />
+                        </button>
+                      </div>
+                      {undertonesOpen && (
+                        <div className="undertone-controls">
+                          {sound.undertones.map((value, i) => (
+                            <div key={i}>
+                              <button
+                                className={`text-button pink-text ${selectedPartial === `f₀/${i + 2}` ? 'selected' : ''}`}
+                                onClick={() => setSelectedPartial(`f₀/${i + 2}`)}
+                              >
+                                f₀/{i + 2} · {(fundamental / (i + 2)).toFixed(2)} Hz
+                              </button>
+                              <RangeControl
+                                label={`Undertone ${i + 2}`}
+                                value={value}
+                                min={0}
+                                max={1}
+                                step={0.01}
+                                onChange={(n) =>
+                                  changeSound(
+                                    (s) => ({
+                                      ...s,
+                                      undertones: s.undertones.map((v, j) => (i === j ? n : v)),
+                                    }),
+                                    `sub:${i}`,
+                                  )
+                                }
+                              />
+                            </div>
+                          ))}
+                          <p className="footnote">
+                            {sound.undertonesEnabled
+                              ? 'Bank enabled. These lower components may change the perceived pitch.'
+                              : 'Bank disabled. Saved slider values are preserved and produce no sound.'}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </>
+                )}
               </section>
 
               <ComparisonPanel
@@ -1478,343 +1633,361 @@ export default function App() {
               />
               <div className="instrument-lower">
                 <div className="lower-main">
-                  <SourceGraphs
-                    sound={sound}
-                    frequency={fundamental}
-                    sampleRate={sampleRate}
-                    selected={selectedPartial}
-                    onSelect={setSelectedPartial}
-                  />
-                  <section className="panel shaping-panel">
-                    <div className="section-title">
-                      <h3>Envelope & level</h3>
-                    </div>
-                    <div className="envelope-controls">
-                      <RangeControl
-                        label="Attack"
-                        value={sound.attack * 1000}
-                        min={5}
-                        max={2000}
-                        step={5}
-                        unit="ms"
-                        onChange={(n) => changeSound((s) => ({ ...s, attack: n / 1000 }), 'attack')}
+                  {fourier && (
+                    <>
+                      <SourceGraphs
+                        sound={sound}
+                        frequency={fundamental}
+                        sampleRate={sampleRate}
+                        selected={selectedPartial}
+                        onSelect={setSelectedPartial}
                       />
-                      <RangeControl
-                        label="Release"
-                        value={sound.release * 1000}
-                        min={10}
-                        max={3000}
-                        step={10}
-                        unit="ms"
-                        onChange={(n) =>
-                          changeSound((s) => ({ ...s, release: n / 1000 }), 'release')
-                        }
-                      />
-                      <RangeControl
-                        label="Output trim"
-                        value={sound.trim}
-                        min={-36}
-                        max={0}
-                        step={1}
-                        unit="dB"
-                        onChange={(n) => changeSound((s) => ({ ...s, trim: n }), 'trim')}
-                      />
-                    </div>
-                    <label className="check-label">
-                      <input
-                        type="checkbox"
-                        checked={!!sound.percussion}
-                        onChange={(event) =>
-                          changeSound((s) => {
-                            const { percussion: _hit, ...rest } = s;
-                            return event.target.checked
-                              ? {
-                                  ...rest,
-                                  percussion: { noise: 0.85, highpass: 6500, decay: 0.045 },
-                                }
-                              : rest;
-                          }, 'hit-mode')
-                        }
-                      />
-                      Percussive hit
-                    </label>
-                    {sound.percussion && (
-                      <div className="envelope-controls">
-                        <RangeControl
-                          label="Noise level"
-                          value={sound.percussion.noise * 100}
-                          min={0}
-                          max={100}
-                          step={1}
-                          unit="%"
-                          onChange={(n) =>
-                            changeSound(
-                              (s) => ({ ...s, percussion: { ...s.percussion!, noise: n / 100 } }),
-                              'hit-noise',
-                            )
-                          }
-                        />
-                        <RangeControl
-                          label="Noise high-pass"
-                          value={sound.percussion.highpass}
-                          min={20}
-                          max={16000}
-                          step={20}
-                          unit="Hz"
-                          onChange={(n) =>
-                            changeSound(
-                              (s) => ({ ...s, percussion: { ...s.percussion!, highpass: n } }),
-                              'hit-highpass',
-                            )
-                          }
-                        />
-                        <RangeControl
-                          label="Noise low-pass"
-                          value={sound.percussion.lowpass ?? 14000}
-                          min={20}
-                          max={16000}
-                          step={20}
-                          unit="Hz"
-                          onChange={(n) =>
-                            changeSound(
-                              (s) => ({ ...s, percussion: { ...s.percussion!, lowpass: n } }),
-                              'hit-lowpass',
-                            )
-                          }
-                        />
-                        <RangeControl
-                          label="Hit decay"
-                          value={sound.percussion.decay * 1000}
-                          min={10}
-                          max={2000}
-                          step={1}
-                          unit="ms"
-                          onChange={(n) =>
-                            changeSound(
-                              (s) => ({ ...s, percussion: { ...s.percussion!, decay: n / 1000 } }),
-                              'hit-decay',
-                            )
-                          }
-                        />
-                        <RangeControl
-                          label="Noise decay"
-                          value={(sound.percussion.noiseDecay ?? sound.percussion.decay) * 1000}
-                          min={5}
-                          max={2000}
-                          step={1}
-                          unit="ms"
-                          onChange={(n) =>
-                            changeSound(
-                              (s) => ({
-                                ...s,
-                                percussion: { ...s.percussion!, noiseDecay: n / 1000 },
-                              }),
-                              'noise-decay',
-                            )
-                          }
-                        />
-                        <RangeControl
-                          label="Pitch drop"
-                          value={sound.percussion.pitch?.amount ?? 0}
-                          min={0}
-                          max={48}
-                          step={1}
-                          unit="st"
-                          onChange={(n) =>
-                            changeSound((s) => {
-                              const { pitch: oldPitch, ...hit } = s.percussion!;
-                              return {
-                                ...s,
-                                percussion: n
-                                  ? {
-                                      ...hit,
-                                      pitch: { amount: n, decay: oldPitch?.decay ?? 0.025 },
-                                    }
-                                  : hit,
-                              };
-                            }, 'pitch-drop')
-                          }
-                        />
-                        {sound.percussion.pitch && (
+                      <section className="panel shaping-panel">
+                        <div className="section-title">
+                          <h3>Envelope & level</h3>
+                        </div>
+                        <div className="envelope-controls">
                           <RangeControl
-                            label="Pitch decay"
-                            value={sound.percussion.pitch.decay * 1000}
+                            label="Attack"
+                            value={sound.attack * 1000}
                             min={5}
-                            max={500}
-                            step={1}
+                            max={2000}
+                            step={5}
                             unit="ms"
                             onChange={(n) =>
-                              changeSound(
-                                (s) => ({
-                                  ...s,
-                                  percussion: {
-                                    ...s.percussion!,
-                                    pitch: { ...s.percussion!.pitch!, decay: n / 1000 },
-                                  },
-                                }),
-                                'pitch-decay',
-                              )
+                              changeSound((s) => ({ ...s, attack: n / 1000 }), 'attack')
                             }
                           />
+                          <RangeControl
+                            label="Release"
+                            value={sound.release * 1000}
+                            min={10}
+                            max={3000}
+                            step={10}
+                            unit="ms"
+                            onChange={(n) =>
+                              changeSound((s) => ({ ...s, release: n / 1000 }), 'release')
+                            }
+                          />
+                          <RangeControl
+                            label="Output trim"
+                            value={sound.trim}
+                            min={-36}
+                            max={0}
+                            step={1}
+                            unit="dB"
+                            onChange={(n) => changeSound((s) => ({ ...s, trim: n }), 'trim')}
+                          />
+                        </div>
+                        <label className="check-label">
+                          <input
+                            type="checkbox"
+                            checked={!!sound.percussion}
+                            onChange={(event) =>
+                              changeSound((s) => {
+                                const { percussion: _hit, ...rest } = s;
+                                return event.target.checked
+                                  ? {
+                                      ...rest,
+                                      percussion: { noise: 0.85, highpass: 6500, decay: 0.045 },
+                                    }
+                                  : rest;
+                              }, 'hit-mode')
+                            }
+                          />
+                          Percussive hit
+                        </label>
+                        {sound.percussion && (
+                          <div className="envelope-controls">
+                            <RangeControl
+                              label="Noise level"
+                              value={sound.percussion.noise * 100}
+                              min={0}
+                              max={100}
+                              step={1}
+                              unit="%"
+                              onChange={(n) =>
+                                changeSound(
+                                  (s) => ({
+                                    ...s,
+                                    percussion: { ...s.percussion!, noise: n / 100 },
+                                  }),
+                                  'hit-noise',
+                                )
+                              }
+                            />
+                            <RangeControl
+                              label="Noise high-pass"
+                              value={sound.percussion.highpass}
+                              min={20}
+                              max={16000}
+                              step={20}
+                              unit="Hz"
+                              onChange={(n) =>
+                                changeSound(
+                                  (s) => ({ ...s, percussion: { ...s.percussion!, highpass: n } }),
+                                  'hit-highpass',
+                                )
+                              }
+                            />
+                            <RangeControl
+                              label="Noise low-pass"
+                              value={sound.percussion.lowpass ?? 14000}
+                              min={20}
+                              max={16000}
+                              step={20}
+                              unit="Hz"
+                              onChange={(n) =>
+                                changeSound(
+                                  (s) => ({ ...s, percussion: { ...s.percussion!, lowpass: n } }),
+                                  'hit-lowpass',
+                                )
+                              }
+                            />
+                            <RangeControl
+                              label="Hit decay"
+                              value={sound.percussion.decay * 1000}
+                              min={10}
+                              max={2000}
+                              step={1}
+                              unit="ms"
+                              onChange={(n) =>
+                                changeSound(
+                                  (s) => ({
+                                    ...s,
+                                    percussion: { ...s.percussion!, decay: n / 1000 },
+                                  }),
+                                  'hit-decay',
+                                )
+                              }
+                            />
+                            <RangeControl
+                              label="Noise decay"
+                              value={(sound.percussion.noiseDecay ?? sound.percussion.decay) * 1000}
+                              min={5}
+                              max={2000}
+                              step={1}
+                              unit="ms"
+                              onChange={(n) =>
+                                changeSound(
+                                  (s) => ({
+                                    ...s,
+                                    percussion: { ...s.percussion!, noiseDecay: n / 1000 },
+                                  }),
+                                  'noise-decay',
+                                )
+                              }
+                            />
+                            <RangeControl
+                              label="Pitch drop"
+                              value={sound.percussion.pitch?.amount ?? 0}
+                              min={0}
+                              max={48}
+                              step={1}
+                              unit="st"
+                              onChange={(n) =>
+                                changeSound((s) => {
+                                  const { pitch: oldPitch, ...hit } = s.percussion!;
+                                  return {
+                                    ...s,
+                                    percussion: n
+                                      ? {
+                                          ...hit,
+                                          pitch: { amount: n, decay: oldPitch?.decay ?? 0.025 },
+                                        }
+                                      : hit,
+                                  };
+                                }, 'pitch-drop')
+                              }
+                            />
+                            {sound.percussion.pitch && (
+                              <RangeControl
+                                label="Pitch decay"
+                                value={sound.percussion.pitch.decay * 1000}
+                                min={5}
+                                max={500}
+                                step={1}
+                                unit="ms"
+                                onChange={(n) =>
+                                  changeSound(
+                                    (s) => ({
+                                      ...s,
+                                      percussion: {
+                                        ...s.percussion!,
+                                        pitch: { ...s.percussion!.pitch!, decay: n / 1000 },
+                                      },
+                                    }),
+                                    'pitch-decay',
+                                  )
+                                }
+                              />
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
-                  </section>
-                  <section className="panel macro-panel">
-                    <button
-                      className="disclosure-button"
-                      onClick={() => setMacrosOpen(!macrosOpen)}
-                      aria-expanded={macrosOpen}
-                    >
-                      {macrosOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      <span>Coefficient macros</span>
-                    </button>
-                    {macrosOpen && (
-                      <div className="macro-controls">
-                        <RangeControl
-                          label="Falloff"
-                          value={macros.falloff}
-                          min={0}
-                          max={2}
-                          step={0.05}
-                          onChange={(n) => updateMacro('falloff', n)}
-                        />
-                        <RangeControl
-                          label="Brightness"
-                          value={macros.brightness}
-                          min={-1}
-                          max={1}
-                          step={0.05}
-                          onChange={(n) => updateMacro('brightness', n)}
-                        />
-                        <RangeControl
-                          label="Odd / even"
-                          value={macros.oddEven}
-                          min={-1}
-                          max={1}
-                          step={0.05}
-                          onChange={(n) => updateMacro('oddEven', n)}
-                        />
-                        <RangeControl
-                          label="Sub weight"
-                          value={macros.subWeight}
-                          min={0}
-                          max={2}
-                          step={0.05}
-                          onChange={(n) => updateMacro('subWeight', n)}
-                        />
+                      </section>
+                      <section className="panel macro-panel">
                         <button
-                          className="text-button"
-                          onClick={() => {
-                            setMacros({ ...NEUTRAL_MACROS });
-                            changeSound(() => structuredClone(macroBaseline.current), '', false);
-                          }}
+                          className="disclosure-button"
+                          onClick={() => setMacrosOpen(!macrosOpen)}
+                          aria-expanded={macrosOpen}
                         >
-                          <RotateCcw size={13} />
-                          Reset macros
+                          {macrosOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          <span>Coefficient macros</span>
                         </button>
-                        <p className="footnote">
-                          Transforms use a stable baseline. A manual edit captures a new baseline;
-                          zero partials stay zero.
-                        </p>
-                      </div>
-                    )}
-                  </section>
+                        {macrosOpen && (
+                          <div className="macro-controls">
+                            <RangeControl
+                              label="Falloff"
+                              value={macros.falloff}
+                              min={0}
+                              max={2}
+                              step={0.05}
+                              onChange={(n) => updateMacro('falloff', n)}
+                            />
+                            <RangeControl
+                              label="Brightness"
+                              value={macros.brightness}
+                              min={-1}
+                              max={1}
+                              step={0.05}
+                              onChange={(n) => updateMacro('brightness', n)}
+                            />
+                            <RangeControl
+                              label="Odd / even"
+                              value={macros.oddEven}
+                              min={-1}
+                              max={1}
+                              step={0.05}
+                              onChange={(n) => updateMacro('oddEven', n)}
+                            />
+                            <RangeControl
+                              label="Sub weight"
+                              value={macros.subWeight}
+                              min={0}
+                              max={2}
+                              step={0.05}
+                              onChange={(n) => updateMacro('subWeight', n)}
+                            />
+                            <button
+                              className="text-button"
+                              onClick={() => {
+                                setMacros({ ...NEUTRAL_MACROS });
+                                changeSound(
+                                  () => structuredClone(macroBaseline.current),
+                                  '',
+                                  false,
+                                );
+                              }}
+                            >
+                              <RotateCcw size={13} />
+                              Reset macros
+                            </button>
+                            <p className="footnote">
+                              Transforms use a stable baseline. A manual edit captures a new
+                              baseline; zero partials stay zero.
+                            </p>
+                          </div>
+                        )}
+                      </section>
+                    </>
+                  )}
                 </div>
                 <aside className="inspector-stack">
-                  <section className="panel partial-inspector">
-                    <div className="section-title">
-                      <h3>Partial inspector</h3>
-                      <CircleHelp size={14} />
-                    </div>
-                    <div className="inspector-symbol">
-                      {partial.label}
-                      <span>
+                  {fourier && (
+                    <section className="panel partial-inspector">
+                      <div className="section-title">
+                        <h3>Partial inspector</h3>
+                        <CircleHelp size={14} />
+                      </div>
+                      <div className="inspector-symbol">
+                        {partial.label}
+                        <span>
+                          {partial.kind === 'harmonic'
+                            ? partial.index === 0
+                              ? 'FUNDAMENTAL'
+                              : 'OVERTONE'
+                            : 'SUBHARMONIC'}
+                        </span>
+                      </div>
+                      <div className="frequency-equation">
+                        {fundamental.toFixed(2)}{' '}
                         {partial.kind === 'harmonic'
-                          ? partial.index === 0
-                            ? 'FUNDAMENTAL'
-                            : 'OVERTONE'
-                          : 'SUBHARMONIC'}
-                      </span>
-                    </div>
-                    <div className="frequency-equation">
-                      {fundamental.toFixed(2)}{' '}
-                      {partial.kind === 'harmonic'
-                        ? `× ${partial.index + 1}`
-                        : `÷ ${partial.index + 2}`}
-                      <strong>
-                        {partial.frequency.toFixed(2)} <small>Hz</small>
-                      </strong>
-                    </div>
-                    <dl>
-                      <div>
-                        <dt>Magnitude</dt>
-                        <dd>{partial.magnitude.toFixed(3)}</dd>
+                          ? `× ${partial.index + 1}`
+                          : `÷ ${partial.index + 2}`}
+                        <strong>
+                          {partial.frequency.toFixed(2)} <small>Hz</small>
+                        </strong>
                       </div>
-                      <div>
-                        <dt>Coefficient level</dt>
-                        <dd>{coefficientDb(partial.magnitude)} dB</dd>
-                      </div>
-                      <div>
-                        <dt>Polarity</dt>
-                        <dd>{partial.polarity === 1 ? 'Normal (+)' : 'Inverted (−)'}</dd>
-                      </div>
-                      <div>
-                        <dt>Signed coefficient</dt>
-                        <dd>
-                          <output aria-label={`${partial.label} signed coefficient`}>
-                            {partial.polarity < 0 ? '−' : '+'}
-                            {partial.magnitude.toFixed(3)}
-                          </output>
-                        </dd>
-                      </div>
-                    </dl>
-                    {partial.kind === 'harmonic' && (
-                      <>
-                        <HarmonicPolarity
-                          harmonic={partial.label}
-                          value={partial.polarity}
-                          onChange={(polarity) => changePolarity(partial.index, polarity)}
-                        />
-                        <p className="footnote">
-                          Sign flips this sine wave; magnitude controls its strength. A
-                          zero-magnitude harmonic stays silent.
-                        </p>
-                      </>
-                    )}
-                    <p className="footnote">
-                      dB relative to magnitude 1, before trim.{' '}
-                      {partial.frequency < 20
-                        ? 'Below the ordinary audible range.'
-                        : !partial.available
-                          ? 'Above Nyquist: excluded from playback at this pitch.'
-                          : ''}
-                    </p>
-                    <button
-                      className={`secondary-button full-width ${solo ? 'solo-active' : ''}`}
-                      onClick={() => {
-                        setSolo(!solo);
-                        if (playback !== 'audition' && comparison.phrase) {
-                          auditionRequested.current = true;
-                          void engine.current
-                            .auditionPhrase(
-                              sound,
-                              comparison.phrase,
-                              !solo ? selectedPartial : undefined,
-                              project.processing.audition[active],
-                            )
-                            .catch((e) => {
-                              auditionRequested.current = false;
-                              setToast(e.message);
-                            });
-                        }
-                      }}
-                      disabled={!solo && !!comparison.error}
-                    >
-                      <Headphones size={14} />
-                      {solo ? 'Solo on · return to instrument' : `Solo ${partial.label}`}
-                    </button>
-                  </section>
+                      <dl>
+                        <div>
+                          <dt>Magnitude</dt>
+                          <dd>{partial.magnitude.toFixed(3)}</dd>
+                        </div>
+                        <div>
+                          <dt>Coefficient level</dt>
+                          <dd>{coefficientDb(partial.magnitude)} dB</dd>
+                        </div>
+                        <div>
+                          <dt>Polarity</dt>
+                          <dd>{partial.polarity === 1 ? 'Normal (+)' : 'Inverted (−)'}</dd>
+                        </div>
+                        <div>
+                          <dt>Signed coefficient</dt>
+                          <dd>
+                            <output aria-label={`${partial.label} signed coefficient`}>
+                              {partial.polarity < 0 ? '−' : '+'}
+                              {partial.magnitude.toFixed(3)}
+                            </output>
+                          </dd>
+                        </div>
+                      </dl>
+                      {partial.kind === 'harmonic' && (
+                        <>
+                          <HarmonicPolarity
+                            harmonic={partial.label}
+                            value={partial.polarity}
+                            onChange={(polarity) => changePolarity(partial.index, polarity)}
+                          />
+                          <p className="footnote">
+                            Sign flips this sine wave; magnitude controls its strength. A
+                            zero-magnitude harmonic stays silent.
+                          </p>
+                        </>
+                      )}
+                      <p className="footnote">
+                        dB relative to magnitude 1, before trim.{' '}
+                        {partial.frequency < 20
+                          ? 'Below the ordinary audible range.'
+                          : !partial.available
+                            ? 'Above Nyquist: excluded from playback at this pitch.'
+                            : ''}
+                      </p>
+                      <button
+                        className={`secondary-button full-width ${solo ? 'solo-active' : ''}`}
+                        onClick={() => {
+                          setSolo(!solo);
+                          if (playback !== 'audition' && comparison.phrase) {
+                            auditionRequested.current = true;
+                            void engine.current
+                              .auditionPhrase(
+                                sound,
+                                comparison.phrase,
+                                !solo ? selectedPartial : undefined,
+                                project.processing.audition[active],
+                              )
+                              .catch((e) => {
+                                auditionRequested.current = false;
+                                setToast(e.message);
+                              });
+                          }
+                        }}
+                        disabled={!solo && !!comparison.error}
+                      >
+                        <Headphones size={14} />
+                        {solo ? 'Solo on · return to instrument' : `Solo ${partial.label}`}
+                      </button>
+                    </section>
+                  )}
                   <section className="apply-card">
                     <div className="eyebrow">APPLY SOUND</div>
                     <label className="track-select-label">
@@ -2423,7 +2596,7 @@ export default function App() {
                   <h3>Your source, measured</h3>
                   <span className="tag">STEADY MODEL · {referenceNote}</span>
                 </div>
-                {metrics.power ? (
+                {fourier && metrics.power ? (
                   <div className="analysis-metrics">
                     <div>
                       <span>Power-weighted centroid</span>
