@@ -14,7 +14,7 @@ export const fixture = JSON.parse(original);
 it('preserves schema-v1 source, custom coefficients/signs, boards and independent copies', () => {
   const saved = JSON.parse(original);
   const imported = importProject(original);
-  expect(imported.schemaVersion).toBe(4);
+  expect(imported.schemaVersion).toBe(5);
   expect(imported.scoreText).toBe(saved.scoreText);
   for (const [newSound, oldSound] of [
     [imported.instruments.find((p) => p.key === 'personal')!.sound, saved.instruments[0].sound],

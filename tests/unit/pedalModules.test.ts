@@ -92,7 +92,7 @@ it('migrates old projects atomically and retains unavailable modules in independ
     params: { curve: [0, 1] },
   };
   const old = { ...structuredClone(project), schemaVersion: 2 };
-  expect(importProject(JSON.stringify(old)).schemaVersion).toBe(4);
+  expect(importProject(JSON.stringify(old)).schemaVersion).toBe(5);
   const data: any = structuredClone(project);
   data.processing.master.pedals = [raw];
   data.processing.audition.A.pedals = [raw];

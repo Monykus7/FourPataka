@@ -1,3 +1,4 @@
+import { readFeatureSettings, type FeatureSettings } from './featureHost';
 import { isFourierSound, readInstrumentSound, type InstrumentSound } from './engineSound';
 import { instrumentModules } from '../modules/assembly';
 import {
@@ -49,7 +50,8 @@ export interface TrackInstance {
 }
 export interface Project {
   processing: Processing;
-  schemaVersion: 4;
+  schemaVersion: 5;
+  featureSettings?: FeatureSettings;
   id: string;
   name: string;
   scoreText: string;
@@ -146,7 +148,7 @@ export function createProject(): Project {
   const bright = instruments.find((p) => p.key === 'brightReed')!.sound;
   const project: Project = {
     processing: defaultProcessing(),
-    schemaVersion: 4,
+    schemaVersion: 5,
     id: crypto.randomUUID(),
     name: 'Untitled session',
     scoreText: EXAMPLE_SCORE,
@@ -354,10 +356,11 @@ export function importProject(text: string): Project {
     data.schemaVersion !== 1 &&
     data.schemaVersion !== 2 &&
     data.schemaVersion !== 3 &&
-    data.schemaVersion !== 4
+    data.schemaVersion !== 4 &&
+    data.schemaVersion !== 5
   )
     throw new Error(
-      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2, 3 and 4.`,
+      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2, 3, 4 and 5.`,
     );
   if (data.schemaVersion < 3 && data.processing) {
     const processing = data.processing as Processing;
@@ -371,6 +374,10 @@ export function importProject(text: string): Project {
     if (chains.some((chain) => chain?.pedals?.some((p) => p.module || p.unavailable)))
       throw new Error('Pedal module envelopes require project schema 3.');
   }
+  if (data.schemaVersion < 5 && data.featureSettings !== undefined)
+    throw new Error('Feature settings require project schema 5.');
+  const featureSettings = readFeatureSettings(data.featureSettings);
+  const sourceVersion = Number(data.schemaVersion);
   const sourceCount = data.schemaVersion === 1 ? LEGACY_HARMONIC_COUNT : HARMONIC_COUNT;
   // Pad owned copies independently. Migration never regenerates their timbres.
   const migrateSound = (sound: InstrumentSound): InstrumentSound => {
@@ -404,7 +411,7 @@ export function importProject(text: string): Project {
     keys.add(p.key);
     numeric(p.version, 1, 1_000_000, 'preset version');
     if (!Number.isInteger(p.version)) throw new Error('Preset version must be an integer.');
-    if (data.schemaVersion !== 4 && p.sound && typeof p.sound === 'object' && 'engine' in p.sound)
+    if (sourceVersion < 4 && p.sound && typeof p.sound === 'object' && 'engine' in p.sound)
       throw new Error('Engine sounds require schema 4.');
     readInstrumentSound(p.sound, sourceCount);
     if (p.folderId !== undefined && (typeof p.folderId !== 'string' || !folderIds.has(p.folderId)))
@@ -421,7 +428,7 @@ export function importProject(text: string): Project {
     trackKeys.add(t.key);
     numeric(t.appliedVersion, 1, 1_000_000, 'applied preset version');
     if (!Number.isInteger(t.appliedVersion)) throw new Error('Applied version must be an integer.');
-    if (data.schemaVersion !== 4 && t.sound && typeof t.sound === 'object' && 'engine' in t.sound)
+    if (sourceVersion < 4 && t.sound && typeof t.sound === 'object' && 'engine' in t.sound)
       throw new Error('Engine sounds require schema 4.');
     readInstrumentSound(t.sound, sourceCount);
     numeric(t.level, 0, 1, 'track level');
@@ -432,7 +439,7 @@ export function importProject(text: string): Project {
   if (data.comparison.active !== 'A' && data.comparison.active !== 'B')
     throw new Error('Invalid comparison selection.');
   for (const sound of [data.comparison.A, data.comparison.B]) {
-    if (data.schemaVersion !== 4 && sound && typeof sound === 'object' && 'engine' in sound)
+    if (sourceVersion < 4 && sound && typeof sound === 'object' && 'engine' in sound)
       throw new Error('Engine sounds require schema 4.');
     readInstrumentSound(sound, sourceCount);
   }
@@ -456,7 +463,8 @@ export function importProject(text: string): Project {
   const project = data as unknown as Project;
   let clean: Project = {
     processing: importProcessing(data.processing),
-    schemaVersion: 4,
+    schemaVersion: 5,
+    ...(data.featureSettings !== undefined ? { featureSettings } : {}),
     id: project.id,
     name: project.name,
     scoreText: project.scoreText,

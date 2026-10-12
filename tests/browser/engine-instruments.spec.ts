@@ -10,7 +10,7 @@ test('independent engine controls create a score instrument with Apply undo and 
     JSON.parse(localStorage.getItem('fourpataka.project.v1')!),
   );
   const tone = saved.instruments.find((p: any) => p.key === 'myTone');
-  expect(saved.schemaVersion).toBe(4);
+  expect(saved.schemaVersion).toBe(5);
   expect(tone.sound.engine.settings.detune).toBe(200);
   expect(saved.tracks.find((t: any) => t.key === 'tones').sound).toEqual(tone.sound);
   await page.setViewportSize({ width: 390, height: 844 });

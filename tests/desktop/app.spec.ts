@@ -392,7 +392,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
     'Saved harmonic-sign.fourpataka.json',
   );
   let saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(4);
+  expect(saved.schemaVersion).toBe(5);
   expect(saved.comparison.A.harmonics).toHaveLength(32);
   expect(saved.comparison.A.harmonics[31]).toBe(0.42);
   expect(saved.comparison.A.polarity[31]).toBe(-1);
@@ -859,7 +859,7 @@ test('packaged module foundation preserves a legacy owned EQ project through nat
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved m1-legacy-roundtrip');
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(4);
+  expect(saved.schemaVersion).toBe(5);
   expect(saved.scoreText).toBe(legacy.scoreText);
   expect(saved.tracks[0].level).toBe(legacy.tracks[0].level);
   for (const [sound, originalSound] of [
@@ -1006,7 +1006,7 @@ test('packaged contributed level pedal retains native saving reopening and owned
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved module-level');
   const saved = JSON.parse(await readFile(path, 'utf8'));
-  expect(saved.schemaVersion).toBe(4);
+  expect(saved.schemaVersion).toBe(5);
   expect(saved.processing.master.pedals[0].module).toEqual({
     id: 'example:pedal/level',
     apiVersion: 1,
@@ -1084,7 +1084,7 @@ test('packaged independent engine edits Apply and native JSON preserve settings'
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved engine-instrument');
   const saved = JSON.parse(await readFile(path, 'utf8'));
-  expect(saved.schemaVersion).toBe(4);
+  expect(saved.schemaVersion).toBe(5);
   expect(saved.tracks.find((t: any) => t.key === 'tones').sound.engine.settings.detune).toBe(200);
   await app.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),

@@ -118,7 +118,7 @@ app.whenReady().then(() => {
     // accepts legacy banks and the current module-aware document envelope.
     if (
       !project ||
-      ![1, 2, 3, 4].includes(project.schemaVersion) ||
+      ![1, 2, 3, 4, 5].includes(project.schemaVersion) ||
       typeof project.scoreText !== 'string'
     )
       throw new Error('Invalid FourPataka project.');

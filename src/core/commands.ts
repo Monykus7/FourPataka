@@ -1,3 +1,4 @@
+import { featureModules } from '../modules/assembly';
 export type CommandGroup = 'Timing' | 'Routing' | 'Structure' | 'Events';
 export interface CommandDefinition {
   name: string;
@@ -12,7 +13,7 @@ export interface CommandDefinition {
 }
 
 // Metadata describes the parser's language; it never supplies playback semantics.
-export const COMMANDS: readonly CommandDefinition[] = [
+const BUILTIN_COMMANDS: readonly CommandDefinition[] = [
   {
     name: 'from-song',
     group: 'Structure',
@@ -278,3 +279,15 @@ export const COMMANDS: readonly CommandDefinition[] = [
       'May appear alone or after a directive, header or event. Insertion adds a comment inside the selected track without advancing its musical time.',
   },
 ];
+
+// Registered cards describe existing grammar; parser code is never supplied by metadata.
+const commandNames = new Set(BUILTIN_COMMANDS.map((c) => c.name));
+for (const command of featureModules.commands) {
+  if (commandNames.has(command.name))
+    throw new Error(`Duplicate command metadata: ${command.name}`);
+  commandNames.add(command.name);
+}
+export const COMMANDS: readonly CommandDefinition[] = Object.freeze([
+  ...BUILTIN_COMMANDS,
+  ...featureModules.commands,
+]);

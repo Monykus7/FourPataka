@@ -17,7 +17,7 @@ it('schema4 round-trips independent engine settings with owned library track and
   p.comparison.A = structuredClone(tone);
   const withTrack = applyPreset(p, p.instruments[0].id, tone, [p.tracks[0].key]);
   const copy = importProject(JSON.stringify(withTrack));
-  expect(copy.schemaVersion).toBe(4);
+  expect(copy.schemaVersion).toBe(5);
   expect(copy.instruments[0].sound).toEqual(tone);
   expect(copy.tracks[0].sound).toEqual(tone);
   expect(engineRelease(tone)).toBe(0.25);
