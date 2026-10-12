@@ -2,7 +2,7 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Status in v0.33.0: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a engine foundation is implemented in v0.35.0; M4b saved-engine/UI integration is next. Feature APIs, runtime loading, licensing and contributor CI remain planned.
+Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a engine foundation is implemented in v0.35.0; M4b saved-engine/UI integration is next. Feature APIs, runtime loading, licensing and contributor CI remain planned.
 
 ## Start here
 

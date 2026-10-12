@@ -982,7 +982,7 @@ test('packaged drums retain pitch and noise settings through native JSON saving'
 
 test('packaged snare previews the whole hit and retains its noise band through native JSON', async () => {
   const page = await app.firstWindow();
-  await snarePreviewWorkflow(page);
+  await snarePreviewWorkflow(page, false);
   const savePath = resolve('.test-results', 'desktop', 'snare.fourpataka.json');
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });

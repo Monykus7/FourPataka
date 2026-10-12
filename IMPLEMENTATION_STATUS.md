@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-12. Latest verified release: v0.34.0; v0.35.0 release verification in progress. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-12. Latest verified release: v0.35.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -595,3 +595,11 @@ Implemented API-1 engine definitions and immutable registry, bounded validated i
 M4 remains partial. M4b is next: engine-backed saved instrument data, migration/lossless unavailable recovery, capability-driven controls/selection, independent-engine source tracks/A-B/reload/WAV and full resource/latency gates. Schema 3 stays Fourier-only; the authored demo and owned track sounds are unchanged. Runtime loading, M5/M6, licensing/contributor CI/publication and manual/device/perceptual gates remain open. Contributor tutorial includes public imports, a runnable offline example, three rendered diagrams, lifecycle/ownership/units and the persistence boundary.
 
 Initial validation:277 unit checks across45 files pass. All28 existing affected Chrome audio regressions pass through the adapter, covering continuous phase/A-B clocks, silent/retired cleanup, drum pitch/noise at44.1/48 kHz, explicit Apply ownership, frozen WAV/polyphony/routing/tails. The new Tone proof first corrected a partial-cycle analysis window, then exposed an early future-retirement fade; explicit planned-gain anchoring at the supplied audio time fixes it. Native/package/startup verification follows before release completion.
+
+Final browser evidence:31 distinct affected Chrome checks pass (28 existing audio regressions plus three new engine proofs). The Tone harness verifies scheduled start/gate/release caps, absolute gain, whole-cycle phase continuity, explicit future-retirement anchoring, immediate future/live disposal, natural completion and attack/release edits at44.1/48 kHz. All277 unit checks across45 files, production TypeScript/bundle and source formatting pass. The tutorial's three Mermaid diagrams render and were visually reviewed; its local links resolve. The authored EXAMPLE_SCORE exactly matches the task-start version.
+
+Windows portable packaging succeeds. The portable is visibly open as FourPataka v0.35.0; its extracted app.asar matches the packaged native bundle SHA-256:1B9B96485F7730DC586FB018C2CBFCFDE97B876A352A690CB18294B0FF20C457. Portable SHA-256:BBD0923A861E3ED2459CEBB70F555462E47535FD748B11F676E61A42889CDDFE. Artifact:release/FourPataka-0.35.0-win-x64.exe. This is still an unsigned prototype/default-icon package. Full independent-engine application, persistence/recovery, resource profiling, manual listening/device and M6 publication gates are not closed by these proofs.
+
+Six distinct native workflows pass against the final v0.35.0 packaged bundle with isolated profiles: native WAV binary/cancel/save; signed harmonics/distinct Soft bass and JSON reload; local assets/renderer isolation/audio/menu tools; fixed legacy schema-1 owned EQ import/save; Snare preview/noise-band/native JSON; and contributed preset composition/owned baked settings/native JSON. The hidden Electron Snare screenshot stalled after functional preview checks; the shared helper now makes capture optional, with browser capture retained and rerun successfully. Its native workflow then passed completely. These are existing Fourier application workflows; Basic Tone native UI/persistence/WAV selection is not shipped in M4a.
+
+Knowledge build/freshness checks pass. Eight focused implementation checkpoints use the configured Monykus7 identity and are pushed to origin/master. M4a is complete; M4b application engine integration is next, and the full M4 acceptance gate remains open.

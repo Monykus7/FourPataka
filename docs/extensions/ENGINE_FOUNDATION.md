@@ -10,7 +10,7 @@ Read [Basic Tone](../../src/modules/examples/basicTone/index.ts), [public export
 
 1. Copy `src/modules/examples/basicTone/index.ts` into your own module folder. Use an owned namespaced ID such as `your-name:engine/tone`; `fourpataka:` is reserved for allowlisted built-ins.
 2. Define plain settings and defaults. Include API/data versions, attribution, sample-rate range, live/offline support, randomness, capabilities and resource estimates.
-3. Validate every field and reject unsupported values before allocating nodes. Settings are bounded JSON: finite numbers, booleans, null, bounded strings, arrays and plain records. Limit depth to eight, arrays/records to 128 entries, strings to 4096 characters and keys to 160; prototype-like keys are rejected.
+3. Validate every field without mutating the supplied settings, and reject unsupported values before allocating nodes. Settings are bounded JSON: finite numbers, booleans, null, bounded strings, arrays and plain records. Limit depth to eight, arrays/records to 128 entries, strings to 4096 characters and keys to 160; prototype-like keys are rejected.
 4. Implement `create`, returning `end`, `update`, `steal` and `dispose`. Never create an AudioContext or a transport timer inside a voice.
 5. Import your definition in assembly and add it to `engineModules`. Do not add a parser/scheduler switch. Registration enables public factory lookup; application selection and persistence are separate M4b work.
 6. Add unit and browser proofs for your algorithm. The checked-in example is tested by the commands below.

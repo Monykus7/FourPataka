@@ -241,7 +241,7 @@ export async function percussionWorkflow(page: Page) {
   ).toBeVisible();
 }
 
-export async function snarePreviewWorkflow(page: Page) {
+export async function snarePreviewWorkflow(page: Page, captureScreenshot = true) {
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Score editor' });
   const source = 'track snares using snare {\n G3 quarter\n}';
@@ -296,5 +296,7 @@ export async function snarePreviewWorkflow(page: Page) {
     '6000',
   );
   await expect(hit).toHaveAttribute('data-ready', 'true');
-  await page.screenshot({ path: '.test-results/snare-complete-hit.png', fullPage: true });
+  // Hidden Electron test windows can stall compositor capture; Chrome owns visual proof.
+  if (captureScreenshot)
+    await page.screenshot({ path: '.test-results/snare-complete-hit.png', fullPage: true });
 }
