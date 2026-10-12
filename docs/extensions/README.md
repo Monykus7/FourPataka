@@ -2,7 +2,7 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a foundation ships in v0.35.0 and M4b selectable/saved engine instruments ships in v0.36.0; M5 feature modules is next. Feature APIs, runtime loading, licensing and contributor CI remain planned.
+Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a foundation ships in v0.35.0 and M4b selectable/saved engine instruments ships in v0.36.0; M5 declarative features/host actions ships in v0.37.0; M6 readiness remains. General custom adapters, runtime loading, licensing and contributor CI remain planned.
 
 ## Start here
 
@@ -18,7 +18,7 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source cont
 - [Architecture](ARCHITECTURE.md): current integration seams, proposed host/module boundaries, public contracts and bundled-source strategy.
 - [Pedals](PEDALS.md): current source recipe, planned M2 module recipe, parameters, live/offline DSP, latency, tails and proof requirements.
 - [Instruments](INSTRUMENTS.md): current Fourier preset recipe, planned M3 presets and separate M4 engine/capability contract.
-- [Feature modules](FEATURE_MODULES.md): planned M5 panels, experiments, command metadata and host workflow services.
+- [Feature modules](FEATURE_MODULES.md): implemented M5 declarative panels, experiments, command metadata, saved recovery and guarded host actions.
 - [Compatibility](COMPATIBILITY.md): IDs/API/data/schema versions, migration, unavailable-module preservation, copy ownership and clock/resource lifecycle.
 
 ## Separately releasable milestones
@@ -27,7 +27,7 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source cont
 2. **M2 — Pedal modules (implemented v0.33.0).** All four built-ins use contributor contracts; one independent utility example works through a folder and registration, with tutorial and live/WAV/native proofs.
 3. **M3 — Fourier preset modules (implemented v0.34.0).** Registry-backed timbres with an independent example, documented units/schema and preserved applied copies. New synthesis engines are separate.
 4. **M4 — Synthesis engines.** M4a public lifecycle, Fourier adapter and independent code example ship in v0.35.0. M4b selectable/saved engines, capability controls, migration/recovery and shared application playback/export ship in v0.36.0.
-5. **M5 — Feature modules.** Optional views/experiments/command metadata through narrow host services, one migrated view and a tested feature example.
+5. **M5 — Feature modules (implemented v0.37.0).** Declarative views/experiments/command metadata through narrow host services, migrated Learn, Partial pair and schema5 recovery.
 6. **M6 — Open-source readiness.** Owner-approved license/attribution, contributor/maintainer policies, supported APIs/examples and repeatable browser/native/package CI.
 
 Default start is M1 → M2 → M3. Those milestones enable useful documented contributions without waiting for M4/M5; the first M6 contributor release can cover only the APIs that have passed their own gates. Resolve license selection early, before accepting third-party code or publishing an open-source release. Later music features use landed module boundaries. The existing stage 5 manual/device gates are still open; none is closed by planning.
