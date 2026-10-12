@@ -28,7 +28,8 @@ it('keeps M1 module imports acyclic and contributors on the public data boundary
         file.includes(sep + 'examples' + sep) ||
         file.includes(sep + 'pedals' + sep) ||
         file.includes(sep + 'instruments' + sep) ||
-        file.includes(sep + 'engines' + sep)
+        file.includes(sep + 'engines' + sep) ||
+        file.includes(sep + 'features' + sep)
       )
         expect(dependency).toBe(resolve(root, 'index.ts'));
       graph.get(file)!.push(dependency);

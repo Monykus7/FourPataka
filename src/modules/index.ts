@@ -42,3 +42,5 @@ export {
   holdParameter,
   type Voice as FourierVoice,
 } from './foundation/fourierVoice';
+
+export * from './foundation/features';
