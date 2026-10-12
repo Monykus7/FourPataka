@@ -1,3 +1,4 @@
+import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { sectionsWorkflow } from '../helpers/sections';
@@ -1046,4 +1047,28 @@ test('packaged contributed level pedal retains native saving reopening and owned
           .params,
     )
     .toEqual(raw.params);
+});
+
+test('packaged registered Fourier preset composes and retains baked owned data through native JSON', async () => {
+  const page = await app.firstWindow();
+  await presetModuleWorkflow(page);
+  const path = resolve('.test-results', 'desktop', 'preset-module.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, path);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved preset-module');
+  const saved = JSON.parse(await readFile(path, 'utf8'));
+  const preset = saved.instruments.find((p: any) => p.key === 'mellowPluck');
+  expect(preset.sound.harmonics.slice(0, 3)).toEqual([1, 0.28, 0.14]);
+  expect(preset.sound.polarity[1]).toBe(-1);
+  expect(saved.tracks.find((t: any) => t.key === 'plucks').sound).toEqual(preset.sound);
+  expect(JSON.stringify(saved)).not.toContain('example:instrument/mellow-pluck');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, path);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.locator('.cm-content')).toContainText('using mellowPluck');
+  await page.getByRole('button', { name: 'Play score', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
 });

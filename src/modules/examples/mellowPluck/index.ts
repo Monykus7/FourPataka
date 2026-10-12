@@ -18,6 +18,7 @@ export const mellowPluck = defineFourierPreset({
       ...base,
       harmonics: base.harmonics.map((_, i) => magnitudes[i] ?? 0),
       polarity: base.polarity.map((_, i) => (i === 1 ? -1 : 1)),
+      percussion: { noise: 0, highpass: 20, decay: 0.16 },
       attack: 0.008,
       release: 0.16,
       trim: -15,
