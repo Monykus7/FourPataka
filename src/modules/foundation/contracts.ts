@@ -1,4 +1,4 @@
-/** Experimental bundled-source data API. Audio factories arrive in later milestones. */
+/** Experimental bundled-source API for metadata, pedals, presets and engine voices. */
 export const MODULE_API_VERSION = 1;
 export type ModuleCategory = 'pedal' | 'instrument' | 'engine' | 'feature';
 export type ParameterUnit = 'dB' | 'Hz' | 'ms' | 's' | '%' | ':1' | 'linear';

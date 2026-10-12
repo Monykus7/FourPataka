@@ -1,3 +1,5 @@
+import { fourierEngine } from './engines/fourier/index';
+import { createEngineRegistry } from './index';
 import { mellowPluck } from './examples/mellowPluck/index';
 import { builtInPresetDefinitions } from './instruments/catalogue';
 import { createFourierPresetRegistry } from './index';
@@ -25,3 +27,5 @@ export const instrumentModules = createFourierPresetRegistry(
 export const factoryPreviews = instrumentModules.definitions
   .filter((d) => d.preview)
   .map((d) => ({ key: d.scoreKey, createSound: d.createSound, ...d.preview! }));
+
+export const engineModules = createEngineRegistry([fourierEngine], [fourierEngine.id]);
