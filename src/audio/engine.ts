@@ -346,7 +346,12 @@ export class AudioEngine {
     await this.ready();
     if (revision !== this.revision) return;
     const tracks = structuredClone(instances);
-    const maxRelease = Math.max(0, ...tracks.map((t) => engineRelease(t.sound)));
+    const maxRelease = Math.max(
+      0,
+      ...tracks
+        .filter((t) => score.events.some((e) => e.track === t.key && e.frequencies.length))
+        .map((t) => engineRelease(t.sound)),
+    );
     // A prior legato voice may outlast a tiny final event; keep the written clock separate.
     const soundingSeconds = score.events.reduce(
       (end, event) =>

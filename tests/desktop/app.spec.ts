@@ -1,3 +1,4 @@
+import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
@@ -391,7 +392,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
     'Saved harmonic-sign.fourpataka.json',
   );
   let saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(3);
+  expect(saved.schemaVersion).toBe(4);
   expect(saved.comparison.A.harmonics).toHaveLength(32);
   expect(saved.comparison.A.harmonics[31]).toBe(0.42);
   expect(saved.comparison.A.polarity[31]).toBe(-1);
@@ -858,7 +859,7 @@ test('packaged module foundation preserves a legacy owned EQ project through nat
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved m1-legacy-roundtrip');
   const saved = JSON.parse(await readFile(savePath, 'utf8'));
-  expect(saved.schemaVersion).toBe(3);
+  expect(saved.schemaVersion).toBe(4);
   expect(saved.scoreText).toBe(legacy.scoreText);
   expect(saved.tracks[0].level).toBe(legacy.tracks[0].level);
   for (const [sound, originalSound] of [
@@ -1005,7 +1006,7 @@ test('packaged contributed level pedal retains native saving reopening and owned
   await page.getByRole('button', { name: 'Save project', exact: true }).click();
   await expect(page.locator('.toast[role=status]')).toContainText('Saved module-level');
   const saved = JSON.parse(await readFile(path, 'utf8'));
-  expect(saved.schemaVersion).toBe(3);
+  expect(saved.schemaVersion).toBe(4);
   expect(saved.processing.master.pedals[0].module).toEqual({
     id: 'example:pedal/level',
     apiVersion: 1,
@@ -1069,6 +1070,48 @@ test('packaged registered Fourier preset composes and retains baked owned data t
   }, path);
   await page.getByRole('button', { name: 'Open project', exact: true }).click();
   await expect(page.locator('.cm-content')).toContainText('using mellowPluck');
+  await page.getByRole('button', { name: 'Play score', exact: true }).click();
+  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
+});
+
+test('packaged independent engine edits Apply and native JSON preserve settings', async () => {
+  const page = await app.firstWindow();
+  await engineInstrumentWorkflow(page);
+  const path = resolve('.test-results', 'desktop', 'engine-instrument.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, path);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved engine-instrument');
+  const saved = JSON.parse(await readFile(path, 'utf8'));
+  expect(saved.schemaVersion).toBe(4);
+  expect(saved.tracks.find((t: any) => t.key === 'tones').sound.engine.settings.detune).toBe(200);
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),
+  );
+  const panel = page.getByRole('dialog', { name: 'Export WAV' });
+  await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
+  await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
+  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  const wavPath = resolve('.test-results', 'desktop', 'engine-tone.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, wavPath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved engine-tone.wav');
+  const wav = await readFile(wavPath);
+  expect(wav.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(wav.readUInt32LE(24)).toBe(44100);
+  expect(wav.length).toBeGreaterThan(44100);
+  await panel.getByRole('button', { name: 'Close WAV export', exact: true }).click();
+
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, path);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
 });

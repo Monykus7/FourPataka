@@ -1631,7 +1631,7 @@ export default function App() {
                 onCopy={copyAB}
                 onReplay={() => void audition()}
               />
-              <div className="instrument-lower">
+              <div className={`instrument-lower ${fourier ? '' : 'engine-layout'}`}>
                 <div className="lower-main">
                   {fourier && (
                     <>
@@ -2622,7 +2622,9 @@ export default function App() {
                   </div>
                 ) : (
                   <p className="silence-state">
-                    Silence · no effective components. Centroid and power shares are undefined.
+                    {fourier
+                      ? 'Silence · no effective components. Centroid and power shares are undefined.'
+                      : 'Fourier source descriptors are unavailable for this engine.'}
                   </p>
                 )}
                 <p className="footnote">

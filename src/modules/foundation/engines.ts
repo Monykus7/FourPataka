@@ -97,6 +97,10 @@ export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S>
     !Number.isFinite(input.maximumSampleRate) ||
     input.maximumSampleRate < input.minimumSampleRate ||
     input.maximumSampleRate > 384000 ||
+    (input.parameters !== undefined &&
+      (!input.parameters ||
+        typeof input.parameters !== 'object' ||
+        Array.isArray(input.parameters))) ||
     input.latencySeconds !== 0 ||
     typeof input.supportsLive !== 'boolean' ||
     typeof input.supportsOffline !== 'boolean' ||

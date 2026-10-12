@@ -1,7 +1,7 @@
 import { MODULE_API_VERSION, type NumericModuleDefinition, type ModuleRegistry } from './contracts';
 
 const categories = ['pedal', 'instrument', 'engine', 'feature'];
-const units = ['dB', 'Hz', 'ms', 's', '%', ':1', 'linear'];
+const units = ['dB', 'Hz', 'ms', 's', '%', ':1', 'linear', 'cents'];
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value &&
   typeof value === 'object' &&

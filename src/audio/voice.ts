@@ -65,7 +65,8 @@ export function createVoice(
       return [...branches].flatMap((b) => b.voice.oscillators ?? []);
     },
     get end() {
-      return Math.max(0, ...[...branches].map((b) => b.voice.end));
+      prune();
+      return Math.max(0, ...[...branches].map((b) => Math.min(b.voice.end, b.retire ?? Infinity)));
     },
     update(next, selection) {
       if (disposed) return;
@@ -84,8 +85,10 @@ export function createVoice(
         current.gain.gain.cancelAndHoldAtTime(at);
         current.gain.gain.setValueAtTime(current.gain.gain.value, at);
         current.gain.gain.linearRampToValueAtTime(0, at + 0.02);
-        current.voice.steal(at + 0.02);
-        current.retire = at + 0.04;
+        // The branch gain owns this crossfade. Retiring an engine envelope at
+        // a future time would also reshape that note before the fade completes.
+        // Host end-metadata reads collect the muted branch after its fade.
+        current.retire = at + 0.025;
         current = replacement;
         // Bound transient branch ownership even during unusually rapid switching.
         while (branches.size > 8) {

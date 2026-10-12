@@ -14,7 +14,8 @@ export function readInstrumentSound(value: unknown, count = 32): InstrumentSound
     validateFourierSound(value, count);
     return structuredClone(value);
   }
-  validateEngineData(value);
+  // Two saved-envelope levels must not reduce the public settings depth budget.
+  validateEngineData(value, -2);
   const raw = value as EngineSound;
   const e = raw.engine;
   if (
@@ -35,6 +36,12 @@ export function readInstrumentSound(value: unknown, count = 32): InstrumentSound
     if (definition.capabilities.fourier) throw new Error('Fourier uses its existing sound format.');
     if (definition.apiVersion !== e.apiVersion || definition.dataVersion !== e.dataVersion)
       copy.unavailable = 'Unsupported engine version';
+    else if (
+      !definition.supportsLive ||
+      !definition.supportsOffline ||
+      definition.capabilities.update !== 'phase-continuous'
+    )
+      copy.unavailable = 'Engine capabilities are unsupported by this studio';
     else {
       definition.validateSettings(e.settings);
       delete copy.unavailable;

@@ -43,6 +43,8 @@ it('validates immutable contracts reserved identities duplicate IDs and independ
   );
   for (const patch of [
     { apiVersion: 2 },
+    { latencySeconds: 0.1 },
+    { releaseSeconds: () => Infinity },
     { dataVersion: 0 },
     { capabilities: { ...engine.capabilities, dotEditor: true } },
     { resources: { ...engine.resources, estimatedNodesPerVoice: 0 } },

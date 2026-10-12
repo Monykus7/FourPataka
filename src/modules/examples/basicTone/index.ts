@@ -63,7 +63,7 @@ export const basicTone = defineEngine<BasicToneSettings>({
       min: -1200,
       max: 1200,
       step: 1,
-      unit: 'linear',
+      unit: 'cents',
       defaultValue: 0,
       update: 'continuous',
     },

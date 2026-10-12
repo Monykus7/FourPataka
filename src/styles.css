@@ -3105,6 +3105,7 @@ dd {
 /* Engine controls do not imply Fourier coefficients or partial selection. */
 .engine-controls {
   margin: 1rem 0;
+  padding: 18px;
 }
 .engine-controls .control-row {
   display: grid;
@@ -3124,4 +3125,11 @@ dd {
   .engine-controls .control-row label {
     grid-column: 1 / -1;
   }
+}
+
+.instrument-lower.engine-layout {
+  grid-template-columns: 1fr;
+}
+.instrument-lower.engine-layout .lower-main {
+  display: none;
 }
