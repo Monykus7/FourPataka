@@ -357,10 +357,10 @@ export default function PedalBoardSurface({
         </div>
         <span>
           {tool === 'cable'
-            ? 'Output jack â†’ input jack'
+            ? 'Output jack → input jack'
             : tool
               ? `Place ${pedalName(tool)}`
-              : 'Choose equipment Â· drag handles to move'}
+              : 'Choose equipment · drag handles to move'}
         </span>
         {tool && (
           <button
@@ -544,7 +544,7 @@ export default function PedalBoardSurface({
                 >
                   <GripVertical size={13} />
                   <span>
-                    {index + 1} Â· {order < 0 ? 'UNPATCHED' : `PATH ${order + 1}`}
+                    {index + 1} · {order < 0 ? 'UNPATCHED' : `PATH ${order + 1}`}
                   </span>
                 </button>
                 <strong className="compact-pedal-title">{pedalName(pedal.kind)}</strong>
@@ -581,7 +581,7 @@ export default function PedalBoardSurface({
       </div>
       <div className="board-footer">
         <span role="status">
-          {notice || 'Velcro grid Â· 4 Ã— 2 Â· arrow keys move a focused handle'}
+          {notice || 'Velcro grid · 4 × 2 · arrow keys move a focused handle'}
         </span>
         {cableSelected && (
           <button

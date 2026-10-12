@@ -124,7 +124,7 @@ export default function PedalControls({
           {pedalModules.find(pedal.kind)?.note && (
             <p className="eq-shape">
               {tailActive
-                ? 'Tail active Â· stored echoes are finishing.'
+                ? 'Tail active · stored echoes are finishing.'
                 : pedalModules.get(pedal.kind).note}
             </p>
           )}

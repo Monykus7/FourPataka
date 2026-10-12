@@ -1,6 +1,6 @@
 # Task entry guide
 
-FourPataka v0.33.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, four serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
+FourPataka v0.33.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, five registered serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
 
 ## Routes
 

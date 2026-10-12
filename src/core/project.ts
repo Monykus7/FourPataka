@@ -114,7 +114,7 @@ track melody using sine through clean{
 }
 
 track bass using softBass {
-  // Bars 1â€“2, 4/4.
+  // Bars 1–2, 4/4.
   staccato[
     C3 quarter
     F3 quarter
@@ -126,7 +126,7 @@ track bass using softBass {
     G3 quarter.
   ]
 
-  // Bars 3â€“4, 7/8.
+  // Bars 3–4, 7/8.
    C2 quarter
    F2 quarter
    E2 quarter.
@@ -333,7 +333,7 @@ function numeric(
   label: string,
 ): asserts value is number {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < low || value > high)
-    throw new Error(`Invalid ${label}: expected ${low}â€“${high}.`);
+    throw new Error(`Invalid ${label}: expected ${low}–${high}.`);
 }
 function stringValue(value: unknown, label: string, max = 100): asserts value is string {
   if (typeof value !== 'string' || value.length === 0 || value.length > max)
@@ -370,7 +370,7 @@ export function validateSound(value: unknown, count = HARMONIC_COUNT): asserts v
         ? n === 1 || n === -1
           ? undefined
           : (() => {
-              throw new Error('Polarity must be +1 or âˆ’1.');
+              throw new Error('Polarity must be +1 or −1.');
             })()
         : numeric(n, 0, 1, name),
     );
@@ -415,7 +415,7 @@ export function importProject(text: string): Project {
   const scoreWorkspace = readFileWorkspace(data.scoreWorkspace);
   numeric(data.mixGain, 0, 1, 'mix gain');
   if (!Array.isArray(data.instruments) || !data.instruments.length || data.instruments.length > 128)
-    throw new Error('Expected 1â€“128 instrument presets.');
+    throw new Error('Expected 1–128 instrument presets.');
   const ids = new Set<string>();
   const keys = new Set<string>();
   const instrumentFolders = readInstrumentFolders(data.instrumentFolders);

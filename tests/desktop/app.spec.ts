@@ -304,7 +304,7 @@ test('native recovery menu exports exact damaged bytes and restores a checkpoint
     prior.comparison.A.harmonics[0] = 0.37;
     prior.processing.master.bypassed = true;
     const raw = JSON.stringify(prior, null, 2);
-    const damaged = '{broken ÃŽÂ©\n';
+    const damaged = '{broken Î©\n';
     localStorage.setItem('fourpataka.project.recovery.v1', raw);
     localStorage.setItem('fourpataka.project.unreadable.v1', damaged);
     return { raw, damaged };
@@ -375,10 +375,10 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   await expect(sign).toHaveText('+');
   await expect(page.getByRole('combobox', { name: 'H3 polarity', exact: true })).toHaveValue('1');
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  await expect(sign).toHaveText('Ã¢Ë†â€™');
+  await expect(sign).toHaveText('−');
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17Ã¢â‚¬â€œH32/ }).click();
+  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
   await page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }).fill('.42');
   await page.getByRole('button', { name: 'H32 inverted polarity', exact: true }).click();
   const savePath = resolve('.test-results', 'desktop', 'harmonic-sign.fourpataka.json');
@@ -398,7 +398,7 @@ test('native harmonic sign and distinct Soft bass survive file save and reload',
   expect(saved.instruments.find((p: any) => p.key === 'triangle').sound.polarity[2]).toBe(-1);
   await page.reload();
   await expect(sign).toHaveText('+');
-  await page.getByRole('button', { name: /^Show H17Ã¢â‚¬â€œH32/ }).click();
+  await page.getByRole('button', { name: /^Show H17–H32/ }).click();
   await expect(
     page.getByRole('spinbutton', { name: 'H32 exact magnitude', exact: true }),
   ).toHaveValue('0.42');

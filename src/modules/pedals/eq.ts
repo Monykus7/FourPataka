@@ -12,7 +12,7 @@ export const eqModule = definePedalModule({
   memoryBytes: 0,
   minimumSampleRate: 3000,
   maximumSampleRate: 192000,
-  note: 'Shelves 200 Hz / 4 kHz Â· mid Q 1',
+  note: 'Shelves 200 Hz / 4 kHz · mid Q 1',
   reset: { label: 'Reset to flat', accessibleLabel: 'Reset EQ {index} to flat' },
   latency: () => 0,
   tail: () => 0.1,
