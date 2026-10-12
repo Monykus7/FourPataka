@@ -60,6 +60,29 @@ export const basicTone = defineEngine<BasicToneSettings>({
     envelope.connect(trim);
     trim.connect(note.destination);
     const reached = Math.min(1, duration / settings.attack);
+    let points = [
+      { at: start, value: 0 },
+      { at: start + Math.min(settings.attack, duration), value: reached },
+      { at: noteOff, value: reached },
+      { at: end, value: 0 },
+    ];
+    const holdEnvelope = (at: number) => {
+      let value = 0;
+      for (let i = 0; i < points.length; i++) {
+        const point = points[i],
+          next = points[i + 1];
+        if (point.at > at) break;
+        value =
+          next && next.at > at
+            ? point.value + ((next.value - point.value) * (at - point.at)) / (next.at - point.at)
+            : point.value;
+      }
+      envelope.gain.cancelAndHoldAtTime(at);
+      // An explicit anchor keeps the retirement ramp from starting at an older
+      // attack event in offline/look-ahead schedules. Use planned gain, not .value.
+      envelope.gain.setValueAtTime(value, at);
+      points = [...points.filter((point) => point.at < at), { at, value }];
+    };
     envelope.gain.setValueAtTime(0, start);
     envelope.gain.linearRampToValueAtTime(reached, start + Math.min(settings.attack, duration));
     envelope.gain.setValueAtTime(reached, noteOff);
@@ -93,7 +116,7 @@ export const basicTone = defineEngine<BasicToneSettings>({
             noteOff + Math.min(next.release, note.releaseLimitSeconds ?? next.release),
           );
           // Hold the scheduled envelope at this audio time, including offline suspension.
-          envelope.gain.cancelAndHoldAtTime(at);
+          holdEnvelope(at);
           if (at < noteOff) {
             const level = Math.min(1, duration / next.attack);
             envelope.gain.linearRampToValueAtTime(
@@ -101,17 +124,26 @@ export const basicTone = defineEngine<BasicToneSettings>({
               Math.min(noteOff, Math.max(at + 0.02, start + Math.min(next.attack, duration))),
             );
             envelope.gain.setValueAtTime(level, noteOff);
+            points.push(
+              {
+                at: Math.min(noteOff, Math.max(at + 0.02, start + Math.min(next.attack, duration))),
+                value: level,
+              },
+              { at: noteOff, value: level },
+            );
           }
           envelope.gain.linearRampToValueAtTime(0, end);
+          points.push({ at: end, value: 0 });
           oscillator.stop(end + 0.005);
         }
         current = next;
       },
       steal(at) {
         if (disposed) return;
-        envelope.gain.cancelAndHoldAtTime(at);
+        holdEnvelope(at);
         envelope.gain.linearRampToValueAtTime(0, at + 0.01);
         end = at + 0.01;
+        points.push({ at: end, value: 0 });
         oscillator.stop(at + 0.015);
       },
       dispose() {

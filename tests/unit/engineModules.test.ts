@@ -91,3 +91,65 @@ it('validates settings and audio-clock requests before allocation and disposes o
   voice.dispose();
   expect(disposed).toBe(1);
 });
+
+it('captures contract guards and cleans up malformed factory results', () => {
+  let disposed = 0;
+  const raw = {
+    ...definition,
+    capabilities: { ...definition.capabilities },
+    create: () => ({
+      end: NaN,
+      update() {},
+      steal() {},
+      dispose() {
+        disposed++;
+      },
+    }),
+  };
+  const engine = defineEngine(raw);
+  raw.capabilities.partialSolo = true;
+  raw.supportsOffline = false;
+  const note: any = {
+    context: { sampleRate: 48000, startRendering() {} },
+    destination: {},
+    settings: { gain: 0.5 },
+    frequencyHz: 440,
+    startSeconds: 0,
+    durationSeconds: 1,
+    seed: 0,
+  };
+  expect(() => engine.create({ ...note, solo: 'H1' })).toThrow('solo');
+  expect(() => engine.create(note)).toThrow('voice');
+  expect(disposed).toBe(1);
+});
+it('rejects unavailable modes rates invalid seeds and replay-only edits before allocation', () => {
+  let allocated = 0;
+  const engine = defineEngine({
+    ...definition,
+    supportsLive: false,
+    capabilities: { ...definition.capabilities, update: 'replay' },
+    create() {
+      allocated++;
+      return { end: 1, update() {}, steal() {}, dispose() {} };
+    },
+  });
+  const note: any = {
+    context: { sampleRate: 48000, startRendering() {} },
+    destination: {},
+    settings: { gain: 0.5 },
+    frequencyHz: 440,
+    startSeconds: 0,
+    durationSeconds: 1,
+    seed: 0,
+  };
+  expect(() => engine.create({ ...note, context: { sampleRate: 48000 } })).toThrow('context');
+  expect(() =>
+    engine.create({ ...note, context: { sampleRate: 2000, startRendering() {} } }),
+  ).toThrow('context');
+  expect(() => engine.create({ ...note, seed: -1 })).toThrow('note');
+  expect(() => engine.create({ ...note, settings: { gain: 0.5, bad: Infinity } })).toThrow('JSON');
+  expect(allocated).toBe(0);
+  const voice = engine.create(note);
+  expect(() => voice.update({ gain: 0.4 })).toThrow('Replay');
+  expect(() => voice.steal(NaN)).toThrow('time');
+});

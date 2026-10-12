@@ -75,7 +75,7 @@ function serializable(value: unknown, depth = 0): void {
 }
 const nonnegative = (value: number) => Number.isFinite(value) && value >= 0;
 export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S> {
-  const c = input?.capabilities,
+  let c = input?.capabilities,
     b = input?.resources;
   if (
     !input ||
@@ -111,6 +111,10 @@ export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S>
     ![input.defaults, input.validateSettings, input.create].every((f) => typeof f === 'function')
   )
     throw new Error('Invalid engine definition.');
+  // Capture callbacks and metadata once; later caller edits cannot change guards.
+  c = Object.freeze({ ...c });
+  b = Object.freeze({ ...b });
+  input = Object.freeze({ ...input, capabilities: c, resources: b });
   const snapshot = structuredClone(input.defaults());
   serializable(snapshot);
   input.validateSettings(snapshot);
@@ -156,7 +160,7 @@ export function defineEngine<S>(input: EngineDefinition<S>): EngineDefinition<S>
         !nonnegative(voice.end) ||
         ![voice.update, voice.steal, voice.dispose].every((f) => typeof f === 'function')
       ) {
-        voice?.dispose?.();
+        if (typeof voice?.dispose === 'function') voice.dispose();
         throw new Error(`Invalid engine voice: ${input.id}.`);
       }
       let disposed = false;
