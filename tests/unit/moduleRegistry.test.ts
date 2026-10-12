@@ -50,6 +50,7 @@ it('rejects duplicate, reserved, unknown and incompatible module identities dete
 it('rejects invalid descriptors, malformed/default/settings data without mutating the caller', () => {
   for (const patch of [
     { min: NaN },
+    { min: -Number.MAX_VALUE, max: Number.MAX_VALUE },
     { max: 0, min: 1 },
     { step: 0 },
     { step: 99 },

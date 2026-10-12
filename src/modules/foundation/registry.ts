@@ -48,6 +48,7 @@ export function defineNumericModule(input: NumericModuleDefinition): NumericModu
         p.description.length > 1000 ||
         ![p.min, p.max, p.step, p.defaultValue].every(Number.isFinite) ||
         p.min >= p.max ||
+        !Number.isFinite(p.max - p.min) ||
         p.step <= 0 ||
         p.step > p.max - p.min ||
         p.defaultValue < p.min ||
