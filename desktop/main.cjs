@@ -13,8 +13,19 @@ protocol.registerSchemesAsPrivileged([
 app.setName('FourPataka');
 if (process.env.FOURPATAKA_TEST_USER_DATA)
   app.setPath('userData', process.env.FOURPATAKA_TEST_USER_DATA);
+// Session storage includes autosaves as well as caches. Keep the existing profile
+// location, and make test profiles isolate both rather than sharing Chromium data.
+app.setPath('sessionData', app.getPath('userData'));
+const ownsProfile = app.requestSingleInstanceLock();
+if (!ownsProfile) app.quit();
 if (process.env.FOURPATAKA_TEST === '1') app.commandLine.appendSwitch('disable-gpu');
 let window;
+app.on('second-instance', () => {
+  if (!window || window.isDestroyed()) return;
+  if (window.isMinimized()) window.restore();
+  window.show();
+  window.focus();
+});
 const developmentUrl =
   !app.isPackaged && process.env.FOURPATAKA_DEV_URL === 'http://127.0.0.1:5175'
     ? process.env.FOURPATAKA_DEV_URL
@@ -71,7 +82,7 @@ function createWindow() {
   void window.loadURL(developmentUrl || 'fourpataka://studio/');
 }
 
-app.whenReady().then(() => {
+function startStudio() {
   const root = path.join(app.getAppPath(), 'dist');
   const studioSession = session.fromPartition('persist:fourpataka');
   studioSession.protocol.handle('fourpataka', async (request) => {
@@ -233,7 +244,8 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-});
+}
+if (ownsProfile) void app.whenReady().then(startStudio);
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });

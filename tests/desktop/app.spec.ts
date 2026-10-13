@@ -29,6 +29,7 @@ import { expect, test, _electron as electron, type ElectronApplication } from '@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
 import packageInfo from '../../package.json' with { type: 'json' };
 import { dragEquipment, patchBoard, placePedal } from '../helpers/board';
 import { keyboardWorkflow, tabTo } from '../helpers/keyboardWorkflow';
@@ -36,11 +37,13 @@ import { synthesisNotationWorkflow } from '../helpers/synthesisNotation';
 import { chordShellWorkflow } from '../helpers/autocomplete';
 
 let app: ElectronApplication;
+let launchEnvironment: NodeJS.ProcessEnv;
 test.beforeEach(async () => {
   const userData = resolve('.test-results', 'desktop', `profile-${randomUUID()}`);
   await mkdir(userData, { recursive: true });
   const environment = { ...process.env, FOURPATAKA_TEST: '1', FOURPATAKA_TEST_USER_DATA: userData };
   delete environment.ELECTRON_RUN_AS_NODE;
+  launchEnvironment = environment;
   app = await electron.launch({
     executablePath: process.env.FOURPATAKA_TEST_EXECUTABLE,
     args: process.env.FOURPATAKA_TEST_EXECUTABLE ? [] : ['.'],
@@ -49,6 +52,66 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('desktop profile has one cache owner and retains session data on reopening', async () => {
+  const page = await app.firstWindow();
+  const paths = await app.evaluate(({ app, session }) => ({
+    user: app.getPath('userData'),
+    session: app.getPath('sessionData'),
+    partition: session.fromPartition('persist:fourpataka').getStoragePath(),
+    locked: app.hasSingleInstanceLock(),
+  }));
+  expect(paths.user).toBe(launchEnvironment.FOURPATAKA_TEST_USER_DATA);
+  expect(paths.session).toBe(paths.user);
+  expect(paths.partition).toContain(paths.user);
+  expect(paths.locked).toBe(true);
+  await page.evaluate(() => localStorage.setItem('startup-test', 'retained'));
+  await app.evaluate(({ app }) => {
+    app.on('second-instance', () => app.setName('FourPataka duplicate received'));
+  });
+  const duplicate = spawn(
+    await app.evaluate(() => process.execPath),
+    process.env.FOURPATAKA_TEST_EXECUTABLE ? [] : ['.'],
+    { env: launchEnvironment, windowsHide: true, stdio: 'pipe' },
+  );
+  let stderr = '';
+  duplicate.stderr.on('data', (chunk) => (stderr += chunk.toString()));
+  // Bound the child lifetime even when a regression lets it open another studio.
+  const timeout = setTimeout(() => duplicate.kill(), 15000);
+  try {
+    const exitCode = await new Promise<number | null>((resolve, reject) => {
+      duplicate.once('exit', resolve);
+      duplicate.once('error', reject);
+    });
+    expect(
+      exitCode,
+      JSON.stringify({
+        executable: await app.evaluate(() => process.execPath),
+        args: app.process().spawnargs,
+        stderr,
+      }),
+    ).toBe(0);
+    await expect
+      .poll(() => app.evaluate(({ app }) => app.getName()))
+      .toContain('duplicate received');
+    expect(stderr).not.toMatch(
+      /Unable to (move the cache|create cache)|Gpu Cache Creation failed|DIPS SQLite/,
+    );
+    expect(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().length)).toBe(1);
+  } finally {
+    clearTimeout(timeout);
+    if (duplicate.exitCode === null) duplicate.kill();
+  }
+  await app.close();
+  app = await electron.launch({
+    executablePath: process.env.FOURPATAKA_TEST_EXECUTABLE,
+    args: process.env.FOURPATAKA_TEST_EXECUTABLE ? [] : ['.'],
+    env: launchEnvironment,
+  });
+  expect(await (await app.firstWindow()).evaluate(() => localStorage.getItem('startup-test'))).toBe(
+    'retained',
+  );
 });
 
 test('packaged track editing keeps t and unfinished groups in the selected view', async () => {
