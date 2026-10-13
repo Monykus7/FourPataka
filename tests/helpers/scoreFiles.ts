@@ -18,7 +18,10 @@ export async function scoreFilesWorkflow(page: Page) {
   await expect(editor).not.toContainText('tempo 60');
   const body =
     'from song Demo\ntrack drums using sine {\n A4 whole\n}\ntrack bass using softBass {\n C2 whole\n}\ntrack melody using sine {\n play A\n D4 half\n}\n';
-  await editor.fill(body);
+  // Use the editor keymap to replace its full document, including virtualized lines.
+  await editor.focus();
+  await editor.press('Control+a');
+  await page.keyboard.insertText(body);
   await expect
     .poll(async () =>
       (await page.locator('.editor-status, .diagnostics-list').allTextContents()).join('\n'),
