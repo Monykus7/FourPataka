@@ -34,7 +34,7 @@ A demonstration should begin with a sine, add odd harmonics and an optional quie
 - Stop quickly fades all sound, including effect tails. Delay bypass adds no new echoes but lets existing echoes finish.
 - Instrument and Compose are the primary views; Learn is a smaller secondary link.
 - Use concise functional information for personal use, without promotional taglines. Keep the original dark color scheme, minimal shadows, and restrained material detail rather than a full paper background.
-- Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format.
+- Build the Windows application alongside the browser interface, with native project controls, command insertion, and a visual track maker. Browser and desktop use the same portable project format. Desktop v0.37.1 keeps one process per persistent profile, restores the existing window on repeated launches and isolates native test session storage without moving saved projects.
 - Add instrument acoustics later inside the Instrument builder: a wet/dry algorithmic "tiny room" representing the instrument's chamber. It must work without impulse-response (IR) files.
 - Expand the Instrument builder to support up to 32 signed harmonics in a later update, preserving existing 16-harmonic sounds and making piano/brass-inspired timbres a design target.
 - Add phaser, chorus and algorithmic reverb pedals later, using the existing cable board, independent copies and shared live/offline processing. The reverb pedal is separate from instrument-body acoustics.

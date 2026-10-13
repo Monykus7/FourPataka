@@ -29,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The latest verified portable build is `release/FourPataka-0.37.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.37.1-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -40,7 +40,7 @@ npm run desktop:package   # Build a portable Windows x64 executable in release/
 
 The desktop app has native **Open project** and **Save project** dialogs. Its File, Edit, View, and Playback menus provide project controls, undo/redo, command reference, and the track maker. Shortcuts: Ctrl+O open, Ctrl+S save as, Ctrl+1 Instrument, Ctrl+2 Compose, Ctrl+K command reference, Ctrl+Shift+T track maker. The renderer is sandboxed and has no Node access.
 
-Desktop autosave is independent of the browser's local save. To move an existing browser project, export JSON in the browser and open that file in the app. Both use the same versioned project format. The desktop session persists in Electron's user-data directory; the portable executable does not carry project data inside itself.
+Desktop autosave is independent of the browser's local save. To move an existing browser project, export JSON in the browser and open that file in the app. Both use the same versioned project format. The desktop session persists in Electron's user-data directory; the portable executable does not carry project data inside itself. Reopening v0.37.1 returns to the existing window rather than starting another writer for its cache and local saves. Close older versions before launching the updated build; normal startup does not require diagnostic logging flags.
 
 The desktop checks can also target the unpacked production executable by setting `FOURPATAKA_TEST_EXECUTABLE` to its absolute path before running `npm run test:desktop`.
 

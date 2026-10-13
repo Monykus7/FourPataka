@@ -12,7 +12,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-FourPataka v0.37.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6 readiness is the next module milestone. M6, swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.
+FourPataka v0.37.1 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6 readiness is the next module milestone. M6, swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.
 
 ### Modular contributor program (M1-M5 implemented)
 
@@ -66,7 +66,7 @@ M4a v0.35.0 plus M4b v0.36.0: validated API1 engine registry, copied bounded set
 - M4 synthesis engines: selectable settings, recovery and shared playback / dependency group 6: [tests/browser/engines.spec.ts](../../tests/browser/engines.spec.ts)
 - M4 synthesis engines: selectable settings, recovery and shared playback / dependency group 7: [tests/unit/engineModules.test.ts](../../tests/unit/engineModules.test.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [ownsProfile](../../desktop/main.cjs#L19), [window](../../desktop/main.cjs#L22), [developmentUrl](../../desktop/main.cjs#L29), [trustedUrl](../../desktop/main.cjs#L33), [assertStudio](../../desktop/main.cjs#L42), [action](../../desktop/main.cjs#L51).
 
 #### M5 registered declarative features and host workflow services
 
@@ -78,7 +78,7 @@ Implemented v0.37.0: validated API1 declarative panel registry at fixed Learn/In
 - M5 registered declarative features and host workflow services / dependency group 4: [src/modules/foundation/features.ts](../../src/modules/foundation/features.ts)
 - M5 registered declarative features and host workflow services / dependency group 5: [tests/browser/feature-modules.spec.ts](../../tests/browser/feature-modules.spec.ts), [tests/helpers/featureModules.ts](../../tests/helpers/featureModules.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [ownsProfile](../../desktop/main.cjs#L19), [window](../../desktop/main.cjs#L22), [developmentUrl](../../desktop/main.cjs#L29), [trustedUrl](../../desktop/main.cjs#L33), [assertStudio](../../desktop/main.cjs#L42), [action](../../desktop/main.cjs#L51).
 
 #### M6 open-source contributor release readiness (planned)
 
@@ -291,7 +291,7 @@ A header Recovery dialog inspects one previous distinct autosave and one unreada
 - Local save recovery inspection and restoration / dependency group 6: [tests/browser/recovery.spec.ts](../../tests/browser/recovery.spec.ts)
 - Local save recovery inspection and restoration / dependency group 7: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [ownsProfile](../../desktop/main.cjs#L19), [window](../../desktop/main.cjs#L22), [developmentUrl](../../desktop/main.cjs#L29), [trustedUrl](../../desktop/main.cjs#L33), [assertStudio](../../desktop/main.cjs#L42), [action](../../desktop/main.cjs#L51).
 
 #### Themes and responsive layout
 
@@ -305,7 +305,7 @@ Key definitions: [Theme](../../src/core/themes.ts#L1), [THEMES](../../src/core/t
 
 #### Electron application and native files
 
-Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON. The File WAV menu and separate trusted binary bridge validate bounded PCM headers/lengths before native saving; cancellation retains a ready render.
+Sandboxed renderer with no Node access loads local assets via a private protocol. A narrow preload bridge handles native JSON dialogs and menu actions. Portable Windows builds bundle assets; hidden isolated profiles support native tests. File menu/shortcut opens recovery; a separate origin-checked bridge exports bounded raw text through the native dialog without interpreting damaged JSON. The File WAV menu and separate trusted binary bridge validate bounded PCM headers/lengths before native saving; cancellation retains a ready render. v0.37.1 acquires a single-instance lock before creating sessions: duplicate launches restore/focus the existing window, avoiding concurrent cache/database writers. sessionData explicitly follows the unchanged userData path, including isolated native test profiles; persisted local saves are not moved or cleared. Normal release launches omit diagnostic stderr logging.
 
 - Electron application and native files / dependency group 1: [desktop/main.cjs](../../desktop/main.cjs)
 - Electron application and native files / dependency group 2: [desktop/preload.cjs](../../desktop/preload.cjs)
@@ -313,7 +313,7 @@ Sandboxed renderer with no Node access loads local assets via a private protocol
 - Electron application and native files / dependency group 4: [scripts/desktop-dev.mjs](../../scripts/desktop-dev.mjs)
 - Electron application and native files / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [window](../../desktop/main.cjs#L17), [developmentUrl](../../desktop/main.cjs#L18), [trustedUrl](../../desktop/main.cjs#L22), [assertStudio](../../desktop/main.cjs#L31), [action](../../desktop/main.cjs#L40), [createWindow](../../desktop/main.cjs#L44).
+Key definitions: [fs](../../desktop/main.cjs#L2), [path](../../desktop/main.cjs#L3), [ownsProfile](../../desktop/main.cjs#L19), [window](../../desktop/main.cjs#L22), [developmentUrl](../../desktop/main.cjs#L29), [trustedUrl](../../desktop/main.cjs#L33), [assertStudio](../../desktop/main.cjs#L42), [action](../../desktop/main.cjs#L51).
 
 #### Keyboard studio workflow and modal focus
 
