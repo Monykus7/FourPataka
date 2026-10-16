@@ -731,7 +731,9 @@ M6a implemented (2026-10-15, tooling/docs only): the owner selected GPL-3.0-only
 
 Hosted follow-up: initial Linux/source/browser checks pass; initial Windows packaging failed on a missing deferred Electron runtime. desktop:package now prepares the pinned runtime explicitly before electron-builder.
 
-Remaining M6 gates: corrected Windows clean-checkout workflow results, exercised contributor tutorial evidence, operational private reporting/branch protection and owner-reviewed public publication with durable corresponding source. The policy does not claim hosted CI or a public release has passed before actual evidence. Documentation/tooling does not bump the app or close manual listening/device/screen-reader gates.
+Hosted clean-checkout source/browser and Windows package/native/artifact gates pass in [run38802133636](https://github.com/Monykus7/FourPataka/actions/runs/38802133636) at commit41e841a.
+
+Remaining M6 gates: exercised contributor tutorial evidence, operational private reporting/branch protection and owner-reviewed public publication with durable corresponding source. The policy does not claim hosted CI or a public release has passed before actual evidence. Documentation/tooling does not bump the app or close manual listening/device/screen-reader gates.
 
 Gate: a clean checkout builds the supported examples and runs the relevant contract/migration/browser/native/package checks in CI; docs identify implemented APIs and limitations; a contributor can follow a tutorial without private imports or undocumented host edits. Source and built artifacts contain required notices and exclude private project/model/test caches. Changes to repository visibility, package publication and external installation remain explicit later actions, not automatic effects of this plan.
 

@@ -4,7 +4,7 @@ FourPataka v0.37.1: browser/Electron studio with 32 signed harmonics, noise-hit 
 
 ## Routes
 
-- Contributor readiness/licensing/CI: [maintainer guide](../MAINTAINING.md), [contributing](../../CONTRIBUTING.md), [notice generator](../../scripts/licenses.mjs), [distribution check](../../scripts/check-distribution.mjs). M6a tooling/policies are implemented; hosted/tutorial/public-release gates remain.
+- Contributor readiness/licensing/CI: [maintainer guide](../MAINTAINING.md), [contributing](../../CONTRIBUTING.md), [notice generator](../../scripts/licenses.mjs), [distribution check](../../scripts/check-distribution.mjs). M6a tooling/policies are implemented; tutorial/public-release gates remain; hosted run38802133636 verifies the automated clean-checkout checks.
 
 - Instrument factories/migrations: [instrumentPresets.ts](../../src/core/instrumentPresets.ts), [project.ts](../../src/core/project.ts); [percussion contract](../extensions/PERCUSSION_PRESETS.md).
 - Waveform editing/signs: [FourierWorkspace.tsx](../../src/components/FourierWorkspace.tsx), [music.ts](../../src/core/music.ts), [waveform.ts](../../src/core/waveform.ts).
@@ -14,7 +14,7 @@ FourPataka v0.37.1: browser/Electron studio with 32 signed harmonics, noise-hit 
 - Hit audio/phase: [voice.ts](../../src/audio/voice.ts), [percussionSource.ts](../../src/audio/percussionSource.ts), [pitchEnvelope.ts](../../src/audio/pitchEnvelope.ts).
 - Score grammar/rhythm: [parser.ts](../../src/core/parser.ts), [scoreLexer.ts](../../src/core/scoreLexer.ts); [chord shapes](../extensions/CHORD_SHAPES.md).
 - File tabs/track editing: [ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [scoreFiles.ts](../../src/core/scoreFiles.ts); [file contract](../extensions/SCORE_FILES.md).
-- Module contracts: [public API](../../src/modules/index.ts), [assembly](../../src/modules/assembly.ts); [M1 guide](../extensions/MODULE_FOUNDATION.md). [M2 pedal DSP/recovery](../extensions/PEDAL_MODULES.md) is implemented; [M3 preset factories](../extensions/FOURIER_PRESETS.md) is implemented; [M4 engines/settings/recovery](../extensions/ENGINE_FOUNDATION.md) is implemented; [M5 features/host actions](../extensions/FEATURE_MODULES.md) is implemented; M6a tooling/policies are implemented; hosted/tutorial/public-release gates remain.
+- Module contracts: [public API](../../src/modules/index.ts), [assembly](../../src/modules/assembly.ts); [M1 guide](../extensions/MODULE_FOUNDATION.md). [M2 pedal DSP/recovery](../extensions/PEDAL_MODULES.md) is implemented; [M3 preset factories](../extensions/FOURIER_PRESETS.md) is implemented; [M4 engines/settings/recovery](../extensions/ENGINE_FOUNDATION.md) is implemented; [M5 features/host actions](../extensions/FEATURE_MODULES.md) is implemented; M6a tooling/policies are implemented; tutorial/public-release gates remain; hosted run38802133636 verifies the automated clean-checkout checks.
 - Pedals/routing: [Pedalboard.tsx](../../src/components/Pedalboard.tsx), [pedals.ts](../../src/core/pedals.ts), [effects.ts](../../src/audio/effects.ts).
 - Saving/export: [localSave.ts](../../src/core/localSave.ts), [export.ts](../../src/audio/export.ts), [desktop bridge](../../desktop/main.cjs).
 - Unknown relationships/tooling: [retrieval usage](USAGE.md), [graph architecture](ARCHITECTURE.md). Query once at1024 tokens; widen only when a specific dependency is missing. Direct docs/search are sufficient when they locate the source.
