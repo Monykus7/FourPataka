@@ -1,0 +1,5 @@
+# Community conduct
+
+Treat contributors and users with respect. Critique code and ideas concretely; welcome questions and correction. Harassment, discrimination, threats, unwanted sexual attention, deliberate disruption and disclosure of private information are unacceptable in project spaces or project-related interactions.
+
+Monykus7 maintains this project and reviews conduct reports. Contact the maintainer through the GitHub profile to arrange a private channel; do not post personal details publicly. A dedicated confidential reporting address has not yet been established. Maintainers may edit/remove harmful material, request changes, warn, or restrict participation, considering severity and context. Reports should identify the behavior and relevant evidence without unnecessary private information. Maintainers should explain moderation decisions to affected people when safe, handle conflicts of interest and protect reporter privacy as far as possible. No response-time guarantee is offered.

@@ -1,58 +1,44 @@
 # Contributing to FourPataka
 
-The implemented [M1 numeric module tutorial](docs/extensions/MODULE_FOUNDATION.md) provides a public import, tested example and compatibility matrix. The [M2 playable pedal tutorial](docs/extensions/PEDAL_MODULES.md) adds the DSP/registration/recovery contract. [M3 Fourier preset modules](docs/extensions/FOURIER_PRESETS.md) now supply the data-factory boundary; M4 engines is next.
-
-FourPataka is preparing for community contributions through a [six-milestone modularity program](BUILD_PLAN.md#14-modularity-and-open-source-contributions). The application works today; the general category registries and public SDK described in [extension architecture](docs/extensions/ARCHITECTURE.md) remain planned. Chord API1 and the tested score-view source services are implemented; their guides identify the supported boundaries. Until those milestones ship, contributions are reviewed source changes using the existing integration points.
+FourPataka is licensed under [GPL-3.0-only](LICENSE). By submitting code, documentation or assets, you confirm you have the right to contribute them under that license, retaining compatible third-party notices. No copyright assignment or separate CLA is required. Identify borrowed material and its upstream license in your pull request; maintainers review compatibility before merging. Do not submit proprietary samples, project recordings or unlicensed fonts/images.
 
 ## Start from a working checkout
 
-The [virtual song file guide](docs/extensions/SCORE_FILES.md) extends score views with persistent file tabs, multiple tracks per file and whole-song compilation. It documents the current source services and their verification requirements.
+Use Node.js 22.12 or newer; Node 24 is the CI target. Run `npm ci`, then `npm run dev`. For Electron run `npm run desktop:dev`; Visual Studio is not required. Source integration uses reviewed TypeScript bundled at build time. There is no runtime plugin installer or executable module attachment in song files.
 
-Use Node.js 22.12+ and npm; this project has been developed with Node 24. From the repository folder:
+Start with [the task guide](docs/knowledge/TASK_GUIDE.md) and the relevant source. Unknown cross-feature tasks can use `npm run knowledge:query -- "your task" --budget 1024` (explicit `--lexical` if the optional local model is absent). Do not upload repository text for embeddings. Private caches and local agent/editor files stay untracked.
 
-```sh
-npm ci
-npm run dev
-```
+## Choose an implemented extension boundary
 
-Open the local URL printed by Vite. For the desktop development workflow, run `npm run desktop:dev`. Visual Studio is not required. See [README.md](README.md) for Chrome test setup, native execution limits and portable Windows packaging.
+- Numeric metadata: [M1 contract](docs/extensions/MODULE_FOUNDATION.md), public `src/modules/index.ts` and explicit `src/modules/assembly.ts` registration.
+- Pedals: [M2 playable DSP](docs/extensions/PEDAL_MODULES.md), with Level as a complete example. The host discovers controls, routing and live/WAV factories from registration.
+- Fourier presets: [M3 data factories](docs/extensions/FOURIER_PRESETS.md), with Mellow pluck. Sounds are baked owned data; a new synthesis algorithm belongs to M4.
+- Synthesis engines: [M4 lifecycle and application integration](docs/extensions/ENGINE_FOUNDATION.md), with Basic Tone, numeric controls, saved recovery and continuous comparison.
+- Declarative panels/experiments/command cards: [M5 features](docs/extensions/FEATURE_MODULES.md), with Partial pair. Host actions are revision-guarded; cards document existing grammar rather than installing parser rules.
+- Chord shapes: [the chord API1 guide](docs/extensions/CHORD_SHAPES.md), with open-fifth. [Virtual score files](docs/extensions/SCORE_FILES.md) document existing shared-source services, not an arbitrary editor plugin API.
 
-Read [knowledge usage](docs/knowledge/USAGE.md), [BUILD_PLAN.md](BUILD_PLAN.md), [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) and the relevant source before editing. The [project map](docs/knowledge/PROJECT_MAP.md) provides navigation; `npm run knowledge:query -- "your task" --budget 2048` retrieves local context. Use its explicitly labeled `--lexical` mode if a local embedding model is unavailable. Model setup is optional and should never upload repository text.
+Each guide provides real imports, registration, ownership diagrams and proof requirements. Import public contracts instead of private core/audio/React/native files. Built-ins use the same boundaries. Runtime loading, arbitrary UI adapters, grammar plugins and general theme/file adapters remain future proposals.
 
-Start with the illustrated [module creation walkthrough](docs/extensions/MODULE_CREATION.md). It includes a bundled chord example, validation/ownership diagrams, real import paths and the distinction between working services and planned registries. The [score-view guide](docs/extensions/SCORE_VIEWS.md) covers the implemented single-file editor boundary.
+## Verify and document
 
-## Choose the right contribution
-
-- A new pedal: follow [pedal integration](docs/extensions/PEDALS.md). Current source changes span metadata, DSP, equipment and export; milestone M2 will replace those scattered integrations with one module registration.
-- A new timbre in the current Fourier engine: follow [instrument presets](docs/extensions/INSTRUMENTS.md). A preset is data, not a new synthesis engine; preset modules arrive in M3 and engine modules in M4.
-- An experiment, analysis panel, editor command or theme: follow [feature modules](docs/extensions/FEATURE_MODULES.md). Adding command documentation does not change the score grammar; parser changes require source-span and playback proofs.
-- Saved-data or API changes: follow [compatibility](docs/extensions/COMPATIBILITY.md). Preserve existing projects and independent applied copies before introducing a new format.
-
-The host owns musical state, score authority, clocks, routing, history and file operations. Contributors must document units and lifecycle behavior rather than introduce a second implementation of those services. Keep changes focused and explain reasoning in dense interpolation, phase, timing, ownership and source-span code.
-
-## Verify and document the change
-
-Use focused checks appropriate to what changed. These are existing commands, not a future SDK tool:
+Run focused tests while developing; before review run:
 
 ```sh
+npm run licenses:check
+npm run distribution:check
 npm test
 npm run build
 npm run format:check
-npx playwright test tests/browser/your-feature.spec.ts
+npm run knowledge:build
+npm run knowledge:check
 ```
 
-Browser workflows need an installed supported browser; the checked-in configuration uses Chrome. Native workflows use `playwright.desktop.config.ts` and require a runnable Electron environment. Application releases also need the verified Windows portable package and affected native flows. Document skipped device/listening/screen-reader checks explicitly instead of treating automated tests as proof of them. Do not open a debugger to work around a restricted Electron process launch.
+When dependencies change, regenerate `npm run licenses:build`, inspect the complete copyright/license diff and commit generated public notices. Missing or new license types require review; the checker is a drift guard, not a substitute for that review.
 
-Update feature/behavior documentation in the same change: the extension recipe and module reference, `docs/knowledge/features.json`, `docs/knowledge/DECISIONS.md`, and roadmap/status when a gate changes. Run `npm run knowledge:build` and `npm run knowledge:check`, and commit the regenerated map. Keep graph/vector/model caches, local projects, test artifacts and release binaries out of Git. Inspect the staged diff before committing.
+Browser tests use Chrome locally. Install it with `npx playwright install chrome`, or install Playwright Chromium with `npx playwright install chromium` and set `PLAYWRIGHT_BUNDLED_CHROMIUM=1`. Run the relevant `tests/browser/*.spec.ts`. CI explicitly selects bundled Chromium; it does not assume Chrome is installed on a clean runner.
 
-Make focused commits and push useful checkpoints to the configured primary branch/remote using your configured identity. The project currently aims for eight focused commits per implementation milestone; do not manufacture empty checkpoints. A contribution description should say what behavior changes, which module/API/data versions it affects, how old projects behave, and which checks actually passed. Include a small reproducible example when adding a feature.
+On Windows, `npm run desktop:package` produces an unsigned portable plus `release/win-unpacked`. Run `npm run distribution:check -- release/win-unpacked`, then set `FOURPATAKA_TEST_EXECUTABLE` to that unpacked executable and run relevant tests with `npx playwright test --config playwright.desktop.config.ts`. Tests use isolated profiles; never use personal project data as fixtures. [Maintainer instructions](docs/MAINTAINING.md) detail clean-checkout CI and release gates.
 
-## Documentation and example acceptance
+Explain reasoning in dense timing, interpolation, phase, lifecycle, source-span and ownership code. Preserve canonical scoreText, independent library/track/A-B copies, clock continuity, Stop, units, latency and unavailable-data recovery. Add meaningful compatibility, live/WAV and source-authority proofs when those behaviors change. Record actual device/listening/screen-reader limits rather than claiming automated coverage.
 
-Each supported module category must ship a clean-checkout tutorial, a small runnable module example, parameter/units and lifecycle reference, troubleshooting, migration guidance and contract tests. The chord examples use implemented API1 paths and the workspace guide describes tested source helpers. Other category recipes identify current host edits and planned contracts; proposed M1-M5 imports are not implemented public APIs. When a milestone lands, replace the planned recipe with its actual buildable commands and supported version, and verify the example in CI.
-
-## Open-source readiness
-
-An open-source license has not yet been added to this repository. Owner selection of a license, dependency/asset attribution, contributor licensing guidance, review expectations, conduct/security reporting guidance and CI/release responsibility are explicit milestones, not claims made by this guide. Resolve the licensing policy before inviting licensed third-party code or publishing an open-source release. This planning change does not select a license, publish a package, change repository visibility or install external modules.
-
-The synthesis/notation pilot delivers the first narrow [chord-shape contribution API](docs/extensions/CHORD_SHAPES.md), including a bundled open-fifth example and shared parser/registry tests. This is available now; the general M1–M6 category APIs described above remain planned.
+Update the relevant tutorial, concise feature summaries and decisions; keep chronology in IMPLEMENTATION_STATUS.md. Regenerate the knowledge map. See [review template](.github/pull_request_template.md), [conduct](CODE_OF_CONDUCT.md) and [security reporting](SECURITY.md). Monykus7 owns merge, compatibility and release decisions; contributor CI does not publish packages or change repository visibility.
