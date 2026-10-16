@@ -1,4 +1,5 @@
 import { fourierLearning } from './features/fourierLearning/index';
+import { sourceOutputAnalysis } from './features/sourceOutputAnalysis/index';
 import { partialPair } from './examples/partialPair/index';
 import { createFeatureRegistry } from './index';
 import { basicTone } from './examples/basicTone/index';
@@ -35,6 +36,6 @@ export const factoryPreviews = instrumentModules.definitions
 export const engineModules = createEngineRegistry([fourierEngine, basicTone], [fourierEngine.id]);
 
 export const featureModules = createFeatureRegistry(
-  [fourierLearning, partialPair],
-  [fourierLearning.id],
+  [fourierLearning, sourceOutputAnalysis, partialPair],
+  [fourierLearning.id, sourceOutputAnalysis.id],
 );

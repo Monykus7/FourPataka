@@ -24,6 +24,18 @@ const experiments = [
     text: 'Add a quiet f₀/2 below the reference note.',
     kind: 'sine',
   },
+  {
+    id: 'odd',
+    title: 'Compare odd harmonics',
+    text: 'Listen to H1, H3, H5… with 1/h magnitudes. Then load even harmonics and inspect the power shares; the two sources are not loudness matched.',
+    kind: 'saw',
+  },
+  {
+    id: 'even',
+    title: 'Compare even harmonics',
+    text: 'Listen to H2, H4, H6… with 1/h magnitudes. H1 is absent. Load odd harmonics again; keep all controls editable.',
+    kind: 'saw',
+  },
 ] as const;
 export const fourierLearning = defineFeature({
   id: 'fourpataka:feature/fourier-learning',
@@ -74,6 +86,10 @@ export const fourierLearning = defineFeature({
     if (!e) throw new Error('Unknown learning experiment.');
     const sound = fourierShape(e.kind);
     if (id === 'missing') sound.harmonics[0] = 0;
+    if (id === 'odd' || id === 'even')
+      sound.harmonics = sound.harmonics.map((value, i) =>
+        i % 2 === (id === 'odd' ? 0 : 1) ? value : 0,
+      );
     if (id === 'sub') {
       sound.undertonesEnabled = true;
       sound.undertones[0] = 0.25;

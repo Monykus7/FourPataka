@@ -69,6 +69,8 @@ export default function FeaturePanels({
         </fieldset>
       )}
       {models.map(({ d, settings, model, error }) => {
+        const Panel = d.collapsedByDefault ? 'details' : 'section';
+        const Heading = d.collapsedByDefault ? 'summary' : 'div';
         const action = (id: string) => {
           try {
             onRequest(d.id, d.action(id, snapshot, settings));
@@ -87,10 +89,10 @@ export default function FeaturePanels({
           </button>
         );
         return (
-          <section className="panel feature-panel" key={d.id} aria-label={d.label}>
-            <div className="section-title">
+          <Panel className="panel feature-panel" key={d.id} aria-label={d.label}>
+            <Heading className="section-title">
               <h2>{d.label}</h2>
-            </div>
+            </Heading>
             {error ? (
               <>
                 <p role="alert">{error}. Original feature settings are preserved.</p>
@@ -164,11 +166,29 @@ export default function FeaturePanels({
                     </dl>
                   )}
                   {model.note && <p className="footnote">{model.note}</p>}
+                  {model.metricGroups?.map((group) => (
+                    <section
+                      className="feature-metric-group"
+                      key={group.title}
+                      aria-label={group.title}
+                    >
+                      <h3>{group.title}</h3>
+                      <dl className="analysis-metrics">
+                        {group.metrics.map((metric) => (
+                          <div key={metric.label}>
+                            <dt>{metric.label}</dt>
+                            <dd>{metric.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      {group.note && <p className="footnote">{group.note}</p>}
+                    </section>
+                  ))}
                   <div className="button-group">{model.actions?.map(button)}</div>
                 </>
               )
             )}
-          </section>
+          </Panel>
         );
       })}
       {placement === 'learn' &&

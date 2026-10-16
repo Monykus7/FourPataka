@@ -3197,3 +3197,24 @@ dd {
     grid-column: 1;
   }
 }
+
+details.feature-panel > summary {
+  cursor: pointer;
+  display: list-item;
+  color: var(--text);
+}
+details.feature-panel > summary::marker {
+  color: var(--tertiary);
+}
+details.feature-panel > summary h2 {
+  display: inline;
+  margin-left: 6px;
+}
+.feature-metric-group {
+  margin-top: 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+}
+.feature-metric-group .analysis-metrics > div {
+  min-width: 0;
+}

@@ -1,11 +1,7 @@
+import { createEngineSound } from '../../src/core/engineSound';
 import { expect, it } from 'vitest';
 import { featureAnalysis } from '../../src/core/featureHost';
-import {
-  fourierShape,
-  createEngineSound,
-  defineFeature,
-  type FeatureSnapshot,
-} from '../../src/modules';
+import { fourierShape, defineFeature, type FeatureSnapshot } from '../../src/modules';
 import { sourceOutputAnalysis } from '../../src/modules/features/sourceOutputAnalysis/index';
 import { fourierLearning } from '../../src/modules/features/fourierLearning/index';
 
