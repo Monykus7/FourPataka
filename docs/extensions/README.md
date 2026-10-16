@@ -52,3 +52,5 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 - [Score workspace](SCORE_VIEWS.md): current file-only editor identity and track operations, historical projection helpers, guarded transactions, CRLF spans and ownership/recovery diagrams. Shared-file track views ship in v0.24.0; M5 declarative feature contracts ship in v0.37.0, while arbitrary editor adapters remain planned.
 
 - [Performance timing and swing](PERFORMANCE_TIMING.md): implemented global/track swing, written/performed quarter-beat ownership, tuplets/bar policies, articulation/comparison clipping and shared audio proof diagrams (v0.38.0).
+
+- [Source/output analysis](ANALYSIS.md): collapsed registered panel, channel-separated100ms levels, effective source descriptors, guided odd/even recipes and host/module ownership diagrams (v0.39.0).

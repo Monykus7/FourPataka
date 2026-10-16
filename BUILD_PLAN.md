@@ -65,7 +65,7 @@ The v0.19.1 layout follow-up makes the expanded command reference match the scor
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
-Current application priority (2026-10-16): M1–M5 module contracts and application integration are implemented. M6a adds GPL-3.0-only, retained notices, contributor policies and browser/Windows CI; hosted clean-checkout checks pass; tutorial/operational checks and owner-approved public release remain explicit M6 gates. Variable swing is implemented in v0.38.0. Stage7 learning/measurement and planned WAV analysis/chamber/effects can use the landed module boundaries without waiting for public publication.
+Current application priority (2026-10-16): M1–M5 module contracts and application integration are implemented. M6a adds GPL-3.0-only, retained notices, contributor policies and browser/Windows CI; hosted clean-checkout checks pass; tutorial/operational checks and owner-approved public release remain explicit M6 gates. Variable swing is implemented in v0.38.0. Stage7 learning/measurement is implemented in v0.39.0; planned WAV analysis/chamber/effects can use the landed module boundaries without waiting for public publication.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -620,11 +620,9 @@ Implemented in v0.19.0: shared score/voice/effect factories, frozen applied copi
 
 ### Stage 7 — learning and analysis
 
-Still planned. Modularity M1 is now the next major foundation milestone; learning/analysis remains the next music-feature item after the initial module boundaries. This priority change does not close stage 7 or any remaining stage 5 gate.
+Implemented v0.39.0 through the M5 feature contract: collapsed Instrument Source / output analysis separates effective periodic-source descriptors from shared channel-aware live RMS/sample peak/crest. Units,100ms window,50ms cadence, stereo scope and stopped/silent/invalid/frozen-score states are explicit. Odd/even recipes append to the existing four undoable experiments and preserve independent copies. Source/WAV clocks, schema5 and the authored demo remain intact. [Contributor analysis diagrams](docs/extensions/ANALYSIS.md) document formulas, ownership and limitations.
 
-Add guided experiments and the secondary analysis panel with clearly defined source/output metrics.
-
-Gate: loading an experiment is undoable; metric units/reference/window are visible; silence produces no misleading numeric values; computed descriptors agree with simple known test signals.
+Automated functional gate: known-signal descriptors, anti-phase/mono/window browser proof, UI/ownership/undo/visibility/stale-source and native round trips. Actual results and portable checks are recorded in IMPLEMENTATION_STATUS.md. Manual listening/device/screen-reader/performance gates remain explicit; output spectral/true-peak/LUFS and phase experiments stay deferred.
 
 ### Stage 8 and later — advanced synthesis and notation
 
