@@ -1,4 +1,5 @@
 import { featureModuleWorkflow } from '../helpers/featureModules';
+import { analysisWorkflow } from '../helpers/analysis';
 import { SWING_SCORE, swingWorkflow } from '../helpers/swing';
 import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
@@ -53,6 +54,25 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged analysis experiments retain independent copies through native JSON', async () => {
+  const page = await app.firstWindow();
+  await analysisWorkflow(page);
+  const filePath = resolve('.test-results', 'desktop', 'analysis.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved analysis.fourpataka.json');
+  expect(JSON.parse(await readFile(filePath, 'utf8')).comparison.A.harmonics[0]).toBe(0);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(
+    page.getByRole('spinbutton', { name: 'H1 exact magnitude', exact: true }),
+  ).toHaveValue('0');
 });
 
 test('packaged swing retains performed timing through native save and reopen', async () => {

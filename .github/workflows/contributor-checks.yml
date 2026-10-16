@@ -32,7 +32,7 @@ jobs:
       - run: npm run knowledge:check
       - run: npx playwright install --with-deps chromium
       - name: Browser integration for bundled module examples
-        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts
+        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts
         env:
           PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
 
@@ -51,7 +51,7 @@ jobs:
       - run: npm run desktop:package
       - run: npm run distribution:check -- release/win-unpacked
       - name: Packaged profiles and contributor examples
-        run: npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing"
+        run: npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing|packaged analysis"
         env:
           FOURPATAKA_TEST_EXECUTABLE: ${{ github.workspace }}\release\win-unpacked\FourPataka.exe
       - name: Archive exact corresponding source

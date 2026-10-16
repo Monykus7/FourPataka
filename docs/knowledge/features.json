@@ -2,6 +2,30 @@
   "schemaVersion": 1,
   "features": [
     {
+      "id": "source-output-analysis",
+      "parent": "studio",
+      "title": "Source and live output analysis",
+      "summary": "v0.39.0 implements a registered collapsed Instrument panel with separate active-editable-source descriptors and actual processed/project output measurements. Fourier effective below-Nyquist coefficients supply centroid, odd/even/H1/subharmonic power shares, dominant component and mean-square power before trim/envelope; non-Fourier engines are unsupported and hit noise/pitch/decay are explicitly excluded from this partial model. One shared stereo tap duplicates mono and reads channel-separated latest100ms sample windows at the existing50ms host cadence, avoiding anti-phase downmix cancellation. RMS averages channel energies, peak is sample max, crest uses peak/RMS; full-scale1 units/window/channels/rate/path are visible. Stopped/silence/invalid/frozen-score states omit undefined numeric levels. Generic additive API1 grouped/collapsed DTOs expose no audio nodes. Learn retains original four recipe IDs/order and appends editable odd/even recipes, loaded through existing undoable active A/B requests without changing track/library copies. Schema5/demo/transport/phase/processing/WAV remain unchanged. No output spectral centroid/true peak/LUFS, mic/upload analysis or manual listening/device claims.",
+      "paths": [
+        "src/audio/levels.ts",
+        "src/audio/outputMeter.ts",
+        "src/audio/engine.ts",
+        "src/core/music.ts",
+        "src/core/featureHost.ts",
+        "src/modules/foundation/features.ts",
+        "src/modules/features/sourceOutputAnalysis/index.ts",
+        "src/modules/features/fourierLearning/index.ts",
+        "src/modules/assembly.ts",
+        "src/components/FeaturePanels.tsx",
+        "src/App.tsx",
+        "tests/unit/levels.test.ts",
+        "tests/unit/sourceAnalysis.test.ts",
+        "tests/browser/output-meter.spec.ts",
+        "tests/browser/analysis.spec.ts",
+        "tests/helpers/analysis.ts"
+      ]
+    },
+    {
       "id": "contributor-readiness",
       "parent": "modularity",
       "title": "M6a licensing, notices and contributor checks",
@@ -164,7 +188,7 @@
       "id": "modularity-features",
       "parent": "modularity",
       "title": "M5 registered declarative features and host workflow services",
-      "summary": "Implemented v0.37.0: validated API1 declarative panel registry at fixed Learn/Instrument/Compose/Pedalboard placements, frozen copied source/measurement snapshots and capability-scoped host requests. Original four Fourier Learn experiments/source descriptors move to a built-in module; independent Partial pair has a saved H2 recipe, explicit active-snapshot loading, live shared sample-peak/RMS and an octave-pair command card with blank completion. Host owns source revision/destination/playback guards, valid snippet insertion, musical history/copies and canonical UTF16 reveal/focus; no root switch per module, second transport/analyser or module timers/listeners. Schema5 imports1-4 and preserves bounded missing/newer feature data/extra fields; exact reimport validates and removes markers, malformed/exact-invalid data reject atomically. Visibility is global preferences, never musical undo/import replacement. Meter is active processed/project output before monitor, 2048 samples/50ms refresh, with stopped/silence and frozen-stale-score status; not true peak/LUFS. Initial views are declarative/flat numeric, command cards track-scoped existing grammar. Arbitrary React/theme/file adapters, runtime loading, grammar plugins and M6 license/CI/publication/device gates remain open.",
+      "summary": "Implemented v0.37.0: validated API1 declarative panel registry at fixed Learn/Instrument/Compose/Pedalboard placements, frozen copied source/measurement snapshots and capability-scoped host requests. Original four Fourier Learn experiments/source descriptors move to a built-in module; independent Partial pair has a saved H2 recipe, explicit active-snapshot loading, live shared sample-peak/RMS and an octave-pair command card with blank completion. Host owns source revision/destination/playback guards, valid snippet insertion, musical history/copies and canonical UTF16 reveal/focus; no root switch per module, second transport or per-module timers/listeners. Schema5 imports1-4 and preserves bounded missing/newer feature data/extra fields; exact reimport validates and removes markers, malformed/exact-invalid data reject atomically. Visibility is global preferences, never musical undo/import replacement. Meter is active processed/project output before monitor, a shared stereo100ms time window/50ms refresh in v0.39.0 (actual sample count is visible), with stopped/silence and frozen-stale-score status; not true peak/LUFS. API1 adds optional bounded metric groups, collapsed-by-default metadata and optional source/measurement details while preserving older definitions. Views remain declarative, command cards track-scoped existing grammar. Arbitrary React/theme/file adapters, runtime loading, grammar plugins and M6 license/CI/publication/device gates remain open.",
       "paths": [
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",

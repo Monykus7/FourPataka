@@ -56,8 +56,14 @@ export const partialPair = defineFeature<{ h2: number }>({
         'Load a sine plus an adjustable second harmonic. Settings describe this experiment; Load applies them to the active snapshot.',
       metricsTitle: 'Live project output',
       metrics: [
-        { label: 'Sample peak', value: m.playing ? db(m.peak) : 'Stopped' },
-        { label: 'RMS', value: m.playing ? db(m.rms) : 'Stopped' },
+        {
+          label: 'Sample peak',
+          value: m.valid === false ? 'Unavailable' : m.playing ? db(m.peak) : 'Stopped',
+        },
+        {
+          label: 'RMS',
+          value: m.valid === false ? 'Unavailable' : m.playing ? db(m.rms) : 'Stopped',
+        },
         {
           label: 'Window',
           value: `${m.windowSamples} samples · ${((1000 * m.windowSamples) / m.sampleRateHz).toFixed(1)} ms`,
