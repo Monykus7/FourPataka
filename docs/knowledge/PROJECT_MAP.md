@@ -12,7 +12,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-FourPataka v0.37.1 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6a contributor licensing/notices/policies/CI definitions are implemented; tutorial/public-release gates remain. Swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.
+FourPataka v0.38.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6a contributor licensing/notices/policies/CI definitions are implemented; tutorial/public-release gates remain. Variable swing is implemented in v0.38.0. Chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.
 
 ### Modular contributor program (M1-M5 implemented)
 
@@ -62,7 +62,7 @@ Implemented v0.34.0: public FourierSound/validation/shape helpers, validated det
 - M3 registry-backed Fourier presets / dependency group 3: [tests/browser/preset-modules.spec.ts](../../tests/browser/preset-modules.spec.ts), [tests/helpers/presetModules.ts](../../tests/helpers/presetModules.ts)
 - M3 registry-backed Fourier presets / dependency group 4: [tests/unit/presetModules.test.ts](../../tests/unit/presetModules.test.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 #### M4 synthesis engines: selectable settings, recovery and shared playback
 
@@ -119,7 +119,7 @@ Library templates, applied tracks and A/B are independent Sound copies; Save nev
 - Instrument presets and source thumbnails / dependency group 4: [tests/browser/drums.spec.ts](../../tests/browser/drums.spec.ts), [tests/helpers/percussion.ts](../../tests/helpers/percussion.ts), [tests/browser/percussion.spec.ts](../../tests/browser/percussion.spec.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Instrument presets and source thumbnails / dependency group 5: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 #### Instrument library folders
 
@@ -128,7 +128,7 @@ v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Re
 - Instrument library folders / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/localSave.ts](../../src/core/localSave.ts), [src/components/InstrumentLibrary.tsx](../../src/components/InstrumentLibrary.tsx), [src/core/instrumentFolders.ts](../../src/core/instrumentFolders.ts), [tests/unit/instrumentFolders.test.ts](../../tests/unit/instrumentFolders.test.ts)
 - Instrument library folders / dependency group 2: [tests/browser/instrument-folders.spec.ts](../../tests/browser/instrument-folders.spec.ts), [tests/helpers/instrumentLibrary.ts](../../tests/helpers/instrumentLibrary.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 #### 32-harmonic Fourier bank
 
@@ -160,7 +160,7 @@ A/B changes keep the musical clock and active envelopes. Phrase clipping preserv
 - Continuous A/B comparison and scheduling / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx)
 - Continuous A/B comparison and scheduling / dependency group 2: [tests/browser/comparison.spec.ts](../../tests/browser/comparison.spec.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L25), [Session](../../src/audio/engine.ts#L32), [AudioEngine](../../src/audio/engine.ts#L58), [AudioEngine.ready](../../src/audio/engine.ts#L72), [AudioEngine.setMonitor](../../src/audio/engine.ts#L97), [AudioEngine.setMix](../../src/audio/engine.ts#L101), [AudioEngine.begin](../../src/audio/engine.ts#L105), [AudioEngine.voice](../../src/audio/engine.ts#L138).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L26), [Session](../../src/audio/engine.ts#L33), [AudioEngine](../../src/audio/engine.ts#L59), [AudioEngine.ready](../../src/audio/engine.ts#L73), [AudioEngine.setMonitor](../../src/audio/engine.ts#L98), [AudioEngine.setMix](../../src/audio/engine.ts#L102), [AudioEngine.begin](../../src/audio/engine.ts#L106), [AudioEngine.voice](../../src/audio/engine.ts#L139).
 
 #### Pedalboard and processing
 
@@ -189,7 +189,7 @@ Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, i
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 #### Score parsing and editor
 
@@ -209,7 +209,7 @@ Twenty contextual cards expose syntax, examples, saved keys and guarded insertio
 
 - Contextual command reference / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts), [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts), [tests/helpers/referenceSearch.ts](../../tests/helpers/referenceSearch.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 #### Tempo, meter and timeline
 
@@ -234,14 +234,14 @@ Key definitions: [ChainAssignment](../../src/components/ChainAssignment.tsx#L3),
 
 #### Articulation, tuplets and score meter changes
 
-staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2–32/M1–32, no enforced event count. Dots and whole–64th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1–128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing, envelope carry/glide and per-track meters remain planned.
+staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2–32/M1–32, no enforced event count. Dots and whole–64th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1–128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing is implemented in v0.38.0; envelope carry/glide and per-track meters remain planned.
 
 - Articulation, tuplets and score meter changes / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/articulation.ts](../../src/core/articulation.ts), [src/audio/voice.ts](../../src/audio/voice.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/core/parser.ts](../../src/core/parser.ts), [src/audio/export.ts](../../src/audio/export.ts), [src/core/scoreLexer.ts](../../src/core/scoreLexer.ts), [tests/unit/rhythmPlayback.test.ts](../../tests/unit/rhythmPlayback.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/components/TrackMaker.tsx](../../src/components/TrackMaker.tsx), [src/core/rhythm.ts](../../src/core/rhythm.ts), [src/core/meter.ts](../../src/core/meter.ts), [tests/helpers/demo.ts](../../tests/helpers/demo.ts), [tests/unit/articulationBlocks.test.ts](../../tests/unit/articulationBlocks.test.ts), [tests/unit/beatExpression.test.ts](../../tests/unit/beatExpression.test.ts), [tests/unit/repeats.test.ts](../../tests/unit/repeats.test.ts), [tests/unit/scoreLexer.test.ts](../../tests/unit/scoreLexer.test.ts), [src/components/CompositionSettings.tsx](../../src/components/CompositionSettings.tsx), [src/core/timeline.ts](../../src/core/timeline.ts), [tests/browser/demo.spec.ts](../../tests/browser/demo.spec.ts)
 - Articulation, tuplets and score meter changes / dependency group 2: [tests/browser/blocks.spec.ts](../../tests/browser/blocks.spec.ts), [tests/helpers/blocks.ts](../../tests/helpers/blocks.ts)
 - Articulation, tuplets and score meter changes / dependency group 3: [tests/browser/ide.spec.ts](../../tests/browser/ide.spec.ts), [tests/helpers/ide.ts](../../tests/helpers/ide.ts)
 - Articulation, tuplets and score meter changes / dependency group 4: [tests/browser/rhythm.spec.ts](../../tests/browser/rhythm.spec.ts), [tests/helpers/rhythm.ts](../../tests/helpers/rhythm.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L25), [Session](../../src/audio/engine.ts#L32), [AudioEngine](../../src/audio/engine.ts#L58), [AudioEngine.ready](../../src/audio/engine.ts#L72), [AudioEngine.setMonitor](../../src/audio/engine.ts#L97), [AudioEngine.setMix](../../src/audio/engine.ts#L101), [AudioEngine.begin](../../src/audio/engine.ts#L105), [AudioEngine.voice](../../src/audio/engine.ts#L138).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L26), [Session](../../src/audio/engine.ts#L33), [AudioEngine](../../src/audio/engine.ts#L59), [AudioEngine.ready](../../src/audio/engine.ts#L73), [AudioEngine.setMonitor](../../src/audio/engine.ts#L98), [AudioEngine.setMix](../../src/audio/engine.ts#L102), [AudioEngine.begin](../../src/audio/engine.ts#L106), [AudioEngine.voice](../../src/audio/engine.ts#L139).
 
 #### Track operations in the named file editor
 
@@ -250,20 +250,16 @@ v0.30.0 removes automatic per-track and All score/Whole file subtabs. User-creat
 - Track operations in the named file editor / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [tests/unit/scoreWorkspace.test.ts](../../tests/unit/scoreWorkspace.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx)
 - Track operations in the named file editor / dependency group 2: [tests/browser/file-tabs.spec.ts](../../tests/browser/file-tabs.spec.ts), [tests/helpers/fileTabs.ts](../../tests/helpers/fileTabs.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts), [tests/helpers/scoreWorkspace.ts](../../tests/helpers/scoreWorkspace.ts), [tests/browser/score-workspace.spec.ts](../../tests/browser/score-workspace.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
-#### Variable swing — planned
+#### Variable swing timing
 
-Planned variable eighth/sixteenth swing, with proposed long-subdivision share units (50% straight, about66.7% 2:1). Bounds/syntax/scope are provisional; no runtime swing command exists. Written rational beats and fixed pair/bar endpoints remain; shared performance timing for live/WAV/comparison must avoid drift and preserve frozen clocks, phase, latency, copies and finite tails. Tuplets/chords/rests/dots/articulation/repeats and odd-meter boundaries require explicit proof and manual listening.
+Implemented v0.38.0: source commands swing eighth/16th 50–75(percent; optional% suffix), swing off and one pre-event override per logical track across shared files.50/default/off preserve straight event fields. A monotonic bar-relative pair map derives performedBeat/duration and proportional gates without changing rational written positions, bar/track endpoints or seconds. Incomplete bar/track pairs and complete pairs touching any explicit/nested tuplet stay straight; rests/chords/dots/expanded repeats and sections share one absolute map. Live look-ahead, WAV and clipped comparison consume performed timing; phrase crops use the original grid before rebasing, and A/B retains phase/clock/owned copies. Timeline keeps labeled written positions, actual highlights and zero-based performed inspection. Reference/blank completion/undo/reload/native JSON retain source authority with schema5 and no demo change. Mid-track swing changes, humanization and groove templates remain future; physical/device/listening gates remain open.
 
-#### Named sections and alternate endings
+- Variable swing timing / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/performanceTiming.ts](../../src/core/performanceTiming.ts), [src/core/articulation.ts](../../src/core/articulation.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/core/parser.ts](../../src/core/parser.ts), [src/audio/export.ts](../../src/audio/export.ts), [tests/unit/performanceTiming.test.ts](../../tests/unit/performanceTiming.test.ts), [tests/unit/swing.test.ts](../../tests/unit/swing.test.ts), [src/components/Timeline.tsx](../../src/components/Timeline.tsx)
+- Variable swing timing / dependency group 2: [tests/browser/swing.spec.ts](../../tests/browser/swing.spec.ts), [tests/helpers/swing.ts](../../tests/helpers/swing.ts)
 
-Implemented v0.27.0: section A declares track-local source without playing; explicit play A supports forward calls, repeats and invocation-local trim expressions with optional endings. Exact rational cuts shorten spanning notes/chords/rests without a new attack, recalculate staccato gates and retained legato scope, resolve positional bar rests before cutting and expose actual call duration. Definitions and other calls stay unchanged; nested metadata reflects parent clipping. Original UTF-16 definition/call spans, CRLF-safe guarded scoped rename/history, local completion, contextual command cards, declared/trimmed chord previews and frozen-source playback highlights share canonical scoreText. Unused definitions validate in scratch tracks at beat zero without output; undefined/duplicate/cyclic references and depth/call/event/token budgets diagnose. Live/WAV/comparison consume the whole performed score and owned copies, preserving phase/clock/latency and finite tails. General M1–M6, swing and manual gates remain planned.
-
-- Named sections and alternate endings / dependency group 1: [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/core/parser.ts](../../src/core/parser.ts), [src/core/scoreSections.ts](../../src/core/scoreSections.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [src/components/Timeline.tsx](../../src/components/Timeline.tsx), [src/core/scoreTiming.ts](../../src/core/scoreTiming.ts), [src/core/scoreLexer.ts](../../src/core/scoreLexer.ts), [src/core/sectionTiming.ts](../../src/core/sectionTiming.ts), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [tests/unit/scoreSections.test.ts](../../tests/unit/scoreSections.test.ts), [tests/unit/sectionEndings.test.ts](../../tests/unit/sectionEndings.test.ts), [src/components/SectionNavigator.tsx](../../src/components/SectionNavigator.tsx), [src/core/commandReference.ts](../../src/core/commandReference.ts), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/core/commands.ts](../../src/core/commands.ts)
-- Named sections and alternate endings / dependency group 2: [tests/browser/sections.spec.ts](../../tests/browser/sections.spec.ts), [tests/helpers/sections.ts](../../tests/helpers/sections.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
-
-Key definitions: [SymbolPreview](../../src/components/ScoreEditor.tsx#L41), [updateChords](../../src/components/ScoreEditor.tsx#L42), [chordField](../../src/components/ScoreEditor.tsx#L43), [chordTooltip](../../src/components/ScoreEditor.tsx#L52), [cursorChord](../../src/components/ScoreEditor.tsx#L67), [chordPreviews](../../src/components/ScoreEditor.tsx#L72), [activeLines](../../src/components/ScoreEditor.tsx#L86), [playbackField](../../src/components/ScoreEditor.tsx#L87).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L26), [Session](../../src/audio/engine.ts#L33), [AudioEngine](../../src/audio/engine.ts#L59), [AudioEngine.ready](../../src/audio/engine.ts#L73), [AudioEngine.setMonitor](../../src/audio/engine.ts#L98), [AudioEngine.setMix](../../src/audio/engine.ts#L102), [AudioEngine.begin](../../src/audio/engine.ts#L106), [AudioEngine.voice](../../src/audio/engine.ts#L139).
 
 #### Virtual song files and shared track parts
 
@@ -272,7 +268,7 @@ Implemented v0.28.0: named file tabs plus Files browser create/rename/delete/clo
 - Virtual song files and shared track parts / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/parser.ts](../../src/core/parser.ts), [src/core/project.ts](../../src/core/project.ts), [src/core/scoreFiles.ts](../../src/core/scoreFiles.ts), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [src/core/scoreTiming.ts](../../src/core/scoreTiming.ts), [src/core/scoreLexer.ts](../../src/core/scoreLexer.ts), [src/core/scoreSections.ts](../../src/core/scoreSections.ts), [tests/unit/fileCompilation.test.ts](../../tests/unit/fileCompilation.test.ts), [tests/unit/fileEditing.test.ts](../../tests/unit/fileEditing.test.ts), [tests/unit/fileLimits.test.ts](../../tests/unit/fileLimits.test.ts), [tests/unit/filePersistence.test.ts](../../tests/unit/filePersistence.test.ts), [src/components/ScoreFileTabs.tsx](../../src/components/ScoreFileTabs.tsx), [tests/unit/scoreFiles.test.ts](../../tests/unit/scoreFiles.test.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [src/core/commands.ts](../../src/core/commands.ts)
 - Virtual song files and shared track parts / dependency group 2: [tests/browser/score-files.spec.ts](../../tests/browser/score-files.spec.ts), [tests/helpers/scoreFiles.ts](../../tests/helpers/scoreFiles.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 ### Project state and desktop studio
 
@@ -336,7 +332,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L127), [View](../../src/App.tsx#L129), [readPreferences](../../src/App.tsx#L130), [MiniWave](../../src/App.tsx#L154), [RangeControl](../../src/App.tsx#L195), [App](../../src/App.tsx#L245), [measure](../../src/App.tsx#L310), [resetMacros](../../src/App.tsx#L407).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L128), [View](../../src/App.tsx#L130), [readPreferences](../../src/App.tsx#L131), [MiniWave](../../src/App.tsx#L155), [RangeControl](../../src/App.tsx#L196), [App](../../src/App.tsx#L246), [measure](../../src/App.tsx#L311), [resetMacros](../../src/App.tsx#L408).
 
 ### Maintained project knowledge
 
@@ -356,7 +352,7 @@ v0.19.0 exports frozen source and applied independent sound/processing copies th
 - Project mix WAV export / dependency group 4: [tests/browser/export.spec.ts](../../tests/browser/export.spec.ts)
 - Project mix WAV export / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L20), [prepareExport](../../src/audio/export.ts#L32), [renderWav](../../src/audio/export.ts#L106), [WavRender](../../src/audio/export.ts#L173), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L66).
+Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L21), [prepareExport](../../src/audio/export.ts#L33), [renderWav](../../src/audio/export.ts#L108), [WavRender](../../src/audio/export.ts#L177), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L66).
 
 
 ## Parser coverage

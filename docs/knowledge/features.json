@@ -22,7 +22,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "FourPataka v0.37.1 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6a contributor licensing/notices/policies/CI definitions are implemented; tutorial/public-release gates remain. Swing, chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.",
+      "summary": "FourPataka v0.38.0 is a local browser/Electron music studio: 32 signed Fourier harmonics, waveform dots/drawing, synthesized drum hits, independent instrument copies, five registered serial pedals, a score IDE and frozen WAV export. Canonical scoreText owns named files/tracks; A/B changes retain the running clock. M1 numeric metadata and M2 playable pedal contracts/registry are implemented, including schema-3 unavailable-pedal recovery. M3 Fourier presets is implemented with baked-data factories and explicit discovery. M4 selectable/saved engines, schema4 recovery and clock-preserving comparison are implemented; M5 declarative features, schema5 recovery and shared metering are implemented; M6a contributor licensing/notices/policies/CI definitions are implemented; tutorial/public-release gates remain. Variable swing is implemented in v0.38.0. Chamber acoustics, phaser/chorus/reverb and manual device/listening/screen-reader gates remain planned. Start with docs/knowledge/TASK_GUIDE.md; release history and verification live in IMPLEMENTATION_STATUS.md.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
@@ -576,7 +576,7 @@
       "id": "rhythm",
       "parent": "composition",
       "title": "Articulation, tuplets and score meter changes",
-      "summary": "staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2–32/M1–32, no enforced event count. Dots and whole–64th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1–128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing, envelope carry/glide and per-track meters remain planned.",
+      "summary": "staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested scopes. Innermost articulation wins; rests break legato, and short overlaps retain separate attacks without crossing the closing scope. Tuplets multiply exact rational durations for every note/rest, including nested/legacy modifiers; N2–32/M1–32, no enforced event count. Dots and whole–64th durations, eighth alias and bare named-quality chords are supported. repeat N {...} plays N total times (default2,count1–128,depth16,event10000/token-visits100000); positional bar rests resolve on each pass. Source spans retain comments/CRLF and diagnostics. Shared live/comparison/WAV timing preserves clock/phase, latency, finite tails and Stop. The authored EXAMPLE_SCORE lives in src/core/project.ts and must be preserved; Load demo is explicit/undoable and restores missing factory keys conservatively. Variable swing is implemented in v0.38.0; envelope carry/glide and per-track meters remain planned.",
       "paths": [
         "src/core/rhythm.ts",
         "src/core/articulation.ts",
@@ -634,38 +634,24 @@
     {
       "id": "swing",
       "parent": "composition",
-      "title": "Variable swing — planned",
-      "summary": "Planned variable eighth/sixteenth swing, with proposed long-subdivision share units (50% straight, about66.7% 2:1). Bounds/syntax/scope are provisional; no runtime swing command exists. Written rational beats and fixed pair/bar endpoints remain; shared performance timing for live/WAV/comparison must avoid drift and preserve frozen clocks, phase, latency, copies and finite tails. Tuplets/chords/rests/dots/articulation/repeats and odd-meter boundaries require explicit proof and manual listening.",
-      "paths": ["docs/SCORE_WORKSPACE_PLAN.md", "BUILD_PLAN.md", "IMPLEMENTATION_STATUS.md"]
-    },
-    {
-      "id": "named-sections",
-      "parent": "composition",
-      "title": "Named sections and alternate endings",
-      "summary": "Implemented v0.27.0: section A declares track-local source without playing; explicit play A supports forward calls, repeats and invocation-local trim expressions with optional endings. Exact rational cuts shorten spanning notes/chords/rests without a new attack, recalculate staccato gates and retained legato scope, resolve positional bar rests before cutting and expose actual call duration. Definitions and other calls stay unchanged; nested metadata reflects parent clipping. Original UTF-16 definition/call spans, CRLF-safe guarded scoped rename/history, local completion, contextual command cards, declared/trimmed chord previews and frozen-source playback highlights share canonical scoreText. Unused definitions validate in scratch tracks at beat zero without output; undefined/duplicate/cyclic references and depth/call/event/token budgets diagnose. Live/WAV/comparison consume the whole performed score and owned copies, preserving phase/clock/latency and finite tails. General M1–M6, swing and manual gates remain planned.",
+      "title": "Variable swing timing",
+      "summary": "Implemented v0.38.0: source commands swing eighth/16th 50–75(percent; optional% suffix), swing off and one pre-event override per logical track across shared files.50/default/off preserve straight event fields. A monotonic bar-relative pair map derives performedBeat/duration and proportional gates without changing rational written positions, bar/track endpoints or seconds. Incomplete bar/track pairs and complete pairs touching any explicit/nested tuplet stay straight; rests/chords/dots/expanded repeats and sections share one absolute map. Live look-ahead, WAV and clipped comparison consume performed timing; phrase crops use the original grid before rebasing, and A/B retains phase/clock/owned copies. Timeline keeps labeled written positions, actual highlights and zero-based performed inspection. Reference/blank completion/undo/reload/native JSON retain source authority with schema5 and no demo change. Mid-track swing changes, humanization and groove templates remain future; physical/device/listening gates remain open.",
       "paths": [
-        "src/core/scoreSections.ts",
-        "src/core/sectionTiming.ts",
-        "src/core/scoreLexer.ts",
-        "src/core/parser.ts",
-        "src/core/scoreTiming.ts",
-        "src/core/scoreWorkspace.ts",
-        "src/core/commands.ts",
-        "src/core/commandReference.ts",
-        "src/core/scoreTools.ts",
-        "src/components/SectionNavigator.tsx",
-        "src/components/ScoreWorkspace.tsx",
-        "src/components/ScoreEditor.tsx",
-        "src/components/Timeline.tsx",
-        "tests/unit/scoreSections.test.ts",
-        "tests/unit/sectionEndings.test.ts",
-        "tests/helpers/sections.ts",
-        "tests/browser/sections.spec.ts",
-        "tests/desktop/app.spec.ts",
-        "docs/extensions/NAMED_SECTIONS.md",
         "docs/SCORE_WORKSPACE_PLAN.md",
         "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md"
+        "IMPLEMENTATION_STATUS.md",
+        "src/core/performanceTiming.ts",
+        "src/core/articulation.ts",
+        "src/core/parser.ts",
+        "src/core/comparison.ts",
+        "src/audio/engine.ts",
+        "src/audio/export.ts",
+        "src/components/Timeline.tsx",
+        "tests/unit/performanceTiming.test.ts",
+        "tests/unit/swing.test.ts",
+        "tests/browser/swing.spec.ts",
+        "tests/helpers/swing.ts",
+        "docs/extensions/PERFORMANCE_TIMING.md"
       ]
     },
     {

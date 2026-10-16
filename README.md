@@ -29,7 +29,7 @@ Browser test cleanup is confined to `.test-results/browser`; native profiles/tra
 
 ## Windows application
 
-The latest verified portable build is `release/FourPataka-0.37.1-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
+The latest verified portable build is `release/FourPataka-0.38.0-win-x64.exe`. Open it directly; it bundles the studio, fonts, and assets and does not need a development server. It is currently an unsigned prototype with the default Electron icon. The portable wrapper uses ZIP compression for faster local build iterations. Build outputs are ignored by Git.
 
 ```sh
 npm run desktop:dev       # Desktop window with Vite hot reload on port 5175
@@ -214,3 +214,7 @@ For contributions, start with the illustrated [module creation guide](docs/exten
 ## License and contribution readiness
 
 FourPataka source is [GPL-3.0-only](LICENSE), selected by the owner. Third-party dependencies/assets retain their [upstream notices](THIRD_PARTY_NOTICES.md); complete notices ship with browser/Windows assets. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for implemented module tutorials and [maintainer instructions](docs/MAINTAINING.md) for CI, support, review and release diagrams. CI review artifacts are unsigned and paired with exact source; this does not publish a public release.
+
+## Variable swing
+
+Write `swing eighth 66.7`, `swing 16th 60`, or `swing off` outside tracks. Amount50–75 is the long subdivision's percent share;50 is straight. One override before a track's first event applies across its virtual files. Written beats stay unchanged; live playback, A/B phrase comparison and WAV use the same performed timing. See [examples and contributor diagrams](docs/extensions/PERFORMANCE_TIMING.md).

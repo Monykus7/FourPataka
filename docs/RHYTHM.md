@@ -68,3 +68,7 @@ track lead using sine {
 Timing expressions accept numbers, +, -, *, /, parentheses and conventional precedence; `4*2+7*3` =29 quarter beats. Single * multiplies, not **. Expressions never evaluate JavaScript. Existing positive finite limits and preceding-meter bar-boundary validation remain. The example above first switches to 7/4 at beat8, making beat29 a valid change boundary.
 
 Tempo/meter forms have been removed: write directives in the IDE. Tab/Shift+Tab indent/outdent; F2/Shift+F2 move snippet fields. Ctrl+M toggles Tab focus navigation. The Beside score preference swaps Timeline/Command Reference placement. The current user-authored demo has two17-beat tracks; existing saves remain intact until Load demo score.
+
+## Variable swing (v0.38.0)
+
+Use `swing eighth 66.7`, `swing 16th 60`, or `swing off` outside tracks; one override can appear before a logical track's first event. Amount is the first subdivision's share,50–75percent, with50 straight. Written beats/bar lengths remain unchanged. Complete pairs touched by tuplets and incomplete pairs at bar/track ends remain straight. See [performance timing](extensions/PERFORMANCE_TIMING.md) for examples, edge policies, gate/clipping behavior and contributor diagrams.

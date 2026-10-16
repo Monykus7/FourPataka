@@ -50,3 +50,5 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 
 - [Module creation](MODULE_CREATION.md): tested chord-shape example, assembly and consumption, owned settings/runtime lifecycle, audio routing and compatibility diagrams.
 - [Score workspace](SCORE_VIEWS.md): current file-only editor identity and track operations, historical projection helpers, guarded transactions, CRLF spans and ownership/recovery diagrams. Shared-file track views ship in v0.24.0; M5 declarative feature contracts ship in v0.37.0, while arbitrary editor adapters remain planned.
+
+- [Performance timing and swing](PERFORMANCE_TIMING.md): implemented global/track swing, written/performed quarter-beat ownership, tuplets/bar policies, articulation/comparison clipping and shared audio proof diagrams (v0.38.0).
