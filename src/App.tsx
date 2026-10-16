@@ -280,6 +280,7 @@ export default function App() {
   const [elapsed, setElapsed] = useState(0);
   const [peak, setPeak] = useState(0);
   const [rms, setRms] = useState(0);
+  const [meterMeta, setMeterMeta] = useState({ windowSamples: 4800, channels: 2, valid: true });
   const [featureNavigation, setFeatureNavigation] = useState<{
     id: number;
     from: number;
@@ -497,6 +498,17 @@ export default function App() {
       const measured = engine.current.measure();
       setPeak(measured.peak);
       setRms(measured.rms);
+      setMeterMeta((previous) =>
+        previous.windowSamples === measured.windowSamples &&
+        previous.channels === measured.channels &&
+        previous.valid === measured.valid
+          ? previous
+          : {
+              windowSamples: measured.windowSamples,
+              channels: measured.channels,
+              valid: measured.valid,
+            },
+      );
       setPlayback(engine.current.mode);
       setSampleRate(engine.current.sampleRate);
     }, 50);
@@ -907,7 +919,9 @@ export default function App() {
       peak,
       rms,
       sampleRateHz: sampleRate,
-      windowSamples: 2048,
+      windowSamples: meterMeta.windowSamples,
+      channels: meterMeta.channels,
+      valid: meterMeta.valid,
       cadenceMs: 50,
       playing: !!playback,
       mode: playback,

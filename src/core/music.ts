@@ -101,10 +101,24 @@ export function descriptors(sound: Sound, fundamental: number, sampleRate = 4800
   const subPower = active
     .filter((c) => c.kind === 'undertone')
     .reduce((s, c) => s + c.magnitude ** 2, 0);
+  const evenPower = active
+    .filter((c) => c.kind === 'harmonic' && c.index % 2 === 1)
+    .reduce((sum, c) => sum + c.magnitude ** 2, 0);
+  const h1Power = (active.find((c) => c.kind === 'harmonic' && c.index === 0)?.magnitude ?? 0) ** 2;
+  const dominant = active.reduce<(typeof active)[number] | null>(
+    (largest, c) => (!largest || c.magnitude > largest.magnitude ? c : largest),
+    null,
+  );
   return {
     power,
     centroid: power ? active.reduce((s, c) => s + c.frequency * c.magnitude ** 2, 0) / power : null,
     oddShare: power ? oddPower / power : 0,
     subShare: power ? subPower / power : 0,
+    evenShare: power ? evenPower / power : 0,
+    h1Share: power ? (h1Power || 0) / power : 0,
+    meanSquare: power / 2,
+    dominantHz: dominant?.frequency ?? null,
+    dominantLabel: dominant?.label ?? null,
+    componentCount: active.length,
   };
 }

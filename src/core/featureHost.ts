@@ -89,6 +89,15 @@ export function featureAnalysis(
     centroidHz: result.centroid,
     oddShare: result.oddShare,
     subShare: result.subShare,
+    details: {
+      evenShare: result.evenShare,
+      h1Share: result.h1Share,
+      meanSquare: result.meanSquare,
+      dominantHz: result.dominantHz,
+      dominantLabel: result.dominantLabel,
+      componentCount: result.componentCount,
+      partialModel: !!sound.percussion,
+    },
   };
 }
 /** Revision and destination are host-owned; stale/asynchronous source requests are rejected. */

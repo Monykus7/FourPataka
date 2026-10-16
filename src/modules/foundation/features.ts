@@ -17,6 +17,15 @@ export interface FeatureSnapshot {
     centroidHz: number | null;
     oddShare: number;
     subShare: number;
+    details?: Readonly<{
+      evenShare: number;
+      h1Share: number;
+      meanSquare: number;
+      dominantHz: number | null;
+      dominantLabel: string | null;
+      componentCount: number;
+      partialModel: boolean;
+    }>;
   }>;
   readonly measurement: Readonly<{
     peak: number;
@@ -28,6 +37,8 @@ export interface FeatureSnapshot {
     mode: 'audition' | 'score' | null;
     positionSeconds: number;
     staleScore: boolean;
+    channels?: number;
+    valid?: boolean;
   }>;
 }
 export interface FeatureCommand {
@@ -50,6 +61,7 @@ export interface FeatureView {
   cards?: { title: string; text: string; action: FeatureButton }[];
   metricsTitle?: string;
   metrics?: { label: string; value: string }[];
+  metricGroups?: { title: string; note?: string; metrics: { label: string; value: string }[] }[];
   note?: string;
   actions?: FeatureButton[];
 }
@@ -72,6 +84,7 @@ export interface FeatureDefinition<S = unknown> {
   attribution: string;
   placement: FeaturePlacement;
   capabilities: readonly FeatureCapability[];
+  collapsedByDefault?: boolean;
   parameters?: Readonly<Record<string, NumericParameter>>;
   commands?: readonly FeatureCommand[];
   defaults: () => S;
@@ -109,6 +122,7 @@ export function defineFeature<S>(input: FeatureDefinition<S>): FeatureDefinition
         typeof input.parameters !== 'object' ||
         Array.isArray(input.parameters))) ||
     !placements.includes(input.placement) ||
+    (input.collapsedByDefault !== undefined && typeof input.collapsedByDefault !== 'boolean') ||
     !Array.isArray(input.capabilities) ||
     input.capabilities.some((c) => !capabilities.includes(c)) ||
     new Set(input.capabilities).size !== input.capabilities.length ||
@@ -239,7 +253,15 @@ function validateFeatureView(model: FeatureView) {
     Array.isArray(model) ||
     Object.keys(model).some(
       (key) =>
-        !['description', 'cards', 'metricsTitle', 'metrics', 'note', 'actions'].includes(key),
+        ![
+          'description',
+          'cards',
+          'metricsTitle',
+          'metrics',
+          'metricGroups',
+          'note',
+          'actions',
+        ].includes(key),
     )
   )
     throw new Error('Invalid feature view.');
@@ -273,6 +295,21 @@ function validateFeatureView(model: FeatureView) {
       model.actions.some((b) => !button(b)))
   )
     throw new Error('Invalid feature buttons.');
+  if (
+    model.metricGroups !== undefined &&
+    (!Array.isArray(model.metricGroups) ||
+      model.metricGroups.length > 8 ||
+      model.metricGroups.some(
+        (group) =>
+          !group ||
+          !text(group.title) ||
+          (group.note !== undefined && !text(group.note)) ||
+          !Array.isArray(group.metrics) ||
+          group.metrics.length > 64 ||
+          group.metrics.some((metric) => !metric || !text(metric.label) || !text(metric.value)),
+      ))
+  )
+    throw new Error('Invalid feature metric groups.');
   const ids = [
     ...(model.cards ?? []).map((c) => c.action.id),
     ...(model.actions ?? []).map((b) => b.id),
