@@ -23,7 +23,11 @@
     "knowledge:embed": "node scripts/knowledge/cli.mjs embed",
     "knowledge:query": "node scripts/knowledge/cli.mjs query",
     "knowledge:watch": "node scripts/knowledge/watch.mjs",
-    "knowledge:verify": "node scripts/knowledge/verify.mjs"
+    "knowledge:verify": "node scripts/knowledge/verify.mjs",
+    "licenses:build": "node scripts/licenses.mjs",
+    "licenses:check": "node scripts/licenses.mjs --check",
+    "prebuild": "npm run licenses:check",
+    "distribution:check": "node scripts/check-distribution.mjs"
   },
   "build": {
     "appId": "com.fourpataka.studio",
@@ -35,7 +39,9 @@
       "dist/**/*",
       "desktop/**/*",
       "package.json",
-      "!node_modules/**/*"
+      "!node_modules/**/*",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md"
     ],
     "npmRebuild": false,
     "electronDist": "node_modules/electron/dist",
