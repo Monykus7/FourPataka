@@ -1,0 +1,69 @@
+name: Contributor checks
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+concurrency:
+  group: contributor-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-and-browser:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run licenses:check
+      - run: npm run distribution:check
+      - run: npm test
+      - run: npm run build
+      - run: npm run knowledge:check
+      - run: npx playwright install --with-deps chromium
+      - name: Browser integration for bundled module examples
+        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts
+        env:
+          PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
+
+  windows-native:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run desktop:package
+      - run: npm run distribution:check -- release/win-unpacked
+      - name: Packaged profiles and contributor examples
+        run: npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain"
+        env:
+          FOURPATAKA_TEST_EXECUTABLE: ${{ github.workspace }}\release\win-unpacked\FourPataka.exe
+      - name: Archive exact corresponding source
+        shell: pwsh
+        run: git archive --format=zip --output=release/FourPataka-source-${{ github.sha }}.zip HEAD
+      - name: Keep unsigned build and corresponding source for review
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: fourpataka-review-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: error
+          path: |
+            release/FourPataka-*-win-x64.exe
+            release/FourPataka-source-*.zip

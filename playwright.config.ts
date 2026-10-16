@@ -8,7 +8,7 @@ export default defineConfig({
   timeout: 60000,
   use: {
     baseURL: 'http://127.0.0.1:5173',
-    channel: 'chrome',
+    channel: process.env.PLAYWRIGHT_BUNDLED_CHROMIUM === '1' ? undefined : 'chrome',
     launchOptions: { args: ['--autoplay-policy=no-user-gesture-required'] },
     viewport: { width: 1440, height: 1040 },
     trace: 'retain-on-failure',
