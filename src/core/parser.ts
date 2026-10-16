@@ -8,6 +8,12 @@ import { compareBeats, minBeats, sectionCut, subtractBeats } from './sectionTimi
 import { addBeats, beatValue, parseDuration, fraction, type BeatFraction } from './rhythm';
 import type { Articulation } from './articulation';
 import {
+  parseSwing,
+  applyPerformance,
+  performanceMap,
+  type SwingSetting,
+} from './performanceTiming';
+import {
   DEFAULT_METER,
   parseMeter,
   measureLength,
@@ -26,6 +32,9 @@ export interface Diagnostic {
   message: string;
 }
 export interface ScoreEvent {
+  performedBeat?: number;
+  performedDuration?: number;
+  performedGateDuration?: number;
   fileId?: string;
   sectionEndingOf?: string[];
   sectionCalls?: SectionInvocation[];
@@ -74,6 +83,8 @@ export interface ScoreTrackPart {
   bodyTo: number;
 }
 export interface ScoreTrack {
+  swing?: SwingSetting | null;
+  swingDirective?: { from: number; to: number };
   parts: ScoreTrackPart[];
   key: string;
   instrumentKey: string;
@@ -87,13 +98,14 @@ export interface ScoreTrack {
   beats: number;
 }
 export interface CompiledScore {
+  swing?: SwingSetting;
   chordPreviews: NonNullable<ScoreEvent['chordSymbol']>[];
   sections: SectionSource[];
   sectionInvocations: SectionInvocation[];
   meterChanges: MeterChange[];
   tempo: number;
   meter: TimeSignature;
-  directives: Partial<Record<'tempo' | 'time', { from: number; to: number }>>;
+  directives: Partial<Record<'tempo' | 'time' | 'swing', { from: number; to: number }>>;
   master: { key: string; from: number; to: number; commandFrom: number; commandTo: number } | null;
   tracks: ScoreTrack[];
   events: ScoreEvent[];
@@ -168,7 +180,7 @@ export function parseScore(
   // Read global timing first so directives below tracks also govern positional bar rests.
   const timing = scoreTiming(tokens);
   let exhausted = false;
-  const consumeToken = (token: ScoreToken) => {
+  const consumeToken = (token: ScoreToken, nested: boolean) => {
     const { text: line, from, to } = token;
     const error = (message: string, start = from, end = to) =>
       result.diagnostics.push({
@@ -248,6 +260,30 @@ export function parseScore(
         current.parts[current.parts.length - 1].to = to;
       }
       current = null;
+      return;
+    }
+    if (/^swing\b/.test(line)) {
+      if (nested || blocks.length)
+        error('Swing directives cannot appear inside phrase, repeat or section blocks.');
+      else if (current?.events.length)
+        error('Put the track swing override before its first event, including rests.');
+      else if (current ? current.swingDirective : globals.has('swing'))
+        error('Duplicate swing directive in this scope.');
+      else {
+        try {
+          const setting = parseSwing(line);
+          if (current) {
+            current.swing = setting;
+            current.swingDirective = { from, to };
+          } else {
+            result.swing = setting ?? undefined;
+            result.directives.swing = { from, to };
+            globals.add('swing');
+          }
+        } catch (failure) {
+          error((failure as Error).message);
+        }
+      }
       return;
     }
     if (!current) {
@@ -686,7 +722,7 @@ export function parseScore(
         continue;
       }
       if (token.kind !== 'repeat-open') {
-        consumeToken(token);
+        consumeToken(token, depth > 0 || ancestry.length > 0 || callStack.length > 0);
         continue;
       }
       const close = sectionIndex.closes.get(i);
@@ -786,6 +822,14 @@ export function parseScore(
     result.meterChanges.push(change);
     meterStart = change.beat;
     previousMeter = change.meter;
+  }
+  for (const track of result.tracks) {
+    const setting = track.swing === undefined ? result.swing : track.swing;
+    if (setting && setting.amount !== 50)
+      applyPerformance(
+        track.events,
+        performanceMap(result.meter, result.meterChanges, track.events, track.beats, setting),
+      );
   }
   result.beats = Math.max(0, ...result.tracks.map((t) => t.beats));
   result.seconds = (result.beats * 60) / result.tempo;
