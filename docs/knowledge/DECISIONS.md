@@ -507,3 +507,5 @@ CI uses source-reviewed pinned official actions, read-only permissions and no pr
 ## Fresh-checkout Electron packaging bootstrap
 
 The first hosted Windows run failed because npm ci installed Electron's JavaScript package but electron-builder's explicit electronDist directory was absent. Electron44 defers runtime installation until its entry point or installer is invoked; packaging reads the directory directly. Run the pinned package's install.js explicitly through desktop:setup before desktop:package, keeping checksum verification/version reuse and avoiding unrelated lifecycle-script approvals. Hosted Linux/browser success does not establish the Windows gate.
+
+Native waveform pointer checks scroll the editor into view before measuring drag bounds and use locator-relative clicks for dot creation. A bounding box alone does not guarantee that raw page coordinates are inside the viewport on hosted desktops. Preserve real pointer coverage and six-point assertions rather than bypassing interaction or retrying a missed click.

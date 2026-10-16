@@ -823,13 +823,17 @@ test('desktop loads local assets, isolates the renderer, plays audio, and opens 
     page.getByRole('img', { name: 'Signed harmonic coefficients preview' }),
   ).toBeVisible();
   const dotsWave = page.getByRole('group', { name: 'Editable harmonic source waveform' });
+  // Hosted desktop dimensions can put the editor below the fold. Locator clicks
+  // scroll and check hit targets; raw page coordinates silently miss it there.
+  await dotsWave.scrollIntoViewIfNeeded();
   const dotsBox = (await dotsWave.boundingBox())!;
-  await page.mouse.click(dotsBox.x + dotsBox.width * 0.21, dotsBox.y + dotsBox.height * 0.3);
+  await dotsWave.click({ position: { x: dotsBox.width * 0.21, y: dotsBox.height * 0.3 } });
   await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(6);
   await page.getByRole('button', { name: 'Reset waveform to sine', exact: true }).click();
   await expect(page.getByRole('button', { name: /^Wave point / })).toHaveCount(5);
   await page.getByRole('button', { name: 'Draw', exact: true }).click();
   const wave = page.getByRole('group', { name: 'Editable harmonic source waveform' });
+  await wave.scrollIntoViewIfNeeded();
   const box = (await wave.boundingBox())!;
   await page.mouse.move(box.x + box.width * 0.1, box.y + box.height * 0.5);
   await page.mouse.down();
