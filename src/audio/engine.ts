@@ -1,4 +1,6 @@
 import { performanceBeat } from '../core/performanceTiming';
+import { createOutputMeter } from './outputMeter';
+import { silentLevels, levelWindow } from './levels';
 import { playbackTiming } from '../core/articulation';
 import { engineRelease, requireEngine, type InstrumentSound as Sound } from '../core/engineSound';
 import { createVoice, holdParameter, type Voice } from './voice';
@@ -59,6 +61,7 @@ interface Session {
 export class AudioEngine {
   context: AudioContext | null = null;
   analyser: AnalyserNode | null = null;
+  private meter: ReturnType<typeof createOutputMeter> | null = null;
   monitor: GainNode | null = null;
   mix: GainNode | null = null;
   private session: Session | null = null;
@@ -81,6 +84,7 @@ export class AudioEngine {
       this.monitor = this.context.createGain();
       this.monitor.gain.value = this.monitorValue;
       this.mix.connect(this.analyser);
+      this.meter = createOutputMeter(this.context, this.mix);
       this.analyser.connect(this.monitor);
       this.monitor.connect(this.context.destination);
       this.preparation = Promise.all([
@@ -529,15 +533,10 @@ export class AudioEngine {
     if (notify) this.onEnded?.();
   }
   measure() {
-    if (!this.analyser || !this.session) return { peak: 0, rms: 0 };
-    const values = new Float32Array(this.analyser.fftSize);
-    this.analyser.getFloatTimeDomainData(values);
-    let sum = 0;
-    let peak = 0;
-    values.forEach((v) => {
-      sum += v * v;
-      peak = Math.max(peak, Math.abs(v));
-    });
-    return { peak, rms: Math.sqrt(sum / values.length) };
+    return {
+      ...(this.meter && this.session ? this.meter.read() : silentLevels()),
+      windowSamples: this.meter?.windowSamples ?? levelWindow(this.sampleRate).windowSamples,
+      channels: this.meter?.channels ?? 2,
+    };
   }
 }
