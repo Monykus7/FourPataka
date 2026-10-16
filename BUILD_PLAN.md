@@ -65,7 +65,7 @@ The v0.19.1 layout follow-up makes the expanded command reference match the scor
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
 
-Current application priority (2026-10-15): M1–M5 module contracts and application integration are implemented. M6a adds GPL-3.0-only, retained notices, contributor policies and browser/Windows CI; hosted clean-checkout/tutorial and owner-approved public release remain explicit M6 gates. Variable swing is implemented in v0.38.0. Stage7 learning/measurement and planned WAV analysis/chamber/effects can use the landed module boundaries without waiting for public publication.
+Current application priority (2026-10-16): M1–M5 module contracts and application integration are implemented. M6a adds GPL-3.0-only, retained notices, contributor policies and browser/Windows CI; hosted clean-checkout checks pass; tutorial/operational checks and owner-approved public release remain explicit M6 gates. Variable swing is implemented in v0.38.0. Stage7 learning/measurement and planned WAV analysis/chamber/effects can use the landed module boundaries without waiting for public publication.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 

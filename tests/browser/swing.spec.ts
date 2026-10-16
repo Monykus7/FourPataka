@@ -81,7 +81,9 @@ test('swing WAV agrees with exact scheduled gates at both rates and live compari
     };
     await wait(start + 0.1);
     const before = engine.progress;
-    engine.updateScoreComparison(structuredClone(p.tracks[0].sound), 'lead');
+    const comparisonSound = structuredClone(p.tracks[0].sound);
+    comparisonSound.harmonics[1] = 0.2;
+    engine.updateScoreComparison(comparisonSound, 'lead');
     await wait(start + 0.6);
     const continuity =
       engine.context === context && engine.session.start === start && engine.progress > before;
