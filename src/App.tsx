@@ -2607,7 +2607,7 @@ export default function App() {
                       </div>
                       {inspectedEvent.performedBeat !== undefined && (
                         <div>
-                          <dt>Performed timing</dt>
+                          <dt>Performed timing (zero-based)</dt>
                           <dd>
                             Beat {inspectedEvent.performedBeat.toFixed(4)} ·{' '}
                             {inspectedEvent.performedDuration?.toFixed(4)} quarter beats

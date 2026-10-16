@@ -1,4 +1,5 @@
 import { featureModuleWorkflow } from '../helpers/featureModules';
+import { SWING_SCORE, swingWorkflow } from '../helpers/swing';
 import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
@@ -52,6 +53,32 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged swing retains performed timing through native save and reopen', async () => {
+  const page = await app.firstWindow();
+  await swingWorkflow(page);
+  const filePath = resolve('.test-results', 'desktop', 'swing.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved swing.fourpataka.json');
+  expect(JSON.parse(await readFile(filePath, 'utf8')).scoreText).toBe(SWING_SCORE);
+  await page
+    .getByRole('textbox', { name: 'Score editor' })
+    .fill('track lead using sine {\nC4 quarter\n}');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Score editor' })).toHaveText(SWING_SCORE, {
+    useInnerText: true,
+  });
+  await page
+    .getByRole('combobox', { name: 'Inspect lead event', exact: true })
+    .selectOption('lead:1');
+  await expect(page.getByText('Beat 0.7500 · 0.2500 quarter beats', { exact: true })).toBeVisible();
 });
 
 test('desktop profile has one cache owner and retains session data on reopening', async () => {
