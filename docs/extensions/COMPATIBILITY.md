@@ -21,7 +21,7 @@ Import should parse and bound the outer document, identify compatible/missing/in
 
 Fixtures must cover schema-v1 sounds/signs/undertones, customized factory templates, A/B copies, applied track/master chains, cables/positions, source comments/line endings/keys, levels/bypass and unrecognized future payloads. Existing unchanged-assignment reconciliation and conservative factory upgrades remain authoritative.
 
-Older application versions may reject a new schema; do not claim backwards readability without a tested downgrade writer. Document supported host/module/data versions and rollback/export options with every release. Breaking public contract changes require an explicit migration/deprecation policy before adoption; M6 will publish the support window rather than promise indefinite compatibility here.
+Older application versions may reject a new schema; do not claim backwards readability without a tested downgrade writer. Document supported host/module/data versions and rollback/export options with every release. Breaking public contract changes require an explicit migration/deprecation policy before adoption; The [M6 maintainer policy](../MAINTAINING.md) records the current support window and deprecation/recovery requirements rather than indefinite compatibility.
 
 ## Missing or incompatible modules
 

@@ -1,8 +1,8 @@
 # Creating a FourPataka module
 
-For the implemented general numeric metadata boundary, use the [M1 foundation tutorial](MODULE_FOUNDATION.md). The [playable pedal API](PEDAL_MODULES.md) ships in v0.33.0; engine/feature APIs remain planned.
+Implemented source contracts cover numeric metadata, [pedals](PEDAL_MODULES.md), [Fourier presets](FOURIER_PRESETS.md), [synthesis engines](ENGINE_FOUNDATION.md) and [declarative features](FEATURE_MODULES.md). Start with the matching tutorial and public src/modules/index.ts boundary. The earlier chord API remains independently documented below.
 
-This guide distinguishes working source contracts from planned registries. It is not an installer, marketplace or a released general SDK. The repository has no approved open-source license yet; owner-approved licensing/attribution remains a publication gate. You can prepare reviewed source contributions and run the existing examples without claiming that those future gates are complete.
+The owner selected GPL-3.0-only; see [contribution rights and checks](../../CONTRIBUTING.md) and [maintainer/release gates](../MAINTAINING.md). Contributions are reviewed bundled source, with no runtime installer or arbitrary UI/grammar plugin API. The historical walkthrough below illustrates the chord contract; use the category tutorials for current general registration rather than treating earlier planned names as available APIs.
 
 ## Choose an implemented seam first
 

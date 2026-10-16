@@ -1,6 +1,6 @@
 # Synthesis engines: public API and application integration
 
-M4a voice contracts shipped in v0.35.0. M4b application integration ships in v0.36.0: choose Basic Tone in Instrument, edit its exact controls, Save as new with a score key, Apply owned track copies, compare on the running clock and save/reload/export through the shared factory. This is reviewed bundled source, not a runtime installer. Licensing and contributor CI/publication remain M6 work.
+M4a voice contracts shipped in v0.35.0. M4b application integration ships in v0.36.0: choose Basic Tone in Instrument, edit its exact controls, Save as new with a score key, Apply owned track copies, compare on the running clock and save/reload/export through the shared factory. This is reviewed bundled source, not a runtime installer. M6 licensing, notices and contributor CI definitions are implemented; [maintainer instructions](../MAINTAINING.md) distinguish hosted-run and public-release gates.
 
 ## Use an independent instrument
 

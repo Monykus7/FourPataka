@@ -2,7 +2,7 @@
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a foundation ships in v0.35.0 and M4b selectable/saved engine instruments ships in v0.36.0; M5 declarative features/host actions ships in v0.37.0; M6 readiness remains. General custom adapters, runtime loading, licensing and contributor CI remain planned.
+Current status: M1 numeric metadata and M2 playable pedal modules are implemented. See the [pedal contributor tutorial](PEDAL_MODULES.md) for the public contract, five registered processors, schema-3 migration and unavailable-module recovery. The earlier chord API remains separate. M3 presets is implemented in v0.34.0. M4a foundation ships in v0.35.0 and M4b selectable/saved engine instruments ships in v0.36.0; M5 declarative features/host actions ships in v0.37.0; M6 now has owner-selected GPL-3.0-only, shipped notices, contributor policies and browser/Windows CI definitions. Hosted clean-checkout/tutorial and public-release gates remain; see [maintainer instructions](../MAINTAINING.md). General custom adapters and runtime loading remain planned.
 
 ## Start here
 
@@ -28,9 +28,9 @@ Read [CONTRIBUTING.md](../../CONTRIBUTING.md) for the current setup, source cont
 3. **M3 — Fourier preset modules (implemented v0.34.0).** Registry-backed timbres with an independent example, documented units/schema and preserved applied copies. New synthesis engines are separate.
 4. **M4 — Synthesis engines.** M4a public lifecycle, Fourier adapter and independent code example ship in v0.35.0. M4b selectable/saved engines, capability controls, migration/recovery and shared application playback/export ship in v0.36.0.
 5. **M5 — Feature modules (implemented v0.37.0).** Declarative views/experiments/command metadata through narrow host services, migrated Learn, Partial pair and schema5 recovery.
-6. **M6 — Open-source readiness.** Owner-approved license/attribution, contributor/maintainer policies, supported APIs/examples and repeatable browser/native/package CI.
+6. **M6 — Open-source readiness.** GPL-3.0-only, attribution, contributor/maintainer policies and CI definitions are implemented; hosted-run/tutorial and public-release gates remain explicit.
 
-Default start is M1 → M2 → M3. Those milestones enable useful documented contributions without waiting for M4/M5; the first M6 contributor release can cover only the APIs that have passed their own gates. Resolve license selection early, before accepting third-party code or publishing an open-source release. Later music features use landed module boundaries. The existing stage 5 manual/device gates are still open; none is closed by planning.
+Default start is M1 → M2 → M3. Those milestones enable useful documented contributions without waiting for M4/M5; the first M6 contributor release can cover only the APIs that have passed their own gates. The owner selected GPL-3.0-only; review contribution rights and retain compatible upstream notices before merging or distributing. Later music features use landed module boundaries. The existing stage 5 manual/device gates are still open; none is closed by planning.
 
 ## What will count as supported
 
@@ -49,4 +49,4 @@ Until a milestone ships, use its current-source recipe and label its public-cont
 - [Percussion presets](PERCUSSION_PRESETS.md): v0.30.0 decaying pitch-swept Kick/Snare and the v0.29.0 noise-hit hi-hat, conservative library upgrades, shared comparison material, editable units, lifecycle/headroom and live/WAV ownership diagrams.
 
 - [Module creation](MODULE_CREATION.md): tested chord-shape example, assembly and consumption, owned settings/runtime lifecycle, audio routing and compatibility diagrams.
-- [Score workspace](SCORE_VIEWS.md): current file-only editor identity and track operations, historical projection helpers, guarded transactions, CRLF spans and ownership/recovery diagrams. Shared-file track views ship in v0.24.0; the general M5 registration/capability API stays planned.
+- [Score workspace](SCORE_VIEWS.md): current file-only editor identity and track operations, historical projection helpers, guarded transactions, CRLF spans and ownership/recovery diagrams. Shared-file track views ship in v0.24.0; M5 declarative feature contracts ship in v0.37.0, while arbitrary editor adapters remain planned.

@@ -1,6 +1,6 @@
 # Modular FourPataka architecture
 
-Status: M1 implements the [numeric metadata foundation](MODULE_FOUNDATION.md), validated assembly and an existing EQ adapter in v0.32.0. M2 in v0.33.0 supplies the [playable pedal API](PEDAL_MODULES.md), including all built-ins, Level and saved-data recovery. M4–M6 and other runtime category APIs described below remain planned. The synthesis/notation pilot implements a narrow [chord-shape contract](CHORD_SHAPES.md) ahead of this general program. These are design requirements, not an available plugin SDK. The milestone sequence and acceptance gates are in [BUILD_PLAN.md](../../BUILD_PLAN.md#14-modularity-and-open-source-contributions).
+Status: M1 numeric metadata, M2 playable pedals, M3 Fourier preset factories, M4 selectable/saved engines and M5 declarative features are implemented. Public contracts live in src/modules/index.ts; src/modules/assembly.ts explicitly registers reviewed definitions for host discovery. See [current contribution routes](../../CONTRIBUTING.md) and [M6 readiness/release gates](../MAINTAINING.md). The chord-shape pilot is a separate supported source boundary. The design sections below retain the original architecture proposal as historical rationale; category tutorials are authoritative for actual names and implemented limits.
 
 ## Intended contributor experience
 
@@ -8,17 +8,16 @@ A contributor should add a module directory, implement a documented contract, pr
 
 Start with reviewed TypeScript modules bundled from source. An installed-package loader, marketplace, automatic downloads and executable project attachments are separate future proposals. A project file contains data and module requirements, never executable code. Bundled modules run within the application; they are not individually isolated from each other. The existing Electron renderer sandbox is not a sandbox for arbitrary extensions.
 
-## Current integration points
+## Current implementation routes
 
-- [pedals.ts](../../src/core/pedals.ts) defines a four-kind union, labels, numeric controls, defaults, parameter validation and chain settings. This is useful shared metadata but not a general registry.
-- [effects.ts](../../src/audio/effects.ts) branches on kinds to build processors and calculate latency. Its `EffectGraph` already exposes input/output, latency, tail, tail activity, update and disposal.
-- [PedalBoardSurface.tsx](../../src/components/PedalBoardSurface.tsx) lists equipment and accepts drag payload kinds explicitly. [PedalControls.tsx](../../src/components/PedalControls.tsx) uses shared controls but special-cases EQ labels/reset.
-- [export.ts](../../src/audio/export.ts) has a delay-specific routed-tail estimate. [scoreGraph.ts](../../src/audio/scoreGraph.ts) shares routing between playback and export and aligns track processing latency before the master chain.
-- [project.ts](../../src/core/project.ts) creates the factory instrument library, validates a fixed `Sound` and owns preset/application reconciliation. [instrumentPresets.ts](../../src/core/instrumentPresets.ts) supplies Soft bass and its conservative template upgrade.
-- [music.ts](../../src/core/music.ts), [voice.ts](../../src/audio/voice.ts) and [waveform.ts](../../src/core/waveform.ts) implement the current 32-harmonic Fourier model. Adding a named preset is different from adding a new synthesis engine.
-- [App.tsx](../../src/App.tsx) combines project state, workflows and views. [commands.ts](../../src/core/commands.ts) separates documentation metadata from parser semantics, including blank autocomplete templates.
+- Public src/modules/index.ts exports contracts; src/modules/assembly.ts supplies pedalModules, instrumentModules, engineModules and featureModules.
+- [Pedal tutorial](PEDAL_MODULES.md): factories, controls, saved recovery, latency/tails and live/WAV dispatch through registered metadata.
+- [Preset tutorial](FOURIER_PRESETS.md): data factories, explicit discovery and baked independent sounds.
+- [Engine tutorial](ENGINE_FOUNDATION.md): voice lifecycle, selectable settings, schema4 recovery and clock-preserving comparison.
+- [Feature tutorial](FEATURE_MODULES.md): immutable snapshots, validated declarative views and revision-guarded actions with schema5 recovery.
+- [Score files](SCORE_FILES.md): one canonical source and host transactions, not a general editor plugin API.
 
-These seams must be migrated incrementally. Existing shared factories, independent copies and phase/clock policies are foundations to preserve, not implementations to discard.
+The host owns transport, project history, native dialogs, output routing and independent copies. Original proposed integration switches below are historical, not instructions to add new switches.
 
 ## Proposed boundaries
 
