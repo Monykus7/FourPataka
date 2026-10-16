@@ -173,11 +173,26 @@ test('live score comparison across engines advances time and preserves the appli
     const beforeCopy = JSON.stringify(tracks);
     const engine = new AudioEngine();
     await engine.play(score, tracks, p.processing);
-    await new Promise((r) => setTimeout(r, 200));
+    // Device startup can outlast a wall-clock sleep on a clean CI runner.
+    // Observe the audio clock, without allowing a stalled context to pass.
+    const waitForClock = async (target: number) => {
+      const deadline = performance.now() + 5000;
+      while (engine.context.currentTime < target) {
+        if (performance.now() > deadline)
+          throw new Error(
+            `Audio clock stalled: ${engine.context.state} at ${engine.context.currentTime}`,
+          );
+        await new Promise((r) => setTimeout(r, 20));
+      }
+    };
+    const start = engine.session.start;
+    const context = engine.context;
+    await waitForClock(start + 0.1);
     const before = engine.progress;
     engine.updateScoreComparison(createEngineSound('example:engine/basic-tone'), 'lead');
-    await new Promise((r) => setTimeout(r, 250));
+    await waitForClock(context.currentTime + 0.2);
     const after = engine.progress;
+    const sameClock = engine.context === context && engine.session.start === start;
     const rms = engine.measure().rms;
     const sameCopy = JSON.stringify(tracks) === beforeCopy;
     const voices = [...engine.session.ownedVoices];
@@ -185,10 +200,11 @@ test('live score comparison across engines advances time and preserves the appli
     await new Promise((r) => setTimeout(r, 80));
     const nodes = voices.reduce((sum: number, v: any) => sum + (v.oscillators?.length ?? 0), 0);
     await engine.context.close();
-    return { before, after, rms, sameCopy, nodes };
+    return { before, after, rms, sameCopy, sameClock, nodes };
   });
   expect(proof.after).toBeGreaterThan(proof.before);
   expect(proof.rms).toBeGreaterThan(0.001);
   expect(proof.sameCopy).toBe(true);
+  expect(proof.sameClock).toBe(true);
   expect(proof.nodes).toBe(0);
 });
