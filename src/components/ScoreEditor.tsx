@@ -113,7 +113,7 @@ const scoreLanguage = StreamLanguage.define({
     }
     if (
       stream.match(
-        /\b(?:from|song|tempo|time|track|using|through|master|chord|rest|bar|till|end|of|repeat|section|play|trim|at|triplet|tuplet|staccato|legato)\b/,
+        /\b(?:from|song|tempo|time|swing|off|track|using|through|master|chord|rest|bar|till|end|of|repeat|section|play|trim|at|triplet|tuplet|staccato|legato)\b/,
       )
     )
       return 'keyword';
@@ -229,6 +229,19 @@ export default function ScoreEditor({
         ? [
             (context) => {
               const line = context.state.doc.lineAt(context.pos);
+              const swing = /^\s*swing\s+([A-Za-z0-9]*)$/.exec(
+                line.text.slice(0, context.pos - line.from),
+              );
+              if (swing)
+                return {
+                  from: context.pos - swing[1].length,
+                  options: ['eighth', '16th', 'off'].map((label) => ({
+                    label,
+                    type: 'keyword',
+                    detail: 'Swing subdivision or straight timing',
+                  })),
+                  validFor: /[A-Za-z0-9]*/,
+                };
               const song = /^\s*from\s+song\s+([A-Za-z0-9_]*)$/.exec(
                 line.text.slice(0, context.pos - line.from),
               );

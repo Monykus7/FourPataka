@@ -15,6 +15,28 @@ export interface CommandDefinition {
 // Metadata describes the parser's language; it never supplies playback semantics.
 const BUILTIN_COMMANDS: readonly CommandDefinition[] = [
   {
+    name: 'swing',
+    group: 'Timing',
+    scope: 'project',
+    description: 'Global eighth or sixteenth swing · 50–75%',
+    snippet: 'swing eighth 66.7',
+    completionTemplate: 'swing ${} ${}',
+    syntax: 'swing eighth|16th <50–75> · swing off',
+    rules:
+      'One global directive outside tracks; amount is the first subdivision’s percent of a pair (50 straight, 66.7 approximately 2:1). Optional % suffix. Track overrides belong before the track’s first event and apply across its files. Whole pairs touching explicit tuplets stay straight; incomplete pairs at bar and track ends stay straight. Rests and dots use the same map. Written grid, bar lengths and tempo stay fixed; live, comparison and WAV share performed timing.',
+  },
+  {
+    name: 'track-swing',
+    group: 'Timing',
+    scope: 'track',
+    description: 'Override or disable swing for one logical track',
+    snippet: 'swing off',
+    completionTemplate: 'swing ${}',
+    syntax: 'swing off · swing eighth|16th <50–75>',
+    rules:
+      'Same swing syntax, directly inside a track before any note or rest. One override for the logical track, shared by its file parts. Omission inherits the global setting; swing off stays straight. This card inserts or replaces the override in the track’s first part. Phrase/repeat/section directives and mid-track changes diagnose.',
+  },
+  {
     name: 'from-song',
     group: 'Structure',
     scope: 'project',

@@ -170,6 +170,23 @@ export function insertCommand(
   const parsed = assertEditable(text, instrumentKeys, chainKeys);
   const command = COMMANDS.find((c) => c.name === name);
   if (!command) throw new Error('Unknown command card.');
+  if (name === 'swing') {
+    const span = parsed.directives.swing;
+    return span
+      ? text.slice(0, span.from) + command.snippet + text.slice(span.to)
+      : insertGlobal(text, command.snippet + '\n');
+  }
+  if (name === 'track-swing') {
+    const target = parsed.tracks.find((track) => track.key === targetKey);
+    if (!target) throw new Error('Make a track first.');
+    const span = target.swingDirective;
+    if (span) return text.slice(0, span.from) + command.snippet + text.slice(span.to);
+    // A part's `to` expands through its closing brace during compilation;
+    // insertion belongs at the opening header, before any musical event.
+    const at = text.indexOf('{', target.parts[0].from) + 1;
+    const newline = text.includes('\r\n') ? '\r\n' : '\n';
+    return text.slice(0, at) + `${newline}  ${command.snippet}${newline}` + text.slice(at);
+  }
   if (name === 'from-song') {
     const index = indexScoreFiles(text);
     const file = index.files.find((f) => f.id === fileId) ?? index.files[0];

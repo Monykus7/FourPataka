@@ -3,11 +3,41 @@ import { parseScore } from '../../src/core/parser';
 import { performanceBeat } from '../../src/core/performanceTiming';
 import { comparisonPhrase, DEFAULT_MATERIAL } from '../../src/core/comparison';
 import { playbackTiming } from '../../src/core/articulation';
+import { insertCommand } from '../../src/core/scoreTools';
+import { FILE_MARKER } from '../../src/core/scoreFiles';
 
 const keys = ['sine'];
 const track = (body: string, key = 'lead') => `track ${key} using sine {\n${body}\n}`;
 const parse = (body: string, global = 'swing eighth 66.66666666666667') =>
   parseScore(`${global}\n${track(body)}`, keys);
+
+it('inserts and replaces reference directives with CRLF spans and logical-track file ownership', () => {
+  let text = `${FILE_MARKER}{"id":"one","name":"melody"}\r\nfrom song Song\r\n${track('C4 eighth').replaceAll('\n', '\r\n')}\r\n${FILE_MARKER}{"id":"two","name":"ending"}\r\nfrom song Song\r\n${track('D4 eighth').replaceAll('\n', '\r\n')}`;
+  text = insertCommand(text, keys, 'swing', 'lead', 'sine');
+  text = insertCommand(text, keys, 'swing', 'lead', 'sine');
+  expect(text.match(/swing eighth/g)).toHaveLength(1);
+  let score = parseScore(text, keys);
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks).toHaveLength(1);
+  expect(score.events[1].performedBeat).toBeCloseTo(0.667);
+  const off = insertCommand(
+    text,
+    keys,
+    'track-swing',
+    'lead',
+    'sine',
+    [],
+    undefined,
+    undefined,
+    'two',
+  );
+  score = parseScore(off, keys);
+  expect(score.diagnostics).toEqual([]);
+  expect(score.tracks[0].swing).toBeNull();
+  expect(score.events[1].performedBeat).toBeUndefined();
+  expect(off.indexOf('swing off')).toBeLessThan(off.indexOf(`${FILE_MARKER}{"id":"two"`));
+  expect(insertCommand(off, keys, 'track-swing', 'lead', 'sine')).toBe(off);
+});
 
 it('clips comparisons on the original swung grid and excludes already-closed staccato gates', () => {
   const score = parse('C4 eighth\nD4 eighth\nE4 quarter', 'swing eighth 75');

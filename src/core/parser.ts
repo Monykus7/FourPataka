@@ -405,7 +405,7 @@ export function parseScore(
       if (/^master\b/.test(line)) error('Use master through <pedalKey> outside track blocks.');
       else
         error(
-          'Expected tempo, time, master through <pedalKey>, or track <key> using <instrumentKey> [through <pedalKey>] { on its own line.',
+          'Expected tempo, time, swing, master through <pedalKey>, or track <key> using <instrumentKey> [through <pedalKey>] { on its own line.',
         );
       return;
     }
