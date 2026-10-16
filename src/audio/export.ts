@@ -1,3 +1,4 @@
+import { performanceBeat } from '../core/performanceTiming';
 import { engineRelease, requireEngine } from '../core/engineSound';
 import { pedalModules } from '../modules/assembly';
 import { checkedSeconds } from '../modules';
@@ -81,7 +82,8 @@ export function prepareExport(
       event.frequencies.length
         ? Math.max(
             end,
-            (event.beat * 60) / score.tempo + playbackTiming(event, score.tempo).duration,
+            (performanceBeat(event) * 60) / score.tempo +
+              playbackTiming(event, score.tempo).duration,
           )
         : end,
     score.seconds,
@@ -128,9 +130,11 @@ export async function renderWav(project: Project, options: WavOptions) {
   const all: Voice[] = [];
   let active: Voice[] = [];
   try {
-    for (const event of [...plan.score.events].sort((a, b) => a.beat - b.beat)) {
+    for (const event of [...plan.score.events].sort(
+      (a, b) => performanceBeat(a) - performanceBeat(b),
+    )) {
       const track = plan.snapshot.tracks.find((t) => t.key === event.track)!;
-      const start = (event.beat * 60) / plan.score.tempo;
+      const start = (performanceBeat(event) * 60) / plan.score.tempo;
       for (const frequency of event.frequencies) {
         active = admitVoice(active, start);
         const voice = createVoice(

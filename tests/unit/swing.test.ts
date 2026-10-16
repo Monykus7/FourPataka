@@ -1,11 +1,38 @@
 import { expect, it } from 'vitest';
 import { parseScore } from '../../src/core/parser';
 import { performanceBeat } from '../../src/core/performanceTiming';
+import { comparisonPhrase, DEFAULT_MATERIAL } from '../../src/core/comparison';
+import { playbackTiming } from '../../src/core/articulation';
 
 const keys = ['sine'];
 const track = (body: string, key = 'lead') => `track ${key} using sine {\n${body}\n}`;
 const parse = (body: string, global = 'swing eighth 66.66666666666667') =>
   parseScore(`${global}\n${track(body)}`, keys);
+
+it('clips comparisons on the original swung grid and excludes already-closed staccato gates', () => {
+  const score = parse('C4 eighth\nD4 eighth\nE4 quarter', 'swing eighth 75');
+  const material = {
+    ...DEFAULT_MATERIAL,
+    kind: 'phrase' as const,
+    trackKey: 'lead',
+    fromBeat: 0.25,
+    toBeat: 1,
+  };
+  const phrase = comparisonPhrase(score, material);
+  expect(phrase.beats).toBe(0.75);
+  expect(phrase.performedBeats).toBe(0.625);
+  expect(phrase.events[0].performedBeat).toBe(0);
+  expect(phrase.events[0].performedDuration).toBe(0.375);
+  expect(phrase.events[1].performedBeat).toBe(0.375);
+  const hit = parse('staccato[\nC4 eighth\nD4 eighth\n]', 'swing eighth 75');
+  const silent = comparisonPhrase(hit, { ...material, fromBeat: 0.3, toBeat: 0.5 });
+  expect(silent.events[0].frequencies).toEqual([]);
+  expect(silent.events[0].performedGateDuration).toBe(0);
+  expect(playbackTiming(hit.events[0], 120).duration).toBe(0.1875);
+  const legato = parse('legato[\nC4 eighth\nD4 eighth\n]', 'swing eighth 75');
+  expect(playbackTiming(legato.events[0], 120).duration).toBe(0.405);
+  expect(playbackTiming(legato.events[1], 120).duration).toBe(0.125);
+});
 
 it('keeps written beats and seconds while deriving swung chords rests dots and gates', () => {
   const score = parse(
@@ -13,7 +40,9 @@ it('keeps written beats and seconds while deriving swung chords rests dots and g
   );
   expect(score.diagnostics).toEqual([]);
   expect(score.events.map((e) => e.beat)).toEqual([0, 0.5, 1, 1.5, 2, 3.5]);
-  [0, 2 / 3, 1, 1 + 2 / 3, 2, 3 + 2 / 3].forEach((beat, i) => expect(performanceBeat(score.events[i])).toBeCloseTo(beat, 12));
+  [0, 2 / 3, 1, 1 + 2 / 3, 2, 3 + 2 / 3].forEach((beat, i) =>
+    expect(performanceBeat(score.events[i])).toBeCloseTo(beat, 12),
+  );
   expect(score.events[1].frequencies).toHaveLength(4);
   expect(score.events[0].performedGateDuration).toBeCloseTo(1 / 3);
   expect(score.events[4].performedDuration).toBeCloseTo(1 + 2 / 3);
@@ -55,7 +84,9 @@ it('uses absolute expanded clocks across repeats, sections and alternate endings
     'section A {\nC4 eighth\nD4 eighth\n}\nrepeat 2 {\nplay A\n}\nplay A trim 0.5 {\nE4 eighth\n}',
   );
   expect(score.diagnostics).toEqual([]);
-  [0, 2 / 3, 1, 1 + 2 / 3, 2, 2 + 2 / 3].forEach((beat, i) => expect(performanceBeat(score.events[i])).toBeCloseTo(beat, 12));
+  [0, 2 / 3, 1, 1 + 2 / 3, 2, 2 + 2 / 3].forEach((beat, i) =>
+    expect(performanceBeat(score.events[i])).toBeCloseTo(beat, 12),
+  );
   expect(score.beats).toBe(3);
 });
 it('rejects duplicate, late and nested directives with source diagnostics, including unused sections', () => {

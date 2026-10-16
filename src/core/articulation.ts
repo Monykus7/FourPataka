@@ -4,11 +4,19 @@ export interface ArticulatedEvent {
   gateDuration?: number;
   articulation?: Articulation;
   legatoToNext?: boolean;
+  performedDuration?: number;
+  performedGateDuration?: number;
 }
 
 export function playbackTiming(event: ArticulatedEvent, tempo: number) {
-  const seconds = (event.duration * 60) / tempo;
-  const gate = ((event.gateDuration ?? event.duration) * 60) / tempo;
+  const seconds = ((event.performedDuration ?? event.duration) * 60) / tempo;
+  const gate =
+    ((event.performedGateDuration ??
+      event.gateDuration ??
+      event.performedDuration ??
+      event.duration) *
+      60) /
+    tempo;
   // Score spacing is independent of the sounding gate. Keep overlap in seconds,
   // bounded for fast tuplets; each new pitch still owns its original attack.
   return {

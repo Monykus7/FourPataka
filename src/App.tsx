@@ -1,3 +1,4 @@
+import { performanceBeat } from './core/performanceTiming';
 import FeaturePanels from './components/FeaturePanels';
 import {
   featureAnalysis,
@@ -818,7 +819,11 @@ export default function App() {
   const beat = playback === 'score' ? (elapsed * (running?.score.tempo ?? score.tempo)) / 60 : 0;
   const activeEvents =
     playback === 'score'
-      ? timelineScore.events.filter((e) => beat >= e.beat && beat < e.beat + e.duration)
+      ? timelineScore.events.filter(
+          (e) =>
+            beat >= performanceBeat(e) &&
+            beat < performanceBeat(e) + (e.performedDuration ?? e.duration),
+        )
       : [];
   const stale = playback === 'score' && running?.text !== project.scoreText;
   const highlightedLines = stale
@@ -2600,6 +2605,15 @@ export default function App() {
                         <dt>Duration</dt>
                         <dd>{inspectedEvent.duration} quarter beats</dd>
                       </div>
+                      {inspectedEvent.performedBeat !== undefined && (
+                        <div>
+                          <dt>Performed timing</dt>
+                          <dd>
+                            Beat {inspectedEvent.performedBeat.toFixed(4)} ·{' '}
+                            {inspectedEvent.performedDuration?.toFixed(4)} quarter beats
+                          </dd>
+                        </div>
+                      )}
                       <div>
                         <dt>Frequencies</dt>
                         <dd>

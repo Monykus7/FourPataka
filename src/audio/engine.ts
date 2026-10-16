@@ -1,3 +1,4 @@
+import { performanceBeat } from '../core/performanceTiming';
 import { playbackTiming } from '../core/articulation';
 import { engineRelease, requireEngine, type InstrumentSound as Sound } from '../core/engineSound';
 import { createVoice, holdParameter, type Voice } from './voice';
@@ -249,13 +250,14 @@ export class AudioEngine {
     this.auditionChain(session, chain);
     session.chainSettings.set('audition', chainMusicalSettings(chain));
     session.solo = solo;
-    session.phraseSeconds = (phrase.beats * 60) / phrase.tempo;
+    session.phraseSeconds = ((phrase.performedBeats ?? phrase.beats) * 60) / phrase.tempo;
     session.soundingSeconds = phrase.events.reduce(
       (end, event) =>
         event.frequencies.length
           ? Math.max(
               end,
-              (event.beat * 60) / phrase.tempo + playbackTiming(event, phrase.tempo).duration,
+              (performanceBeat(event) * 60) / phrase.tempo +
+                playbackTiming(event, phrase.tempo).duration,
             )
           : end,
       session.phraseSeconds,
@@ -268,7 +270,7 @@ export class AudioEngine {
       const horizon = this.context!.currentTime + 0.12;
       while (
         cursor < frozen.events.length &&
-        session.start + (frozen.events[cursor].beat * 60) / frozen.tempo < horizon
+        session.start + (performanceBeat(frozen.events[cursor]) * 60) / frozen.tempo < horizon
       ) {
         const event = frozen.events[cursor++];
         event.frequencies.forEach((f) =>
@@ -277,7 +279,7 @@ export class AudioEngine {
             session.auditionInput!,
             session.auditionSound!,
             f,
-            session.start + (event.beat * 60) / frozen.tempo,
+            session.start + (performanceBeat(event) * 60) / frozen.tempo,
             playbackTiming(event, frozen.tempo).duration,
             session.solo,
             undefined,
@@ -358,7 +360,8 @@ export class AudioEngine {
         event.frequencies.length
           ? Math.max(
               end,
-              (event.beat * 60) / score.tempo + playbackTiming(event, score.tempo).duration,
+              (performanceBeat(event) * 60) / score.tempo +
+                playbackTiming(event, score.tempo).duration,
             )
           : end,
       score.seconds,
@@ -386,14 +389,14 @@ export class AudioEngine {
       session.scoreSounds.set(track.key, structuredClone(track.sound));
     });
     session.duration += session.processingTail;
-    const queue = [...score.events].sort((a, b) => a.beat - b.beat);
+    const queue = [...score.events].sort((a, b) => performanceBeat(a) - performanceBeat(b));
     let cursor = 0;
     const schedule = () => {
       this.sampleTails(session);
       const horizon = this.context!.currentTime + 0.12;
       while (
         cursor < queue.length &&
-        session.start + (queue[cursor].beat * 60) / score.tempo < horizon
+        session.start + (performanceBeat(queue[cursor]) * 60) / score.tempo < horizon
       ) {
         const event = queue[cursor++];
         const track = tracks.find((t) => t.key === event.track);
@@ -404,7 +407,7 @@ export class AudioEngine {
             buses.get(event.track)!,
             session.scoreSounds.get(event.track)!,
             f,
-            session.start + (event.beat * 60) / score.tempo,
+            session.start + (performanceBeat(event) * 60) / score.tempo,
             playbackTiming(event, score.tempo).duration,
             undefined,
             event.track,

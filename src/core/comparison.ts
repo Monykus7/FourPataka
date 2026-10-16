@@ -1,5 +1,6 @@
 import type { CompiledScore, ScoreEvent } from './parser';
 import { pitch } from './music';
+import { performanceMap, performanceBeat } from './performanceTiming';
 
 export interface ComparisonMaterial {
   kind: 'note' | 'chord' | 'phrase';
@@ -20,9 +21,19 @@ export const DEFAULT_MATERIAL: ComparisonMaterial = {
 export interface AuditionPhrase {
   tempo: number;
   beats: number;
+  performedBeats?: number;
   events: Pick<
     ScoreEvent,
-    'beat' | 'duration' | 'notes' | 'frequencies' | 'articulation' | 'gateDuration' | 'legatoToNext'
+    | 'beat'
+    | 'duration'
+    | 'notes'
+    | 'frequencies'
+    | 'articulation'
+    | 'gateDuration'
+    | 'legatoToNext'
+    | 'performedBeat'
+    | 'performedDuration'
+    | 'performedGateDuration'
   >[];
 }
 // Musical material is independent of A/B sounds. Clip boundary-crossing notes,
@@ -50,10 +61,21 @@ export function comparisonPhrase(
   const end = Math.min(material.toBeat ?? track.beats, track.beats);
   if (!Number.isFinite(material.fromBeat) || material.fromBeat < 0 || end <= material.fromBeat)
     throw new Error('Choose a nonempty phrase range within the track.');
+  const setting = track.swing === undefined ? score.swing : track.swing;
+  const swung = setting && setting.amount !== 50;
+  const map = performanceMap(score.meter, score.meterChanges, track.events, track.beats, setting);
+  // Clip against the original whole-track grid. Restarting a groove at a
+  // phrase's local zero would change offbeat selections and A/B timing.
+  const origin = map(material.fromBeat);
   const events = track.events
     .filter((e) => e.beat < end && e.beat + e.duration > material.fromBeat)
     .map((e) => {
       const start = Math.max(e.beat, material.fromBeat);
+      const performedStart = map(start);
+      const performedEnd = map(Math.min(e.beat + e.duration, end));
+      const gateEnd =
+        performanceBeat(e) +
+        (e.performedGateDuration ?? e.gateDuration ?? e.performedDuration ?? e.duration);
       return {
         beat: start - material.fromBeat,
         duration: Math.min(e.beat + e.duration, end) - start,
@@ -62,12 +84,29 @@ export function comparisonPhrase(
           ? { gateDuration: Math.max(0, Math.min(e.beat + e.gateDuration, end) - start) }
           : {}),
         ...(e.legatoToNext && e.beat + e.duration < end ? { legatoToNext: true } : {}),
+        ...(swung
+          ? {
+              performedBeat: performedStart - origin,
+              performedDuration: performedEnd - performedStart,
+              ...(e.gateDuration !== undefined
+                ? {
+                    performedGateDuration: Math.max(
+                      0,
+                      Math.min(gateEnd, performedEnd) - performedStart,
+                    ),
+                  }
+                : {}),
+            }
+          : {}),
         notes: [...e.notes],
         frequencies:
-          e.gateDuration !== undefined && start >= e.beat + e.gateDuration
-            ? []
-            : [...e.frequencies],
+          e.gateDuration !== undefined && performedStart >= gateEnd ? [] : [...e.frequencies],
       };
     });
-  return { tempo: score.tempo, beats: end - material.fromBeat, events };
+  return {
+    tempo: score.tempo,
+    beats: end - material.fromBeat,
+    ...(swung ? { performedBeats: map(end) - origin } : {}),
+    events,
+  };
 }

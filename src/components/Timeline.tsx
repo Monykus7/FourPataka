@@ -32,6 +32,12 @@ export default function Timeline({
           {meterLabel(measurePositionAt(beat, score.meter, score.meterChanges).meter)}
         </span>
       </div>
+      {score.events.some((event) => event.performedBeat !== undefined) && (
+        <p className="muted">
+          Written grid · highlights and playhead use performed time. Select an event for swing
+          timing.
+        </p>
+      )}
       <div className="timeline">
         <div className="timeline-ruler">
           {grid.bars.map(({ bar, beat, meter }) => (
