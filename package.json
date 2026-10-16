@@ -16,7 +16,7 @@
     "format:check": "prettier --check src tests desktop scripts *.ts *.json",
     "desktop:dev": "node scripts/desktop-dev.mjs",
     "desktop:start": "electron .",
-    "desktop:package": "npm run build && electron-builder --win portable --x64 --publish never",
+    "desktop:package": "npm run desktop:setup && npm run build && electron-builder --win portable --x64 --publish never",
     "test:desktop": "npm run build && playwright test --config playwright.desktop.config.ts",
     "knowledge:build": "node scripts/knowledge/cli.mjs build",
     "knowledge:check": "node scripts/knowledge/cli.mjs check",
@@ -27,7 +27,8 @@
     "licenses:build": "node scripts/licenses.mjs",
     "licenses:check": "node scripts/licenses.mjs --check",
     "prebuild": "npm run licenses:check",
-    "distribution:check": "node scripts/check-distribution.mjs"
+    "distribution:check": "node scripts/check-distribution.mjs",
+    "desktop:setup": "node node_modules/electron/install.js"
   },
   "build": {
     "appId": "com.fourpataka.studio",

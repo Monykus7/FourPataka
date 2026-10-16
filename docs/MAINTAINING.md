@@ -26,7 +26,9 @@ Verify tutorials against the actual public import and explicit assembly. Review 
 
 A fresh checkout runs npm ci using package-lock.json. The Contributor checks workflow uses commit-pinned official actions, read-only contents permissions, no publication secrets and pull_request/push/workflow_dispatch triggers. Linux checks format, complete dependency notices, tracked private-file exclusions, all units, build, knowledge freshness and four contributor browser suites with installed Playwright Chromium. Windows builds the portable, inspects the actual ASAR and runtime notices, and runs six packaged startup/contributor workflows. Native profiles are isolated; no user data is uploaded.
 
-Reproduce source checks with the commands in CONTRIBUTING.md. On Windows:
+Reproduce source checks with the commands in CONTRIBUTING.md. On Windows, desktop:package first runs desktop:setup (Electron's own installer). A fresh npm ci provides the JavaScript package; it does not guarantee node_modules/electron/dist exists before electron-builder reads electronDist. The installer checks its pinned version/checksums and reuses an existing matching runtime. No blanket dependency-script approval is needed.
+
+On Windows:
 
 ```powershell
 npm run desktop:package
