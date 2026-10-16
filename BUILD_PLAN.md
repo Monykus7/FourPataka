@@ -63,7 +63,7 @@ Include the following by the end of stage 5:
 
 The v0.19.1 layout follow-up makes the expanded command reference match the score panel height while retaining fixed search and local catalog scrolling; no roadmap gate changes.
 
-Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage 7 adds guided experiments and the richer analysis panel. Both are part of this plan and have implementation gates below.
+Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage7 guided experiments and source/output analysis are implemented in v0.39.0; actual verification and remaining manual gates are recorded below.
 
 Current application priority (2026-10-16): M1–M5 module contracts and application integration are implemented. M6a adds GPL-3.0-only, retained notices, contributor policies and browser/Windows CI; hosted clean-checkout checks pass; tutorial/operational checks and owner-approved public release remain explicit M6 gates. Variable swing is implemented in v0.38.0. Stage7 learning/measurement is implemented in v0.39.0; planned WAV analysis/chamber/effects can use the landed module boundaries without waiting for public publication.
 
@@ -303,7 +303,7 @@ Use a linear dry/wet blend initially: dry gain = 1−mix, wet gain = mix, with m
 
 ### Planned pedal expansion — phaser, chorus and reverb
 
-Status: requested and planned, not implemented. Complete the relevant modularity foundation/registry gates first; stage 7 remains the next music-feature item. Implement these as a later pedal expansion through the M2 contract, with one verified effect per release. Proposed order is phaser, chorus, then reverb. Tune the algorithm, ranges and defaults in a numeric/listening proof before shipping; proposed ranges below are not current controls.
+Status: requested and planned, not implemented. M1–M5 foundations and initial Stage7 analysis are implemented; the pedal expansion can proceed through the landed M2 contract. Implement these as a later pedal expansion through the M2 contract, with one verified effect per release. Proposed order is phaser, chorus, then reverb. Tune the algorithm, ranges and defaults in a numeric/listening proof before shipping; proposed ranges below are not current controls.
 
 - **Phaser:** a modulated all-pass cascade producing moving notches when blended with dry audio. Proposed controls: rate 0.05–5 Hz, depth 0–100%, center 100–4000 Hz, four/six/eight stages, bounded feedback 0–85%, output trim and mix. Select any feedback/cycle-breaking delay deliberately and verify it rather than assuming a direct feedback loop works. Frequency-dependent all-pass phase is the effect; do not compensate it away as scheduling latency. Document any actual look-ahead/algorithmic latency separately. Smooth frequency/rate/depth changes while retaining the session-relative LFO phase; stage changes are topology changes.
 - **Chorus:** one or two short modulated delay voices, initially without feedback. Proposed controls: rate 0.05–5 Hz, base delay 5–30 ms, modulation depth 0–10 ms, output trim and mix. Limit excursion to keep every delay at least 1 ms; reject/clamp combinations consistently in UI, import and audio. Modulated delay is intentional musical timing, distinct from processing compensation. Use a session-relative LFO phase reference in live/offline rendering, retain phase for live parameter edits, and verify pitch movement, dry unity and a finite tail bounded by maximum delay. Stereo widening can follow the initial mono-compatible implementation.
@@ -460,7 +460,7 @@ Initial descriptors can include:
 - **Subharmonic power share:** enabled subharmonic squared magnitudes divided by total effective component power.
 - **Dominant source component:** frequency of the largest component, rather than the highest frequency present.
 
-Later include mean-square source power, live RMS in dBFS, peak level, and crest factor. Use a 100 ms live measurement window initially: average the per-channel mean-square values, take their square root for RMS, and report 20 log10(RMS) relative to full-scale amplitude 1. Peak is the largest absolute sample on any measured channel; crest factor is 20 log10(peak/RMS). Measure channels separately rather than allowing a stereo downmix to hide cancellation. For steady sine components, mean-square source power before trim is one half of the sum of squared magnitudes; it is not a generic value for an enveloped, processed recording.
+Implemented v0.39.0: mean-square source power, live RMS in dBFS, sample peak, and crest factor. The shared meter uses a100ms logical stereo measurement window: average the per-channel mean-square values, take their square root for RMS, and report 20 log10(RMS) relative to full-scale amplitude 1. Peak is the largest absolute sample on any measured channel; crest factor is 20 log10(peak/RMS). Measure channels separately rather than allowing a stereo downmix to hide cancellation. For steady sine components, mean-square source power before trim is one half of the sum of squared magnitudes; it is not a generic value for an enveloped, processed recording.
 
 Analyser frequency values are in dB: use 10^(dB/20) for relative amplitude and 10^(dB/10) for relative power. These windowed/smoothed values are suitable for relative spectral descriptors; derive absolute RMS/output level from time-domain samples. An approximate peak-bin frequency is labeled as an estimate.
 
@@ -626,7 +626,7 @@ Automated functional gate: known-signal descriptors, anti-phase/mono/window brow
 
 ### Stage 8 and later — advanced synthesis and notation
 
-Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. Modularity M1 is the next foundation milestone; stage 7 remains the next music-feature item.
+Requested pedalboard follow-up: phaser, chorus and algorithmic reverb, as specified in section 7. These are planned, not implemented; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. M1–M5 and initial Stage7 analysis are implemented; the proposed pedal expansion remains future work.
 
 The 32-harmonic bank is implemented by the synthesis/notation pilot, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
