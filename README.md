@@ -2,9 +2,9 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-The current application is **v0.39.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export.
+The current application is **v0.40.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export. v0.40.0 adds a [phaser pedal](docs/extensions/PHASER.md) with continuous modulation, feedback and4/6/8 stages; build current source for this update.
 
-Download the [Windows contributor preview and exact source](https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0). The portable is unsigned; build instructions and checksums accompany it. M1–M6 contributor readiness is complete; physical/device/accessibility checks remain limited as documented.
+Download the published [v0.39.0 Windows contributor preview and exact source](https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0). The portable is unsigned; build instructions and checksums accompany it. M1–M6 contributor readiness is complete; physical/device/accessibility checks remain limited as documented.
 
 Reviewed source contributions use the same contracts as built-ins:
 

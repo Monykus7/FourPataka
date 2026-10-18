@@ -4,8 +4,8 @@
     {
       "id": "phaser",
       "parent": "pedals",
-      "title": "Phaser pedal (implementation in progress)",
-      "summary": "Registered M2 phaser implementation is in progress: selectable4/6/8 first-order-equivalent all-pass stages, rate0.05–5Hz, depth0–100% (one-octave radius), center100–4000Hz with sample-rate clamp, feedback0–85%, wet trim and linear mix. Warm4/6/8 paths crossfade; explicit128-frame delay breaks the positive-feedback loop and input gain is1-feedback. A session-relative oscillator seeds late-created branches and running rate/depth edits retain that oscillator. Shared cleanup stops owned scheduled sources. Additive API1 exact numeric choices validate stage alternatives separately from ordinary fractional steps; optional timeOrigin supplies context-second musical zero. Static analytic notches, extreme-rate feedback decay, late-branch phase/cleanup and shared pedal browser proofs pass. Live/WAV, UI/history/persistence, native/package/release gates are pending; chorus/reverb remain planned. No claim of physical listening or arbitrary historical-rate phase replay.",
+      "title": "Phaser pedal",
+      "summary": "v0.40.0 adds a registered M2 phaser:4/6/8 first-order-equivalent warm all-pass stages; rate0.05–5Hz; depth0–100% (one octave); center100–4000Hz clamped to0.2×sampleRate; feedback0–85%; wet trim and linear mix. Zero requested DelayNode time plus the measured feedback-cycle quantum yields128 frames; input gain1-feedback bounds static resonance. Continuous controls retain the oscillator; late A/B branches seed current-rate phase from optional context-second timeOrigin (session.start live,0 offline), without replaying rate-edit history. Numeric choices enforce exact saved stages while ordinary fractional steps remain valid. Owned scheduled sources stop/disconnect on disposal/failure. Runtime/export tails depend on frequency/feedback/rate (default48kHz0.2s runtime,0.5s export, maximum6s); retain warm8-stage resource bounds18 nodes/128KiB, independent copies, queued ordinary topology/frozen scores and same-clock A/B. Units/browser notch/sweep/tail/feedback-quantum/phase/cleanup, frozen direct WAV parity and actual board/history/reload proofs pass. Native/portable release checks are pending; chorus/reverb and manual listening/device/accessibility remain separate.",
       "paths": [
         "src/modules/pedals/phaser.ts",
         "src/modules/foundation/processor.ts",
@@ -20,7 +20,13 @@
         "src/components/PedalControls.tsx",
         "src/components/Pedalboard.tsx",
         "tests/unit/phaser.test.ts",
-        "tests/browser/phaser.spec.ts"
+        "tests/browser/phaser.spec.ts",
+        "docs/extensions/PHASER.md",
+        "tests/helpers/phaser.ts",
+        "tests/helpers/phaserLoop.ts",
+        "tests/browser/phaser-ui.spec.ts",
+        "tests/browser/phaser-loop.spec.ts",
+        "tests/browser/phaser-playback.spec.ts"
       ]
     },
     {
@@ -77,7 +83,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "FourPataka v0.39.0 is a local browser/Electron music studio with32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, independent instrument copies, five serial pedals, a multi-file score IDE, swing, frozen WAV export and initial source/live-output analysis. Canonical scoreText owns the song; A/B changes retain the clock. M1–M6 are implemented: public module metadata/pedal/preset/engine/feature boundaries, schema5 migration/unavailable recovery, contributor tutorials and CI, GPL-3.0-only, operational safeguards and durable contributor-preview distribution. Chamber acoustics, WAV-to-instrument reconstruction, phaser/chorus/reverb, further notation/analysis and manual listening/device/accessibility checks remain future work. Start with docs/knowledge/TASK_GUIDE.md; historical verification is in IMPLEMENTATION_STATUS.md.",
+      "summary": "FourPataka v0.40.0 is a local browser/Electron music studio with32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, independent instrument copies, six serial pedals including phaser, a multi-file score IDE, swing, frozen WAV export and initial source/live-output analysis. Canonical scoreText owns the song; A/B changes retain the clock. M1–M6 are implemented: public module metadata/pedal/preset/engine/feature boundaries, schema5 migration/unavailable recovery, contributor tutorials and CI, GPL-3.0-only, operational safeguards and durable contributor-preview distribution. Chamber acoustics, WAV-to-instrument reconstruction, chorus/reverb, further notation/analysis and manual listening/device/accessibility checks remain future work. Start with docs/knowledge/TASK_GUIDE.md; historical verification is in IMPLEMENTATION_STATUS.md.",
       "paths": ["README.md", "IMPLEMENTATION_STATUS.md", "BUILD_PLAN.md"]
     },
     {
