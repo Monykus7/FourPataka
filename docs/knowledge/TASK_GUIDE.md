@@ -25,6 +25,6 @@ FourPataka v0.40.0: browser/Electron studio with 32 signed harmonics, noise-hit 
 
 ## Guardrails and finish
 
-Canonical scoreText owns the song; files are views. Library, track and A/B sounds are independent copies. Source/preset changes must preserve appropriate clock/phase, units, latency and Stop. Preserve the authored demo in project.ts. M1 metadata, M2 pedals and M3 presets are implemented; M6 contributor readiness is complete; chamber, WAV analysis and chorus/reverb pedals remain planned; phaser release verification is in progress.
+Canonical scoreText owns the song; files are views. Library, track and A/B sounds are independent copies. Source/preset changes must preserve appropriate clock/phase, units, latency and Stop. Preserve the authored demo in project.ts. M1 metadata, M2 pedals and M3 presets are implemented; M6 contributor readiness is complete; chamber, WAV analysis and chorus/reverb pedals remain planned; phaser is implemented and verified in v0.40.0.
 
 Use bounded searches/source ranges. Update affected summaries and decisions once, keeping chronology out of feature summaries. Run relevant checks; broaden only for unresolved risk. Application releases also require native/portable verification and opening the verified build. Documentation/tooling changes need no app release. Build/check knowledge before the relevant commit. Keep private agent files, graphs, vectors and models out of Git; push focused checkpoints without manufacturing extra work to fill a commit count.

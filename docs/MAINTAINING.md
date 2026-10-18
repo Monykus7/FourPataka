@@ -4,7 +4,7 @@ Monykus7 owns merges, API compatibility, license review and release decisions. R
 
 ## Support and API policy
 
-The verified application baseline is v0.39.0 on Windows x64; current automation targets Node24, Ubuntu22.04 bundled Chromium and Windows2022 Electron. Windows11 local runs are evidence, not proof that hosted runners or other devices pass. Source requires Node22.12+. Other browsers, Linux/macOS native packages, mobile, physical listening and screen readers are not currently verified support targets. Automated tests cannot close those manual gates.
+The verified application baseline is v0.40.0 on Windows x64; current automation targets Node24, Ubuntu22.04 bundled Chromium and Windows2022 Electron. Windows11 local runs are evidence, not proof that hosted runners or other devices pass. Source requires Node22.12+. Other browsers, Linux/macOS native packages, mobile, physical listening and screen readers are not currently verified support targets. Automated tests cannot close those manual gates.
 
 Public bundled-source APIs are numeric metadata, pedals, Fourier preset factories, synthesis engines and declarative features, exported by src/modules/index.ts; chord API1 remains its own boundary. Source services for virtual files are documented separately. Numeric API1 does not imply identical dataVersion/schemaVersion or compatibility with arbitrary callbacks. Keep IDs stable; data changes require explicit migration or visible preserved unavailable data. Do not silently reinterpret missing/newer module settings. There is no runtime loader or general React/theme/file/grammar adapter.
 
