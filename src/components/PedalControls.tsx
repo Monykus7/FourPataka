@@ -29,7 +29,7 @@ export function SmallPedalDials({
             min={min}
             max={max}
             step={step}
-            unit={unit}
+            unit={unit === 'linear' ? '' : unit}
             onChange={(value, group) => onChange(pedal.id, key, value, group)}
           />
           <span>
@@ -79,6 +79,7 @@ export default function PedalControls({
     <section
       className={`board-inspector ${pedal?.kind ?? ''}`}
       aria-label="Selected pedal controls"
+      data-pedal-kind={pedal?.kind}
     >
       <span className="eyebrow">SELECTED PEDAL</span>
       <h3>{pedal ? pedalName(pedal.kind) : 'No pedal selected'}</h3>
@@ -125,7 +126,7 @@ export default function PedalControls({
                             }}
                           />
                         )}
-                        {unit}
+                        {unit === 'linear' ? '' : unit}
                       </span>
                     </span>
                     <input

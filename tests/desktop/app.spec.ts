@@ -4,6 +4,7 @@ import { SWING_SCORE, swingWorkflow } from '../helpers/swing';
 import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
+import { phaserWorkflow } from '../helpers/phaser';
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { sectionsWorkflow } from '../helpers/sections';
 import { fileTabsWorkflow } from '../helpers/fileTabs';
@@ -54,6 +55,34 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged phaser retains stage choices and owned chains through native JSON', async () => {
+  const page = await app.firstWindow();
+  await phaserWorkflow(page);
+  const filePath = resolve('.test-results', 'desktop', 'phaser.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved phaser.fourpataka.json');
+  const saved = JSON.parse(await readFile(filePath, 'utf8'));
+  expect(saved.processing.master.pedals[0].params.stages).toBe(8);
+  expect(saved.processing.audition.A.pedals[0].params.rate).toBe(1.2);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('master');
+  await expect(
+    page.getByRole('combobox', {
+      name: 'fourpataka:pedal/phaser 1 stages exact value',
+      exact: true,
+    }),
+  ).toHaveValue('8');
 });
 
 test('packaged analysis experiments retain independent copies through native JSON', async () => {

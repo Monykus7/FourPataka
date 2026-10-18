@@ -205,6 +205,11 @@
 .small-pedal-dials.many-controls {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+.pedal-module[data-pedal-kind='fourpataka:pedal/phaser'],
+.board-inspector[data-pedal-kind='fourpataka:pedal/phaser'] {
+  --pedal-color: var(--tertiary);
+  --pedal-ink: var(--tertiary-ink);
+}
 .small-dial-control {
   min-width: 0;
   display: flex;

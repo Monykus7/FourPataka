@@ -16,7 +16,7 @@ export const phaserModule = definePedalModule({
   memoryBytes: 131072,
   minimumSampleRate: 3000,
   maximumSampleRate: 192000,
-  note: '4/6/8 all-pass stages. Mix near 50% reveals moving notches. Feedback includes a 128-frame delay; bypass is dry, Stop clears state.',
+  note: '4/6/8 stages. Mix near 50% reveals moving notches; feedback adds resonance. Bypass is dry; Stop clears the tail.',
   reset: { label: 'Reset phaser', accessibleLabel: 'Reset phaser {index}' },
   parameters: {
     rate: {

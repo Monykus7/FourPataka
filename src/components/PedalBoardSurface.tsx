@@ -471,6 +471,7 @@ export default function PedalBoardSurface({
                 className={`pedal-module compact-pedal ${pedal.kind} ${selected === pedal.id ? 'selected' : ''} ${pedal.bypassed ? 'bypassed' : ''} ${moving?.id === pedal.id ? 'moving' : ''}`}
                 style={{ left: at.x, top: at.y, width: PEDAL_WIDTH, height: PEDAL_HEIGHT }}
                 data-pedal-id={pedal.id}
+                data-pedal-kind={pedal.kind}
                 onClick={() => onSelect(pedal.id)}
                 onFocusCapture={() => onSelect(pedal.id)}
               >
