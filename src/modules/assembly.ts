@@ -22,7 +22,9 @@ const builtInIds = builtIns.map((definition) => definition.id);
 export const pedalModules = createPedalRegistry(definitions, builtInIds);
 export const bundledModules = createModuleRegistry(definitions, { builtInIds });
 export const LEGACY_MODULE_IDS = Object.freeze(
-  Object.fromEntries(builtIns.map((d) => [d.legacyKind!, d.id])),
+  Object.fromEntries(
+    builtIns.filter((d) => d.legacyKind !== undefined).map((d) => [d.legacyKind!, d.id]),
+  ),
 );
 
 export const instrumentModules = createFourierPresetRegistry(

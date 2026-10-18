@@ -5,6 +5,7 @@ import {
   validateModuleSettings,
 } from '../../src/modules';
 import { phaserModule } from '../../src/modules/pedals/phaser';
+import { LEGACY_MODULE_IDS } from '../../src/modules/assembly';
 import { makePedal, clampPedal, importProcessing, defaultProcessing } from '../../src/core/pedals';
 
 it('registers phaser with isolated defaults and exact stage choices', () => {
@@ -13,6 +14,7 @@ it('registers phaser with isolated defaults and exact stage choices', () => {
   first.params.rate = 5;
   expect(second.params.rate).toBe(0.5);
   expect(first.module).toEqual({ id: phaserModule.id, apiVersion: 1, dataVersion: 1 });
+  expect(Object.keys(LEGACY_MODULE_IDS).sort()).toEqual(['compressor', 'delay', 'eq', 'overdrive']);
   expect(Object.isFrozen(phaserModule.parameters.stages.choices)).toBe(true);
   expect(clampPedal({ ...second, params: { ...second.params, stages: 5 } }).params.stages).toBe(4);
   expect(() => validateModuleSettings(phaserModule, { ...second.params, stages: 5 })).toThrow(
@@ -53,7 +55,15 @@ it('retains valid phaser settings through saved processing and rejects fractiona
 it('declares finite latency tail and conservative owned resources', () => {
   const environment = { sampleRate: 48000, compressorLatency: 0, oversamplingLatency: 0 };
   expect(phaserModule.latency(environment)).toBe(0);
-  expect(phaserModule.tail(defaultModuleSettings(phaserModule), environment)).toBe(6);
+  expect(phaserModule.tail(defaultModuleSettings(phaserModule), environment)).toBeLessThan(1);
+  expect(
+    phaserModule.exportTail({
+      ...defaultModuleSettings(phaserModule),
+      frequency: 100,
+      feedback: 85,
+      stages: 8,
+    }),
+  ).toBe(6);
   expect(phaserModule.exportTail({ ...defaultModuleSettings(phaserModule), mix: 0 })).toBe(0);
   expect(phaserModule.nodes).toBe(18);
 });

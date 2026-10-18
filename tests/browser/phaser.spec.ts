@@ -52,48 +52,48 @@ test('phaser sweep moves notches and bounds feedback tails at supported rate ext
 }) => {
   await page.goto('/');
   const result = await page.evaluate(async () => {
-    const { phaserModule } = await import('/src/modules/pedals/' + 'phaser.ts');
+    const { phaserModule, phaserTail } = await import('/src/modules/pedals/' + 'phaser.ts');
     const { defaultModuleSettings } = await import('/src/modules/' + 'index.ts');
     const rows = [];
-    for (const rate of [3000, 44100, 48000, 192000]) {
-      const context = new OfflineAudioContext(1, Math.ceil(rate * 6.3), rate);
-      const source = context.createBufferSource(),
-        buffer = context.createBuffer(1, Math.ceil(rate * 0.25), rate);
-      // Deterministic broadband excitation tests every pole, rather than one convenient note.
-      let seed = 7;
-      for (let i = 0; i < buffer.length; i++) {
-        seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
-        buffer.getChannelData(0)[i] = (seed / 2147483648) * 0.1;
+    for (const rate of [3000, 44100, 48000, 192000])
+      for (const patch of [
+        {},
+        { rate: 5, frequency: 100, depth: 100, stages: 8, feedback: 85, mix: 100 },
+        { rate: 0.05, frequency: 100, depth: 100, stages: 8, feedback: 85, mix: 100 },
+        { rate: 5, frequency: 4000, depth: 100, stages: 4, feedback: 85, mix: 100, output: 12 },
+        { rate: 0.05, frequency: 4000, depth: 0, stages: 4, feedback: 0, mix: 100 },
+      ]) {
+        const settings = { ...defaultModuleSettings(phaserModule), ...patch };
+        const tail = phaserTail(settings, rate);
+        const context = new OfflineAudioContext(1, Math.ceil(rate * (0.25 + tail + 0.1)), rate);
+        const source = context.createBufferSource(),
+          buffer = context.createBuffer(1, Math.ceil(rate * 0.25), rate);
+        // Deterministic broadband excitation tests every pole, rather than one convenient note.
+        let seed = 7;
+        for (let i = 0; i < buffer.length; i++) {
+          seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
+          buffer.getChannelData(0)[i] = (seed / 2147483648) * 0.1;
+        }
+        source.buffer = buffer;
+        const processor = phaserModule.create(context, settings, false, {
+          sampleRate: rate,
+          oversamplingLatency: 0,
+          compressorLatency: 0,
+        });
+        source.connect(processor.input);
+        processor.output.connect(context.destination);
+        source.start();
+        const data = (await context.startRendering()).getChannelData(0);
+        let peak = 0,
+          end = 0;
+        for (let i = 0; i < data.length; i++) {
+          peak = Math.max(peak, Math.abs(data[i]));
+          if (i > data.length - rate * 0.05) end = Math.max(end, Math.abs(data[i]));
+        }
+        rows.push({ rate, tail, patch, finite: data.every(Number.isFinite), peak, end });
+        processor.dispose();
+        processor.dispose();
       }
-      source.buffer = buffer;
-      const settings = {
-        ...defaultModuleSettings(phaserModule),
-        rate: 5,
-        frequency: 100,
-        depth: 100,
-        stages: 8,
-        feedback: 85,
-        mix: 100,
-      };
-      const processor = phaserModule.create(context, settings, false, {
-        sampleRate: rate,
-        oversamplingLatency: 0,
-        compressorLatency: 0,
-      });
-      source.connect(processor.input);
-      processor.output.connect(context.destination);
-      source.start();
-      const data = (await context.startRendering()).getChannelData(0);
-      let peak = 0,
-        end = 0;
-      for (let i = 0; i < data.length; i++) {
-        peak = Math.max(peak, Math.abs(data[i]));
-        if (i > rate * 6.2) end = Math.max(end, Math.abs(data[i]));
-      }
-      rows.push({ rate, finite: data.every(Number.isFinite), peak, end });
-      processor.dispose();
-      processor.dispose();
-    }
     const context = new OfflineAudioContext(1, 48000, 48000),
       source = context.createOscillator();
     source.frequency.value = 800;
@@ -118,8 +118,8 @@ test('phaser sweep moves notches and bounds feedback tails at supported rate ext
   });
   for (const row of result.rows) {
     expect(row.finite).toBe(true);
-    expect(row.peak).toBeLessThan(0.5);
-    expect(row.end, `tail at ${row.rate}`).toBeLessThan(0.0001);
+    expect(row.peak).toBeLessThan(2);
+    expect(row.end, JSON.stringify(row)).toBeLessThan(0.0001);
   }
   expect(Math.max(...result.windows) - Math.min(...result.windows)).toBeGreaterThan(0.1);
 });

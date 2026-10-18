@@ -3,6 +3,14 @@ import { definePedalModule, createMixedProcessor, MODULE_API_VERSION } from '../
 // A conservative six-second decay allowance covers the slowest eight-pole state
 // and the bounded feedback loop. This is coloration, never look-ahead latency.
 export const PHASER_TAIL_SECONDS = 6;
+export function phaserTail(p: Record<string, number>, sampleRate = 3000) {
+  const minimum = Math.max(40, Math.min(p.frequency, sampleRate * 0.2)) / 2;
+  // Budget all eight warm stages. Group-delay and -80dB loop-decay bounds
+  // intentionally overestimate settling; the export bound uses the slowest supported rate.
+  const filter = 8 / (Math.PI * minimum);
+  const repeats = p.feedback > 0 ? Math.log(0.0001) / Math.log(p.feedback / 100) : 0;
+  return Math.ceil((12 * filter + (filter + 128 / sampleRate) * repeats + 0.03) * 10) / 10;
+}
 export const phaserModule = definePedalModule({
   id: 'fourpataka:pedal/phaser',
   category: 'pedal',
@@ -93,8 +101,8 @@ export const phaserModule = definePedalModule({
     },
   },
   latency: () => 0,
-  tail: () => PHASER_TAIL_SECONDS,
-  exportTail: (p) => (p.mix > 0 ? PHASER_TAIL_SECONDS : 0),
+  tail: (p, environment) => phaserTail(p, environment.sampleRate),
+  exportTail: (p) => (p.mix > 0 ? phaserTail(p) : 0),
   create(context, initial, bypassed, environment) {
     return createMixedProcessor(
       context,
@@ -123,9 +131,10 @@ export const phaserModule = definePedalModule({
         input.connect(feed).connect(filters[0]);
         sum.connect(makeup).connect(wet);
         sum.connect(feedback).connect(loop).connect(filters[0]);
-        // The explicit cycle breaker matches Web Audio's 128-frame feedback quantum.
-        // It affects only recirculation, so no track-alignment compensation is added.
-        loop.delayTime.value = 128 / context.sampleRate;
+        // The feedback cycle itself adds 128 frames in the supported renderers;
+        // requesting another quantum would double recirculation and under-budget tails.
+        // This delay affects feedback only, never the host's track-alignment latency.
+        loop.delayTime.value = 0;
         const at = Math.max(context.currentTime, environment.timeOrigin ?? 0);
         const phase = 2 * Math.PI * initial.rate * (at - (environment.timeOrigin ?? 0));
         lfo.setPeriodicWave(
@@ -139,10 +148,10 @@ export const phaserModule = definePedalModule({
         lfo.start(at);
         return {
           latency: 0,
-          tail: () => PHASER_TAIL_SECONDS,
+          tail: (p) => phaserTail(p, context.sampleRate),
           update(p) {
             // Bound for the full octave even during simultaneous smoothed depth/center edits.
-            const center = Math.max(40, Math.min(p.frequency, context.sampleRate * 0.245));
+            const center = Math.max(40, Math.min(p.frequency, context.sampleRate * 0.2));
             filters.forEach((filter) => set(filter.frequency, center));
             set(depth.gain, p.depth * 12);
             set(lfo.frequency, p.rate);

@@ -20,7 +20,7 @@ M1–M6 implement reviewed bundled-source modules using public imports and expli
 
 - Modular contributor program (M1–M6 implemented) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/index.ts](../../src/modules/index.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L18), [definitions](../../src/modules/assembly.ts#L19), [builtInIds](../../src/modules/assembly.ts#L20), [pedalModules](../../src/modules/assembly.ts#L22), [bundledModules](../../src/modules/assembly.ts#L23), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L24), [instrumentModules](../../src/modules/assembly.ts#L28), [factoryPreviews](../../src/modules/assembly.ts#L33).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L18), [definitions](../../src/modules/assembly.ts#L19), [builtInIds](../../src/modules/assembly.ts#L20), [pedalModules](../../src/modules/assembly.ts#L22), [bundledModules](../../src/modules/assembly.ts#L23), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L24), [instrumentModules](../../src/modules/assembly.ts#L30), [factoryPreviews](../../src/modules/assembly.ts#L35).
 
 #### M6 contributor readiness and supported release
 
