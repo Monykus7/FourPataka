@@ -7,7 +7,7 @@ export const levelPedal = definePedalModule({
   apiVersion: MODULE_API_VERSION,
   dataVersion: 1,
   author: 'Monykus7',
-  attribution: 'FourPataka bundled tutorial source; project license pending',
+  attribution: 'FourPataka bundled tutorial source; GPL-3.0-only; see LICENSE',
   bypass: 'dry',
   nodes: 5,
   memoryBytes: 0,

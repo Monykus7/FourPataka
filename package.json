@@ -28,7 +28,8 @@
     "licenses:check": "node scripts/licenses.mjs --check",
     "prebuild": "npm run licenses:check",
     "distribution:check": "node scripts/check-distribution.mjs",
-    "desktop:setup": "node node_modules/electron/install.js"
+    "desktop:setup": "node node_modules/electron/install.js",
+    "contributor:verify": "node scripts/contributor/verify.mjs"
   },
   "build": {
     "appId": "com.fourpataka.studio",

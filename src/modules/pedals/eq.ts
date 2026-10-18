@@ -6,7 +6,7 @@ export const eqModule = definePedalModule({
   label: 'Three-band EQ',
   legacyKind: 'eq',
   author: 'Monykus7',
-  attribution: 'FourPataka source; project license pending',
+  attribution: 'FourPataka source; GPL-3.0-only; see LICENSE',
   bypass: 'dry',
   nodes: 8,
   memoryBytes: 0,

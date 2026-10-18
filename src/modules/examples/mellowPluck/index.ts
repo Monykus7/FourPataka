@@ -9,7 +9,7 @@ export const mellowPluck = defineFourierPreset({
   label: 'Mellow pluck',
   templateVersion: 1,
   author: 'Monykus7',
-  attribution: 'FourPataka bundled tutorial source; project license pending',
+  attribution: 'FourPataka bundled tutorial source; GPL-3.0-only; see LICENSE',
   tags: [],
   createSound() {
     const base = fourierShape('sine'),

@@ -13,7 +13,7 @@ export const compressorModule = definePedalModule({
   apiVersion: MODULE_API_VERSION,
   dataVersion: 1,
   author: 'Monykus7',
-  attribution: 'FourPataka source; project license pending',
+  attribution: 'FourPataka source; GPL-3.0-only; see LICENSE',
   bypass: 'dry',
   nodes: 9,
   memoryBytes: 0,
