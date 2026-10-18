@@ -18,7 +18,9 @@ export function SmallPedalDials({
 }) {
   if (pedal.unavailable) return <p role="status">Unavailable module</p>;
   return (
-    <div className="small-pedal-dials">
+    <div
+      className={`small-pedal-dials ${Object.keys(PEDAL_CONTROLS[pedal.kind] ?? {}).length > 6 ? 'many-controls' : ''}`}
+    >
       {Object.entries(PEDAL_CONTROLS[pedal.kind] ?? {}).map(([key, [min, max, step, unit]]) => (
         <div key={key} className="small-dial-control">
           <RotaryDial
@@ -30,7 +32,11 @@ export function SmallPedalDials({
             unit={unit}
             onChange={(value, group) => onChange(pedal.id, key, value, group)}
           />
-          <span>{key === 'frequency' ? 'mid Hz' : key}</span>
+          <span>
+            {key === 'frequency'
+              ? pedalParameterLabel(pedal.kind, key).replace('frequency', 'Hz')
+              : key}
+          </span>
         </div>
       ))}
     </div>
@@ -82,28 +88,43 @@ export default function PedalControls({
             {Object.entries(PEDAL_CONTROLS[pedal.kind] ?? {}).map(
               ([key, [min, max, step, unit]]) => {
                 const label = pedalParameterLabel(pedal.kind, key),
-                  controlName = `${pedal.kind} ${index + 1} ${label}`;
+                  controlName = `${pedal.kind} ${index + 1} ${label}`,
+                  choices = pedalModules.get(pedal.kind).parameters[key].choices;
                 return (
                   <label key={key} className="range-control">
                     <span className="range-title">
                       {label}
                       <span className="numeric-value">
-                        <input
-                          type="number"
-                          aria-label={`${controlName} exact value`}
-                          min={min}
-                          max={max}
-                          step={step}
-                          value={pedal.params[key]}
-                          onChange={(e) => {
-                            if (e.target.value !== '' && Number.isFinite(Number(e.target.value)))
-                              onChange(
-                                pedal.id,
-                                key,
-                                Math.min(max, Math.max(min, Number(e.target.value))),
-                              );
-                          }}
-                        />
+                        {choices ? (
+                          <select
+                            aria-label={`${controlName} exact value`}
+                            value={pedal.params[key]}
+                            onChange={(e) => onChange(pedal.id, key, Number(e.target.value))}
+                          >
+                            {choices.map((value) => (
+                              <option key={value} value={value}>
+                                {value}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="number"
+                            aria-label={`${controlName} exact value`}
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={pedal.params[key]}
+                            onChange={(e) => {
+                              if (e.target.value !== '' && Number.isFinite(Number(e.target.value)))
+                                onChange(
+                                  pedal.id,
+                                  key,
+                                  Math.min(max, Math.max(min, Number(e.target.value))),
+                                );
+                            }}
+                          />
+                        )}
                         {unit}
                       </span>
                     </span>

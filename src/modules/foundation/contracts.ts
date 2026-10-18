@@ -10,6 +10,8 @@ export interface NumericParameter {
   readonly step: number;
   readonly unit: ParameterUnit;
   readonly defaultValue: number;
+  /** Optional exact numeric alternatives; step alone never quantizes saved data. */
+  readonly choices?: readonly number[];
   readonly update: 'continuous' | 'replay';
 }
 export interface NumericModuleDefinition {

@@ -11,6 +11,7 @@ export function createScoreGraph(
   processing: Processing | undefined,
   oversamplingLatency: number,
   compressorLatency: number,
+  timeOrigin = 0,
 ) {
   const chains = new Map<string, ChainGraph>();
   const settings = new Map<string, string>();
@@ -26,7 +27,13 @@ export function createScoreGraph(
     chainResources(chain, context.sampleRate);
     chainLatency(chain, oversamplingLatency, compressorLatency, context.sampleRate);
   }
-  const master = createChain(context, masterChain, oversamplingLatency, compressorLatency);
+  const master = createChain(
+    context,
+    masterChain,
+    oversamplingLatency,
+    compressorLatency,
+    timeOrigin,
+  );
   master.output.connect(destination);
   chains.set('master', master);
   settings.set('master', chainMusicalSettings(masterChain));
@@ -44,7 +51,7 @@ export function createScoreGraph(
   let tail = master.tail;
   tracks.forEach((track) => {
     const chain = processing?.tracks[track.key] ?? emptyChain();
-    const graph = createChain(context, chain, oversamplingLatency, compressorLatency);
+    const graph = createChain(context, chain, oversamplingLatency, compressorLatency, timeOrigin);
     const bus = context.createGain();
     bus.gain.value = track.level;
     const align = context.createDelay(1);

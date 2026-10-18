@@ -37,9 +37,15 @@ export function createEffect(
   original: Pedal,
   oversamplingLatency = 0,
   compressorLatency = 0.006,
+  timeOrigin = 0,
 ): EffectGraph {
   const definition = requirePedalModule(original);
-  const environment = { sampleRate: context.sampleRate, oversamplingLatency, compressorLatency };
+  const environment = {
+    sampleRate: context.sampleRate,
+    oversamplingLatency,
+    compressorLatency,
+    timeOrigin,
+  };
   if (
     context.sampleRate < definition.minimumSampleRate ||
     context.sampleRate > definition.maximumSampleRate
@@ -119,6 +125,7 @@ export function createChain(
   chain: Chain,
   oversamplingLatency = 0,
   compressorLatency = 0.006,
+  timeOrigin = 0,
 ): ChainGraph {
   chainResources(chain, context.sampleRate); // Reject unavailable routed nodes before allocation.
   const input = context.createGain(),
@@ -132,6 +139,7 @@ export function createChain(
       { ...p, bypassed: p.bypassed || chain.bypassed },
       oversamplingLatency,
       compressorLatency,
+      timeOrigin,
     ),
   );
   let node: AudioNode = input;

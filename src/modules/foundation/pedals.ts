@@ -5,6 +5,8 @@ export interface PedalEnvironment {
   readonly oversamplingLatency: number;
   readonly compressorLatency: number;
   readonly sampleRate: number;
+  /** Musical time zero in context seconds. Existing factories may ignore this. */
+  readonly timeOrigin?: number;
 }
 export interface PedalRuntime {
   input: GainNode;

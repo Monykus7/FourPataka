@@ -2,6 +2,28 @@
   "schemaVersion": 1,
   "features": [
     {
+      "id": "phaser",
+      "parent": "pedals",
+      "title": "Phaser pedal (implementation in progress)",
+      "summary": "Registered M2 phaser implementation is in progress: selectable4/6/8 first-order-equivalent all-pass stages, rate0.05–5Hz, depth0–100% (one-octave radius), center100–4000Hz with sample-rate clamp, feedback0–85%, wet trim and linear mix. Warm4/6/8 paths crossfade; explicit128-frame delay breaks the positive-feedback loop and input gain is1-feedback. A session-relative oscillator seeds late-created branches and running rate/depth edits retain that oscillator. Shared cleanup stops owned scheduled sources. Additive API1 exact numeric choices validate stage alternatives separately from ordinary fractional steps; optional timeOrigin supplies context-second musical zero. Static analytic notches, extreme-rate feedback decay, late-branch phase/cleanup and shared pedal browser proofs pass. Live/WAV, UI/history/persistence, native/package/release gates are pending; chorus/reverb remain planned. No claim of physical listening or arbitrary historical-rate phase replay.",
+      "paths": [
+        "src/modules/pedals/phaser.ts",
+        "src/modules/foundation/processor.ts",
+        "src/modules/foundation/contracts.ts",
+        "src/modules/foundation/registry.ts",
+        "src/modules/foundation/pedals.ts",
+        "src/modules/assembly.ts",
+        "src/audio/effects.ts",
+        "src/audio/scoreGraph.ts",
+        "src/audio/engine.ts",
+        "src/core/pedals.ts",
+        "src/components/PedalControls.tsx",
+        "src/components/Pedalboard.tsx",
+        "tests/unit/phaser.test.ts",
+        "tests/browser/phaser.spec.ts"
+      ]
+    },
+    {
       "id": "source-output-analysis",
       "parent": "studio",
       "title": "Source and live output analysis",

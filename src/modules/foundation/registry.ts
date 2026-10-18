@@ -54,7 +54,19 @@ export function defineNumericModule(input: NumericModuleDefinition): NumericModu
         p.defaultValue < p.min ||
         p.defaultValue > p.max ||
         !units.includes(p.unit) ||
-        !['continuous', 'replay'].includes(p.update)
+        !['continuous', 'replay'].includes(p.update) ||
+        (p.choices !== undefined &&
+          (!Array.isArray(p.choices) ||
+            p.choices.length < 2 ||
+            p.choices.length > 32 ||
+            !p.choices.every(
+              (v, i) =>
+                Number.isFinite(v) &&
+                v >= p.min &&
+                v <= p.max &&
+                (i === 0 || v > p.choices![i - 1]),
+            ) ||
+            !p.choices.includes(p.defaultValue)))
       )
         throw new Error(`Invalid parameter ${input.id}.${key}.`);
       // Only declared serializable fields cross this contract, never functions/nodes.
@@ -69,6 +81,7 @@ export function defineNumericModule(input: NumericModuleDefinition): NumericModu
           unit: p.unit,
           defaultValue: p.defaultValue,
           update: p.update,
+          ...(p.choices ? { choices: Object.freeze([...p.choices]) } : {}),
         }),
       ];
     }),
@@ -131,7 +144,8 @@ export function validateModuleSettings(
       typeof settings[key] !== 'number' ||
       !Number.isFinite(settings[key]) ||
       settings[key] < p.min ||
-      settings[key] > p.max
+      settings[key] > p.max ||
+      (p.choices !== undefined && !p.choices.includes(settings[key]))
     )
       throw new Error(`Invalid setting ${definition.id}.${key}.`);
   // Step is a UI increment, not an import quantization rule: preserve valid fractional values.

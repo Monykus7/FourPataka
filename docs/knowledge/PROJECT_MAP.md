@@ -20,7 +20,7 @@ M1–M6 implement reviewed bundled-source modules using public imports and expli
 
 - Modular contributor program (M1–M6 implemented) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/index.ts](../../src/modules/index.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L17), [definitions](../../src/modules/assembly.ts#L18), [builtInIds](../../src/modules/assembly.ts#L19), [pedalModules](../../src/modules/assembly.ts#L21), [bundledModules](../../src/modules/assembly.ts#L22), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L23), [instrumentModules](../../src/modules/assembly.ts#L27), [factoryPreviews](../../src/modules/assembly.ts#L32).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L18), [definitions](../../src/modules/assembly.ts#L19), [builtInIds](../../src/modules/assembly.ts#L20), [pedalModules](../../src/modules/assembly.ts#L22), [bundledModules](../../src/modules/assembly.ts#L23), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L24), [instrumentModules](../../src/modules/assembly.ts#L28), [factoryPreviews](../../src/modules/assembly.ts#L33).
 
 #### M6 contributor readiness and supported release
 
@@ -55,7 +55,7 @@ Implemented v0.33.0: pure public PedalModule/registry contracts, four built-in D
 - M2 playable pedal modules and contributor example / dependency group 3: [tests/browser/pedal-modules.spec.ts](../../tests/browser/pedal-modules.spec.ts), [tests/helpers/pedalModules.ts](../../tests/helpers/pedalModules.ts)
 - M2 playable pedal modules and contributor example / dependency group 4: [tests/unit/pedalModules.test.ts](../../tests/unit/pedalModules.test.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L66), [tailActive](../../src/audio/effects.ts#L69), [ChainGraph](../../src/audio/effects.ts#L79), [chainLatency](../../src/audio/effects.ts#L91), [chainResources](../../src/audio/effects.ts#L103).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
 
 #### M3 registry-backed Fourier presets
 
@@ -176,7 +176,17 @@ Compressor, overdrive, three-band EQ and delay use independent A/B, track and ma
 - Pedalboard and processing / dependency group 4: [tests/browser/board-audio.spec.ts](../../tests/browser/board-audio.spec.ts)
 - Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts), [tests/browser/delay.spec.ts](../../tests/browser/delay.spec.ts), [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts), [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts), [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts), [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts), [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L66), [tailActive](../../src/audio/effects.ts#L69), [ChainGraph](../../src/audio/effects.ts#L79), [chainLatency](../../src/audio/effects.ts#L91), [chainResources](../../src/audio/effects.ts#L103).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
+
+##### Phaser pedal (implementation in progress)
+
+Registered M2 phaser implementation is in progress: selectable4/6/8 first-order-equivalent all-pass stages, rate0.05–5Hz, depth0–100% (one-octave radius), center100–4000Hz with sample-rate clamp, feedback0–85%, wet trim and linear mix. Warm4/6/8 paths crossfade; explicit128-frame delay breaks the positive-feedback loop and input gain is1-feedback. A session-relative oscillator seeds late-created branches and running rate/depth edits retain that oscillator. Shared cleanup stops owned scheduled sources. Additive API1 exact numeric choices validate stage alternatives separately from ordinary fractional steps; optional timeOrigin supplies context-second musical zero. Static analytic notches, extreme-rate feedback decay, late-branch phase/cleanup and shared pedal browser proofs pass. Live/WAV, UI/history/persistence, native/package/release gates are pending; chorus/reverb remain planned. No claim of physical listening or arbitrary historical-rate phase replay.
+
+- Phaser pedal (implementation in progress) / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/core/pedals.ts](../../src/core/pedals.ts), [src/audio/engine.ts](../../src/audio/engine.ts), [src/audio/scoreGraph.ts](../../src/audio/scoreGraph.ts), [src/components/PedalControls.tsx](../../src/components/PedalControls.tsx), [src/components/Pedalboard.tsx](../../src/components/Pedalboard.tsx), [src/modules/assembly.ts](../../src/modules/assembly.ts), [tests/unit/phaser.test.ts](../../tests/unit/phaser.test.ts), [src/modules/pedals/phaser.ts](../../src/modules/pedals/phaser.ts)
+- Phaser pedal (implementation in progress) / dependency group 2: [src/modules/foundation/contracts.ts](../../src/modules/foundation/contracts.ts), [src/modules/foundation/pedals.ts](../../src/modules/foundation/pedals.ts), [src/modules/foundation/registry.ts](../../src/modules/foundation/registry.ts), [src/modules/foundation/processor.ts](../../src/modules/foundation/processor.ts)
+- Phaser pedal (implementation in progress) / dependency group 3: [tests/browser/phaser.spec.ts](../../tests/browser/phaser.spec.ts)
+
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
 
 ##### Phaser, chorus and algorithmic reverb (planned)
 
@@ -367,7 +377,7 @@ v0.19.0 exports frozen source and applied independent sound/processing copies th
 - Project mix WAV export / dependency group 4: [tests/browser/export.spec.ts](../../tests/browser/export.spec.ts)
 - Project mix WAV export / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L21), [prepareExport](../../src/audio/export.ts#L33), [renderWav](../../src/audio/export.ts#L108), [WavRender](../../src/audio/export.ts#L177), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L66).
+Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L21), [prepareExport](../../src/audio/export.ts#L33), [renderWav](../../src/audio/export.ts#L108), [WavRender](../../src/audio/export.ts#L177), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L73).
 
 
 ## Parser coverage

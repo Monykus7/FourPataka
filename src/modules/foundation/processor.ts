@@ -36,6 +36,18 @@ export function createMixedProcessor(
     settings = { ...initial },
     bypass = bypassed;
   let behavior: ProcessorBehavior;
+  const cleanup = () =>
+    nodes.forEach((node) => {
+      // Modulation sources must actually stop, not merely lose their output edge.
+      if ('stop' in node && typeof node.stop === 'function') {
+        try {
+          node.stop();
+        } catch {
+          /* A setup failure may precede start(). */
+        }
+      }
+      node.disconnect();
+    });
   try {
     behavior = setup({
       input,
@@ -51,7 +63,7 @@ export function createMixedProcessor(
       },
     });
   } catch (error) {
-    nodes.forEach((node) => node.disconnect());
+    cleanup();
     throw error;
   }
   const set = (parameter: AudioParam, value: number) => {
@@ -72,7 +84,7 @@ export function createMixedProcessor(
   try {
     update(initial, bypassed);
   } catch (error) {
-    nodes.forEach((node) => node.disconnect());
+    cleanup();
     throw error;
   }
   return {
@@ -89,7 +101,7 @@ export function createMixedProcessor(
     dispose() {
       if (disposed) return;
       disposed = true;
-      nodes.forEach((node) => node.disconnect());
+      cleanup();
     },
   };
 }

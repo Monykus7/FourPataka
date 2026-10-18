@@ -202,6 +202,9 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px 3px;
 }
+.small-pedal-dials.many-controls {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
 .small-dial-control {
   min-width: 0;
   display: flex;

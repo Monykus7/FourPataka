@@ -5,6 +5,7 @@ import { boardLayout } from '../core/board';
 import { SCORE_KEY } from '../core/music';
 import {
   applyAssociated,
+  clampPedal,
   emptyChain,
   PEDAL_CONTROLS,
   nextChainKey,
@@ -87,7 +88,10 @@ export default function Pedalboard({
         ...chain,
         pedals: chain.pedals.map((p) =>
           p.id === id
-            ? { ...p, params: { ...p.params, [key]: Math.min(max, Math.max(min, value)) } }
+            ? clampPedal({
+                ...p,
+                params: { ...p.params, [key]: Math.min(max, Math.max(min, value)) },
+              })
             : p,
         ),
       },

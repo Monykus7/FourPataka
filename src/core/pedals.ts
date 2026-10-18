@@ -112,10 +112,16 @@ export function clampPedal(pedal: Pedal): Pedal {
   return {
     ...pedal,
     params: Object.fromEntries(
-      Object.entries(PEDAL_CONTROLS[pedal.kind]).map(([key, [min, max]]) => [
-        key,
-        clamp(Number.isFinite(pedal.params[key]) ? pedal.params[key] : min, min, max),
-      ]),
+      Object.entries(PEDAL_CONTROLS[pedal.kind]).map(([key, [min, max]]) => {
+        const value = clamp(Number.isFinite(pedal.params[key]) ? pedal.params[key] : min, min, max);
+        const choices = pedalModules.get(pedal.kind).parameters[key].choices;
+        return [
+          key,
+          choices
+            ? choices.reduce((a, b) => (Math.abs(b - value) < Math.abs(a - value) ? b : a))
+            : value,
+        ];
+      }),
     ),
   };
 }

@@ -173,6 +173,7 @@ export class AudioEngine {
       structuredClone(chain),
       this.oversamplingLatency,
       this.compressorLatency,
+      session.start,
     );
     // A fixed eight-pedal latency budget keeps differently ordered A/B paths aligned.
     const latency = 8 * Math.max(this.compressorLatency, this.oversamplingLatency);
@@ -381,6 +382,7 @@ export class AudioEngine {
       settings,
       this.oversamplingLatency,
       this.compressorLatency,
+      session.start,
     );
     session.chains = graph.chains;
     session.chainSettings = graph.settings;
