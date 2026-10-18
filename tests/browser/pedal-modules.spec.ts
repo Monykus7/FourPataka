@@ -81,10 +81,11 @@ test('all registered pedals satisfy shared dry bypass isolation finite and dispo
         });
       }
     }
-    return results;
+    return { results, count: pedalModules.definitions.length };
   });
-  expect(proof).toHaveLength(12);
-  for (const result of proof) {
+  expect(proof.count).toBeGreaterThanOrEqual(6);
+  expect(proof.results).toHaveLength(proof.count * 2);
+  for (const result of proof.results) {
     expect(result.finite).toBe(true);
     expect(result.peak).toBeLessThan(1);
     expect(result.error).toBeLessThan(1e-6);
