@@ -114,3 +114,7 @@ The future preservation policy is defined in [compatibility](COMPATIBILITY.md). 
 From a clean checkout: `npm ci`, then `npm test -- tests/unit/moduleRegistry.test.ts tests/unit/moduleCompatibility.test.ts tests/unit/moduleBoundaries.test.ts` and `npm run build`. [CONTRIBUTING.md](../../CONTRIBUTING.md) covers the browser/native setup. A definition should have malformed/default/version/duplicate tests and proof that independent settings remain independent. A DSP contribution must additionally satisfy the planned [M2 pedal](PEDALS.md) live/offline, latency, tail, Stop and persisted-data gates.
 
 M1 is bundled reviewed source, not an installed-package SDK or runtime loader. The owner has not selected a project license; M6 licensing/attribution/publication readiness remains open. Existing physical listening/device/screen-reader release checks also remain manual gates. Current verification is recorded separately in [implementation status](../../IMPLEMENTATION_STATUS.md).
+
+## Optional discrete settings (hostv0.40.0+)
+
+Numeric descriptors may declare `choices`, a frozen sorted list of2–32 finite exact numeric alternatives inside min/max including the default. Saved settings must match an alternative; ordinary step values still do not quantize imports. Pedal controls snap interactive values to the nearest choice and offer an exact select. Existing API1 definitions need no change. See the [phaser walkthrough](PHASER.md) for the4/6/8-stage example and minimum-host compatibility.

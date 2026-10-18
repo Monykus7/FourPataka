@@ -24,7 +24,7 @@ Verify tutorials against the actual public import and explicit assembly. Review 
 
 ## Repeatable checks
 
-A fresh checkout runs npm ci using package-lock.json. The Contributor checks workflow uses commit-pinned official actions, read-only contents permissions, no publication secrets and pull_request/push/workflow_dispatch triggers. Linux checks format, complete dependency notices, tracked private-file exclusions, all units, build, knowledge freshness and seven contributor browser suites with installed Playwright Chromium. Windows builds the portable, inspects the actual ASAR and runtime notices, and runs eight packaged startup/contributor workflows. Native profiles are isolated; no user data is uploaded.
+A fresh checkout runs npm ci using package-lock.json. The Contributor checks workflow uses commit-pinned official actions, read-only contents permissions, no publication secrets and pull_request/push/workflow_dispatch triggers. Linux checks format, complete dependency notices, tracked private-file exclusions, all units, build, knowledge freshness and eleven contributor browser suites with installed Playwright Chromium. Windows builds the portable, inspects the actual ASAR and runtime notices, and runs nine packaged startup/contributor workflows. Native profiles are isolated; no user data is uploaded.
 
 Reproduce source checks with the commands in CONTRIBUTING.md. On Windows, desktop:package first runs desktop:setup (Electron's own installer). A fresh npm ci provides the JavaScript package; it does not guarantee node_modules/electron/dist exists before electron-builder reads electronDist. The installer checks its pinned version/checksums and reuses an existing matching runtime. No blanket dependency-script approval is needed.
 
@@ -34,7 +34,7 @@ On Windows:
 npm run desktop:package
 npm run distribution:check -- release/win-unpacked
 $env:FOURPATAKA_TEST_EXECUTABLE=(Resolve-Path 'release/win-unpacked/FourPataka.exe').Path
-npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing|packaged analysis"
+npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing|packaged analysis|packaged phaser"
 ```
 
 CI artifacts are unsigned review builds retained for seven days on master pushes, paired with a source archive from the exact commit. They are not a public release or durable corresponding-source service. Logs/test profiles/model caches are excluded from upload. Repository controls were verified on 2026-10-18: master requires source-and-browser and windows-native with strict up-to-date checks; force pushes and branch deletion are blocked, and review conversations must be resolved. Administrator enforcement is intentionally off so the owner can keep pushing checkpoint commits. These pushes may report a visible administrator bypass while CI runs; that is not evidence of passing checks. Non-administrators must satisfy the required checks. Private vulnerability reporting is enabled. Runner availability and ongoing enforcement still require maintainer monitoring. Local pass results do not assert that hosted CI has run; record the actual run URL/result before closing that gate.

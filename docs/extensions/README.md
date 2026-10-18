@@ -6,6 +6,8 @@ M1–M5 contracts are implemented: numeric metadata, playable pedals, Fourier pr
 
 ## Start here
 
+- [Phaser](PHASER.md): modulation clocks, warm stages, feedback timing, tail bounds and shared playback/WAV proofs.
+
 - [Synthesis engine foundation](ENGINE_FOUNDATION.md): implemented lifecycle/capability API, selectable/saved Basic Tone, schema4 recovery and cross-engine comparison diagrams.
 
 - [Fourier preset modules](FOURIER_PRESETS.md): implemented API, Mellow pluck example, explicit discovery and baked-data compatibility.

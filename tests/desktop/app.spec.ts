@@ -5,6 +5,7 @@ import { engineInstrumentWorkflow } from '../helpers/engineInstruments';
 import { presetModuleWorkflow } from '../helpers/presetModules';
 import { levelModuleWorkflow } from '../helpers/pedalModules';
 import { phaserWorkflow } from '../helpers/phaser';
+import { verifyPhaserLoop } from '../helpers/phaserLoop';
 import { instrumentFoldersWorkflow, showSimpleShapes } from '../helpers/instrumentLibrary';
 import { sectionsWorkflow } from '../helpers/sections';
 import { fileTabsWorkflow } from '../helpers/fileTabs';
@@ -60,6 +61,7 @@ test.afterEach(async () => {
 test('packaged phaser retains stage choices and owned chains through native JSON', async () => {
   const page = await app.firstWindow();
   await phaserWorkflow(page);
+  await verifyPhaserLoop(page);
   const filePath = resolve('.test-results', 'desktop', 'phaser.fourpataka.json');
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });

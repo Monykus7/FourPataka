@@ -1,6 +1,6 @@
 # Playable pedal modules — API 1, v0.33.0
 
-M2 implements reviewed, bundled TypeScript pedal contributions. Compressor, Overdrive, EQ, Delay and the independent **Level** tutorial pedal use the same contract. Equipment, placement acceptance, parameter names/ranges/defaults, reset/help, validation, audio dispatch, latency, resource estimates and WAV musical tails consume the registry. Cable order, score authority, owned copies/history, scheduling, Stop and native privileges remain host responsibilities.
+M2 implements reviewed, bundled TypeScript pedal contributions. Compressor, Overdrive, EQ, Delay, Phaser and the independent **Level** tutorial pedal use the same contract. Equipment, placement acceptance, parameter names/ranges/defaults, reset/help, validation, audio dispatch, latency, resource estimates and WAV musical tails consume the registry. Cable order, score authority, owned copies/history, scheduling, Stop and native privileges remain host responsibilities.
 
 ## Add a pedal from a clean checkout
 
@@ -87,8 +87,12 @@ Opaque recovery data is limited to eight nested levels, 64 entries per object/ar
 
 ## Verification and troubleshooting
 
-The shared browser harness checks all five registered processors at 44.1/48 kHz for finite output, bypass/dry agreement and repeated disposal. Effect-specific regression checks retain measured compressor/oversampling alignment, EQ spectra, delay cadence/feedback/tails, Stop, A/B continuity, routed order and frozen WAV ownership. Level additionally has analytic gain/mix, mouse placement/cables, keyboard dial/reset/history, copy/reload/narrow and native JSON proofs. Unit fixtures cover schema migration, malformed/unknown/newer versions, opaque recovery, re-enabled registration, independent copies and failed-factory cleanup. Actual release results are in [implementation status](../../IMPLEMENTATION_STATUS.md).
+The shared browser harness checks all six registered processors at 44.1/48 kHz for finite output, bypass/dry agreement and repeated disposal. Effect-specific regression checks retain measured compressor/oversampling alignment, EQ spectra, delay cadence/feedback/tails, Stop, A/B continuity, routed order and frozen WAV ownership. Level additionally has analytic gain/mix, mouse placement/cables, keyboard dial/reset/history, copy/reload/narrow and native JSON proofs. Unit fixtures cover schema migration, malformed/unknown/newer versions, opaque recovery, re-enabled registration, independent copies and failed-factory cleanup. Actual release results are in [implementation status](../../IMPLEMENTATION_STATUS.md).
 
 If equipment is absent, confirm its assembly entry and unique ID. If import creates a placeholder, inspect the ID/API/data versions; never relabel another module to consume incompatible settings. If gain/timing differs between live and WAV, check unit conversion, measured latency and whether both paths call the same factory. If Stop leaks audio, check every owned node/timer and idempotent disposal. Source registration does not install a package, add notation grammar or grant native file permissions.
 
 M1–M5 are implemented. See the [maintainer guide](../MAINTAINING.md) for M6 contributor/release operations. Phaser/chorus/reverb and runtime loading remain separate future work.
+
+## Modulated processors (hostv0.40.0+)
+
+[Phaser](PHASER.md) illustrates optional context-second `environment.timeOrigin`, exact numeric stage choices, warm stage selection, measured feedback-cycle timing and a parameter/sample-rate tail budget. Host live sessions pass their start; WAV uses0. A factory must preserve phase on ordinary updates and declare initialization/replacement limitations. Register scheduled sources with `own(...)`: shared mixed-processor cleanup now calls their stop method as well as disconnect, including failure paths. Dispose remains idempotent. Phaser has no legacy kind; reserved built-in IDs do not imply a legacy alias. Phaser/Level plus the four original effects share discovery and routing. Chorus/reverb remain planned.
