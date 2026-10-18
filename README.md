@@ -4,6 +4,8 @@ Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6
 
 The current application is **v0.39.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export.
 
+Download the [Windows contributor preview and exact source](https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0). The portable is unsigned; build instructions and checksums accompany it. M1–M6 contributor readiness is complete; physical/device/accessibility checks remain limited as documented.
+
 Reviewed source contributions use the same contracts as built-ins:
 
 - [Pedals](docs/extensions/PEDAL_MODULES.md): processing, controls, validation, live/WAV factories and saved recovery.
