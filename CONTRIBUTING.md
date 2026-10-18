@@ -19,6 +19,8 @@ Start with [the task guide](docs/knowledge/TASK_GUIDE.md) and the relevant sourc
 
 Each guide provides real imports, registration, ownership diagrams and proof requirements. Import public contracts instead of private core/audio/React/native files. Built-ins use the same boundaries. Runtime loading, arbitrary UI adapters, grammar plugins and general theme/file adapters remain future proposals.
 
+For a complete first contribution, follow the [clean-checkout walkthrough](docs/extensions/CONTRIBUTOR_WALKTHROUGH.md). `npm run contributor:verify` rehearses copying and registering a new pedal and preset in isolated committed source, including fresh dependencies, public-boundary checks, a build and real browser/audio proofs.
+
 ## Verify and document
 
 Run focused tests while developing; before review run:

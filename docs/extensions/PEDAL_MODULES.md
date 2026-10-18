@@ -29,7 +29,7 @@ flowchart TD
 `definePedalModule` extends the numeric API with these fields; `createPedalRegistry` validates assembly and rejects duplicate IDs/legacy aliases. Definitions/descriptors are copied and frozen; runtime functions are reviewed source, never loaded from JSON. Contributor imports may target the public barrel; the dependency check rejects host/private imports and cycles.
 
 - `id`, `category: 'pedal'`, `label`, `apiVersion`, `dataVersion`, `parameters`: the numeric foundation. Descriptor labels drive accessible control names. Bounds validate saved values; step is a UI increment, not import quantization. `update` declares continuous/replay intent; it does not implement a clock or smoothing.
-- `author`, `attribution`: identify source provenance. Attribution is not a license grant. Project license selection and the M6 publication/third-party contribution gate remain open.
+- `author`, `attribution`: identify source provenance. Attribution is not a license grant. Contributions use GPL-3.0-only with compatible upstream notices; see CONTRIBUTING.md. Attribution alone does not grant reuse rights.
 - `bypass: 'dry' | 'drain'`: the documented policy. A factory must implement it; the host passes pedal/whole-chain bypass. Delay gates new input while stored wet echoes drain. Other bundled pedals use aligned dry unity.
 - `note`, optional `reset: { label, accessibleLabel }`: generic inspector help/reset. Use `{index}` in accessible reset labels. Reset replaces settings with fresh descriptor defaults in one host history operation, preserving instance identity/order/bypass.
 - `nodes`, `memoryBytes`, `minimumSampleRate`, `maximumSampleRate`: declared resource/support estimates. Counts and bytes are bounded; supported rates lie within 3–192 kHz. Node count is a coarse workload indicator, not a measured CPU guarantee. Delay declares conservative stereo buffer storage at its maximum supported rate. Native Web Audio internals may allocate additional memory; this is preflight, not a sandbox or exact allocator measurement.
@@ -63,7 +63,7 @@ Export preflight sums declared chain resources and rejects estimates over 4096 n
 
 ## Saved data and compatibility
 
-New project saves use **schema 3**. Schemas 1 and 2 import into 3; schema 1 still pads its original 16 signed harmonics to 32. Existing built-ins retain `compressor`, `overdrive`, `eq`, `delay` persisted kinds and their previous settings. No automatic reapplication occurs. Older releases reject schema 3; retain a backup before using a newer project in an older app. There is no downgrade writer.
+The M2 pedal envelope was introduced in **schema 3**. Current saves use **schema 5**, importing schemas 1–4; schema 1 still pads its original 16 signed harmonics to 32. Existing built-ins retain `compressor`, `overdrive`, `eq`, `delay` persisted kinds and their previous settings. No automatic reapplication occurs. Older releases reject schema 3; retain a backup before using a newer project in an older app. There is no downgrade writer.
 
 Contributed instances use the module ID as `kind` plus `module: { id, apiVersion, dataVersion }`. Instance ID, library ID/key/template version and score key remain separate identities. Built-in legacy data is implicitly API/data 1; changing that assumption requires a future migration/envelope update. Only exact current API/data versions execute. Version migration callbacks are not implemented in this release.
 
@@ -91,4 +91,4 @@ The shared browser harness checks all five registered processors at 44.1/48 kHz 
 
 If equipment is absent, confirm its assembly entry and unique ID. If import creates a placeholder, inspect the ID/API/data versions; never relabel another module to consume incompatible settings. If gain/timing differs between live and WAV, check unit conversion, measured latency and whether both paths call the same factory. If Stop leaks audio, check every owned node/timer and idempotent disposal. Source registration does not install a package, add notation grammar or grant native file permissions.
 
-M3 registry-backed Fourier presets is next. New phaser/chorus/reverb, engine/feature APIs, runtime loading and M6 license/CI/publication remain separate work.
+M1–M5 are implemented. See the [maintainer guide](../MAINTAINING.md) for M6 contributor/release operations. Phaser/chorus/reverb and runtime loading remain separate future work.

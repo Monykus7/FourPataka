@@ -35,6 +35,10 @@ jobs:
         run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts
         env:
           PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
+      - name: Exercise contributor tutorial from isolated committed source
+        run: npm run contributor:verify
+        env:
+          PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
 
   windows-native:
     runs-on: windows-2022

@@ -29,10 +29,10 @@ Mellow pluck has six nonzero harmonics, a negative second-harmonic sign, 8 ms at
 `FourierPresetModule` contains `id`, `apiVersion`, `dataVersion`, `libraryId`, `scoreKey`, `label`, `templateVersion`, `author`, `attribution`, `tags`, optional `preview`, and `createSound`.
 
 - Module IDs use `namespace:instrument/name`; library IDs identify project templates. Suggested score keys start with a letter and contain letters, digits or underscores. Duplicate module IDs, library IDs or suggested keys fail assembly.
-- API version describes this code contract. Data version 1 describes the supported Fourier shape. Template version identifies factory revisions; it does not reapply a library sound to tracks. Project schema remains 3.
+- API version describes this code contract. Data version 1 describes the supported Fourier shape. Template version identifies factory revisions; it does not reapply a library sound to tracks. This API began at schema3; current project saves use schema5.
 - Preview metadata optionally provides a note, positive duration in quarter beats, and hint. The host derives hit-preview defaults/hints from registered preview metadata. Tags do not create project folders or rewrite membership; folders remain user-owned.
 - Metadata/tags/preview are copied and frozen. `createTemplates()` returns new template objects and fresh sounds. Neither mutable caller settings nor a later edit to a factory's original object can change registered defaults.
-- Attribution identifies provenance; it grants no project license. Owner licensing, third-party contribution policies and publication remain M6 gates.
+- Attribution identifies provenance; it grants no project license. Contributions use GPL-3.0-only with compatible upstream notices under CONTRIBUTING.md.
 
 `FourierSound` supports 32 `harmonics` magnitudes in [0,1], 32 `polarity` signs of +1/−1, five `undertones` magnitudes in [0,1] and a separate enable flag. Coefficients are absolute; neither registration nor audio normalizes them. Preserve silent or above-Nyquist coefficients in saved data. Signs and strengths are independent.
 
@@ -74,4 +74,4 @@ Saved presets contain complete sound settings, project template identity/key/ver
 
 Unit checks cover metadata/version/default/duplicate/reserved failures, deterministic capture and copy isolation, explicit import/collision/capacity/occupied-key behavior, conservative migrations and JSON round-trips. Browser checks render all ten factory sounds at 44.1/48 kHz, check finite headroom and exact frozen example WAV parity, exercise selection/listening/source/reload/import/undo/narrow layout, and retain existing folder/A-B-clock/WAV proofs. Native checks cover the example's baked source and sound through saving/reopening/playback, plus affected library and file/export workflows. Actual results are in [implementation status](../../IMPLEMENTATION_STATUS.md).
 
-Do not infer physical realism, CPU suitability for every device or perceptual approval from numerical tests. M4 engine/lifecycle capabilities, tiny-chamber acoustics, M5 feature contracts, M6 license/CI/publication and manual listening/device/screen-reader gates remain open.
+Do not infer physical realism, CPU suitability for every device or perceptual approval from numerical tests. M4 engine/lifecycle and M5 feature contracts are implemented; see the maintainer guide for M6 operations. Tiny-chamber acoustics and manual listening/device/screen-reader gates remain open.
