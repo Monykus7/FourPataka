@@ -1,0 +1,32 @@
+{
+  "version": "0.39.0",
+  "verifiedDate": "2026-10-18",
+  "release": "https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0",
+  "sourceCommit": "49be138513a30e663fe7d0ee27b195853597ac0d",
+  "tag": "v0.39.0",
+  "workflowRun": "https://github.com/Monykus7/FourPataka/actions/runs/39085617326",
+  "sourceFilesVerified": 308,
+  "sourceComparison": "Complete file list; valid UTF-8 text checkout line endings normalized; binary bytes exact.",
+  "assets": [
+    {
+      "name": "BUILDING.txt",
+      "sizeBytes": 895,
+      "sha256": "73834a256ead5d1c5bced9b3af385b03bf8b4911572ebaefe5caa3cf94f7705c"
+    },
+    {
+      "name": "FourPataka-0.39.0-win-x64.exe",
+      "sizeBytes": 160386457,
+      "sha256": "e568609523b173d55ba01cd95189ce12335f115f6f9b2dfcf3afc77b9313c225"
+    },
+    {
+      "name": "FourPataka-source-49be138513a30e663fe7d0ee27b195853597ac0d.zip",
+      "sizeBytes": 3217200,
+      "sha256": "c4520bf6da48ab9fb7d8e31f512205ca4457ba0962b26172e26cc08707a2ca4e"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "sizeBytes": 225,
+      "sha256": "adc4bab552194f1fdb34e971bf5df6986ed73192c8166aee7d6d037ca862b924"
+    }
+  ]
+}
