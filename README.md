@@ -2,7 +2,17 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-Open-source extensibility is a major program split into six milestones: contracts, pedals, instrument presets, synthesis engines, other feature modules and contributor-release readiness. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guides](docs/extensions/README.md); [BUILD_PLAN.md section 14](BUILD_PLAN.md#14-modularity-and-open-source-contributions) records the gates. The guides distinguish current source integration from planned module APIs. The synthesis/notation pilot adds the first implemented [chord-shape contribution contract](docs/extensions/CHORD_SHAPES.md) and 32 harmonics. v0.32.0 implements the [M1 numeric metadata foundation](docs/extensions/MODULE_FOUNDATION.md), validated assembly and an EQ adapter with a tested contributor example. v0.33.0 adds [M2 playable pedal modules](docs/extensions/PEDAL_MODULES.md): all built-ins plus Level, generic registration and schema-3 unavailable-module recovery. M3 Fourier presets is implemented in v0.34.0. v0.35.0 adds the [M4a engine foundation](docs/extensions/ENGINE_FOUNDATION.md), the registered Fourier voice and an independent Basic Tone source example. v0.36.0 adds M4b selectable/saved engines, suitable numeric controls, schema4 recovery and continuous comparison. v0.37.0 adds [M5 declarative features](docs/extensions/FEATURE_MODULES.md): registered Learn panels, Partial pair, saved settings/recovery, shared output metering and guarded command actions. M6a adds GPL-3.0-only, complete dependency notices, contributor policies and browser/Windows CI definitions; hosted-run/tutorial/public-release gates remain. Custom adapters and runtime loading remain planned.
+The current application is **v0.39.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export.
+
+Reviewed source contributions use the same contracts as built-ins:
+
+- [Pedals](docs/extensions/PEDAL_MODULES.md): processing, controls, validation, live/WAV factories and saved recovery.
+- [Fourier presets](docs/extensions/FOURIER_PRESETS.md): baked editable sounds and conservative discovery.
+- [Synthesis engines](docs/extensions/ENGINE_FOUNDATION.md): voices, capabilities, saved settings/recovery and continuous comparison.
+- [Feature modules](docs/extensions/FEATURE_MODULES.md): declarative panels, experiments and guarded host actions.
+- [Chord shapes](docs/extensions/CHORD_SHAPES.md): the separate notation API1 registry.
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the [first-contribution walkthrough](docs/extensions/CONTRIBUTOR_WALKTHROUGH.md). Numeric foundation, explicit assembly, tutorials, licensing and contributor checks support the M1–M6 program; actual release evidence is in [implementation status](IMPLEMENTATION_STATUS.md). Contributions are GPL-3.0-only. Modules are reviewed source bundled at build time; runtime installation and arbitrary UI/grammar adapters remain future work.
 
 ## Run locally
 
