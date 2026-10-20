@@ -65,7 +65,7 @@ The v0.19.1 layout follow-up makes the expanded command reference match the scor
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage7 guided experiments and source/output analysis are implemented in v0.39.0; actual verification and remaining manual gates are recorded below.
 
-Current application priority (2026-10-19): M1–M6 contributor/module readiness, variable swing and initial Stage7 analysis are implemented. The v0.40.0 phaser ships through the M2 contract with browser/native/portable verification; chorus is verified in v0.41.0; reverb is next. Instrument chamber and WAV analysis remain separate requested features; physical listening/device/accessibility gates remain explicit.
+Current application priority (2026-10-19): M1–M6 contributor/module readiness, variable swing and initial Stage7 analysis are implemented. The v0.40.0 phaser ships through the M2 contract with browser/native/portable verification; chorus is verified in v0.41.0. The owner selected instrument acoustics next; its v0.42.0 release verification is in progress, ahead of the separately planned reverb pedal. WAV analysis remains a separate requested feature; physical listening/device/accessibility gates remain explicit.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -201,9 +201,9 @@ Bound polyphony, counting voices that are releasing. Allocate undertone oscillat
 
 A rest schedules no new notes. Release envelopes and effect tails can remain audible during a rest.
 
-### Planned instrument acoustics — tiny chamber
+### Instrument acoustics — tiny chamber
 
-Status: implementation in progress after v0.41.0. Schema6 settings/legacy migration checks pass; DSP/UI/release gates remain pending. Add a compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
+Status: implemented in source for v0.42.0;319 units and targeted DSP/live/WAV/UI/suspension checks pass. Native/portable/hosted release verification is pending. A compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
 
 Use algorithmic reverb built from generated short reflections and a bounded, damped feedback network. No IR files, convolution library, recording upload or asset download should be required. Select the exact network and parameter ranges in a listening/numeric audio proof before committing to an implementation.
 
@@ -214,11 +214,11 @@ Initial controls:
 - Chamber size/reflection spacing, emphasizing short instrument-body responses.
 - Decay and damping/body tone, with documented units and bounded ranges. More elaborate material, resonance and chamber presets can follow the initial proof.
 
-Proposed signal path: combined instrument voices after their envelopes and source trim → instrument chamber with dry/wet blend → track pedal chain → track level. Audition uses the same instrument stage before its selected pedal chain. A chamber instance is shared by that destination's polyphonic voices, with independent processor state for other tracks and A/B branches. The master pedalboard remains downstream of the track mix.
+Implemented signal path: combined instrument voices after their envelopes and source trim → instrument chamber with dry/wet blend → track pedal chain → track level. Audition uses the same instrument stage before its selected pedal chain. A chamber instance is shared by that destination's polyphonic voices, with independent processor state for other tracks and A/B branches. The master pedalboard remains downstream of the track mix.
 
 Keep drawn waveform, harmonic coefficients and source inspectors authoritative for the unprocessed source. Any chamber-output measurement must identify its tap explicitly, so users can distinguish source synthesis from body coloration. Source editing and chamber editing remain separate undoable operations.
 
-Future implementation gate:
+Implementation and release gates:
 
 - Dry identity and unchanged legacy playback; no hidden normalization or gain boost. Measure output/headroom and verify silence and parameter extremes at supported sample rates.
 - Stable bounded feedback, finite documented tail allowance, smooth live audition controls, and bounded processor/resource ownership across chords and repeated playback.
@@ -867,3 +867,5 @@ Acceptance gate: synthetic known-pitch/known-coefficient and known-envelope fixt
 Planned follow-up, dependent on the implemented M4b saved-engine recovery/capability controls. Fit attack/body/release spectral frames, independent partial decay and suitable noise/inharmonic components so the instrument can change timbre over time rather than using one static harmonic bank. Any new engine/settings type needs migration, unavailable-engine preservation, independent library/track/A-B copies, continuous update/clock policy and shared live/offline playback. Keep source recording analysis separate from planned instrument-chamber acoustics; neither should bake room reverb into a presumed clean body without showing that limitation.
 
 Gate: temporal resynthesis and reference-pitch transposition proofs, transient/noise balance, phase continuity between frames, finite release/Stop, bounded per-voice and analysis resources, save/reload/recovery, source tracks/A-B/WAV and perceptual reference comparisons. Multi-note/multi-sample instrument capture, automatic polyphonic decomposition and exact arbitrary-sample reproduction remain separately scoped future work.
+
+Instrument acoustics v0.42.0 details: four normalized parallel damped combs, size1–8ms, decay40–600ms, damping500–14000Hz clamped0.2Fs, linear mix, legacy-off schema6. Independent destination and warm A/B bodies precede pedals; dry source authority and musical clocks remain unchanged.25 nodes/384KiB enabled destination,6 nodes dry,0 alignment latency and1.3s export/cleanup body budget. See [contract and three contributor diagrams](docs/extensions/INSTRUMENT_ACOUSTICS.md); actual release evidence is in IMPLEMENTATION_STATUS.md.

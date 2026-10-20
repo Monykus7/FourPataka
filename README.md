@@ -2,7 +2,7 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-The current application is **v0.41.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export. v0.41.0 adds a [chorus pedal](docs/extensions/CHORUS.md) with two opposed moving delays, continuous controls and a short draining bypass; build current source for this update.
+The current application is **v0.42.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export. v0.42.0 adds [instrument acoustics](docs/extensions/INSTRUMENT_ACOUSTICS.md): an optional algorithmic tiny chamber before pedals, with independent saved instrument settings; build current source for this update.
 
 Download the published [v0.39.0 Windows contributor preview and exact source](https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0). The portable is unsigned; build instructions and checksums accompany it. M1–M6 contributor readiness is complete; physical/device/accessibility checks remain limited as documented.
 
@@ -236,3 +236,5 @@ Write `swing eighth 66.7`, `swing 16th 60`, or `swing off` outside tracks. Amoun
 In Instrument, expand **Source / output analysis** for source centroid/power shares/dominant component and live100ms stereo RMS/sample peak/crest before monitor volume. Source coefficients and processed project audio are labeled separately. Learn adds editable odd/even harmonic recipes. [Analysis diagrams and measurement limits](docs/extensions/ANALYSIS.md) describe the implementation.
 
 **Equipment → Chorus** adds two moving delay voices. Start with the defaults:0.8Hz,15ms base delay,30% depth and35% mix. Depth scales the safe sweep up to10ms; the inspector exposes exact values, reset and ordinary undo. Copy/apply creates independent A/B, track and master settings.
+
+**Instrument → Acoustics → Tiny chamber** enables a body approximation, initially off for every existing sound. Adjust mix, size (shortest reflection spacing in ms), decay and damping. Reset is undoable; Save updates the library and explicit Apply updates tracks. Turning the chamber off lets its short body decay; Stop clears it. Raw source graphs stay dry. Schema6 imports older projects; older app versions cannot open new schema6 saves.

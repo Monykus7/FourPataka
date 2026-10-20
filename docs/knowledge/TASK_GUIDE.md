@@ -1,8 +1,10 @@
 # Task entry guide
 
-FourPataka v0.41.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, seven registered serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
+FourPataka v0.42.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, seven registered serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
 
 ## Routes
+
+- Instrument acoustics: [settings contract](../../src/modules/foundation/acoustics.ts), [shared chamber](../../src/audio/chamber.ts), [contributor diagrams](../extensions/INSTRUMENT_ACOUSTICS.md); schema6, destination-before-pedals ownership, live comparison and WAV. v0.42.0 release verification is in progress.
 
 - Modulated pedals: [chorus](../../src/modules/pedals/chorus.ts), [chorus diagrams](../extensions/CHORUS.md), [phaser diagrams](../extensions/PHASER.md); shared M2 lifecycle, timeOrigin, live/frozen WAV and independent copies. Chorus is verified in v0.41.0, including both hosted jobs on720a97f.
 
@@ -27,6 +29,6 @@ FourPataka v0.41.0: browser/Electron studio with 32 signed harmonics, noise-hit 
 
 ## Guardrails and finish
 
-Canonical scoreText owns the song; files are views. Library, track and A/B sounds are independent copies. Source/preset changes must preserve appropriate clock/phase, units, latency and Stop. Preserve the authored demo in project.ts. M1 metadata, M2 pedals and M3 presets are implemented; M6 contributor readiness is complete; chamber, WAV analysis and reverb remain planned; phaser ships in v0.40.0 and chorus ships in v0.41.0; both hosted jobs pass on720a97f.
+Canonical scoreText owns the song; files are views. Library, track and A/B sounds are independent copies. Source/preset changes must preserve appropriate clock/phase, units, latency and Stop. Preserve the authored demo in project.ts. M1 metadata, M2 pedals and M3 presets are implemented; M6 contributor readiness is complete; WAV analysis and reverb remain planned; chamber is in v0.42.0 release verification; phaser ships in v0.40.0 and chorus ships in v0.41.0; both hosted jobs pass on720a97f.
 
 Use bounded searches/source ranges. Update affected summaries and decisions once, keeping chronology out of feature summaries. Run relevant checks; broaden only for unresolved risk. Application releases also require native/portable verification and opening the verified build. Documentation/tooling changes need no app release. Build/check knowledge before the relevant commit. Keep private agent files, graphs, vectors and models out of Git; push focused checkpoints without manufacturing extra work to fill a commit count.

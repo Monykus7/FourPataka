@@ -761,3 +761,7 @@ Shared integration proofs pass: WAV matches an independent chamber-before-nonlin
 Builder workflow passes: controls/save-as-new, A/B copy isolation, library Save versus explicit Apply, undo/redo, reset, Listen/Stop, legacy-dry parallel track and reload. Engine switches/parameter edits and source reset retain host acoustics. Wide/390px layouts are inspected with scoped padding and responsive controls. Full319 unit checks across55 files pass. The initial UI harness used the wrong Reset button name; the corrected real control passes. Native JSON/WAV test and CI integration are added, with packaged verification pending.
 
 Chamber branch retirement now checks AudioContext time before disconnecting: a suspended device cannot retire a branch before its crossfade. The dedicated suspended-clock/48-node cleanup proof passes. Contributor guide adds three diagrams covering saved ownership, bounded comb routing and audio-clock lifecycle, with explicit Web Audio Q units and numeric versus physical-listening limits.
+
+## v0.42.0 instrument acoustics release preparation
+
+Version advances to0.42.0. Full319 units/55 files pass; nine new acoustic browser cases pass individually. All three contributor diagrams render. Broad browser/keyboard/export/effect regressions are running; native/portable/hosted verification follows. EXAMPLE_SCORE is unchanged from2069709; project.ts changes only schema6 and validation gates. Older sounds remain dry by absence.

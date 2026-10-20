@@ -62,13 +62,13 @@ Synthesis, projection, source inspection, solo, schema validation and independen
 
 Plan authority: `BUILD_PLAN.md`, section 5 "Planned expansion — up to 32 harmonics" and stage 8; `IMPLEMENTATION_STATUS.md`, "Next roadmap work". Current integration points: `src/core/music.ts`, `src/core/project.ts`, `src/core/waveform.ts`, `src/audio/voice.ts`, `src/components/FourierWorkspace.tsx`, `src/components/SourceGraphs.tsx`.
 
-## Planned instrument acoustics boundary
+## Instrument acoustics boundary (v0.42.0 source)
 
 <!-- features: instrument-acoustics, synthesis, comparison, storage -->
 
-The requested acoustics feature is deferred: a wet/dry algorithmic tiny chamber inside the Instrument builder, intended as an instrument-body approximation. It must work without impulse-response assets. The plan proposes short reflections with bounded damped feedback, and enable/reset, mix, size, decay and damping controls; the exact algorithm and ranges remain subject to an audio proof.
+The instrument builder now owns an optional algorithmic tiny chamber before destination pedals, without IR assets. Four normalized damped combs approximate body coloration. Enable/reset, linear mix, size in shortest-delay milliseconds, conservative decay target milliseconds and damping Hz have bounded saved ranges; details and proofs are in docs/extensions/INSTRUMENT_ACOUSTICS.md.
 
-Acoustics settings will belong to instrument presets, track copies and A/B snapshots. A destination's voices feed its own chamber before its pedal chain; destinations and comparison branches must not share runtime buffers. Existing waveform/coefficient inspectors continue to describe the raw source. Legacy data defaults to acoustics off. Dry unity, measured latency distinct from reflection timing, continuous comparison, finite decay, Stop disposal, copy isolation and offline/export agreement are future release gates, not verified runtime behavior. The current implementation contains no chamber model or controls, and this planning change leaves the main-feature/WAV priorities intact.
+Acoustics settings will belong to instrument presets, track copies and A/B snapshots. A destination's voices feed its own chamber before its pedal chain; destinations and comparison branches must not share runtime buffers. Existing waveform/coefficient inspectors continue to describe the raw source. Legacy data defaults to acoustics off. Dry unity, measured latency distinct from reflection timing, continuous comparison, finite decay, Stop disposal, copy isolation and offline/export agreement are future release gates, not verified runtime behavior. The chamber is implemented in source for v0.42.0; native/portable/hosted verification remains pending. Numeric checks do not constitute physical listening.
 
 Plan authority: `BUILD_PLAN.md`, section 5 "Planned instrument acoustics — tiny chamber" and stage 8; `IMPLEMENTATION_STATUS.md`, "Next roadmap work".
 
