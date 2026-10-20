@@ -735,3 +735,5 @@ Chorus integration: board drag/cables, exact controls/dial, reset/undo, A/B/mast
 ## v0.41.0 chorus release preparation
 
 Production version advances to0.41.0 for the chorus release. Full316 units/54 files pass. Nine new browser checks pass individually; affected regression batch is running. Windows packaging, native workflow, portable startup and hosted checks remain pending. The authored demo is unchanged.
+
+Chorus release regressions: all43 affected browser checks pass in3.2minutes, covering nine new chorus cases plus phaser, shared pedal contracts, routing, comparison, engines, swing and WAV. Full316 units/54 files, production TypeScript/build, formatting and knowledge checks pass. All three new Mermaid diagrams render and92 local links across the affected guide/index/routes resolve. Source project.ts exactly matches pre-milestone a628953. Native/package/normal startup gates remain in progress.

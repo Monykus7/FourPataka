@@ -626,7 +626,7 @@ Automated functional gate: known-signal descriptors, anti-phase/mono/window brow
 
 ### Stage 8 and later — advanced synthesis and notation
 
-Pedalboard expansion: phaser is implemented in v0.40.0; chorus and algorithmic reverb remain planned as specified in section7; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. M1–M5 and initial Stage7 analysis are implemented; the remaining chorus/reverb expansion stays future work.
+Pedalboard expansion: phaser is implemented in v0.40.0; chorus release verification is in progress for v0.41.0 and algorithmic reverb remains planned as specified in section7; verify one effect at a time using the M2 module contract, independent cable-board copies and shared playback/WAV factories. Keep the space reverb pedal distinct from the instrument builder's tiny chamber. M1–M5 and initial Stage7 analysis are implemented; reverb remains future work after chorus verification.
 
 The 32-harmonic bank is implemented by the synthesis/notation pilot, with the migration, projection, inspection, Nyquist and copy/performance gates in section 5. Establish the expanded bank before later per-partial envelopes and instrument-realism presets; it does not delay current main-feature completion or WAV export.
 
