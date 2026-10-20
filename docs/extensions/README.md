@@ -1,10 +1,12 @@
 # Contributor extension guides
 
+[Instrument acoustics](INSTRUMENT_ACOUSTICS.md) documents the host-owned body stage, schema6 settings, engine integration, lifecycle and three diagrams.
+
 See [Chorus](CHORUS.md) for opposed delays, causal controls, finite bypass drainage and live/WAV ownership diagrams.
 
 The goal is an open-source FourPataka that people can extend with pedals, instruments and other features through documented module contracts. This is a major program of separately releasable milestones, not a single rewrite.
 
-M1–M5 contracts are implemented: numeric metadata, playable pedals, Fourier presets, synthesis engines and declarative features. Current saves use schema5, with legacy migration and unavailable-module recovery. M6 supplies GPL-3.0-only, complete notices, contributor policies, isolated tutorial/CI checks, repository safeguards and paired release preparation. Actual hosted/publication evidence is recorded in [implementation status](../../IMPLEMENTATION_STATUS.md); [maintainer instructions](../MAINTAINING.md) document operations and limits. Custom adapters and runtime loading remain future work.
+M1–M5 contracts are implemented: numeric metadata, playable pedals, Fourier presets, synthesis engines and declarative features. Current saves use schema6, with legacy migration and unavailable-module recovery. M6 supplies GPL-3.0-only, complete notices, contributor policies, isolated tutorial/CI checks, repository safeguards and paired release preparation. Actual hosted/publication evidence is recorded in [implementation status](../../IMPLEMENTATION_STATUS.md); [maintainer instructions](../MAINTAINING.md) document operations and limits. Custom adapters and runtime loading remain future work.
 
 ## Start here
 

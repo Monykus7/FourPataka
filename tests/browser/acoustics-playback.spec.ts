@@ -214,3 +214,50 @@ test('score comparison replaces only the selected body branch and preserves froz
   });
   expect(proof).toEqual({ replaced: 2, retained: true, unchanged: true });
 });
+
+test('body branch retirement follows audio time while the device is suspended', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { createChamber } = await import('/src/audio/' + 'chamber.ts');
+    const { ACOUSTICS_DEFAULTS } = await import('/src/modules/foundation/' + 'acoustics.ts');
+    const context = new AudioContext();
+    await context.suspend();
+    let created = 0,
+      disconnected = 0;
+    for (const key of ['createGain', 'createDelay', 'createBiquadFilter'] as const) {
+      const make = context[key].bind(context) as (...args: any[]) => AudioNode;
+      (context as any)[key] = (...args: any[]) => {
+        const node = make(...args),
+          disconnect = node.disconnect.bind(node);
+        created++;
+        node.disconnect = ((...args: any[]) => {
+          if (!args.length) disconnected++;
+          (disconnect as any)(...args);
+        }) as typeof node.disconnect;
+        return node;
+      };
+    }
+    const body = createChamber(context, { ...ACOUSTICS_DEFAULTS, enabled: true });
+    body.output.connect(context.destination);
+    body.replace({ ...ACOUSTICS_DEFAULTS, enabled: true, size: 8 });
+    await new Promise((r) => setTimeout(r, 100));
+    const retained = disconnected === 0;
+    await context.resume();
+    const deadline = performance.now() + 5000;
+    while (context.currentTime < 0.15) {
+      if (performance.now() > deadline) throw new Error('Audio clock stalled');
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    const retired = disconnected === 23;
+    body.dispose();
+    body.dispose();
+    await context.close();
+    return { retained, retired, created, disconnected };
+  });
+  expect(proof.retained).toBe(true);
+  expect(proof.retired).toBe(true);
+  expect(proof.created).toBe(48);
+  expect(proof.disconnected).toBe(48);
+});

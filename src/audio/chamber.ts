@@ -147,7 +147,14 @@ export function createChamber(context: BaseAudioContext, initial?: InstrumentAco
         old.gain.gain.cancelAndHoldAtTime(now);
         old.gain.gain.setValueAtTime(old.gain.gain.value, at);
         old.gain.gain.linearRampToValueAtTime(0, at + 0.02);
-        old.timer = setTimeout(() => retire(old), 65);
+        const finish = () => {
+          if (disposed || !branches.has(old)) return;
+          // A suspended device clock must not retire an audible branch before
+          // its scheduled crossfade. Stop still clears this timer immediately.
+          if (context.currentTime >= at + 0.02) retire(old);
+          else old.timer = setTimeout(finish, 25);
+        };
+        old.timer = setTimeout(finish, 65);
       }
       gain.gain.setValueAtTime(0, at);
       gain.gain.linearRampToValueAtTime(1, at + 0.02);

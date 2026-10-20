@@ -391,7 +391,8 @@
         "src/App.tsx",
         "src/styles.css",
         "tests/helpers/acoustics.ts",
-        "tests/browser/acoustics-ui.spec.ts"
+        "tests/browser/acoustics-ui.spec.ts",
+        "docs/extensions/INSTRUMENT_ACOUSTICS.md"
       ]
     },
     {

@@ -14,6 +14,7 @@ test('instrument body controls save apply undo and reload independent settings',
   await expect(
     page.getByRole('spinbutton', { name: 'Chamber mix exact value', exact: true }),
   ).toHaveValue('40');
+  await panel.evaluate((el) => el.scrollIntoView({ block: 'center' }));
   await panel.screenshot({ path: '.test-results/acoustics-wide.png' });
   await page.setViewportSize({ width: 390, height: 844 });
   await panel.scrollIntoViewIfNeeded();
