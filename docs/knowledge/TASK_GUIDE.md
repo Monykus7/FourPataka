@@ -1,8 +1,10 @@
 # Task entry guide
 
-FourPataka v0.40.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, six registered serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
+FourPataka v0.41.0: browser/Electron studio with 32 signed harmonics, noise-hit drums, seven registered serial pedals, named score files and WAV export. Current behavior is in [feature summaries](features.json); historical releases/checks are in [implementation status](../../IMPLEMENTATION_STATUS.md). Read only the relevant area of the [generated map](PROJECT_MAP.md).
 
 ## Routes
+
+- Modulated pedals: [chorus](../../src/modules/pedals/chorus.ts), [chorus diagrams](../extensions/CHORUS.md), [phaser diagrams](../extensions/PHASER.md); shared M2 lifecycle, timeOrigin, live/frozen WAV and independent copies. Chorus release verification is in progress.
 
 - Source/output analysis: [registered panel](../../src/modules/features/sourceOutputAnalysis/index.ts), [shared meter](../../src/audio/outputMeter.ts), [sample stats](../../src/audio/levels.ts), [contributor diagrams](../extensions/ANALYSIS.md). Stage7 is implemented in v0.39.0; source periodic models and live stereo levels have distinct scope.
 

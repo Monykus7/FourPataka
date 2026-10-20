@@ -731,3 +731,7 @@ M2 registered two-voice chorus uses one session-relative oscillator, opposed del
 Chorus temporal proofs pass: late-created branches match the original musical origin at44.1/48kHz with exactly one stop per owned LFO; rapid11→5→30→5ms edits at full depth stay causal at3/44.1/48kHz without restarting modulation; bypass retains short wet history then agrees with the independently computed dry fade after the50ms drain bound. Six raw/temporal browser cases now pass. No production-code correction was needed.
 
 Chorus integration: board drag/cables, exact controls/dial, reset/undo, A/B/master isolation and reload pass, with inspected wide/390px layouts. Two live/WAV checks pass: frozen rendering matches the direct processor at44.1/48kHz; live edits retain the clock/LFO, warmed topology replacement owns cleanup and Stop disposes sources. Full316 units across54 files pass. Native workflow and CI coverage are added but not yet executed against v0.41.0. Contributor guide documents signal/ownership/lifecycle diagrams and normalized depth units.
+
+## v0.41.0 chorus release preparation
+
+Production version advances to0.41.0 for the chorus release. Full316 units/54 files pass. Nine new browser checks pass individually; affected regression batch is running. Windows packaging, native workflow, portable startup and hosted checks remain pending. The authored demo is unchanged.
