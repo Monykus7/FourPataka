@@ -20,7 +20,7 @@ M1–M6 implement reviewed bundled-source modules using public imports and expli
 
 - Modular contributor program (M1–M6 implemented) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/index.ts](../../src/modules/index.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L18), [definitions](../../src/modules/assembly.ts#L19), [builtInIds](../../src/modules/assembly.ts#L20), [pedalModules](../../src/modules/assembly.ts#L22), [bundledModules](../../src/modules/assembly.ts#L23), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L24), [instrumentModules](../../src/modules/assembly.ts#L30), [factoryPreviews](../../src/modules/assembly.ts#L35).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L19), [definitions](../../src/modules/assembly.ts#L27), [builtInIds](../../src/modules/assembly.ts#L28), [pedalModules](../../src/modules/assembly.ts#L30), [bundledModules](../../src/modules/assembly.ts#L31), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L32), [instrumentModules](../../src/modules/assembly.ts#L38), [factoryPreviews](../../src/modules/assembly.ts#L43).
 
 #### M6 contributor readiness and supported release
 
@@ -177,6 +177,15 @@ Compressor, overdrive, three-band EQ and delay use independent A/B, track and ma
 - Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts), [tests/browser/delay.spec.ts](../../tests/browser/delay.spec.ts), [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts), [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts), [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts), [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts), [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
+
+##### Chorus pedal (implementation in progress)
+
+Registered M2 chorus implementation is in progress: two opposed short-delay voices with one retained session-relative LFO, no feedback and averaged wet gain. Controls are rate0.05–5Hz, base5–30ms, depth0–100% of min(10ms,base−1ms), wet trim and linear mix. Independent serialized controls always encode1–40ms delays; base/radius automation shares one timestamp and15ms smoothing. Bypass closes new wet input with a finite5ms ramp and drains at most40ms history inside a50ms budget; Stop uses owned scheduled-source cleanup. Optional timeOrigin seeds late branches from current rate/session age without reconstructing rate-edit history. Default15ms/30% gives±3ms excursion. Four new unit cases, module boundaries, build and three raw browser DSP cases pass (delay/gain/dry/bypass, independent formula/stereo isolation, finite extreme-rate tails). UI/live-WAV/native/package release gates remain pending; reverb remains planned. No schema/demo/source changes.
+
+- Chorus pedal (implementation in progress) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/chorus.ts](../../src/modules/pedals/chorus.ts), [tests/unit/chorus.test.ts](../../tests/unit/chorus.test.ts)
+- Chorus pedal (implementation in progress) / dependency group 2: [tests/browser/chorus.spec.ts](../../tests/browser/chorus.spec.ts)
+
+Key definitions: [builtIns](../../src/modules/assembly.ts#L19), [definitions](../../src/modules/assembly.ts#L27), [builtInIds](../../src/modules/assembly.ts#L28), [pedalModules](../../src/modules/assembly.ts#L30), [bundledModules](../../src/modules/assembly.ts#L31), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L32), [instrumentModules](../../src/modules/assembly.ts#L38), [factoryPreviews](../../src/modules/assembly.ts#L43).
 
 ##### Phaser pedal
 

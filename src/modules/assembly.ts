@@ -15,7 +15,15 @@ import { overdriveModule } from './pedals/overdrive';
 import { levelPedal } from './examples/level/index';
 import { delayModule } from './pedals/delay';
 import { phaserModule } from './pedals/phaser';
-const builtIns = [compressorModule, overdriveModule, eqModule, delayModule, phaserModule];
+import { chorusModule } from './pedals/chorus';
+const builtIns = [
+  compressorModule,
+  overdriveModule,
+  eqModule,
+  delayModule,
+  phaserModule,
+  chorusModule,
+];
 const definitions = [...builtIns, levelPedal];
 const builtInIds = builtIns.map((definition) => definition.id);
 // Reviewed source is registered once. Project data cannot register executable code.
