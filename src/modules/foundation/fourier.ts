@@ -1,3 +1,4 @@
+import { validateAcoustics, type InstrumentAcoustics } from './acoustics';
 export const HARMONIC_COUNT = 32;
 export const LEGACY_HARMONIC_COUNT = 16;
 export interface FourierPoint {
@@ -6,6 +7,7 @@ export interface FourierPoint {
 }
 export type WavePreset = 'sine' | 'square' | 'saw' | 'triangle';
 export interface FourierSound {
+  acoustics?: InstrumentAcoustics;
   /** Optional aperiodic hit: linear noise level, high-pass Hz, e-fold decay seconds. */
   percussion?: {
     noise: number;
@@ -83,6 +85,7 @@ export function validateFourierSound(
   count = HARMONIC_COUNT,
 ): asserts value is FourierSound {
   record(value);
+  if (value.acoustics !== undefined) validateAcoustics(value.acoustics);
   if (value.percussion !== undefined) {
     record(value.percussion);
     numeric(value.percussion.noise, 0, 1, 'noise level');

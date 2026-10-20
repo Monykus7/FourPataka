@@ -539,3 +539,7 @@ Phaser release preparation: independent impulse renders establish actual128-fram
 ## Chorus safe depth and ownership (v0.41.0)
 
 Use two opposed delays and one owned sine LFO with no feedback, through the M2 contract. Depth is a documented percentage of min(10ms,base−1ms), rather than silently clamping an independently saved millisecond value. Thus UI, import and DSP share the same valid parameter space without a new coupled-validator API. Set both base delays and modulation gain at one timestamp with the same15ms target constant, preserving causal convex bounds during rapid edits. Average wet voices before trim and linear mix. Bypass keeps wet output while a finite5ms feed ramp closes input;50ms covers40ms history plus interpolation margin. Stop disposes the LFO and nodes. Use existing timeOrigin/current-rate phase seeding and separate runtime state for every copy; no running buffers or automation history are saved.
+
+## Instrument chamber contract (implementation in progress)
+
+Acoustics are optional host-owned instrument settings outside contributed engine settings. Absent legacy settings stay dry. Schema6 imports1–5 and rejects chamber fields labeled as older schemas, so older applications cannot silently play a chamber song dry. Settings are copied/validated independently for library, applied tracks and A/B. Controls expose shortest reflection spacing in milliseconds, conservative decay target milliseconds, low-pass damping Hz and linear wet/dry percentage. Runtime buffers are not saved.

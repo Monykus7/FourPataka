@@ -373,12 +373,15 @@
     {
       "id": "instrument-acoustics",
       "parent": "sound",
-      "title": "Instrument acoustics (planned)",
-      "summary": "Deferred, not implemented: an Instrument-builder algorithmic tiny chamber representing instrument body acoustics, without impulse-response (IR) files. Proposed enable/reset, wet/dry, chamber size, decay and damping controls live in saved instrument settings and independent track/A/B copies. The planned chamber sits before track pedals while source inspectors retain raw Fourier authority. Audio-proof gates cover dry unity, bounded feedback, latency, continuous clock/phase, finite tails and Stop, legacy-off migration, copy isolation and offline/WAV agreement. Current main-feature and export priorities remain unchanged.",
+      "title": "Instrument acoustics (implementation in progress)",
+      "summary": "Instrument-builder tiny chamber implementation is in progress. Host-owned optional acoustic settings apply to Fourier and contributed engines: enable (legacy absent/off), linear mix0–100%, shortest reflection spacing1–8ms, decay40–600ms and damping500–14000Hz. Schema6 imports1–5 dry and validates independent library/track/A-B settings; older hosts reject the new schema. Fifteen targeted contract/migration checks and working-tree production build pass. Shared destination DSP, UI, numeric/live/WAV and release verification are being implemented; raw Fourier views remain source-only. No physical simulation or IR assets.",
       "paths": [
-        "BUILD_PLAN.md",
-        "IMPLEMENTATION_STATUS.md",
-        "docs/knowledge/DECISIONS.md"
+        "src/modules/foundation/acoustics.ts",
+        "src/modules/foundation/fourier.ts",
+        "src/core/engineSound.ts",
+        "src/core/project.ts",
+        "tests/unit/acoustics.test.ts",
+        "BUILD_PLAN.md"
       ]
     },
     {

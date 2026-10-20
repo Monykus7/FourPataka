@@ -144,9 +144,14 @@ Implemented synthesis/notation pilot: signed absolute H1–H32 coefficients, pri
 
 Key definitions: [Voice](../../src/audio/voice.ts#L4), [createVoice](../../src/audio/voice.ts#L7), [Branch](../../src/audio/voice.ts#L17), [identity](../../src/audio/voice.ts#L21), [allocate](../../src/audio/voice.ts#L23), [prune](../../src/audio/voice.ts#L52), [envelope](../../src/audio/voice.ts#L61), [oscillators](../../src/audio/voice.ts#L64).
 
-#### Instrument acoustics (planned)
+#### Instrument acoustics (implementation in progress)
 
-Deferred, not implemented: an Instrument-builder algorithmic tiny chamber representing instrument body acoustics, without impulse-response (IR) files. Proposed enable/reset, wet/dry, chamber size, decay and damping controls live in saved instrument settings and independent track/A/B copies. The planned chamber sits before track pedals while source inspectors retain raw Fourier authority. Audio-proof gates cover dry unity, bounded feedback, latency, continuous clock/phase, finite tails and Stop, legacy-off migration, copy isolation and offline/WAV agreement. Current main-feature and export priorities remain unchanged.
+Instrument-builder tiny chamber implementation is in progress. Host-owned optional acoustic settings apply to Fourier and contributed engines: enable (legacy absent/off), linear mix0–100%, shortest reflection spacing1–8ms, decay40–600ms and damping500–14000Hz. Schema6 imports1–5 dry and validates independent library/track/A-B settings; older hosts reject the new schema. Fifteen targeted contract/migration checks and working-tree production build pass. Shared destination DSP, UI, numeric/live/WAV and release verification are being implemented; raw Fourier views remain source-only. No physical simulation or IR assets.
+
+- Instrument acoustics (implementation in progress) / dependency group 1: [src/core/engineSound.ts](../../src/core/engineSound.ts), [src/core/project.ts](../../src/core/project.ts), [tests/unit/acoustics.test.ts](../../tests/unit/acoustics.test.ts)
+- Instrument acoustics (implementation in progress) / dependency group 2: [src/modules/foundation/acoustics.ts](../../src/modules/foundation/acoustics.ts), [src/modules/foundation/fourier.ts](../../src/modules/foundation/fourier.ts)
+
+Key definitions: [EngineSound](../../src/core/engineSound.ts#L5), [InstrumentSound](../../src/core/engineSound.ts#L10), [isFourierSound](../../src/core/engineSound.ts#L11), [readInstrumentSound](../../src/core/engineSound.ts#L13), [requireEngine](../../src/core/engineSound.ts#L59), [engineRelease](../../src/core/engineSound.ts#L68), [createEngineSound](../../src/core/engineSound.ts#L77), [InstrumentPreset](../../src/core/project.ts#L32).
 
 #### Waveform drawing and control points
 
@@ -164,7 +169,7 @@ A/B changes keep the musical clock and active envelopes. Phrase clipping preserv
 - Continuous A/B comparison and scheduling / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/components/ComparisonPanel.tsx](../../src/components/ComparisonPanel.tsx)
 - Continuous A/B comparison and scheduling / dependency group 2: [tests/browser/comparison.spec.ts](../../tests/browser/comparison.spec.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L28), [Session](../../src/audio/engine.ts#L35), [AudioEngine](../../src/audio/engine.ts#L61), [AudioEngine.ready](../../src/audio/engine.ts#L76), [AudioEngine.setMonitor](../../src/audio/engine.ts#L102), [AudioEngine.setMix](../../src/audio/engine.ts#L106), [AudioEngine.begin](../../src/audio/engine.ts#L110), [AudioEngine.voice](../../src/audio/engine.ts#L143).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L29), [Session](../../src/audio/engine.ts#L37), [AudioEngine](../../src/audio/engine.ts#L65), [AudioEngine.ready](../../src/audio/engine.ts#L80), [AudioEngine.setMonitor](../../src/audio/engine.ts#L106), [AudioEngine.setMix](../../src/audio/engine.ts#L110), [AudioEngine.begin](../../src/audio/engine.ts#L114), [AudioEngine.voice](../../src/audio/engine.ts#L149).
 
 #### Pedalboard and processing
 
@@ -270,7 +275,7 @@ staccato[...], legato[...], triplet[...] and tuplet:N:M[...] support64 nested sc
 - Articulation, tuplets and score meter changes / dependency group 3: [tests/browser/ide.spec.ts](../../tests/browser/ide.spec.ts), [tests/helpers/ide.ts](../../tests/helpers/ide.ts)
 - Articulation, tuplets and score meter changes / dependency group 4: [tests/browser/rhythm.spec.ts](../../tests/browser/rhythm.spec.ts), [tests/helpers/rhythm.ts](../../tests/helpers/rhythm.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L28), [Session](../../src/audio/engine.ts#L35), [AudioEngine](../../src/audio/engine.ts#L61), [AudioEngine.ready](../../src/audio/engine.ts#L76), [AudioEngine.setMonitor](../../src/audio/engine.ts#L102), [AudioEngine.setMix](../../src/audio/engine.ts#L106), [AudioEngine.begin](../../src/audio/engine.ts#L110), [AudioEngine.voice](../../src/audio/engine.ts#L143).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L29), [Session](../../src/audio/engine.ts#L37), [AudioEngine](../../src/audio/engine.ts#L65), [AudioEngine.ready](../../src/audio/engine.ts#L80), [AudioEngine.setMonitor](../../src/audio/engine.ts#L106), [AudioEngine.setMix](../../src/audio/engine.ts#L110), [AudioEngine.begin](../../src/audio/engine.ts#L114), [AudioEngine.voice](../../src/audio/engine.ts#L149).
 
 #### Track operations in the named file editor
 
@@ -288,7 +293,7 @@ Implemented v0.38.0: source commands swing eighth/16th 50–75(percent; optional
 - Variable swing timing / dependency group 1: [src/audio/engine.ts](../../src/audio/engine.ts), [src/core/performanceTiming.ts](../../src/core/performanceTiming.ts), [src/core/articulation.ts](../../src/core/articulation.ts), [src/core/comparison.ts](../../src/core/comparison.ts), [src/core/parser.ts](../../src/core/parser.ts), [src/audio/export.ts](../../src/audio/export.ts), [tests/unit/performanceTiming.test.ts](../../tests/unit/performanceTiming.test.ts), [tests/unit/swing.test.ts](../../tests/unit/swing.test.ts), [src/components/Timeline.tsx](../../src/components/Timeline.tsx)
 - Variable swing timing / dependency group 2: [tests/browser/swing.spec.ts](../../tests/browser/swing.spec.ts), [tests/helpers/swing.ts](../../tests/helpers/swing.ts)
 
-Key definitions: [AuditionBranch](../../src/audio/engine.ts#L28), [Session](../../src/audio/engine.ts#L35), [AudioEngine](../../src/audio/engine.ts#L61), [AudioEngine.ready](../../src/audio/engine.ts#L76), [AudioEngine.setMonitor](../../src/audio/engine.ts#L102), [AudioEngine.setMix](../../src/audio/engine.ts#L106), [AudioEngine.begin](../../src/audio/engine.ts#L110), [AudioEngine.voice](../../src/audio/engine.ts#L143).
+Key definitions: [AuditionBranch](../../src/audio/engine.ts#L29), [Session](../../src/audio/engine.ts#L37), [AudioEngine](../../src/audio/engine.ts#L65), [AudioEngine.ready](../../src/audio/engine.ts#L80), [AudioEngine.setMonitor](../../src/audio/engine.ts#L106), [AudioEngine.setMix](../../src/audio/engine.ts#L110), [AudioEngine.begin](../../src/audio/engine.ts#L114), [AudioEngine.voice](../../src/audio/engine.ts#L149).
 
 #### Virtual song files and shared track parts
 
@@ -392,7 +397,7 @@ v0.19.0 exports frozen source and applied independent sound/processing copies th
 - Project mix WAV export / dependency group 4: [tests/browser/export.spec.ts](../../tests/browser/export.spec.ts)
 - Project mix WAV export / dependency group 5: [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L21), [prepareExport](../../src/audio/export.ts#L33), [renderWav](../../src/audio/export.ts#L108), [WavRender](../../src/audio/export.ts#L177), [createScoreGraph](../../src/audio/scoreGraph.ts#L7), [dispose](../../src/audio/scoreGraph.ts#L73).
+Key definitions: [LIMIT](../../desktop/wav.cjs#L1), [validateWav](../../desktop/wav.cjs#L2), [routedTail](../../src/audio/export.ts#L23), [prepareExport](../../src/audio/export.ts#L35), [renderWav](../../src/audio/export.ts#L122), [WavRender](../../src/audio/export.ts#L191), [createScoreGraph](../../src/audio/scoreGraph.ts#L8), [dispose](../../src/audio/scoreGraph.ts#L80).
 
 
 ## Parser coverage

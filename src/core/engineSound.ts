@@ -1,7 +1,9 @@
+import { validateAcoustics, type InstrumentAcoustics } from '../modules';
 import { engineModules } from '../modules/assembly';
 import { validateFourierSound, validateEngineData, type FourierSound } from '../modules';
 
 export interface EngineSound {
+  acoustics?: InstrumentAcoustics;
   engine: { id: string; apiVersion: number; dataVersion: number; settings: unknown };
   unavailable?: string;
 }
@@ -10,6 +12,7 @@ export const isFourierSound = (sound: InstrumentSound): sound is FourierSound =>
   !('engine' in sound);
 export function readInstrumentSound(value: unknown, count = 32): InstrumentSound {
   if (!value || typeof value !== 'object') throw new Error('Invalid instrument sound.');
+  if ('acoustics' in value) validateAcoustics(value.acoustics);
   if (!('engine' in value)) {
     validateFourierSound(value, count);
     return structuredClone(value);

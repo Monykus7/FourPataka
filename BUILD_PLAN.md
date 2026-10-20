@@ -203,7 +203,7 @@ A rest schedules no new notes. Release envelopes and effect tails can remain aud
 
 ### Planned instrument acoustics — tiny chamber
 
-Status: requested, deferred, and not implemented. Add a compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
+Status: implementation in progress after v0.41.0. Schema6 settings/legacy migration checks pass; DSP/UI/release gates remain pending. Add a compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
 
 Use algorithmic reverb built from generated short reflections and a bounded, damped feedback network. No IR files, convolution library, recording upload or asset download should be required. Select the exact network and parameter ranges in a listening/numeric audio proof before committing to an implementation.
 

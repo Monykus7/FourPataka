@@ -44,3 +44,5 @@ export {
 } from './foundation/fourierVoice';
 
 export * from './foundation/features';
+
+export * from './foundation/acoustics';

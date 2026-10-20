@@ -50,7 +50,7 @@ export interface TrackInstance {
 }
 export interface Project {
   processing: Processing;
-  schemaVersion: 5;
+  schemaVersion: 6;
   featureSettings?: FeatureSettings;
   id: string;
   name: string;
@@ -148,7 +148,7 @@ export function createProject(): Project {
   const bright = instruments.find((p) => p.key === 'brightReed')!.sound;
   const project: Project = {
     processing: defaultProcessing(),
-    schemaVersion: 5,
+    schemaVersion: 6,
     id: crypto.randomUUID(),
     name: 'Untitled session',
     scoreText: EXAMPLE_SCORE,
@@ -357,10 +357,11 @@ export function importProject(text: string): Project {
     data.schemaVersion !== 2 &&
     data.schemaVersion !== 3 &&
     data.schemaVersion !== 4 &&
-    data.schemaVersion !== 5
+    data.schemaVersion !== 5 &&
+    data.schemaVersion !== 6
   )
     throw new Error(
-      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2, 3, 4 and 5.`,
+      `Unsupported project version ${String(data.schemaVersion)}. This studio supports versions 1, 2, 3, 4, 5 and 6.`,
     );
   if (data.schemaVersion < 3 && data.processing) {
     const processing = data.processing as Processing;
@@ -413,6 +414,8 @@ export function importProject(text: string): Project {
     if (!Number.isInteger(p.version)) throw new Error('Preset version must be an integer.');
     if (sourceVersion < 4 && p.sound && typeof p.sound === 'object' && 'engine' in p.sound)
       throw new Error('Engine sounds require schema 4.');
+    if (sourceVersion < 6 && p.sound && typeof p.sound === 'object' && 'acoustics' in p.sound)
+      throw new Error('Instrument acoustics require schema 6.');
     readInstrumentSound(p.sound, sourceCount);
     if (p.folderId !== undefined && (typeof p.folderId !== 'string' || !folderIds.has(p.folderId)))
       throw new Error('Instrument folder reference is missing.');
@@ -430,6 +433,8 @@ export function importProject(text: string): Project {
     if (!Number.isInteger(t.appliedVersion)) throw new Error('Applied version must be an integer.');
     if (sourceVersion < 4 && t.sound && typeof t.sound === 'object' && 'engine' in t.sound)
       throw new Error('Engine sounds require schema 4.');
+    if (sourceVersion < 6 && t.sound && typeof t.sound === 'object' && 'acoustics' in t.sound)
+      throw new Error('Instrument acoustics require schema 6.');
     readInstrumentSound(t.sound, sourceCount);
     numeric(t.level, 0, 1, 'track level');
   });
@@ -441,6 +446,8 @@ export function importProject(text: string): Project {
   for (const sound of [data.comparison.A, data.comparison.B]) {
     if (sourceVersion < 4 && sound && typeof sound === 'object' && 'engine' in sound)
       throw new Error('Engine sounds require schema 4.');
+    if (sourceVersion < 6 && sound && typeof sound === 'object' && 'acoustics' in sound)
+      throw new Error('Instrument acoustics require schema 6.');
     readInstrumentSound(sound, sourceCount);
   }
   const material = data.comparisonMaterial ?? structuredClone(DEFAULT_MATERIAL);
@@ -463,7 +470,7 @@ export function importProject(text: string): Project {
   const project = data as unknown as Project;
   let clean: Project = {
     processing: importProcessing(data.processing),
-    schemaVersion: 5,
+    schemaVersion: 6,
     ...(data.featureSettings !== undefined ? { featureSettings } : {}),
     id: project.id,
     name: project.name,
