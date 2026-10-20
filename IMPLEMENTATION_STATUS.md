@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-19. Latest verified release: v0.41.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-19. Latest verified release: v0.42.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -771,3 +771,11 @@ Low-rate follow-up: replacement warm-up extends beyond25ms to cover the maximum 
 Native verification caught a transport version mismatch: Electron save-project still allowed only schemas1–5, so schema6 saves were rejected before the dialog/write. The file bridge now accepts schema6 as well, retaining renderer musical validation and origin/path guards. The obsolete local native run was stopped; a new package and full native rerun follow. No user file was overwritten by the failed save. Browser regression results remain58 distinct passing cases, plus expanded two-engine playback reruns.
 
 Schema6 integration follow-up: two shared startup helpers and five older native-save expectations still asserted schema5. These assertions now target6; all five analysis/feature browser cases pass. Together with the prior58 cases,63 distinct affected browser checks pass. The application bundle is unchanged. A fresh eleven-case native run and hosted run verify the updated test source; old assertion failures are not product save failures.
+
+## v0.42.0 instrument acoustics release complete
+
+Both required jobs pass for source b617c31c78e506353e629c7366b29dbf1370a4b4 in [run39334261774](https://github.com/Monykus7/FourPataka/actions/runs/39334261774), including eighteen browser suites, the isolated contributor tutorial and eleven packaged workflows. Local verification:319 units/55 files,63 distinct affected browser cases (57-case regression batch, added low-rate transition and five analysis/feature cases), expanded four-combination Fourier/Basic Tone WAV parity, and all11 native workflows in6.5minutes. A separate native chamber JSON/WAV target also passes. Build/format/notices/private exclusion/knowledge checks, wide/390px inspection, three rendered diagrams and92 checked local guide links pass. Physical listening/device/screen-reader/signing remain separate limits.
+
+The final native rerun passes with the corrected schema6 file bridge and all current-schema assertions. Earlier resonance, native transport and outdated test expectations are resolved; numeric guards remain asserted. EXAMPLE_SCORE is unchanged from2069709. Current schema6 imports1–5 dry and keeps independent source/library/track/A-B ownership, frozen score/WAV and continuous musical clocks. No IRs, new dependencies or physical-instrument simulation claims are introduced.
+
+Normal portable startup is visibly open as FourPataka v0.42.0, PID25500, executable C:/Users/adity/AppData/Local/Temp/3KweipRIds1Pop3fbTct8bPuSpK/FourPataka.exe. Running app.asar matches the native-tested SHA256B780B6D39C7B54E234384FF524A17EA3356AAAB08669FFC05DD2DD9BA8597303; startup stderr is0bytes. release/FourPataka-0.42.0-win-x64.exe SHA256CC8AE42A54354ED1EC8CA891FE0CA3E0C923100DA8D91A087321909EDD35E2B3. Production package sources are those of e93eb54; subsequent checkpoints change tests and documentation only. Ten focused commits use Monykus7 and are pushed to origin/master. The final documentation checkpoint does not repackage the app or replace the published v0.39.0 contributor preview. Reverb, WAV-to-instrument analysis and further acoustic models/presets remain separate roadmap work.

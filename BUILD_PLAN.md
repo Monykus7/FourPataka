@@ -65,7 +65,7 @@ The v0.19.1 layout follow-up makes the expanded command reference match the scor
 
 Stage 6 WAV export is implemented in v0.19.0; release/device verification remains explicit below. Stage7 guided experiments and source/output analysis are implemented in v0.39.0; actual verification and remaining manual gates are recorded below.
 
-Current application priority (2026-10-19): M1–M6 contributor/module readiness, variable swing and initial Stage7 analysis are implemented. The v0.40.0 phaser ships through the M2 contract with browser/native/portable verification; chorus is verified in v0.41.0. The owner selected instrument acoustics next; its v0.42.0 release verification is in progress, ahead of the separately planned reverb pedal. WAV analysis remains a separate requested feature; physical listening/device/accessibility gates remain explicit.
+Current application priority (2026-10-19): M1–M6 contributor/module readiness, variable swing and initial Stage7 analysis are implemented. The v0.40.0 phaser ships through the M2 contract with browser/native/portable verification; chorus is verified in v0.41.0. The owner selected instrument acoustics next; it is implemented and verified in v0.42.0, ahead of the separately planned reverb pedal. WAV analysis remains a separate requested feature; physical listening/device/accessibility gates remain explicit.
 
 Instrument-builder acoustics is a requested later feature, detailed in section 5 and queued under stage 8. It does not block the current stage 4/5 completion gates or WAV export.
 
@@ -203,9 +203,9 @@ A rest schedules no new notes. Release envelopes and effect tails can remain aud
 
 ### Instrument acoustics — tiny chamber
 
-Status: implemented in source for v0.42.0;319 units and targeted DSP/live/WAV/UI/suspension checks pass. Native/portable/hosted release verification is pending. A compact Acoustics section inside the Instrument builder to give the synthesized signal an instrument-inspired body/chamber response. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
+Status: implemented and verified in v0.42.0.319 units/55 files,63 distinct affected browser cases, all11 packaged workflows, normal portable startup/hash parity and both hosted contributor jobs pass. The compact Acoustics section in the Instrument builder adds instrument-inspired body/chamber coloration. The goal is a small resonant chamber rather than a large performance-room ambience; label it as an approximation, not a physically accurate instrument simulation.
 
-Use algorithmic reverb built from generated short reflections and a bounded, damped feedback network. No IR files, convolution library, recording upload or asset download should be required. Select the exact network and parameter ranges in a listening/numeric audio proof before committing to an implementation.
+The implemented model uses four normalized damped combs with generated short reflections, without IR files, convolution, recording upload or asset downloads. Numeric/automated gates pass; physical listening and broader device/accessibility checks remain separate.
 
 Initial controls:
 
