@@ -1,3 +1,5 @@
+import { verifyModulatedListenStop } from '../helpers/modulatedPedals';
+import { chorusWorkflow } from '../helpers/chorus';
 import { featureModuleWorkflow } from '../helpers/featureModules';
 import { analysisWorkflow } from '../helpers/analysis';
 import { SWING_SCORE, swingWorkflow } from '../helpers/swing';
@@ -58,36 +60,40 @@ test.afterEach(async () => {
   await app?.close();
 });
 
+test('packaged chorus retains safe delay settings and owned chains through native JSON', async () => {
+  const page = await app.firstWindow();
+  await chorusWorkflow(page);
+  await verifyModulatedListenStop(page);
+  const filePath = resolve('.test-results', 'desktop', 'chorus.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved chorus.fourpataka.json');
+  const saved = JSON.parse(await readFile(filePath, 'utf8'));
+  expect(saved.processing.master.pedals[0].params.time).toBe(5);
+  expect(saved.processing.audition.A.pedals[0].params.rate).toBe(1.2);
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('master');
+  await expect(
+    page.getByRole('spinbutton', {
+      name: 'fourpataka:pedal/chorus 1 base delay exact value',
+      exact: true,
+    }),
+  ).toHaveValue('5');
+});
+
 test('packaged phaser retains stage choices and owned chains through native JSON', async () => {
   const page = await app.firstWindow();
   await phaserWorkflow(page);
   await verifyPhaserLoop(page);
-  await page.evaluate(() => {
-    const proof = { started: 0, stopped: 0 };
-    (window as any).phaserNativeProof = proof;
-    const create = AudioContext.prototype.createOscillator;
-    AudioContext.prototype.createOscillator = function () {
-      const oscillator = create.call(this),
-        start = oscillator.start.bind(oscillator),
-        stop = oscillator.stop.bind(oscillator);
-      let modulation = false;
-      oscillator.start = (at = 0) => {
-        modulation = oscillator.frequency.value <= 5;
-        if (modulation) proof.started++;
-        start(at);
-      };
-      oscillator.stop = (at = 0) => {
-        if (modulation) proof.stopped++;
-        stop(at);
-      };
-      return oscillator;
-    };
-  });
-  await page.getByRole('slider', { name: 'Monitor volume', exact: true }).fill('0');
-  await page.getByRole('button', { name: 'Listen', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).phaserNativeProof.started)).toBe(1);
-  await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => (window as any).phaserNativeProof.stopped)).toBe(1);
+  await verifyModulatedListenStop(page);
   const filePath = resolve('.test-results', 'desktop', 'phaser.fourpataka.json');
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });

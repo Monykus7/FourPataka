@@ -6,6 +6,7 @@ const equipmentNames = {
   delay: 'Delay',
   level: 'Level',
   phaser: 'Phaser',
+  chorus: 'Chorus',
 };
 
 export async function beginEquipmentDrag(page: Page, kind: keyof typeof equipmentNames) {

@@ -210,6 +210,11 @@
   --pedal-color: var(--tertiary);
   --pedal-ink: var(--tertiary-ink);
 }
+.pedal-module[data-pedal-kind='fourpataka:pedal/chorus'],
+.board-inspector[data-pedal-kind='fourpataka:pedal/chorus'] {
+  --pedal-color: var(--accent);
+  --pedal-ink: var(--accent-ink);
+}
 .small-dial-control {
   min-width: 0;
   display: flex;
