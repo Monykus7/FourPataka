@@ -127,9 +127,10 @@ function startStudio() {
     const project = JSON.parse(text);
     // The renderer validates musical data; this origin-checked file bridge
     // accepts legacy banks and the current module-aware document envelope.
+    // Keep this transport version list aligned with core/project.ts migrations.
     if (
       !project ||
-      ![1, 2, 3, 4, 5].includes(project.schemaVersion) ||
+      ![1, 2, 3, 4, 5, 6].includes(project.schemaVersion) ||
       typeof project.scoreText !== 'string'
     )
       throw new Error('Invalid FourPataka project.');

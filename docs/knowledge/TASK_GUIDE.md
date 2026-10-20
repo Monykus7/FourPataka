@@ -4,7 +4,7 @@ FourPataka v0.42.0: browser/Electron studio with 32 signed harmonics, noise-hit 
 
 ## Routes
 
-- Instrument acoustics: [settings contract](../../src/modules/foundation/acoustics.ts), [shared chamber](../../src/audio/chamber.ts), [contributor diagrams](../extensions/INSTRUMENT_ACOUSTICS.md); schema6, destination-before-pedals ownership, live comparison and WAV. v0.42.0 release verification is in progress.
+- Instrument acoustics: [settings contract](../../src/modules/foundation/acoustics.ts), [shared chamber](../../src/audio/chamber.ts), [contributor diagrams](../extensions/INSTRUMENT_ACOUSTICS.md); schema6 (keep core/project.ts and desktop/main.cjs transport gates aligned), destination-before-pedals ownership, live comparison and WAV. v0.42.0 release verification is in progress.
 
 - Modulated pedals: [chorus](../../src/modules/pedals/chorus.ts), [chorus diagrams](../extensions/CHORUS.md), [phaser diagrams](../extensions/PHASER.md); shared M2 lifecycle, timeOrigin, live/frozen WAV and independent copies. Chorus is verified in v0.41.0, including both hosted jobs on720a97f.
 
