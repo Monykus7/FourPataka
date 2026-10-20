@@ -1,3 +1,4 @@
+import { createChamber, type Chamber } from './chamber';
 import { performanceBeat } from '../core/performanceTiming';
 import { createOutputMeter } from './outputMeter';
 import { silentLevels, levelWindow } from './levels';
@@ -26,6 +27,7 @@ import {
 export { VOICE_LIMIT } from './voiceLimit';
 import { admitVoice } from './voiceLimit';
 interface AuditionBranch {
+  chamber: Chamber;
   graph: ChainGraph;
   align: DelayNode;
   gain: GainNode;
@@ -46,10 +48,12 @@ interface Session {
   solo?: string;
   phraseSeconds: number;
   soundingSeconds: number;
+  chambers: Map<string, Chamber>;
   chains: Map<string, ChainGraph>;
   chainSettings: Map<string, string>;
   latency: number;
   processingTail: number;
+  scoreTail: (() => number) | null;
   auditionInput: GainNode | null;
   auditionBranches: Set<AuditionBranch>;
   disposers: Set<() => void>;
@@ -57,6 +61,7 @@ interface Session {
   originalSounds: Map<string, Sound>;
   voiceTracks: WeakMap<Voice, string>;
   comparisonTrack: string | null;
+  comparisonSide: string | null;
 }
 export class AudioEngine {
   context: AudioContext | null = null;
@@ -125,10 +130,12 @@ export class AudioEngine {
       auditionSound: null,
       phraseSeconds: 0,
       soundingSeconds: 0,
+      chambers: new Map(),
       chains: new Map(),
       chainSettings: new Map(),
       latency: 0,
       processingTail: 0,
+      scoreTail: null,
       auditionInput: null,
       auditionBranches: new Set(),
       disposers: new Set(),
@@ -136,6 +143,7 @@ export class AudioEngine {
       originalSounds: new Map(),
       voiceTracks: new WeakMap(),
       comparisonTrack: null,
+      comparisonSide: null,
     };
     this.session = session;
     return session;
@@ -181,7 +189,9 @@ export class AudioEngine {
       gain = context.createGain();
     align.delayTime.value = Math.max(0, latency - graph.latency);
     gain.gain.value = fade ? 0 : 1;
-    session.auditionInput!.connect(graph.input);
+    const chamber = createChamber(context, session.auditionSound?.acoustics);
+    session.auditionInput!.connect(chamber.input);
+    chamber.output.connect(graph.input);
     graph.output.connect(align).connect(gain).connect(session.gate);
     let retired = false;
     let branch: AuditionBranch;
@@ -190,10 +200,11 @@ export class AudioEngine {
       retired = true;
       if (branch.retireTimer) clearTimeout(branch.retireTimer);
       try {
-        session.auditionInput!.disconnect(graph.input);
+        session.auditionInput!.disconnect(chamber.input);
       } catch {
         /* already disconnected */
       }
+      chamber.dispose();
       graph.dispose();
       align.disconnect();
       gain.disconnect();
@@ -201,12 +212,13 @@ export class AudioEngine {
       session.auditionBranches.delete(branch);
     };
     const previous = [...session.auditionBranches];
-    branch = { graph, align, gain, dispose, retireTimer: null };
+    branch = { chamber, graph, align, gain, dispose, retireTimer: null };
     session.disposers.add(dispose);
     session.auditionBranches.add(branch);
+    session.chambers.set('audition', chamber);
     session.chains.set('audition', graph);
     session.latency = latency;
-    session.processingTail = graph.tail + align.delayTime.value;
+    session.processingTail = graph.tail + align.delayTime.value + chamber.tail;
     if (fade) {
       const now = context.currentTime;
       // Warm a replacement path before fading; otherwise its latency padding
@@ -301,6 +313,8 @@ export class AudioEngine {
     const session = this.session;
     if (!session || session.mode !== 'audition') return;
     session.auditionSound = structuredClone(sound);
+    session.chambers.get('audition')?.update(sound.acoustics);
+    this.refreshAuditionTail(session);
     session.solo = solo;
     session.voices.forEach((v) => v.update(sound, solo));
     session.duration = Math.max(
@@ -312,18 +326,29 @@ export class AudioEngine {
     const session = this.session;
     if (!session || session.mode !== 'audition') return;
     const topology = chainTopology(chain);
-    if (session.chains.get('audition')!.topology !== topology)
+    const changedBody =
+      JSON.stringify(session.auditionSound?.acoustics) !== JSON.stringify(sound.acoustics);
+    session.auditionSound = structuredClone(sound);
+    if (
+      session.chains.get('audition')!.topology !== topology ||
+      changedBody ||
+      !!sound.acoustics?.enabled
+    )
       this.auditionChain(session, chain, true);
     else session.chains.get('audition')!.update(chain);
     this.refreshAuditionTail(session);
     session.chainSettings.set('audition', chainMusicalSettings(chain));
     this.updateAudition(sound, solo);
   }
-  updateScoreComparison(sound: Sound, trackKey: string) {
+  updateScoreComparison(sound: Sound, trackKey: string, side?: string) {
     const session = this.session;
     if (!session || session.mode !== 'score' || !session.originalSounds.has(trackKey)) return;
-    const update = (key: string, next: Sound) => {
+    const update = (key: string, next: Sound, replace = false) => {
       session.scoreSounds.set(key, structuredClone(next));
+      const body = session.chambers.get(key);
+      if (replace) body?.replace(next.acoustics);
+      else body?.update(next.acoustics);
+      session.processingTail = Math.max(session.processingTail, session.scoreTail?.() ?? 0);
       session.voices.forEach((voice) => {
         if (session.voiceTracks.get(voice) === key) voice.update(next);
       });
@@ -332,9 +357,13 @@ export class AudioEngine {
     // both active voices and the map consulted by future scheduled events.
     // Neither operation writes temporary comparison sounds into the project.
     if (session.comparisonTrack && session.comparisonTrack !== trackKey)
-      update(session.comparisonTrack, session.originalSounds.get(session.comparisonTrack)!);
+      update(session.comparisonTrack, session.originalSounds.get(session.comparisonTrack)!, true);
+    const replaceBody =
+      session.comparisonTrack !== trackKey ||
+      (side !== undefined && side !== session.comparisonSide);
     session.comparisonTrack = trackKey;
-    update(trackKey, sound);
+    session.comparisonSide = side ?? null;
+    update(trackKey, sound, replaceBody);
     session.duration = Math.max(
       session.duration,
       session.soundingSeconds + engineRelease(sound) + session.processingTail,
@@ -384,10 +413,13 @@ export class AudioEngine {
       this.compressorLatency,
       session.start,
     );
+    session.chambers = graph.chambers;
+    for (const chamber of graph.chambers.values()) session.disposers.add(() => chamber.dispose());
     session.chains = graph.chains;
     session.chainSettings = graph.settings;
     session.nodes.push(...graph.nodes);
     session.latency = graph.latency;
+    session.scoreTail = () => graph.tail;
     session.processingTail = graph.tail;
     const buses = graph.buses;
     tracks.forEach((track) => {
@@ -480,7 +512,7 @@ export class AudioEngine {
     const remaining = Math.max(
       0,
       ...[...session.auditionBranches].map(
-        (branch) => branch.graph.tail + branch.align.delayTime.value,
+        (branch) => branch.chamber.tail + branch.graph.tail + branch.align.delayTime.value,
       ),
     );
     session.processingTail = Math.max(session.processingTail, remaining);

@@ -1,3 +1,5 @@
+import { acousticsTail } from '../modules/foundation/acoustics';
+import { CHAMBER_RESOURCES } from './chamber';
 import { performanceBeat } from '../core/performanceTiming';
 import { engineRelease, requireEngine } from '../core/engineSound';
 import { pedalModules } from '../modules/assembly';
@@ -66,6 +68,11 @@ export function prepareExport(
     },
     { nodes: 0, memoryBytes: 0 },
   );
+  for (const track of snapshot.tracks) {
+    const active = !!track.sound.acoustics?.enabled;
+    resources.nodes += active ? CHAMBER_RESOURCES.nodes : 6;
+    resources.memoryBytes += active ? CHAMBER_RESOURCES.memoryBytes : 0;
+  }
   // Offline admission caps active voices at32; preflight engine estimates too.
   const engineCosts = soundingTracks.map((t) => requireEngine(t.sound).resources);
   resources.nodes += 32 * Math.max(0, ...engineCosts.map((r) => r.estimatedNodesPerVoice + 1));
@@ -73,7 +80,14 @@ export function prepareExport(
   if (resources.nodes > 4096 || resources.memoryBytes > 128 * 1024 * 1024)
     throw new Error('Audio resource estimate exceeds export limits (4096 nodes / 128 MiB).');
   const release = Math.max(0, ...soundingTracks.map((t) => engineRelease(t.sound)));
-  const estimatedTail = routedTail(master) + Math.max(0, ...trackChains.map(routedTail));
+  const estimatedTail =
+    routedTail(master) +
+    Math.max(
+      0,
+      ...snapshot.tracks.map(
+        (t, i) => routedTail(trackChains[i]) + acousticsTail(t.sound.acoustics),
+      ),
+    );
   const voices = score.events.reduce((count, event) => count + event.frequencies.length, 0);
   // Preserve score rests, releases and processing latency. A small settling
   // allowance covers non-delay filter state even when the echo budget is zero.

@@ -383,7 +383,11 @@
         "tests/unit/acoustics.test.ts",
         "BUILD_PLAN.md",
         "src/audio/chamber.ts",
-        "tests/browser/acoustics.spec.ts"
+        "tests/browser/acoustics.spec.ts",
+        "src/audio/scoreGraph.ts",
+        "src/audio/engine.ts",
+        "src/audio/export.ts",
+        "tests/browser/acoustics-playback.spec.ts"
       ]
     },
     {
