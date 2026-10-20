@@ -2,7 +2,7 @@ import { expect, type Page } from '@playwright/test';
 export async function featureModuleWorkflow(page: Page) {
   const saved = () =>
     page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
-  await expect.poll(async () => (await saved())?.schemaVersion).toBe(5);
+  await expect.poll(async () => (await saved())?.schemaVersion).toBe(6);
   const initial = await saved();
   await page.getByRole('button', { name: 'Learn', exact: true }).click();
   const pair = page.getByRole('region', { name: 'Partial pair', exact: true });

@@ -9,7 +9,7 @@ export async function analysisWorkflow(page: Page) {
   await expect(panel.getByRole('heading', { name: /^Source model/ })).toBeVisible();
   const saved = () =>
     page.evaluate(() => JSON.parse(localStorage.getItem('fourpataka.project.v1')!));
-  await expect.poll(async () => (await saved())?.schemaVersion).toBe(5);
+  await expect.poll(async () => (await saved())?.schemaVersion).toBe(6);
   const before = await saved();
   await page.getByRole('button', { name: 'Learn', exact: true }).click();
   await page
