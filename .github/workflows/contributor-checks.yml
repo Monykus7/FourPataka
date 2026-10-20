@@ -61,6 +61,14 @@ jobs:
       - name: Archive exact corresponding source
         shell: pwsh
         run: git archive --format=zip --output=release/FourPataka-source-${{ github.sha }}.zip HEAD
+      - name: Keep native failure traces
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-native-failures-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: .test-results/desktop/
       - name: Keep unsigned build and corresponding source for review
         if: github.event_name == 'push'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

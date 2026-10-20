@@ -12,12 +12,18 @@ const equipmentNames = {
 export async function beginEquipmentDrag(page: Page, kind: keyof typeof equipmentNames) {
   await page.getByRole('button', { name: 'Equipment', exact: true }).click();
   const item = page.getByRole('menuitem', { name: equipmentNames[kind], exact: true });
+  // Wait for a stable, hittable item after menu focus/scroll effects before
+  // taking coordinates. boundingBox alone does not wait for actionability.
+  await item.hover();
   const source = (await item.boundingBox())!;
   await page.mouse.move(source.x + source.width / 2, source.y + source.height / 2);
   await page.mouse.down();
   // Native dragstart needs motion; dragTo checks the destination's hit target
   // before that motion, which cannot exercise a menu overlapping the first slot.
-  await page.mouse.move(source.x + source.width / 2 + 16, source.y + source.height / 2, {
+  await page.mouse.move(source.x + source.width / 2 + 8, source.y + source.height / 2);
+  // Separate native moves let Chromium enter drag mode before checking React's
+  // dragstart state, including on a slower Windows runner.
+  await page.mouse.move(source.x + source.width / 2 + 24, source.y + source.height / 2, {
     steps: 4,
   });
   await expect(page.locator('.equipment-picker')).toHaveClass(/equipment-dragging/);

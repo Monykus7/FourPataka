@@ -203,9 +203,9 @@ v0.40.0 adds a registered M2 phaser:4/6/8 first-order-equivalent warm all-pass s
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
 
-##### Phaser, chorus and algorithmic reverb (planned)
+##### Modulation pedals and planned reverb
 
-Requested, planned and not implemented. Later stage 8 sequence proposes phaser (all-pass notches, rate/depth/center/stages/bounded feedback), chorus (short modulated delay voices, rate/base delay/depth, initially no feedback), then algorithmic reverb (generated reflections and bounded damped network, pre-delay/-60 dB decay/size/damping). All include explicit output/mix, compact dials/inspector, cable-defined order, independent library/A-B/track/master settings and shared playback/WAV factories. Modulation preserves session-relative clock/LFO continuity; intentional phase/delay is distinct from measured processing latency. Reverb is an IR-free track/master space effect separate from instrument-body chamber acoustics. Future gates include dry/mix gain, extrema stability, finite tails/cap warnings, bypass versus Stop, copy/import/undo/native/keyboard/export and physical listening. Old projects stay unchanged with effects absent. Initial Stage7 learning/measurement is implemented in v0.39.0; this pedal expansion remains planned.
+Phaser is verified in v0.40.0; chorus implementation is in v0.41.0 release verification (see dedicated feature summaries). Algorithmic reverb remains planned: generated reflections and a bounded damped feedback network, pre-delay, -60dB decay, size and damping. Keep space reverb distinct from the instrument builder tiny chamber. Use M2 metadata, independent board/A-B/track/master copies, retained musical clock, finite tail/cap/resource accounting and shared live/frozen-WAV factories. Physical listening/device gates remain separate; existing projects enable no new effects by migration.
 
 #### WAV-to-instrument analysis (planned)
 
