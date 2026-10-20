@@ -753,3 +753,5 @@ The normal v0.41.0 portable is open (PID39192); running app.asar matches1038C4E9
 ## Instrument acoustics implementation (next release)
 
 Schema6 host-owned chamber settings/validation are implemented for Fourier and independent engines; legacy1–5 imports retain dry sounds. Fifteen targeted migration/contract cases pass, and working-tree production build passes. DSP, independent destination/branch integration and controls are in progress; release gates remain pending. The authored EXAMPLE_SCORE is unchanged.
+
+Chamber DSP proof: three real-browser cases pass, including20 dry/default/extreme renders at3/44.1/48/192kHz, dry identity, bounded gain/tails, channel isolation, reflection spacing, high-frequency damping, longer decay, rapid edits/disable drain and exact25-node idempotent cleanup. The initial low-pass resonance failure exposed Web Audio low/high-pass Q using dB; linearQ0.5 is now correctly encoded as20log10(0.5). A30-micro-unit stereo scaling tolerance accommodates high-rate recursive-filter arithmetic; silent-channel leakage is exactly0. Host stage owns separate warm/crossfaded branches. Integration/release gates remain pending.
