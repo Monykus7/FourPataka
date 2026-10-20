@@ -1,5 +1,7 @@
 # Playable pedal modules — API 1, v0.33.0
 
+See [Chorus](CHORUS.md) for opposed delays, causal controls, finite bypass drainage and live/WAV ownership diagrams.
+
 M2 implements reviewed, bundled TypeScript pedal contributions. Compressor, Overdrive, EQ, Delay, Phaser and the independent **Level** tutorial pedal use the same contract. Equipment, placement acceptance, parameter names/ranges/defaults, reset/help, validation, audio dispatch, latency, resource estimates and WAV musical tails consume the registry. Cable order, score authority, owned copies/history, scheduling, Stop and native privileges remain host responsibilities.
 
 ## Add a pedal from a clean checkout
