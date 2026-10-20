@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-12. Latest verified release: v0.37.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-10-19. Latest verified release: v0.41.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -741,3 +741,11 @@ Chorus release regressions: all43 affected browser checks pass in3.2minutes, cov
 Windows package: all ten local native workflows pass in5.5minutes, including chorus/phaser Listen/Stop, native JSON, cache profile, startup/audio isolation and contributor pedal/preset/engine/features. Distribution notices/private exclusion pass. app.asar SHA2561038C4E983BE8345A01B0C914A1483272049DB7A1153DEE12DB37523BF7B9C58; portable SHA2566589C09E2B599E86060EA9C578163D5FD661FFE281B807DFCFC529959002A522. Hosted run39322743256 passes source-and-browser but fails one Level equipment drag assertion (nine other native cases pass). The helper now waits for menu actionability and sends distinct drag movements; native/browser follow-up is running. Failure traces will be retained by CI. Production package sources are unchanged from3d3e157.
 
 CI follow-up verification: all five affected browser cases and both packaged chorus/Level native workflows pass with the actionability-aware drag helper. No production-code or package changes were needed. The corrected checkpoint is queued for a fresh hosted run before completion.
+
+Normal portable launch is visibly open as FourPataka v0.41.0, PID39192, extracted executable C:/Users/adity/AppData/Local/Temp/3KwUrSALvEJNJ3cB43lW4yyi1ba/FourPataka.exe. Running app.asar matches the native-tested1038C4E983BE8345A01B0C914A1483272049DB7A1153DEE12DB37523BF7B9C58; startup stderr is0bytes. Corrected source720a97f is under hosted run39324260891. All local gates pass; hosted completion remains pending.
+
+## v0.41.0 chorus release complete
+
+Both required jobs pass for corrected source720a97ff98cfcfe2c1705fe7579df4779afd20bf in [run39324260891](https://github.com/Monykus7/FourPataka/actions/runs/39324260891), including the isolated contributor tutorial, fifteen browser suites and ten packaged workflows. The earlier hosted Level drag failure is closed by actionability-aware coordinate capture and distinct native movements, with actual drag assertions retained; no product code changed to fix the harness. Failed native runs now retain generated test traces. Local evidence:316 units/54 files,43 distinct affected browser cases, all ten native workflows plus both targeted chorus/Level reruns and five affected browser reruns, build/format/notices/private-file/knowledge checks, three rendered diagrams and92 local guide links. Physical listening/device/screen-reader and signing remain separate limits.
+
+The normal v0.41.0 portable is open (PID39192); running app.asar matches1038C4E983BE8345A01B0C914A1483272049DB7A1153DEE12DB37523BF7B9C58 and startup stderr is0bytes. release/FourPataka-0.41.0-win-x64.exe SHA2566589C09E2B599E86060EA9C578163D5FD661FFE281B807DFCFC529959002A522. Production package content remains that of3d3e157; subsequent checkpoints change only tests, CI and documentation. Eight focused milestone commits use Monykus7 and are pushed to origin/master. Final documentation does not repackage the application or replace the separately published v0.39.0 contributor preview. Source/demo/schema5, independent copies, musical clocks and frozen score/WAV policies remain intact. Reverb is the next planned pedal; instrument chamber and WAV analysis remain separate roadmap features.
