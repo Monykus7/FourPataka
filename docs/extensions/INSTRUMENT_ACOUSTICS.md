@@ -54,7 +54,7 @@ Supported rates are3–192kHz. Each enabled destination declares25 nodes and384K
 
 ## Clocks, lifetime and shared rendering
 
-Each track has one body shared by its voices, before its pedal input. Audition uses the same factory before its selected chain. Tracks and comparison branches never share runtime buffers. Continuous editor changes retain the current body and musical clock. Explicit A/B changes warm an independently owned branch for25ms, crossfade20ms, then retire the old branch. Score comparison changes only the selected destination and restores the previous destination from its frozen applied sound. Rate/voice phase and future note scheduling remain host responsibilities.
+Each track has one body shared by its voices, before its pedal input. Audition uses the same factory before its selected chain. Tracks and comparison branches never share runtime buffers. Continuous editor changes retain the current body and musical clock. Explicit A/B changes warm an independently owned branch for at least25ms (extended through the reflection/filter horizon at low sample rates), crossfade20ms, then retire the old branch. Score comparison changes only the selected destination and restores the previous destination from its frozen applied sound. Rate/voice phase and future note scheduling remain host responsibilities.
 
 ```mermaid
 sequenceDiagram
@@ -78,6 +78,6 @@ Retirement checks the audio clock, so suspending the device cannot disconnect a 
 
 ## Evidence and extending this work
 
-Tests cover schema migration/validation/copies; dry unity; finite extrema at3/44.1/48/192kHz; reflection spacing, damping and decay effects; exactly silent channel isolation; disable drainage; resource/disposal counts; device-clock suspension; live clock/voice retention; A/B/track ownership; and frozen WAV parity before nonlinear overdrive at44.1/48kHz. At the highest rates, recursive filtering introduces small floating-point differences in proportional stereo signals; the ratio test permits30 micro-units, while a silent input channel must remain exactly silent.
+Tests cover schema migration/validation/copies; dry unity; finite extrema at3/44.1/48/192kHz; reflection spacing, damping and decay effects; exactly silent channel isolation; disable drainage; resource/disposal counts; device-clock suspension; live clock/voice retention; A/B/track ownership; and frozen WAV parity for Fourier and independent engines before nonlinear overdrive at44.1/48kHz. At the highest rates, recursive filtering introduces small floating-point differences in proportional stereo signals; the ratio test permits30 micro-units, while a silent input channel must remain exactly silent.
 
 Actual UI checks exercise exact/keyboard-capable controls, save/apply, undo/reset, reload, engine/source independence and responsive layouts. The native workflow additionally saves/reopens JSON and renders/saves WAV. CI includes all acoustic suites. [Implementation status](../../IMPLEMENTATION_STATUS.md) records executed checks and package hashes; test definitions alone are not passing evidence. Physical listening, device latency and wider accessibility remain separate gates. Future material/resonance presets, physical modelling and the space-reverb pedal remain planned.

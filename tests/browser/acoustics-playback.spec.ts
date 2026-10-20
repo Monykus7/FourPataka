@@ -6,6 +6,7 @@ test('frozen chamber WAV matches body before nonlinear track pedals at both samp
   await page.goto('/');
   const rows = await page.evaluate(async () => {
     const { createProject } = await import('/src/core/' + 'project.ts');
+    const { createEngineSound } = await import('/src/core/' + 'engineSound.ts');
     const { makePedal, emptyChain } = await import('/src/core/' + 'pedals.ts');
     const { prepareExport, renderWav } = await import('/src/audio/' + 'export.ts');
     const { createChamber } = await import('/src/audio/' + 'chamber.ts');
@@ -15,9 +16,18 @@ test('frozen chamber WAV matches body before nonlinear track pedals at both samp
     );
     const { ACOUSTICS_DEFAULTS } = await import('/src/modules/foundation/' + 'acoustics.ts');
     const rows = [];
-    for (const rate of [44100, 48000]) {
+    for (const [rate, independent] of [
+      [44100, false],
+      [48000, false],
+      [44100, true],
+      [48000, true],
+    ] as const) {
       const p = createProject();
       p.scoreText = 'tempo 120\ntrack body using saw {\n C4 eighth\n}';
+      if (independent)
+        p.instruments.find((i: any) => i.key === 'saw')!.sound = createEngineSound(
+          'example:engine/basic-tone',
+        );
       p.instruments.find((i: any) => i.key === 'saw')!.sound.acoustics = {
         ...ACOUSTICS_DEFAULTS,
         enabled: true,
@@ -260,4 +270,49 @@ test('body branch retirement follows audio time while the device is suspended', 
   expect(proof.retired).toBe(true);
   expect(proof.created).toBe(48);
   expect(proof.disconnected).toBe(48);
+});
+
+test('replacement chamber warms low-rate reflections before the old body fades out', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { createChamber } = await import('/src/audio/' + 'chamber.ts');
+    const { ACOUSTICS_DEFAULTS } = await import('/src/modules/foundation/' + 'acoustics.ts');
+    const rate = 3000,
+      context = new OfflineAudioContext(1, rate, rate),
+      buffer = context.createBuffer(1, rate, rate);
+    buffer.getChannelData(0).fill(0.1);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    const body = createChamber(context, {
+      ...ACOUSTICS_DEFAULTS,
+      enabled: true,
+      mix: 100,
+      size: 8,
+      decay: 40,
+    });
+    source.connect(body.input);
+    body.output.connect(context.destination);
+    source.start();
+    let at = 0;
+    const replace = context.suspend(0.3).then(() => {
+      at = context.currentTime;
+      body.replace({ ...ACOUSTICS_DEFAULTS, enabled: true, mix: 100, size: 8, decay: 600 });
+      return context.resume();
+    });
+    const result = await context.startRendering();
+    await replace;
+    let minimum = Infinity,
+      peak = 0;
+    for (let i = Math.ceil(at * rate); i < result.length; i++) {
+      const v = result.getChannelData(0)[i];
+      minimum = Math.min(minimum, v);
+      peak = Math.max(peak, Math.abs(v));
+    }
+    body.dispose();
+    return { minimum, peak };
+  });
+  expect(proof.minimum).toBeGreaterThan(0.01);
+  expect(proof.peak).toBeLessThan(0.101);
 });

@@ -139,8 +139,11 @@ export function createChamber(context: BaseAudioContext, initial?: InstrumentAco
     processor.output.connect(gain).connect(output);
     const branch: Branch = { processor, gain, timer: null };
     if (fade) {
-      const now = context.currentTime,
-        at = now + 0.025;
+      const now = context.currentTime;
+      // Low sample rates have long cycle-breaking quanta. Warm through the
+      // maximum reflection/filter horizon before exposing the replacement.
+      const warm = Math.max(0.025, 0.008 * 2.11 + 128 / context.sampleRate + 2 / (Math.PI * 500));
+      const at = now + warm;
       // Warm short reflections before crossfading; old and new buffers stay owned.
       for (const old of branches) {
         if (old.timer) clearTimeout(old.timer);
