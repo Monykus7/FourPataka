@@ -5,12 +5,13 @@
       "id": "chorus",
       "parent": "pedals",
       "title": "Chorus pedal (implementation in progress)",
-      "summary": "Registered M2 chorus implementation is in progress: two opposed short-delay voices with one retained session-relative LFO, no feedback and averaged wet gain. Controls are rate0.05–5Hz, base5–30ms, depth0–100% of min(10ms,base−1ms), wet trim and linear mix. Independent serialized controls always encode1–40ms delays; base/radius automation shares one timestamp and15ms smoothing. Bypass closes new wet input with a finite5ms ramp and drains at most40ms history inside a50ms budget; Stop uses owned scheduled-source cleanup. Optional timeOrigin seeds late branches from current rate/session age without reconstructing rate-edit history. Default15ms/30% gives±3ms excursion. Four new unit cases, module boundaries, build and three raw browser DSP cases pass (delay/gain/dry/bypass, independent formula/stereo isolation, finite extreme-rate tails). UI/live-WAV/native/package release gates remain pending; reverb remains planned. No schema/demo/source changes.",
+      "summary": "Registered M2 chorus implementation is in progress: two opposed short-delay voices with one retained session-relative LFO, no feedback and averaged wet gain. Controls are rate0.05–5Hz, base5–30ms, depth0–100% of min(10ms,base−1ms), wet trim and linear mix. Independent serialized controls always encode1–40ms delays; base/radius automation shares one timestamp and15ms smoothing. Bypass closes new wet input with a finite5ms ramp and drains at most40ms history inside a50ms budget; Stop uses owned scheduled-source cleanup. Optional timeOrigin seeds late branches from current rate/session age without reconstructing rate-edit history. Default15ms/30% gives±3ms excursion. Four new unit cases, module boundaries, build and three raw browser DSP cases pass (delay/gain/dry/bypass, independent formula/stereo isolation, finite extreme-rate tails). Three further temporal browser cases prove late-branch phase/one-stop ownership, causal rapid boundary edits and finite bypass drainage. UI/live-WAV/native/package release gates remain pending; reverb remains planned. No schema/demo/source changes.",
       "paths": [
         "src/modules/pedals/chorus.ts",
         "src/modules/assembly.ts",
         "tests/unit/chorus.test.ts",
-        "tests/browser/chorus.spec.ts"
+        "tests/browser/chorus.spec.ts",
+        "tests/browser/chorus-timing.spec.ts"
       ]
     },
     {
