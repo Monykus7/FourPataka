@@ -1,3 +1,4 @@
+import { acousticsWorkflow } from '../helpers/acoustics';
 import { verifyModulatedListenStop } from '../helpers/modulatedPedals';
 import { chorusWorkflow } from '../helpers/chorus';
 import { featureModuleWorkflow } from '../helpers/featureModules';
@@ -58,6 +59,51 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged instrument acoustics retain independent bodies through native JSON and WAV', async () => {
+  const page = await app.firstWindow();
+  await acousticsWorkflow(page);
+  const filePath = resolve('.test-results', 'desktop', 'acoustics.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved acoustics.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(filePath, 'utf8'));
+  expect(saved.schemaVersion).toBe(6);
+  expect(saved.tracks.find((t: any) => t.key === 'body').sound.acoustics.mix).toBe(40);
+  expect(saved.comparison.B.acoustics.mix).toBe(85);
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),
+  );
+  const panel = page.getByRole('dialog', { name: 'Export WAV' });
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('2');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  const wavPath = resolve('.test-results', 'desktop', 'acoustics.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, wavPath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved acoustics.wav');
+  const wav = await readFile(wavPath);
+  expect(wav.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(wav.length).toBeGreaterThan(48000);
+  await panel.getByRole('button', { name: 'Close WAV export', exact: true }).click();
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Instrument', exact: true }).click();
+  await expect(
+    page.getByRole('checkbox', { name: 'Enable instrument acoustics', exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole('spinbutton', { name: 'Chamber mix exact value', exact: true }),
+  ).toHaveValue('40');
 });
 
 test('packaged chorus retains safe delay settings and owned chains through native JSON', async () => {
@@ -260,7 +306,7 @@ test('packaged virtual files retain multiple tracks through native saving openin
   await expect(page.getByRole('textbox', { name: 'Score editor' })).toContainText('track bass');
   await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
   const panel = page.getByRole('dialog', { name: 'Export WAV', exact: true });
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('Render ready');
 });
@@ -292,7 +338,7 @@ test('packaged named sections retain source editing and native JSON round-trip',
   await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
   const panel = page.getByRole('dialog', { name: 'Export WAV', exact: true });
   await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('Render ready');
   const wavPath = resolve('.test-results', 'desktop', 'named-sections.wav');
@@ -413,7 +459,7 @@ test('native WAV menu renders, validates binary data, cancels safely and saves P
   ).toBe(true);
   await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
   await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('Render ready');
   await app.evaluate(({ dialog }) => {
@@ -1270,7 +1316,7 @@ test('packaged independent engine edits Apply and native JSON preserve settings'
   const panel = page.getByRole('dialog', { name: 'Export WAV' });
   await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
   await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('Render ready');
   const wavPath = resolve('.test-results', 'desktop', 'engine-tone.wav');

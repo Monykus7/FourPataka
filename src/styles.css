@@ -3227,3 +3227,27 @@ details.feature-panel > summary h2 {
   font-size: 16px;
   line-height: 1.5;
 }
+
+.acoustics-panel {
+  padding: 20px;
+  margin-top: 16px;
+  border-left: 2px solid var(--tertiary);
+}
+.acoustics-panel .envelope-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 1100px) {
+  .acoustics-panel .envelope-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .acoustics-panel {
+    padding: 16px;
+  }
+  .acoustics-panel .envelope-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

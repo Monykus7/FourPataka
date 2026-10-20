@@ -1,3 +1,4 @@
+import { ACOUSTICS_DEFAULTS, ACOUSTICS_CONTROLS, type InstrumentAcoustics } from './modules';
 import { performanceBeat } from './core/performanceTiming';
 import FeaturePanels from './components/FeaturePanels';
 import {
@@ -413,10 +414,33 @@ export default function App() {
     setMacros({ ...NEUTRAL_MACROS });
   };
   const changeSound = (mutate: (s: Sound) => Sound, key = '', manual = true) => {
-    const next = keepMatchingWavePoints(mutate(sound));
+    // Source/macros may rebuild their own defaults; the host body is a separate edit.
+    const source = mutate(sound);
+    const next = keepMatchingWavePoints({
+      ...source,
+      ...(sound.acoustics ? { acoustics: structuredClone(sound.acoustics) } : {}),
+    });
     if (manual) resetMacros(next);
     change((p) => ({ ...p, comparison: { ...p.comparison, [p.comparison.active]: next } }), key);
   };
+  const changeAcoustics = (patch: Partial<InstrumentAcoustics>, group = '') =>
+    change(
+      (p) => ({
+        ...p,
+        comparison: {
+          ...p.comparison,
+          [p.comparison.active]: {
+            ...p.comparison[p.comparison.active],
+            acoustics: {
+              ...ACOUSTICS_DEFAULTS,
+              ...p.comparison[p.comparison.active].acoustics,
+              ...patch,
+            },
+          },
+        },
+      }),
+      group,
+    );
   const changePolarity = (index: number, polarity: 1 | -1) => {
     setSelectedPartial(`H${index + 1}`);
     // Discrete sign changes are separate undo steps; magnitude drags stay grouped.
@@ -608,7 +632,7 @@ export default function App() {
       engine.current.updateProcessing(project.processing, active);
       if (engine.current.comparisonTrack)
         try {
-          engine.current.updateScoreComparison(instrumentSound, selectedTrack);
+          engine.current.updateScoreComparison(instrumentSound, selectedTrack, active);
         } catch (error) {
           engine.current.stop();
           setToast((error as Error).message);
@@ -1397,6 +1421,8 @@ export default function App() {
                         e.target.value === 'fourpataka:engine/fourier'
                           ? mathematicalPreset('sine')
                           : createEngineSound(e.target.value);
+                      if (instrumentSound.acoustics)
+                        next.acoustics = structuredClone(instrumentSound.acoustics);
                       resetMacros(next);
                       change((p) => ({ ...p, comparison: { ...p.comparison, [active]: next } }));
                     }}
@@ -1745,6 +1771,45 @@ export default function App() {
                     </div>
                   </>
                 )}
+              </section>
+
+              <section className="panel acoustics-panel" aria-label="Instrument acoustics">
+                <div className="section-title">
+                  <h3>Acoustics</h3>
+                  <label className="check-label">
+                    <input
+                      type="checkbox"
+                      aria-label="Enable instrument acoustics"
+                      checked={instrumentSound.acoustics?.enabled ?? false}
+                      onChange={(e) => changeAcoustics({ enabled: e.target.checked })}
+                    />
+                    Tiny chamber
+                  </label>
+                  <button
+                    className="text-button"
+                    onClick={() => changeAcoustics({ ...ACOUSTICS_DEFAULTS })}
+                  >
+                    Reset acoustics
+                  </button>
+                </div>
+                <div className="envelope-controls">
+                  {Object.entries(ACOUSTICS_CONTROLS).map(([key, control]) => (
+                    <RangeControl
+                      key={key}
+                      {...control}
+                      value={
+                        (instrumentSound.acoustics ?? ACOUSTICS_DEFAULTS)[
+                          key as keyof typeof ACOUSTICS_CONTROLS
+                        ]
+                      }
+                      onChange={(n) => changeAcoustics({ [key]: n }, 'acoustics:' + key)}
+                    />
+                  ))}
+                </div>
+                <p className="footnote">
+                  Instrument body approximation · before pedals. Size is the shortest reflection
+                  spacing; decay is a conservative −60 dB target. Source graphs remain dry.
+                </p>
               </section>
 
               <ComparisonPanel

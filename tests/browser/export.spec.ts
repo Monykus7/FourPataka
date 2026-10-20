@@ -14,7 +14,7 @@ test('WAV controls render and download PCM without changing project history or i
     const panel = page.getByRole('dialog', { name: 'Export WAV', exact: true });
     await expect(panel.getByRole('combobox', { name: 'Sample rate' })).toBeFocused();
     await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
-    await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+    await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
     await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
     await expect(panel.getByRole('status')).toContainText('Render ready');
     const pending = page.waitForEvent('download');
@@ -71,7 +71,7 @@ test('clipping is reported and saving requires an explicit lower level or normal
   await page.reload();
   await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
   const panel = page.getByRole('dialog', { name: 'Export WAV' });
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('alert')).toContainText('This level would clip');
   await expect(panel.getByRole('button', { name: 'Save WAV', exact: true })).toBeDisabled();
@@ -96,10 +96,10 @@ test('export preflight errors, format changes, Escape and narrow-screen controls
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
   const panel = page.getByRole('dialog', { name: 'Export WAV' });
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('31');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('31');
   await expect(panel.getByRole('alert')).toContainText('Invalid WAV');
   await expect(panel.getByRole('button', { name: 'Render WAV', exact: true })).toBeDisabled();
-  await panel.getByRole('spinbutton', { name: 'Echo tail limit (seconds)' }).fill('0');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('0');
   await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
   await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
   await expect(panel.getByRole('status')).toContainText('Render ready');

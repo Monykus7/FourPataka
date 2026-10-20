@@ -387,7 +387,11 @@
         "src/audio/scoreGraph.ts",
         "src/audio/engine.ts",
         "src/audio/export.ts",
-        "tests/browser/acoustics-playback.spec.ts"
+        "tests/browser/acoustics-playback.spec.ts",
+        "src/App.tsx",
+        "src/styles.css",
+        "tests/helpers/acoustics.ts",
+        "tests/browser/acoustics-ui.spec.ts"
       ]
     },
     {

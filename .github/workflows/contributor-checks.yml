@@ -32,7 +32,7 @@ jobs:
       - run: npm run knowledge:check
       - run: npx playwright install --with-deps chromium
       - name: Browser integration for bundled module examples
-        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts tests/browser/phaser.spec.ts tests/browser/phaser-ui.spec.ts tests/browser/phaser-playback.spec.ts tests/browser/phaser-loop.spec.ts tests/browser/chorus.spec.ts tests/browser/chorus-timing.spec.ts tests/browser/chorus-ui.spec.ts tests/browser/chorus-playback.spec.ts
+        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts tests/browser/phaser.spec.ts tests/browser/phaser-ui.spec.ts tests/browser/phaser-playback.spec.ts tests/browser/phaser-loop.spec.ts tests/browser/chorus.spec.ts tests/browser/chorus-timing.spec.ts tests/browser/chorus-ui.spec.ts tests/browser/chorus-playback.spec.ts tests/browser/acoustics.spec.ts tests/browser/acoustics-playback.spec.ts tests/browser/acoustics-ui.spec.ts
         env:
           PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
       - name: Exercise contributor tutorial from isolated committed source
@@ -55,7 +55,7 @@ jobs:
       - run: npm run desktop:package
       - run: npm run distribution:check -- release/win-unpacked
       - name: Packaged profiles and contributor examples
-        run: npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing|packaged analysis|packaged phaser|packaged chorus"
+        run: npx playwright test --config playwright.desktop.config.ts --grep "one cache owner|desktop loads local assets|contributed level pedal|registered Fourier preset|independent engine edits|feature panels retain|packaged swing|packaged analysis|packaged phaser|packaged chorus|packaged instrument acoustics"
         env:
           FOURPATAKA_TEST_EXECUTABLE: ${{ github.workspace }}\release\win-unpacked\FourPataka.exe
       - name: Archive exact corresponding source

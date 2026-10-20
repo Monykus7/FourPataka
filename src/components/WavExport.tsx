@@ -142,7 +142,7 @@ export default function WavExport({ project, onClose }: { project: Project; onCl
           </select>
         </label>
         <label>
-          Echo tail limit (seconds)
+          Effect tail limit (seconds)
           <input
             type="number"
             min={0}
@@ -157,12 +157,12 @@ export default function WavExport({ project, onClose }: { project: Project; onCl
         <p className="wav-estimate">
           About {plan.seconds.toFixed(2)} s · {(plan.wavBytes / 1048576).toFixed(1)} MiB WAV ·{' '}
           {(plan.memoryBytes / 1048576).toFixed(1)} MiB estimated memory (limit 256 MiB). Includes
-          releases, latency and filter settling before the echo budget.
+          releases, latency and filter settling before the effect tail budget.
         </p>
       )}
       {plan?.capped && (
         <p className="wav-warning">
-          Tail limit may cut off later echoes (estimated decay {plan.estimatedTail.toFixed(1)} s). A
+          Tail limit may cut off effect decay (estimated decay {plan.estimatedTail.toFixed(1)} s). A
           20 ms fade is applied at the end.
         </p>
       )}
