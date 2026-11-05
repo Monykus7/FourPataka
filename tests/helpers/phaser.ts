@@ -48,7 +48,7 @@ export async function phaserWorkflow(page: Page) {
     .poll(() =>
       page.evaluate(
         () =>
-          JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing.master.pedals[0]
+          JSON.parse(localStorage.getItem('fourpataka.project.v1')!)?.processing.master.pedals[0]
             ?.params.stages,
       ),
     )

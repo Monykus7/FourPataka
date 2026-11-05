@@ -27,11 +27,17 @@ export async function featureModuleWorkflow(page: Page) {
     page.getByRole('spinbutton', { name: 'H2 exact magnitude', exact: true }),
   ).toHaveValue(String(initial.comparison.A.harmonics[1]));
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
-  await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.getByRole('button', { name: 'Learn', exact: true }).click();
+  // Mount the meter before the short audition starts; navigation must not
+  // consume its observation window on a busy runner.
+  await expect(pair.locator('dd').first()).toHaveText('Stopped');
+  await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect(pair.locator('dd').first()).toContainText('dBFS');
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
   await expect(pair.locator('dd').first()).toHaveText('Stopped');
+  // Redo updates the editor immediately; autosave intentionally waits400ms.
+  // Compare visibility against persisted redo, rather than an older undo.
+  await expect.poll(async () => (await saved())?.comparison.A.harmonics[1]).toBe(0.6);
   const beforeHide = JSON.stringify(await saved());
   await page.getByRole('checkbox', { name: 'Show Partial pair', exact: true }).uncheck();
   await expect(pair).toHaveCount(0);

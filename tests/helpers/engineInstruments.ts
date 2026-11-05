@@ -16,9 +16,14 @@ export async function engineInstrumentWorkflow(page: Page) {
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
   await page.getByRole('button', { name: 'Compose', exact: true }).click();
-  await page
-    .locator('.cm-content')
-    .fill('tempo 120\ntrack tones using myTone {\n C4 quarter\n E4 quarter\n}');
+  // Replace the editor document through its keymap: fill() only sees rendered
+  // DOM lines and can leave virtualized demo lines (including tempo) behind.
+  const editor = page.getByRole('textbox', { name: 'Score editor' });
+  await editor.focus();
+  await editor.press('ControlOrMeta+A');
+  await page.keyboard.insertText(
+    'tempo 120\ntrack tones using myTone {\n C4 quarter\n E4 quarter\n}',
+  );
   await expect(page.getByRole('button', { name: 'Play score', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Play score', exact: true }).click();
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
@@ -28,9 +33,9 @@ export async function engineInstrumentWorkflow(page: Page) {
   const trackDetune = () =>
     page.evaluate(
       () =>
-        JSON.parse(localStorage.getItem('fourpataka.project.v1')!).tracks.find(
+        JSON.parse(localStorage.getItem('fourpataka.project.v1')!)?.tracks.find(
           (t: any) => t.key === 'tones',
-        ).sound.engine.settings.detune,
+        )?.sound?.engine?.settings?.detune,
     );
   await expect.poll(trackDetune).toBe(100);
   await page.getByRole('button', { name: 'Apply to tones', exact: true }).click();

@@ -11,7 +11,7 @@ test('independent level module drags patches adjusts resets and keeps owned copi
     .poll(() =>
       page.evaluate(
         () =>
-          JSON.parse(localStorage.getItem('fourpataka.project.v1')!).processing.master.pedals[0]
+          JSON.parse(localStorage.getItem('fourpataka.project.v1')!)?.processing.master.pedals[0]
             ?.params.output,
       ),
     )

@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1; Node24
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0; Node24
         with:
           node-version: '24'
           cache: npm
@@ -32,9 +32,18 @@ jobs:
       - run: npm run knowledge:check
       - run: npx playwright install --with-deps chromium
       - name: Browser integration for bundled module examples
-        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts tests/browser/phaser.spec.ts tests/browser/phaser-ui.spec.ts tests/browser/phaser-playback.spec.ts tests/browser/phaser-loop.spec.ts tests/browser/chorus.spec.ts tests/browser/chorus-timing.spec.ts tests/browser/chorus-ui.spec.ts tests/browser/chorus-playback.spec.ts tests/browser/acoustics.spec.ts tests/browser/acoustics-playback.spec.ts tests/browser/acoustics-ui.spec.ts tests/browser/reverb.spec.ts tests/browser/reverb-timing.spec.ts tests/browser/reverb-playback.spec.ts tests/browser/reverb-ui.spec.ts
+        run: npx playwright test tests/browser/pedal-modules.spec.ts tests/browser/preset-modules.spec.ts tests/browser/engine-instruments.spec.ts tests/browser/feature-modules.spec.ts tests/browser/swing.spec.ts tests/browser/analysis.spec.ts tests/browser/output-meter.spec.ts tests/browser/phaser.spec.ts tests/browser/phaser-ui.spec.ts tests/browser/phaser-playback.spec.ts tests/browser/phaser-loop.spec.ts tests/browser/chorus.spec.ts tests/browser/chorus-timing.spec.ts tests/browser/chorus-ui.spec.ts tests/browser/chorus-playback.spec.ts tests/browser/acoustics.spec.ts tests/browser/acoustics-playback.spec.ts tests/browser/acoustics-ui.spec.ts tests/browser/reverb.spec.ts tests/browser/reverb-timing.spec.ts tests/browser/reverb-playback.spec.ts tests/browser/reverb-ui.spec.ts tests/browser/autosave-races.spec.ts
         env:
           PLAYWRIGHT_BUNDLED_CHROMIUM: '1'
+      - name: Keep browser failure traces
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2; Node24
+        with:
+          name: browser-failures-${{ github.sha }}
+          retention-days: 7
+          if-no-files-found: ignore
+          archive: true
+          path: .test-results/browser/
       - name: Exercise contributor tutorial from isolated committed source
         run: npm run contributor:verify
         env:
@@ -44,10 +53,10 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1; Node24
         with:
           persist-credentials: false
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0; Node24
         with:
           node-version: '24'
           cache: npm
@@ -63,17 +72,19 @@ jobs:
         run: git archive --format=zip --output=release/FourPataka-source-${{ github.sha }}.zip HEAD
       - name: Keep native failure traces
         if: failure()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2; Node24
         with:
           name: windows-native-failures-${{ github.sha }}
+          archive: true
           retention-days: 7
           if-no-files-found: ignore
           path: .test-results/desktop/
       - name: Keep unsigned build and corresponding source for review
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2; Node24
         with:
           name: fourpataka-review-${{ github.sha }}
+          archive: true
           retention-days: 7
           if-no-files-found: error
           path: |
