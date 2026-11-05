@@ -2,11 +2,11 @@
 
 These summaries record why implementation details matter. Source code and tests remain the authority for exact behavior; pending roadmap work belongs in BUILD_PLAN.md.
 
-## Modulation pedals and planned reverb
+## Modulation and space pedals
 
 <!-- features: pedal-expansion, pedals, comparison, wav-export, instrument-acoustics -->
 
-Phaser shipped in v0.40.0; chorus shipped in v0.41.0. Algorithmic reverb remains planned. Section 7 of BUILD_PLAN.md owns proposed controls/ranges, the phaser → chorus → reverb order and effect-specific proof gates. Initial stage7 analysis is implemented. Each effect must adopt the existing compact board/inspector, cable order, independent library/A-B/track/master settings, frozen score versus smooth live-audition behavior, import/history and shared live/offline graph policies together.
+Phaser shipped in v0.40.0; chorus shipped in v0.41.0. Algorithmic reverb ships in v0.43.0. Section 7 of BUILD_PLAN.md owns proposed controls/ranges, the phaser → chorus → reverb order and effect-specific proof gates. Initial stage7 analysis is implemented. Each effect must adopt the existing compact board/inspector, cable order, independent library/A-B/track/master settings, frozen score versus smooth live-audition behavior, import/history and shared live/offline graph policies together.
 
 Phaser all-pass phase/notches and chorus's modulated short delay are intended musical effects, distinct from look-ahead alignment. Any actual algorithmic latency or feedback cycle-breaking delay must be measured and documented. Modulation uses a session-relative musical-time reference, retains LFO continuity for live edits and does not restart the underlying score clock. Runtime phase/buffers belong to each graph, not shared preset objects or serialized projects. Chorus has no feedback and expresses depth as a percentage of the safe radius relative to base delay; balance its wet voices explicitly so their sum does not introduce a hidden gain boost.
 
@@ -546,6 +546,8 @@ Acoustics are optional host-owned instrument settings outside contributed engine
 
 Chamber release behavior: four normalized critically damped feedback combs; low-pass Q uses20log10(0.5) dB, damping clamped0.2Fs, conservative quantum/filter-aware loop gain and1.3s tail budget. Warm A/B replacements for at least25ms, extended for low-rate reflection horizons, crossfade20ms and retire by audio time across device suspension. Continuous controls retain state, disable closes new feed in5ms and Stop disposes every branch/timer. Shared live/WAV placement is before destination pedals; zero alignment latency,25 nodes/384KiB enabled or6 dry nodes. Source graphs/coefficients remain raw; schema6 is accepted by both core validation and the native transport gate. Physical model accuracy and manual listening are not inferred from numeric proofs.
 
-## Algorithmic space reverb (implementation in progress)
+## Algorithmic space reverb (v0.43.0)
 
 Use a registered M2 pedal with generated early taps, eight independently damped normalized combs and positive feedforward diffusion. A25% early/75% late split retains unity DC without an all-pass transient gain boost. Pre-delay/spacing are intentional musical timing, not alignment latency. Keep the instrument-owned tiny chamber separate and allow both to coexist. Stereo feedback histories are explicitly two-channel, while mono remains compatible. Conservative tail budgets include pre-delay and two nominal decays plus settling; runtime budgets never shrink after edits. Bypass closes wet input over5ms and drains; Stop disconnects all owned nodes. No IR assets, schema changes or default activation in existing projects.
+
+M2 optional warmup metadata is an additive API1 callback, default0, evaluated in seconds for replacement audition paths and summed serially. It is independent of latency and exported event timing. Reverb fills pre-delay, late/diffusion spacing and the render-quantum guard before crossfading; retired paths wait for audio-clock completion across suspension. All registered source/voice clocks and frozen score policies remain intact. Explicit stereo histories prevent inferred mono feedback leakage. Runtime tail windows are conservative and scheduled; they are not amplitude measurements. Full release proof is recorded against51c6d66; no physical-room accuracy is inferred.

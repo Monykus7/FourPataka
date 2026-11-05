@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-10-19. Latest verified release: v0.42.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-11-05. Latest verified release: v0.43.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -799,3 +799,9 @@ Additional stereo proof passes: anti-phase channels retain wet energy and cancel
 Version advances to0.43.0.323 units/56 files pass; ten new browser cases pass individually, including four frozen-WAV combinations at44.1/48kHz with/without instrument body. Three contributor diagrams render. Source/schema6/demo are unchanged. Full browser/effect/keyboard regression, native JSON/WAV/Listen cleanup, distribution and normal portable startup verification are pending.
 
 Reverb release regressions: all81 affected browser cases pass in7.8minutes, covering the ten new reverb cases plus instrument acoustics, chorus/phaser/delay, shared module contracts, source/output analysis, comparison, routing, engines, export, swing and keyboard workflows.323 units/56 files, production build/format/notices/knowledge checks, all three rendered diagrams and103 local guide links pass. project.ts, instrument acoustics settings and chamber.ts exactly match pre-milestone3f70fb1. Distribution notices/private-file exclusion pass. Native first ten cases pass; final engine/feature cases and normal portable startup remain pending. app.asar SHA256CD99E2EF9DB4D69E8EE1F69427AB49138B9855AC19A1BB22B524F2F2A43580ED; portable SHA25689A879DA7458E0E9B38EC1DB8A2F46F4A3845E1E35EBD8E1DF56E3EFF45BFE70.
+
+## v0.43.0 reverb release complete
+
+Both required jobs pass for release source51c6d66c83fe0d7061a45185574507844c7906c8 in [run42078907746](https://github.com/Monykus7/FourPataka/actions/runs/42078907746), including22 browser suites, the isolated contributor tutorial and12 packaged workflows. Local evidence:323 units/56 files,81 affected browser cases in7.8minutes and all12 native workflows in7.3minutes, including actual reverb Listen/Stop with eight filter creations/disconnections, independent native JSON save/reopen and WAV export. Numeric stereo/onset/gain/extreme-rate/tail/drain/deadline/warm-up/device-suspension/copy proofs pass. Source/schema6/demo and instrument-chamber files exactly match pre-milestone3f70fb1. Build/format/notices/private exclusion/knowledge checks, wide/390px screenshots, three rendered contributor diagrams and103 local guide links pass. Physical listening/device/screen-reader/signing remain separate limits.
+
+The verified portable is visibly open as FourPataka v0.43.0, PID26280, executable C:/Users/adity/AppData/Local/Temp/3LhLAhvZOa2rVHxrxLZSvOB6iyZ/FourPataka.exe. Running app.asar matches the native-tested SHA256CD99E2EF9DB4D69E8EE1F69427AB49138B9855AC19A1BB22B524F2F2A43580ED; normal startup stderr is0bytes. release/FourPataka-0.43.0-win-x64.exe SHA25689A879DA7458E0E9B38EC1DB8A2F46F4A3845E1E35EBD8E1DF56E3EFF45BFE70. Production content remains that of51c6d66; final checkpoints only record verification/documentation. Eight focused commits use Monykus7 and are pushed to origin/master. This local release does not replace the published v0.39.0 contributor preview. WAV-to-instrument W1/W2 and additional synthesis/acoustic models remain planned.

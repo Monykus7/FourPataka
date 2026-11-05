@@ -1,6 +1,6 @@
 # Instrument acoustics — v0.42.0
 
-The Instrument builder's **Acoustics → Tiny chamber** adds an algorithmic body approximation. It requires no recordings, IR assets, convolution or downloads. It is separate from the planned track/master space-reverb pedal. Use modest mix settings for coloration; this is not a physical piano, brass bore or soundboard model.
+The Instrument builder's **Acoustics → Tiny chamber** adds an algorithmic body approximation. It requires no recordings, IR assets, convolution or downloads. It is separate from the [track/master space-reverb pedal](REVERB.md), implemented in v0.43.0. Use modest mix settings for coloration; this is not a physical piano, brass bore or soundboard model.
 
 ## Saved settings and module boundary
 
@@ -80,4 +80,4 @@ Retirement checks the audio clock, so suspending the device cannot disconnect a 
 
 Tests cover schema migration/validation/copies; dry unity; finite extrema at3/44.1/48/192kHz; reflection spacing, damping and decay effects; exactly silent channel isolation; disable drainage; resource/disposal counts; device-clock suspension; live clock/voice retention; A/B/track ownership; and frozen WAV parity for Fourier and independent engines before nonlinear overdrive at44.1/48kHz. At the highest rates, recursive filtering introduces small floating-point differences in proportional stereo signals; the ratio test permits30 micro-units, while a silent input channel must remain exactly silent.
 
-Actual UI checks exercise exact/keyboard-capable controls, save/apply, undo/reset, reload, engine/source independence and responsive layouts. The native workflow additionally saves/reopens JSON and renders/saves WAV. CI includes all acoustic suites. [Implementation status](../../IMPLEMENTATION_STATUS.md) records executed checks and package hashes; test definitions alone are not passing evidence. Physical listening, device latency and wider accessibility remain separate gates. Future material/resonance presets, physical modelling and the space-reverb pedal remain planned.
+Actual UI checks exercise exact/keyboard-capable controls, save/apply, undo/reset, reload, engine/source independence and responsive layouts. The native workflow additionally saves/reopens JSON and renders/saves WAV. CI includes all acoustic suites. [Implementation status](../../IMPLEMENTATION_STATUS.md) records executed checks and package hashes; test definitions alone are not passing evidence. Physical listening, device latency and wider accessibility remain separate gates. Future material/resonance presets and physical modelling remain planned; the separate space-reverb pedal ships in v0.43.0.
