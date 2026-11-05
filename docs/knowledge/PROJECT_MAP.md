@@ -189,10 +189,14 @@ Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamp
 
 M2 algorithmic reverb implementation is in progress: generated early reflections, eight normalized damped combs and three positive two-tap diffusion stages, with no IRs or added noise. Controls: pre-delay0–100ms, conservative -60dB decay0.1–10s, size50–200%, damping500–18000Hz, wet trim and linear mix. Defaults15ms/1.5s/100%/6500Hz/0dB/25%. Critical low-pass Q uses dB and cutoff0.2Fs; synchronized feed1-g/feedback targets and explicit stereo histories bound static gain. Runtime preserves historical tail budgets; bypass closes new feed over5ms and drains; Stop owns all nodes. Declares53 nodes/3MiB, supported3–192kHz, zero alignment latency and up to20.6s tail allowance. Units/public boundary/build pass; DSP follow-up and board/live/WAV/native/release gates remain pending. Schema6/source/demo/instrument chamber remain unchanged.
 
-- Reverb pedal (implementation in progress) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/reverb.ts](../../src/modules/pedals/reverb.ts), [tests/unit/reverb.test.ts](../../tests/unit/reverb.test.ts)
-- Reverb pedal (implementation in progress) / dependency group 2: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
+- Reverb pedal (implementation in progress) / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/audio/engine.ts](../../src/audio/engine.ts)
+- Reverb pedal (implementation in progress) / dependency group 2: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/reverb.ts](../../src/modules/pedals/reverb.ts), [tests/unit/reverb.test.ts](../../tests/unit/reverb.test.ts)
+- Reverb pedal (implementation in progress) / dependency group 3: [src/modules/foundation/pedals.ts](../../src/modules/foundation/pedals.ts)
+- Reverb pedal (implementation in progress) / dependency group 4: [tests/browser/reverb-playback.spec.ts](../../tests/browser/reverb-playback.spec.ts)
+- Reverb pedal (implementation in progress) / dependency group 5: [tests/browser/reverb-timing.spec.ts](../../tests/browser/reverb-timing.spec.ts)
+- Reverb pedal (implementation in progress) / dependency group 6: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
 ##### Chorus pedal
 

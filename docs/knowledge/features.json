@@ -10,7 +10,12 @@
         "src/modules/pedals/reverb.ts",
         "src/modules/assembly.ts",
         "tests/unit/reverb.test.ts",
-        "tests/browser/reverb.spec.ts"
+        "tests/browser/reverb.spec.ts",
+        "tests/browser/reverb-timing.spec.ts",
+        "tests/browser/reverb-playback.spec.ts",
+        "src/modules/foundation/pedals.ts",
+        "src/audio/effects.ts",
+        "src/audio/engine.ts"
       ]
     },
     {
