@@ -1,5 +1,53 @@
 import { expect, test } from '@playwright/test';
 
+test('reverb retains anti-phase stereo energy and silent input generates no wet signal', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const proof = await page.evaluate(async () => {
+    const { reverbModule } = await import('/src/modules/pedals/' + 'reverb.ts');
+    const { defaultModuleSettings } = await import('/src/modules/' + 'index.ts');
+    const rows = [];
+    for (const silent of [false, true]) {
+      const rate = 48000,
+        context = new OfflineAudioContext(2, rate, rate),
+        source = context.createBufferSource(),
+        buffer = context.createBuffer(2, rate / 4, rate);
+      if (!silent)
+        for (let i = 0; i < buffer.length; i++) {
+          const v = 0.1 * Math.sin((2 * Math.PI * 317 * i) / rate);
+          buffer.getChannelData(0)[i] = v;
+          buffer.getChannelData(1)[i] = -v;
+        }
+      source.buffer = buffer;
+      const processor = reverbModule.create(
+        context,
+        { ...defaultModuleSettings(reverbModule), mix: 100 },
+        false,
+        { sampleRate: rate, compressorLatency: 0, oversamplingLatency: 0 },
+      );
+      source.connect(processor.input);
+      processor.output.connect(context.destination);
+      source.start();
+      const result = await context.startRendering();
+      let peak = 0,
+        cancellation = 0;
+      for (let i = 0; i < result.length; i++) {
+        const l = result.getChannelData(0)[i],
+          r = result.getChannelData(1)[i];
+        peak = Math.max(peak, Math.abs(l), Math.abs(r));
+        cancellation = Math.max(cancellation, Math.abs(l + r));
+      }
+      processor.dispose();
+      rows.push({ silent, peak, cancellation });
+    }
+    return rows;
+  });
+  expect(proof[0].peak).toBeGreaterThan(0.001);
+  expect(proof[0].cancellation).toBe(0);
+  expect(proof[1].peak).toBe(0);
+});
+
 test('reverb dry and bypass are unity; wet onset follows pre-delay and early reflection weights', async ({
   page,
 }) => {

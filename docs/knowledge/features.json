@@ -18,7 +18,8 @@
         "src/audio/engine.ts",
         "tests/helpers/reverb.ts",
         "tests/browser/reverb-ui.spec.ts",
-        "src/physical-board.css"
+        "src/physical-board.css",
+        "docs/extensions/REVERB.md"
       ]
     },
     {

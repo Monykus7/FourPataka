@@ -1,5 +1,7 @@
 # Contributor extension guides
 
+[Reverb](REVERB.md) documents the space processor, optional branch warm-up contract, bypass/tail ownership and three contributor diagrams.
+
 [Instrument acoustics](INSTRUMENT_ACOUSTICS.md) documents the host-owned body stage, schema6 settings, engine integration, lifecycle and three diagrams.
 
 See [Chorus](CHORUS.md) for opposed delays, causal controls, finite bypass drainage and live/WAV ownership diagrams.
