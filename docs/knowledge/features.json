@@ -2,6 +2,18 @@
   "schemaVersion": 1,
   "features": [
     {
+      "id": "reverb",
+      "parent": "pedals",
+      "title": "Reverb pedal (implementation in progress)",
+      "summary": "M2 algorithmic reverb implementation is in progress: generated early reflections, eight normalized damped combs and three positive two-tap diffusion stages, with no IRs or added noise. Controls: pre-delay0–100ms, conservative -60dB decay0.1–10s, size50–200%, damping500–18000Hz, wet trim and linear mix. Defaults15ms/1.5s/100%/6500Hz/0dB/25%. Critical low-pass Q uses dB and cutoff0.2Fs; synchronized feed1-g/feedback targets and explicit stereo histories bound static gain. Runtime preserves historical tail budgets; bypass closes new feed over5ms and drains; Stop owns all nodes. Declares53 nodes/3MiB, supported3–192kHz, zero alignment latency and up to20.6s tail allowance. Units/public boundary/build pass; DSP follow-up and board/live/WAV/native/release gates remain pending. Schema6/source/demo/instrument chamber remain unchanged.",
+      "paths": [
+        "src/modules/pedals/reverb.ts",
+        "src/modules/assembly.ts",
+        "tests/unit/reverb.test.ts",
+        "tests/browser/reverb.spec.ts"
+      ]
+    },
+    {
       "id": "chorus",
       "parent": "pedals",
       "title": "Chorus pedal",

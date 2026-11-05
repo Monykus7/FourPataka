@@ -20,7 +20,7 @@ M1–M6 implement reviewed bundled-source modules using public imports and expli
 
 - Modular contributor program (M1–M6 implemented) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/index.ts](../../src/modules/index.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L19), [definitions](../../src/modules/assembly.ts#L27), [builtInIds](../../src/modules/assembly.ts#L28), [pedalModules](../../src/modules/assembly.ts#L30), [bundledModules](../../src/modules/assembly.ts#L31), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L32), [instrumentModules](../../src/modules/assembly.ts#L38), [factoryPreviews](../../src/modules/assembly.ts#L43).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
 
 #### M6 contributor readiness and supported release
 
@@ -185,6 +185,15 @@ Compressor, overdrive, three-band EQ and delay use independent A/B, track and ma
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
 
+##### Reverb pedal (implementation in progress)
+
+M2 algorithmic reverb implementation is in progress: generated early reflections, eight normalized damped combs and three positive two-tap diffusion stages, with no IRs or added noise. Controls: pre-delay0–100ms, conservative -60dB decay0.1–10s, size50–200%, damping500–18000Hz, wet trim and linear mix. Defaults15ms/1.5s/100%/6500Hz/0dB/25%. Critical low-pass Q uses dB and cutoff0.2Fs; synchronized feed1-g/feedback targets and explicit stereo histories bound static gain. Runtime preserves historical tail budgets; bypass closes new feed over5ms and drains; Stop owns all nodes. Declares53 nodes/3MiB, supported3–192kHz, zero alignment latency and up to20.6s tail allowance. Units/public boundary/build pass; DSP follow-up and board/live/WAV/native/release gates remain pending. Schema6/source/demo/instrument chamber remain unchanged.
+
+- Reverb pedal (implementation in progress) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/reverb.ts](../../src/modules/pedals/reverb.ts), [tests/unit/reverb.test.ts](../../tests/unit/reverb.test.ts)
+- Reverb pedal (implementation in progress) / dependency group 2: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
+
+Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
+
 ##### Chorus pedal
 
 v0.41.0 registers a two-voice opposed-delay M2 chorus with one retained session-relative LFO and no feedback. Rate0.05–5Hz, base5–30ms, depth0–100% of min(10ms,base−1ms), wet trim and linear mix encode causal1–40ms delays; defaults0.8Hz/15ms/30%/35% mix give±3ms excursion. Base/radius targets share timestamp and15ms smoothing. Bypass closes new input over5ms and drains within50ms; Stop releases owned scheduled sources. Processing latency0,12 nodes/192KiB estimates, supported3–192kHz. Optional timeOrigin seeds late branches from current rate/session age without reconstructing historical rate edits or delay buffers. Existing board controls/reset/undo, independent A/B/track/master copies, schema5 and shared live/frozen WAV factory apply; source/demo unchanged. 316 units,43 affected browser checks, ten packaged workflows, targeted native/browser drag follow-ups and normal portable startup/hash parity pass. Both hosted jobs pass on720a97f in run39324260891. Reverb remains planned; physical listening/device checks remain separate.
@@ -195,7 +204,7 @@ v0.41.0 registers a two-voice opposed-delay M2 chorus with one retained session-
 - Chorus pedal / dependency group 4: [tests/browser/chorus-ui.spec.ts](../../tests/browser/chorus-ui.spec.ts), [tests/helpers/chorus.ts](../../tests/helpers/chorus.ts)
 - Chorus pedal / dependency group 5: [tests/browser/chorus.spec.ts](../../tests/browser/chorus.spec.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L19), [definitions](../../src/modules/assembly.ts#L27), [builtInIds](../../src/modules/assembly.ts#L28), [pedalModules](../../src/modules/assembly.ts#L30), [bundledModules](../../src/modules/assembly.ts#L31), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L32), [instrumentModules](../../src/modules/assembly.ts#L38), [factoryPreviews](../../src/modules/assembly.ts#L43).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
 
 ##### Phaser pedal
 

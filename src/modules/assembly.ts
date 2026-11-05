@@ -16,6 +16,7 @@ import { levelPedal } from './examples/level/index';
 import { delayModule } from './pedals/delay';
 import { phaserModule } from './pedals/phaser';
 import { chorusModule } from './pedals/chorus';
+import { reverbModule } from './pedals/reverb';
 const builtIns = [
   compressorModule,
   overdriveModule,
@@ -23,6 +24,7 @@ const builtIns = [
   delayModule,
   phaserModule,
   chorusModule,
+  reverbModule,
 ];
 const definitions = [...builtIns, levelPedal];
 const builtInIds = builtIns.map((definition) => definition.id);
