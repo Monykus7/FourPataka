@@ -13,6 +13,7 @@ export interface EffectGraph {
   output: GainNode;
   latency: number;
   tail: number;
+  readonly warmup: number;
   readonly tailActive: boolean;
   update: (pedal: Pedal, chainBypass?: boolean) => void;
   dispose: () => void;
@@ -52,6 +53,12 @@ export function createEffect(
   )
     throw new Error(`Unsupported sample rate for ${definition.id}.`);
   const expectedLatency = checkedSeconds(definition.latency(environment), definition.id);
+  let warmup = original.bypassed
+    ? 0
+    : checkedSeconds(
+        definition.warmup?.(clampPedal(original).params, environment) ?? 0,
+        definition.id,
+      );
   const runtime = definition.create(
     context,
     clampPedal(original).params,
@@ -72,12 +79,23 @@ export function createEffect(
     get tail() {
       return checkedSeconds(runtime.tail, definition.id);
     },
+    get warmup() {
+      return warmup;
+    },
     get tailActive() {
       return runtime.tailActive;
     },
     update: (pedal, chainBypass = false) => {
       requirePedalModule(pedal);
+      const nextWarmup =
+        chainBypass || pedal.bypassed
+          ? 0
+          : checkedSeconds(
+              definition.warmup?.(clampPedal(pedal).params, environment) ?? 0,
+              definition.id,
+            );
       runtime.update(clampPedal(pedal).params, chainBypass || pedal.bypassed);
+      warmup = nextWarmup;
     },
     dispose: () => runtime.dispose(),
   };
@@ -88,6 +106,7 @@ export interface ChainGraph {
   analyser: AnalyserNode;
   latency: number;
   tail: number;
+  readonly warmup: number;
   readonly activeTails: string[];
   topology: string;
   readonly musicalSettings: string;
@@ -164,6 +183,9 @@ export function createChain(
     latency: chainLatency(chain, oversamplingLatency, compressorLatency, context.sampleRate),
     get tail() {
       return effects.reduce((sum, effect) => sum + effect.tail, 0);
+    },
+    get warmup() {
+      return effects.reduce((sum, effect) => sum + effect.warmup, 0);
     },
     get activeTails() {
       return effects.flatMap((effect, i) => (effect.tailActive ? [route.pedals[i].id] : []));

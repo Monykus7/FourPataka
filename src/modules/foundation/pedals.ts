@@ -31,6 +31,8 @@ export interface PedalModule extends NumericModuleDefinition {
   readonly note?: string;
   readonly reset?: { readonly label: string; readonly accessibleLabel: string };
   latency: (environment: PedalEnvironment) => number;
+  /** Seconds to warm a replacement audition branch; not alignment latency. */
+  readonly warmup?: (params: Record<string, number>, environment: PedalEnvironment) => number;
   tail: (params: Record<string, number>, environment: PedalEnvironment) => number;
   /** Additional musical tail; filter settling and latency remain host allowances. */
   exportTail: (params: Record<string, number>) => number;
@@ -66,6 +68,7 @@ export function definePedalModule(input: PedalModule): PedalModule {
     ![input.latency, input.tail, input.exportTail, input.create].every(
       (f) => typeof f === 'function',
     ) ||
+    (input.warmup !== undefined && typeof input.warmup !== 'function') ||
     (input.legacyKind !== undefined && !/^[a-z][a-z-]{0,39}$/.test(input.legacyKind)) ||
     (input.reset && (!input.reset.label?.trim() || !input.reset.accessibleLabel?.trim()))
   )
@@ -84,6 +87,7 @@ export function definePedalModule(input: PedalModule): PedalModule {
     note: input.note,
     reset: input.reset ? Object.freeze({ ...input.reset }) : undefined,
     latency: input.latency,
+    warmup: input.warmup,
     tail: input.tail,
     exportTail: input.exportTail,
     create: input.create,

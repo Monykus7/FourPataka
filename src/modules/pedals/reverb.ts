@@ -83,6 +83,10 @@ export const reverbModule = definePedalModule({
     },
   },
   latency: () => 0,
+  warmup: (p, env) =>
+    p.mix === 0
+      ? 0
+      : p.preDelay / 1000 + ((0.0719 + 0.0191) * p.size) / 100 + 128 / env.sampleRate + 0.01,
   tail: reverbTail,
   exportTail: (p) => (p.mix > 0 ? reverbTail(p) : 0),
   create(context, initial, bypassed) {

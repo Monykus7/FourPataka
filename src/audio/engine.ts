@@ -223,13 +223,22 @@ export class AudioEngine {
       const now = context.currentTime;
       // Warm a replacement path before fading; otherwise its latency padding
       // would leave a silence gap. Retarget all unfinished transitions too.
-      const at = now + latency + 0.02;
+      // Musical pre-delay/reflections may need more history than alignment
+      // padding. Modules opt in without changing score/WAV scheduling latency.
+      const at = now + latency + graph.warmup + 0.02;
       previous.forEach((old) => {
         if (old.retireTimer) clearTimeout(old.retireTimer);
         holdParameter(old.gain.gain, now);
         old.gain.gain.setValueAtTime(old.gain.gain.value, at);
         old.gain.gain.linearRampToValueAtTime(0, at + 0.02);
-        old.retireTimer = setTimeout(old.dispose, (at - now) * 1000 + 35);
+        const finish = () => {
+          if (!session.auditionBranches.has(old)) return;
+          // Warm-up may span a device suspension. Retire by audio time, so a
+          // wall timer cannot remove the old path before its crossfade runs.
+          if (context.currentTime >= at + 0.02) old.dispose();
+          else old.retireTimer = setTimeout(finish, 25);
+        };
+        old.retireTimer = setTimeout(finish, (at - now) * 1000 + 35);
       });
       gain.gain.setValueAtTime(0, now);
       gain.gain.setValueAtTime(0, at);

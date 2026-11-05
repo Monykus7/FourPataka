@@ -55,7 +55,7 @@ Implemented v0.33.0: pure public PedalModule/registry contracts, four built-in D
 - M2 playable pedal modules and contributor example / dependency group 3: [tests/browser/pedal-modules.spec.ts](../../tests/browser/pedal-modules.spec.ts), [tests/helpers/pedalModules.ts](../../tests/helpers/pedalModules.ts)
 - M2 playable pedal modules and contributor example / dependency group 4: [tests/unit/pedalModules.test.ts](../../tests/unit/pedalModules.test.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
 #### M3 registry-backed Fourier presets
 
@@ -183,7 +183,7 @@ Compressor, overdrive, three-band EQ and delay use independent A/B, track and ma
 - Pedalboard and processing / dependency group 4: [tests/browser/board-audio.spec.ts](../../tests/browser/board-audio.spec.ts)
 - Pedalboard and processing / dependency group 5: [tests/browser/board.spec.ts](../../tests/browser/board.spec.ts), [tests/helpers/board.ts](../../tests/helpers/board.ts), [tests/browser/delay.spec.ts](../../tests/browser/delay.spec.ts), [tests/browser/dials-touch.spec.ts](../../tests/browser/dials-touch.spec.ts), [tests/browser/dials.spec.ts](../../tests/browser/dials.spec.ts), [tests/browser/eq.spec.ts](../../tests/browser/eq.spec.ts), [tests/browser/pedalboard.spec.ts](../../tests/browser/pedalboard.spec.ts), [tests/browser/pedals.spec.ts](../../tests/browser/pedals.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
 ##### Reverb pedal (implementation in progress)
 
@@ -217,7 +217,7 @@ v0.40.0 adds a registered M2 phaser:4/6/8 first-order-equivalent warm all-pass s
 - Phaser pedal / dependency group 5: [tests/browser/phaser-ui.spec.ts](../../tests/browser/phaser-ui.spec.ts), [tests/helpers/phaser.ts](../../tests/helpers/phaser.ts)
 - Phaser pedal / dependency group 6: [tests/browser/phaser.spec.ts](../../tests/browser/phaser.spec.ts)
 
-Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L20), [createEffect](../../src/audio/effects.ts#L35), [tail](../../src/audio/effects.ts#L72), [tailActive](../../src/audio/effects.ts#L75), [ChainGraph](../../src/audio/effects.ts#L85), [chainLatency](../../src/audio/effects.ts#L97), [chainResources](../../src/audio/effects.ts#L109).
+Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
 ##### Modulation pedals and planned reverb
 

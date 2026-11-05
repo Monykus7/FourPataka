@@ -51,3 +51,13 @@ it('distinguishes intentional space timing from latency and declares conservativ
   expect(reverbModule.nodes).toBe(53);
   expect(reverbModule.memoryBytes).toBe(3145728);
 });
+
+it('declares branch warm-up independently of musical latency and retains API1 defaults', () => {
+  const p = defaultModuleSettings(reverbModule),
+    env = { sampleRate: 48000, compressorLatency: 0, oversamplingLatency: 0 };
+  expect(reverbModule.warmup!(p, env)).toBeGreaterThan(0.1);
+  expect(
+    reverbModule.warmup!({ ...p, preDelay: 100, size: 200 }, { ...env, sampleRate: 3000 }),
+  ).toBeLessThan(0.34);
+  expect(reverbModule.warmup!({ ...p, mix: 0 }, env)).toBe(0);
+});
