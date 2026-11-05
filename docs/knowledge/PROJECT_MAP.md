@@ -12,7 +12,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-FourPataka v0.42.0 is a local browser/Electron music studio with32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, independent instrument copies, seven serial pedals including phaser/chorus, a multi-file score IDE, swing, frozen WAV export and initial source/live-output analysis. Canonical scoreText owns the song; A/B changes retain the clock. M1–M6 are implemented: public module metadata/pedal/preset/engine/feature boundaries, schema6 migration/unavailable recovery, contributor tutorials and CI, GPL-3.0-only, operational safeguards and durable contributor-preview distribution. Instrument chamber is implemented and verified in v0.42.0. WAV-to-instrument reconstruction, reverb, further notation/analysis and manual listening/device/accessibility checks remain future work. Start with docs/knowledge/TASK_GUIDE.md; historical verification is in IMPLEMENTATION_STATUS.md.
+FourPataka v0.43.0 is a local browser/Electron music studio with32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, independent instrument copies, eight serial pedals including phaser/chorus/reverb, a multi-file score IDE, swing, frozen WAV export and initial source/live-output analysis. Canonical scoreText owns the song; A/B changes retain the clock. M1–M6 are implemented: public module metadata/pedal/preset/engine/feature boundaries, schema6 migration/unavailable recovery, contributor tutorials and CI, GPL-3.0-only, operational safeguards and durable contributor-preview distribution. Instrument chamber is implemented and verified in v0.42.0. Reverb is in release verification. WAV-to-instrument reconstruction, further notation/analysis and manual listening/device/accessibility checks remain future work. Start with docs/knowledge/TASK_GUIDE.md; historical verification is in IMPLEMENTATION_STATUS.md.
 
 ### Modular contributor program (M1–M6 implemented)
 
@@ -185,17 +185,17 @@ Compressor, overdrive, three-band EQ and delay use independent A/B, track and ma
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
-##### Reverb pedal (implementation in progress)
+##### Reverb pedal
 
-M2 algorithmic reverb implementation is in progress: generated early reflections, eight normalized damped combs and three positive two-tap diffusion stages, with no IRs or added noise. Controls: pre-delay0–100ms, conservative -60dB decay0.1–10s, size50–200%, damping500–18000Hz, wet trim and linear mix. Defaults15ms/1.5s/100%/6500Hz/0dB/25%. Critical low-pass Q uses dB and cutoff0.2Fs; synchronized feed1-g/feedback targets and explicit stereo histories bound static gain. Runtime preserves historical tail budgets; bypass closes new feed over5ms and drains; Stop owns all nodes. Declares53 nodes/3MiB, supported3–192kHz, zero alignment latency and up to20.6s tail allowance. Units/public boundary/build pass; DSP follow-up and board/live/WAV/native/release gates remain pending. Schema6/source/demo/instrument chamber remain unchanged.
+v0.43.0 source implements a registered M2 algorithmic space pedal:25% generated early taps plus75% late field from eight normalized damped combs and three positive two-tap diffusion stages. Controls/defaults: pre-delay0–100ms/15; conservative -60dB decay0.1–10s/1.5; size50–200%/100; damping500–18000Hz/6500 clamped0.2Fs; wet trim0dB and linear mix25%. Critical low-pass Q uses dB; synchronized15ms targets retain feed1-g/complementary feedback. Explicit two-channel wet histories prevent startup leakage and preserve mono/anti-phase stereo. Runtime captures maximum past tail budget, closes new feed in5ms on bypass, extends drains only for real network edits and disconnects53 owned nodes on Stop.3MiB estimate, supported3–192kHz,0 alignment latency,3.515s default/20.6s maximum static tail allowance. Optional API1 warmup callback defaults0 for older pedals, sums serially and fills replacement branches before audio-clock crossfades even across device suspension; it does not reschedule score/WAV or restart voices. Existing board/history/copy/import/shared-live-WAV behavior applies. Schema6/source/demo/instrument chamber remain unchanged.323 units and ten new browser cases pass individually; full browser/native/portable/hosted release gates remain pending. No IR assets or physical-room fidelity claim.
 
-- Reverb pedal (implementation in progress) / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/audio/engine.ts](../../src/audio/engine.ts)
-- Reverb pedal (implementation in progress) / dependency group 2: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/reverb.ts](../../src/modules/pedals/reverb.ts), [tests/unit/reverb.test.ts](../../tests/unit/reverb.test.ts)
-- Reverb pedal (implementation in progress) / dependency group 3: [src/modules/foundation/pedals.ts](../../src/modules/foundation/pedals.ts)
-- Reverb pedal (implementation in progress) / dependency group 4: [tests/browser/reverb-playback.spec.ts](../../tests/browser/reverb-playback.spec.ts)
-- Reverb pedal (implementation in progress) / dependency group 5: [tests/browser/reverb-timing.spec.ts](../../tests/browser/reverb-timing.spec.ts)
-- Reverb pedal (implementation in progress) / dependency group 6: [tests/browser/reverb-ui.spec.ts](../../tests/browser/reverb-ui.spec.ts), [tests/helpers/reverb.ts](../../tests/helpers/reverb.ts)
-- Reverb pedal (implementation in progress) / dependency group 7: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
+- Reverb pedal / dependency group 1: [src/audio/effects.ts](../../src/audio/effects.ts), [src/audio/engine.ts](../../src/audio/engine.ts)
+- Reverb pedal / dependency group 2: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/pedals/reverb.ts](../../src/modules/pedals/reverb.ts), [tests/unit/reverb.test.ts](../../tests/unit/reverb.test.ts)
+- Reverb pedal / dependency group 3: [src/modules/foundation/pedals.ts](../../src/modules/foundation/pedals.ts)
+- Reverb pedal / dependency group 4: [tests/browser/reverb-playback.spec.ts](../../tests/browser/reverb-playback.spec.ts)
+- Reverb pedal / dependency group 5: [tests/browser/reverb-timing.spec.ts](../../tests/browser/reverb-timing.spec.ts)
+- Reverb pedal / dependency group 6: [tests/browser/reverb-ui.spec.ts](../../tests/browser/reverb-ui.spec.ts), [tests/helpers/reverb.ts](../../tests/helpers/reverb.ts)
+- Reverb pedal / dependency group 7: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
@@ -224,9 +224,9 @@ v0.40.0 adds a registered M2 phaser:4/6/8 first-order-equivalent warm all-pass s
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 
-##### Modulation pedals and planned reverb
+##### Modulation and space pedals
 
-Phaser is verified in v0.40.0; chorus is verified in v0.41.0 (see dedicated feature summaries). Algorithmic reverb remains planned: generated reflections and a bounded damped feedback network, pre-delay, -60dB decay, size and damping. Keep space reverb distinct from the instrument builder tiny chamber. Use M2 metadata, independent board/A-B/track/master copies, retained musical clock, finite tail/cap/resource accounting and shared live/frozen-WAV factories. Physical listening/device gates remain separate; existing projects enable no new effects by migration.
+Phaser and chorus are verified in v0.40/0.41; algorithmic reverb source is implemented for v0.43.0 with release verification pending. It uses the M2 contract, independent board/A-B/track/master copies, shared live/frozen-WAV factories, explicit warm-up/latency separation and finite tail/resource budgets. Keep the space effect distinct from the v0.42.0 instrument chamber. See dedicated feature summaries for actual controls and implementation evidence. Physical listening/device gates remain separate.
 
 #### WAV-to-instrument analysis (planned)
 

@@ -793,3 +793,7 @@ Playback proofs pass: serial warm-up sums independently of latency; bypass/dry m
 Board integration passes: real Equipment drag/cables, decay dial and exact controls, reset/undo, independent A/B/master copies, reload and wide/390px layout. Actual Listen creates eight damping filters; Stop disconnects all eight. The eight-item Equipment menu now scrolls locally; four shared pedal regressions pass. Tail labels describe effect audio rather than only echoes. Native JSON/WAV and CI suites are added but not yet packaged/executed for the release.
 
 Additional stereo proof passes: anti-phase channels retain wet energy and cancel only on deliberate summation; a silent input generates exactly0 wet signal. Contributor guide documents three ownership/network/lifecycle diagrams, explicit warm-up versus latency, serial body/effect tails and scheduled versus measured tail activity.
+
+## v0.43.0 reverb release preparation
+
+Version advances to0.43.0.323 units/56 files pass; ten new browser cases pass individually, including four frozen-WAV combinations at44.1/48kHz with/without instrument body. Three contributor diagrams render. Source/schema6/demo are unchanged. Full browser/effect/keyboard regression, native JSON/WAV/Listen cleanup, distribution and normal portable startup verification are pending.
