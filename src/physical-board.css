@@ -388,3 +388,14 @@
 .placing-pedal .board-cable {
   pointer-events: none;
 }
+
+.pedal-module[data-pedal-kind='fourpataka:pedal/reverb'],
+.board-inspector[data-pedal-kind='fourpataka:pedal/reverb'] {
+  --pedal-color: var(--secondary);
+  --pedal-ink: var(--secondary-ink);
+}
+.equipment-menu {
+  max-height: min(320px, 30dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

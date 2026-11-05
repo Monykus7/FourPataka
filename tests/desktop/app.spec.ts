@@ -1,3 +1,4 @@
+import { reverbWorkflow, verifyReverbListenStop } from '../helpers/reverb';
 import { acousticsWorkflow } from '../helpers/acoustics';
 import { verifyModulatedListenStop } from '../helpers/modulatedPedals';
 import { chorusWorkflow } from '../helpers/chorus';
@@ -59,6 +60,59 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged reverb retains owned board settings through native JSON and WAV', async () => {
+  const page = await app.firstWindow();
+  await reverbWorkflow(page);
+  await verifyReverbListenStop(page);
+  const filePath = resolve('.test-results', 'desktop', 'reverb.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, filePath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Saved reverb.fourpataka.json');
+  const saved = JSON.parse(await readFile(filePath, 'utf8'));
+  expect(saved.schemaVersion).toBe(6);
+  expect(saved.processing.master.pedals[0].params.decay).toBe(0.5);
+  expect(saved.processing.audition.A.pedals[0].params.decay).toBe(1.2);
+  expect(saved.processing.audition.B.pedals[0].params.decay).toBe(0.5);
+  await page.getByRole('button', { name: 'Compose', exact: true }).click();
+  await page.locator('.cm-content').fill('tempo 120\ntrack room using saw {\n C4 eighth\n}');
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].webContents.send('fourpataka:menu', 'wav'),
+  );
+  const panel = page.getByRole('dialog', { name: 'Export WAV' });
+  await panel.getByRole('combobox', { name: 'Sample rate' }).selectOption('44100');
+  await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
+  await panel.getByRole('spinbutton', { name: 'Effect tail limit (seconds)' }).fill('2');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  const wavPath = resolve('.test-results', 'desktop', 'reverb.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, wavPath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved reverb.wav');
+  const wav = await readFile(wavPath);
+  expect(wav.toString('ascii', 0, 4)).toBe('RIFF');
+  expect(wav.readUInt32LE(24)).toBe(44100);
+  expect(wav.length).toBeGreaterThan(44100);
+  await panel.getByRole('button', { name: 'Close WAV export', exact: true }).click();
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, filePath);
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await page.getByRole('button', { name: 'Pedalboard', exact: true }).click();
+  await page
+    .getByRole('combobox', { name: 'Pedal editing destination', exact: true })
+    .selectOption('master');
+  await expect(
+    page.getByRole('spinbutton', {
+      name: 'fourpataka:pedal/reverb 1 decay exact value',
+      exact: true,
+    }),
+  ).toHaveValue('0.5');
 });
 
 test('packaged instrument acoustics retain independent bodies through native JSON and WAV', async () => {
@@ -794,7 +848,7 @@ test('packaged delay drags, dials, native saving and tail-aware bypass work toge
     .poll(async () => page.locator('.meter-bars .lit').count(), { timeout: 10000 })
     .toBeGreaterThan(0);
   await page.getByRole('checkbox', { name: 'Bypass Audition A chain', exact: true }).check();
-  await expect(page.locator('.delay-tail-status')).toHaveText('Echo tails active');
+  await expect(page.locator('.delay-tail-status')).toHaveText('Effect tails active');
   await expect(page.locator('.compact-pedal.delay')).toContainText('Tail active');
   await page.screenshot({ path: '.test-results/desktop/delay-board.png', fullPage: true });
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();

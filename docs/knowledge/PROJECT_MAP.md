@@ -194,7 +194,8 @@ M2 algorithmic reverb implementation is in progress: generated early reflections
 - Reverb pedal (implementation in progress) / dependency group 3: [src/modules/foundation/pedals.ts](../../src/modules/foundation/pedals.ts)
 - Reverb pedal (implementation in progress) / dependency group 4: [tests/browser/reverb-playback.spec.ts](../../tests/browser/reverb-playback.spec.ts)
 - Reverb pedal (implementation in progress) / dependency group 5: [tests/browser/reverb-timing.spec.ts](../../tests/browser/reverb-timing.spec.ts)
-- Reverb pedal (implementation in progress) / dependency group 6: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
+- Reverb pedal (implementation in progress) / dependency group 6: [tests/browser/reverb-ui.spec.ts](../../tests/browser/reverb-ui.spec.ts), [tests/helpers/reverb.ts](../../tests/helpers/reverb.ts)
+- Reverb pedal (implementation in progress) / dependency group 7: [tests/browser/reverb.spec.ts](../../tests/browser/reverb.spec.ts)
 
 Key definitions: [EffectGraph](../../src/audio/effects.ts#L11), [measureOversamplingLatency](../../src/audio/effects.ts#L21), [createEffect](../../src/audio/effects.ts#L36), [tail](../../src/audio/effects.ts#L79), [warmup](../../src/audio/effects.ts#L82), [tailActive](../../src/audio/effects.ts#L85), [ChainGraph](../../src/audio/effects.ts#L103), [chainLatency](../../src/audio/effects.ts#L116).
 

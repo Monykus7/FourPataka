@@ -15,7 +15,10 @@
         "tests/browser/reverb-playback.spec.ts",
         "src/modules/foundation/pedals.ts",
         "src/audio/effects.ts",
-        "src/audio/engine.ts"
+        "src/audio/engine.ts",
+        "tests/helpers/reverb.ts",
+        "tests/browser/reverb-ui.spec.ts",
+        "src/physical-board.css"
       ]
     },
     {

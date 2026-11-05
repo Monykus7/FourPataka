@@ -156,7 +156,7 @@ export default function Pedalboard({
         </label>
         {!!activeTails.length && (
           <span className="delay-tail-status" role="status">
-            Echo tails active
+            Effect tails active
           </span>
         )}
       </div>

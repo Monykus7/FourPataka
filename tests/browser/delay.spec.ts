@@ -187,7 +187,7 @@ test('delay shows measured bypass tails and clears the indicator on Stop and dry
   await page.getByRole('button', { name: 'Listen', exact: true }).click();
   await expect.poll(async () => page.locator('.meter-bars .lit').count()).toBeGreaterThan(0);
   await page.getByRole('checkbox', { name: 'Bypass delay 1', exact: true }).check();
-  await expect(page.locator('.delay-tail-status')).toHaveText('Echo tails active');
+  await expect(page.locator('.delay-tail-status')).toHaveText('Effect tails active');
   await expect(page.locator('.compact-pedal.delay')).toContainText('Tail active');
   await page.getByRole('button', { name: 'Stop all sound', exact: true }).click();
   await expect(page.locator('.delay-tail-status')).toHaveCount(0);
