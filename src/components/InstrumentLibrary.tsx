@@ -3,6 +3,7 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  FileMusic,
   Folder,
   FolderPlus,
   Pencil,
@@ -22,6 +23,7 @@ export default function InstrumentLibrary({
   thumbnail,
   onSelect,
   onSaveNew,
+  onImportWav,
   onCreateFolder,
   onRenameFolder,
   onRemoveFolder,
@@ -33,6 +35,7 @@ export default function InstrumentLibrary({
   thumbnail: (preset: InstrumentPreset) => ReactNode;
   onSelect: (id: string) => void;
   onSaveNew: () => void;
+  onImportWav: () => void;
   onCreateFolder: (label: string) => void;
   onRenameFolder: (id: string, label: string) => void;
   onRemoveFolder: (id: string) => void;
@@ -114,6 +117,14 @@ export default function InstrumentLibrary({
       <div className="library-title">
         <span className="sidebar-section-label">INSTRUMENT LIBRARY</span>
         <div className="library-actions">
+          <button
+            className="icon-button"
+            aria-label="Import WAV"
+            title="Import WAV as instrument"
+            onClick={onImportWav}
+          >
+            <FileMusic size={15} />
+          </button>
           <button
             ref={newFolderButton}
             className="icon-button"

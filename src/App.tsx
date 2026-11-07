@@ -127,6 +127,7 @@ import {
 import { version } from '../package.json';
 import { applyTheme, resolveTheme, THEMES } from './core/themes';
 const ScoreWorkspace = lazy(() => import('./components/ScoreWorkspace'));
+const WavImportDialog = lazy(() => import('./components/WavImportDialog'));
 
 type View = 'instrument' | 'pedalboard' | 'compose' | 'learn';
 function readPreferences() {
@@ -291,6 +292,7 @@ export default function App() {
   const featureNavigationId = useRef(0);
   const [sampleRate, setSampleRate] = useState(48000);
   const [newPreset, setNewPreset] = useState(false);
+  const [wavImportOpen, setWavImportOpen] = useState(false);
   const [wavProject, setWavProject] = useState<Project | null>(null);
   const [trackMakerOpen, setTrackMakerOpen] = useState(false);
   const [presetLabel, setPresetLabel] = useState('');
@@ -804,41 +806,51 @@ export default function App() {
     }));
     setToast(`${preset.label} saved. Track copies are unchanged; use Apply to update them.`);
   };
-  const createPreset = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (instruments.length >= 128) {
-      setModalError('This project has reached its limit of 128 presets.');
-      return;
-    }
-    if (!presetLabel.trim() || presetLabel.length > 100) {
-      setModalError('Enter a label of 1–100 characters.');
-      return;
-    }
-    if (!SCORE_KEY.test(presetKey) || presetKey.length > 100) {
-      setModalError('Use a score key starting with a letter, followed by letters, digits, or _.');
-      return;
-    }
-    if (instruments.some((i) => i.key === presetKey)) {
-      setModalError('This score key already exists. Choose a unique key.');
-      return;
-    }
+  const addLibraryPreset = (
+    label: string,
+    key: string,
+    newSound: InstrumentSound,
+    options: { select?: boolean; folderId?: string } = {},
+  ) => {
+    if (instruments.length >= 128)
+      throw new Error('This project has reached its limit of 128 presets.');
+    if (!label.trim() || label.length > 100) throw new Error('Enter a label of 1–100 characters.');
+    if (!SCORE_KEY.test(key) || key.length > 100)
+      throw new Error('Use a score key starting with a letter, followed by letters, digits, or _.');
+    if (instruments.some((i) => i.key === key))
+      throw new Error('This score key already exists. Choose a unique key.');
+    if (
+      options.folderId &&
+      !project.instrumentFolders?.some((item) => item.id === options.folderId)
+    )
+      throw new Error('Choose an existing instrument folder.');
     const id = crypto.randomUUID();
+    const sound = structuredClone(newSound);
     change((p) => ({
       ...p,
-      editorPresetId: id,
+      editorPresetId: options.select ? id : p.editorPresetId,
       instruments: [
         ...p.instruments,
         {
           id,
-          key: presetKey,
-          label: presetLabel.trim(),
+          key,
+          label: label.trim(),
           version: 1,
-          sound: structuredClone(instrumentSound),
+          sound,
+          ...(options.folderId ? { folderId: options.folderId } : {}),
         },
       ],
     }));
-    setNewPreset(false);
-    setToast(`Saved ${presetLabel.trim()} as “${presetKey}”.`);
+    setToast(`Saved ${label.trim()} as “${key}”.`);
+  };
+  const createPreset = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      addLibraryPreset(presetLabel, presetKey, instrumentSound, { select: true });
+      setNewPreset(false);
+    } catch (failure) {
+      setModalError((failure as Error).message);
+    }
   };
   const apply = (all: boolean) => {
     const targets = all ? associated.map((t) => t.key) : track ? [track.key] : [];
@@ -1277,6 +1289,10 @@ export default function App() {
               setPresetKey('');
               setModalError('');
               setNewPreset(true);
+            }}
+            onImportWav={() => {
+              stop();
+              setWavImportOpen(true);
             }}
             onCreateFolder={(label) => {
               const next = createInstrumentFolder(project, label, crypto.randomUUID());
@@ -2960,6 +2976,18 @@ export default function App() {
         />
       )}
       {wavProject && <WavExport project={wavProject} onClose={() => setWavProject(null)} />}
+      {wavImportOpen && (
+        <Suspense fallback={null}>
+          <WavImportDialog
+            folders={project.instrumentFolders ?? []}
+            keys={instruments.map((item) => item.key)}
+            onCreate={(label, key, sound, folderId) =>
+              addLibraryPreset(label, key, sound, { folderId })
+            }
+            onClose={() => setWavImportOpen(false)}
+          />
+        </Suspense>
+      )}
       <dialog
         ref={dialog}
         className="preset-dialog"
