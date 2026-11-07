@@ -2,7 +2,7 @@
 
 Local Fourier instrument and composition studio. React, TypeScript, CodeMirror 6, and Web Audio, with an Electron desktop application. Projects stay local.
 
-The current application is **v0.43.0**: 32 signed harmonics, drawn/control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard, a multi-file score IDE, swing, source/output analysis and WAV export. v0.43.0 adds an [algorithmic reverb pedal](docs/extensions/REVERB.md) with generated reflections, pre-delay, decay, size, damping and draining bypass; build current source for this update.
+The current application is **v0.44.0**. It includes 32 signed harmonics, drawn and control-point waveforms, synthesized percussion, independent instrument copies, a cable-routed pedalboard with algorithmic reverb, a multi-file score IDE, swing, source/output analysis and WAV export. Use **Import WAV** in the Instrument Library to reconstruct an isolated pitched note as an editable Fourier preset. [WAV import guide](docs/extensions/WAV_INSTRUMENT.md)
 
 Download the published [v0.39.0 Windows contributor preview and exact source](https://github.com/Monykus7/FourPataka/releases/tag/v0.39.0). The portable is unsigned; build instructions and checksums accompany it. M1–M6 contributor readiness is complete; physical/device/accessibility checks remain limited as documented.
 

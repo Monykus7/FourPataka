@@ -466,13 +466,13 @@ Move Fourier math, deterministic shared-noise cache, integrated hit pitch and ex
 
 Schema 3 remains Fourier-only. Registered Basic Tone is a public code/test example, not a selectable library instrument or saved score key. M4b must land engine-backed data migration, lossless missing/incompatible recovery and capability-driven controls before exposing saved non-Fourier sounds, then prove full comparison/source-track/reload/WAV/resource gates. M4 is partial; M5/M6, runtime installation, licensing and manual listening/device gates remain open.
 
-## WAV-to-instrument analysis plan
+## W1 local WAV review and Fourier reconstruction
 
 <!-- features: wav-instrument-analysis, sound, instrument-presets -->
 
-Plan local recording analysis/resynthesis in two milestones: W1 reviews one isolated note/hit and maps only supported parameters into an owned Fourier instrument; W2 evolving spectral/transient engines follows M4b saved-data/recovery/capability integration. Pitch, onset/envelope regions and note-off need manual overrides/confidence. Keep attack/release and natural decay distinct, coefficients/phase fit separate from trim, and show residual noise/inharmonic/time-varying limitations rather than claim exact reconstruction from32 signed sines.
+W1 uses a bounded dedicated worker and one cropped pitched note/hit. Decode original amplitude, show cancellation/clipping and let the user choose channel, onset, body, pitch and note-off. Crop seconds start at the file origin. Timing settings start at the crop origin. A Hann body fit chooses one phase origin for signed H1–H32 and reports body residual before headroom scaling or edits. Linear attack/release and well-supported exponential decay map to existing voice settings. Automatic noise layers and evolving spectra belong to follow-up W2.
 
-Original crop remains a review reference; explicit library creation preserves independent track/A-B/source ownership and undo. Initial playback saves derived settings without a WAV/path dependency. Bound local decoding/analysis, cancellation and stale results before implementation. No runtime behavior, schema/version or next-step sequencing changes in this planning task.
+Opening review stops transport to isolate dry comparison. Preview uses the production Fourier voice with optional RMS matching and monitor volume. Cancellation, replacement and teardown terminate the worker and discard stale results. Create adds one owned preset through normal history and validation, leaving the current editor and existing track/A-B copies intact. Save only schema 6 Fourier settings. File bytes, path, pitch reference and measurements are transient.
 
 ## M4b owned saved engines and continuous comparison (v0.36.0)
 

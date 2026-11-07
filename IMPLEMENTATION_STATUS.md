@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-11-05. Latest verified release: v0.43.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-11-07. Current release: v0.44.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -817,3 +817,11 @@ Final local helper verification: the three shared native workflows passed, then 
 All34 final browser executions pass in3.3minutes (17 distinct cases repeated twice), including all four delayed-autosave regressions. Final packaged engine and feature workflows pass, and the phaser helper passed in the earlier targeted native batch. No application sources or binary changed. The maintenance checkpoint is ready for hosted verification.
 
 Contributor CI maintenance verified: both required jobs pass for74dcc49da91608376cfbf403633e625af17065b1 in [run42086738161](https://github.com/Monykus7/FourPataka/actions/runs/42086738161). Both check-run outputs have0 annotations; the Node20 action-runtime warning is gone. Local verification includes all34 browser executions (17 cases twice), forced1200ms autosave coverage, three initial shared native workflows and both final editor/meter native targets, YAML parsing, format/knowledge checks and an empty production-source diff. The hosted run also exercises full unit/browser/contributor and twelve Windows workflows with the new immutable action pins. v0.43.0 code and portable remain unchanged; this follow-up only records verification.
+
+## W1 WAV-to-instrument reconstruction (v0.44.0)
+
+Instrument Library → Import WAV reviews an isolated pitched note or hit. A local cancellable worker reads mono/stereo PCM or float WAV, with bounds of 32 MiB, 30 seconds, 8–96 kHz and an 8-second crop. The dialog shows the selected channel, onset, attack, body and end, and accepts manual timing, note-off and pitch. A tapered body fit projects one common phase origin into signed H1–H32. Fit quality describes the body window and exposes uncertainty and residual energy. Timing maps to the current linear attack/release voice with optional exponential pitched-hit decay.
+
+The review compares the original and actual dry Fourier voice, with editable coefficients and gain, RMS matching and preview Stop. Create adds one independently owned library preset with an optional folder, leaving existing track and A/B copies untouched. The saved project uses schema 6 and retains the synthesized settings alone. The recording and analysis measurements are transient.
+
+Local verification covered 332 unit tests, seven targeted browser workflows including the existing preset/acoustics regressions, and the packaged WAV import workflow. The native test saved and reopened the project, then verified the edited H2:H1 magnitude ratio in the rendered WAV. The review was inspected at wide and 390 px widths. See [W1 analysis and ownership diagrams](docs/extensions/WAV_INSTRUMENT.md). Physical listening and screen-reader checks remain open. W2 evolving spectra, automatic noise layers and broader transient modeling remain planned.
