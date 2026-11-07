@@ -1,0 +1,121 @@
+.wav-dialog.preset-dialog {
+  width: min(900px, calc(100vw - 24px));
+  max-height: 92dvh;
+  padding: clamp(12px, 3vw, 24px);
+}
+.wav-dialog header,
+.wav-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.wav-dialog header {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.wav-dialog h2,
+.wav-dialog p,
+.wav-dialog figure {
+  margin: 0;
+}
+.wav-dialog p,
+.wav-dialog section,
+.wav-dialog fieldset,
+.wav-dialog details {
+  margin: 8px 0;
+}
+.wav-dialog fieldset {
+  min-inline-size: 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.wav-dialog label {
+  min-width: 0;
+  margin-bottom: 8px;
+}
+.wav-dialog input,
+.wav-dialog select {
+  min-width: 0;
+  padding: 6px;
+  width: 100%;
+}
+.wav-dialog .wav-checkbox {
+  flex-direction: row;
+  align-items: center;
+  margin: 0;
+}
+.wav-checkbox input {
+  width: auto;
+}
+.wav-fields,
+.wav-plot-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr));
+  gap: 6px 12px;
+}
+.wav-partials {
+  grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+}
+.wav-plot-pair {
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  margin-bottom: 10px;
+}
+.wav-plot {
+  display: block;
+  width: 100%;
+  height: 66px;
+  margin: 4px 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.wav-axis,
+.wav-marker,
+.wav-source,
+.wav-model {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke: var(--border);
+}
+.wav-source {
+  stroke: var(--text);
+}
+.wav-marker,
+.wav-model {
+  stroke: var(--secondary-ink, var(--secondary));
+  stroke-width: 1.5px;
+}
+.wav-source-fill {
+  fill: var(--text);
+}
+.wav-model-fill {
+  fill: var(--secondary-ink, var(--secondary));
+}
+.wav-selection {
+  fill: var(--tertiary);
+  opacity: 0.28;
+}
+.wav-legend {
+  display: flex;
+  gap: 12px;
+  grid-column: 1 / -1;
+}
+.wav-legend span::before {
+  display: inline-block;
+  content: '';
+  width: 9px;
+  height: 9px;
+  margin-right: 5px;
+  background: var(--text);
+}
+.wav-legend span + span::before {
+  background: var(--secondary-ink, var(--secondary));
+}
+.wav-draft {
+  margin-top: 14px;
+}
+.wav-dialog [role='alert'] {
+  color: var(--secondary-ink, var(--secondary));
+}
