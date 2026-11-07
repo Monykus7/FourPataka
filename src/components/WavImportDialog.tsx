@@ -64,11 +64,13 @@ function DraftNumber({
 export default function WavImportDialog({
   folders,
   keys,
+  monitor,
   onCreate,
   onClose,
 }: {
   folders: InstrumentFolder[];
   keys: string[];
+  monitor: number;
   onCreate: (label: string, key: string, sound: FourierSound, folderId?: string) => void;
   onClose: () => void;
 }) {
@@ -253,7 +255,7 @@ export default function WavImportDialog({
       buffer.getChannelData(0).set(samples);
       const node = context.createBufferSource();
       const volume = context.createGain();
-      volume.gain.value = gain;
+      volume.gain.value = gain * monitor;
       node.buffer = buffer;
       node.connect(volume).connect(context.destination);
       node.onended = () => {

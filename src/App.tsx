@@ -2981,6 +2981,7 @@ export default function App() {
           <WavImportDialog
             folders={project.instrumentFolders ?? []}
             keys={instruments.map((item) => item.key)}
+            monitor={preferences.monitor}
             onCreate={(label, key, sound, folderId) =>
               addLibraryPreset(label, key, sound, { folderId })
             }
