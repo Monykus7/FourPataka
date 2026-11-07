@@ -5,6 +5,7 @@ export interface WavAnalysisOptions {
   channel: WavChannel;
   crop?: WavRegion;
   body?: WavRegion;
+  onset?: number;
   noteOff?: number;
   frequency?: number;
 }
@@ -114,9 +115,11 @@ export function measureNote(
   let last = rms.length;
   while (rms[last - 1] < threshold) last--;
   const attack = rms.findIndex((value) => value >= peak * 0.9);
-  const onset = first * step;
   const end = Math.min(length, last * step);
-  const attackEnd = Math.min(end, (attack + 0.5) * step);
+  const onset = options.onset ?? first * step;
+  if (!Number.isFinite(onset) || onset < 0 || onset >= end)
+    throw new Error('Onset must be inside the audible crop.');
+  const attackEnd = Math.min(end, Math.max(onset, (attack + 0.5) * step));
   const noteOff = options.noteOff ?? null;
   if (noteOff !== null && (!Number.isFinite(noteOff) || noteOff <= onset || noteOff >= length))
     throw new Error('Note-off must be after the detected onset and inside the crop.');
