@@ -18,7 +18,8 @@ export function recordedNote(
   });
 }
 
-export function noteWav(rate = 48000, antiphase = false) {
-  const samples = recordedNote(rate);
+export function noteWav(rate = 48000, antiphase = false, seconds = 0.78) {
+  const samples = new Float32Array(Math.round(rate * seconds));
+  samples.set(recordedNote(rate));
   return encodeWav(antiphase ? [samples, samples.map((value) => -value)] : [samples], rate);
 }

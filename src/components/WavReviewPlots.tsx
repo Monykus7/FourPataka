@@ -86,13 +86,18 @@ export function WavFitPlots({ review, sound }: { review: WavReview; sound: Fouri
   const gain = dbToGain(sound.trim);
   const midpoint = (timing.body.start + timing.body.end) / 2 - timing.onset;
   const bodyGain = fittedEnvelope(sound, fit.gate, midpoint);
-  const amplitudes = sound.harmonics.map((value) => value * gain * bodyGain);
+  // Preview uses the recording rate. Edited partials can become audible in a
+  // lower score note even when the reference playback excludes them.
+  const audible = sound.harmonics.map((value, i) =>
+    fit.frequency * (i + 1) < review.sampleRate / 2 ? value : 0,
+  );
+  const amplitudes = audible.map((value) => value * gain * bodyGain);
   const peak = Math.max(1e-7, ...fit.spectrum, ...amplitudes);
   const length = Math.max(
     review.samples.length / review.sampleRate,
     timing.onset + fit.gate + sound.release,
   );
-  const rms = (Math.hypot(...sound.harmonics) * gain) / Math.SQRT2;
+  const rms = (Math.hypot(...audible) * gain) / Math.SQRT2;
   const render = Array.from(
     { length: 240 },
     (_, i) => rms * fittedEnvelope(sound, fit.gate, (length * i) / 239 - timing.onset),

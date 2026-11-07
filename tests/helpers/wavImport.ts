@@ -22,7 +22,8 @@ export async function createWavPreset(page: Page, stereo = false) {
   await panel.getByLabel('WAV recording').setInputFiles({
     name: 'sampledNote.wav',
     mimeType: 'audio/wav',
-    buffer: Buffer.from(noteWav(48000, stereo)),
+    // Keep enough room after the note for Stop to be exercised on loaded CI runners.
+    buffer: Buffer.from(noteWav(48000, stereo, 4)),
   });
   if (stereo) {
     await expect(panel.getByText('The mono mix loses energy', { exact: false })).toBeVisible();
@@ -31,7 +32,7 @@ export async function createWavPreset(page: Page, stereo = false) {
   }
   await expect(panel.getByLabel('Crop start (s)')).toBeVisible();
   await panel.getByLabel('Crop start (s)').fill('0.06');
-  await panel.getByLabel('Crop end (s)').fill('0.65');
+  await panel.getByLabel('Crop end (s)').fill('3.8');
   await panel.getByLabel('Onset (s)', { exact: true }).fill('0.02');
   await panel.getByLabel('Note-off (s)', { exact: true }).fill('0.39');
   await panel.getByLabel('Reference pitch (Hz)').fill('220');
@@ -40,9 +41,11 @@ export async function createWavPreset(page: Page, stereo = false) {
   await panel.getByRole('button', { name: 'Play original', exact: true }).click();
   await expect(panel.getByText('Playing original', { exact: true })).toBeVisible();
   await panel.getByRole('button', { name: 'Stop preview', exact: true }).click();
+  await expect(panel.getByText('Playing original', { exact: true })).toHaveCount(0);
   await panel.getByRole('button', { name: 'Play reconstruction', exact: true }).click();
   await expect(panel.getByText('Playing reconstruction', { exact: true })).toBeVisible();
   await panel.getByRole('button', { name: 'Stop preview', exact: true }).click();
+  await expect(panel.getByText('Playing reconstruction', { exact: true })).toHaveCount(0);
   await panel.getByText('Signed harmonic coefficients', { exact: true }).click();
   await panel.getByLabel('H2', { exact: true }).fill('-0.25');
   await panel.getByLabel('Instrument name').fill('Sampled note');
