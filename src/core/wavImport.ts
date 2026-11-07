@@ -23,7 +23,7 @@ export function decodeWav(bytes: ArrayBuffer): ImportedWav {
   let format: { offset: number; size: number } | undefined;
   let data: { offset: number; size: number } | undefined;
   let chunks = 0;
-  for (let at = 12; at < end; ) {
+  for (let at = 12; at < end;) {
     if (at + 8 > end || ++chunks > 4096) throw new Error('Invalid WAV chunk table.');
     const size = view.getUint32(at + 4, true);
     const offset = at + 8;
@@ -47,9 +47,12 @@ export function decodeWav(bytes: ArrayBuffer): ImportedWav {
     const subtype = view.getUint32(at + 24, true);
     const guidSuffix = [0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113];
     if (
-      valid > 0 && valid <= bits && (subtype !== 3 || valid === 32) &&
+      valid > 0 &&
+      valid <= bits &&
+      (subtype !== 3 || valid === 32) &&
       guidSuffix.every((byte, i) => view.getUint8(at + 28 + i) === byte)
-    ) encoding = subtype;
+    )
+      encoding = subtype;
   }
   if (!((encoding === 1 && [8, 16, 24, 32].includes(bits)) || (encoding === 3 && bits === 32)))
     throw new Error('Use uncompressed 8/16/24/32-bit PCM or 32-bit float WAV.');
@@ -62,16 +65,18 @@ export function decodeWav(bytes: ArrayBuffer): ImportedWav {
   const frames = data.size / align;
   if (frames > sampleRate * WAV_IMPORT_LIMITS.seconds)
     throw new Error('Choose a WAV recording up to 30 seconds.');
-  const read = encoding === 3
-    ? (offset: number) => view.getFloat32(offset, true)
-    : bits === 8
-      ? (offset: number) => (view.getUint8(offset) - 128) / 128
-      : bits === 16
-        ? (offset: number) => view.getInt16(offset, true) / 32768
-        : bits === 24
-          ? (offset: number) =>
-              ((view.getUint16(offset, true) << 8) | (view.getInt8(offset + 2) << 24)) / 2147483648
-          : (offset: number) => view.getInt32(offset, true) / 2147483648;
+  const read =
+    encoding === 3
+      ? (offset: number) => view.getFloat32(offset, true)
+      : bits === 8
+        ? (offset: number) => (view.getUint8(offset) - 128) / 128
+        : bits === 16
+          ? (offset: number) => view.getInt16(offset, true) / 32768
+          : bits === 24
+            ? (offset: number) =>
+                ((view.getUint16(offset, true) << 8) | (view.getInt8(offset + 2) << 24)) /
+                2147483648
+            : (offset: number) => view.getInt32(offset, true) / 2147483648;
   return {
     sampleRate,
     channels: Array.from({ length: channels }, (_, channel) => {
