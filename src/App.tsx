@@ -11,7 +11,9 @@ import type { FeatureSnapshot, FeatureRequest } from './modules';
 import {
   isFourierSound,
   createEngineSound,
+  createSpectralSound,
   readInstrumentSound,
+  spectralSettings,
   type InstrumentSound,
   type EngineSound,
 } from './core/engineSound';
@@ -118,6 +120,8 @@ import { comparisonPhrase, type AuditionPhrase } from './core/comparison';
 import { PERCUSSION_PRESETS } from './core/instrumentPresets';
 import ComparisonPanel from './components/ComparisonPanel';
 import InstrumentLibrary from './components/InstrumentLibrary';
+import SpectralFrameEditor from './components/SpectralFrameEditor';
+import { spectralControls } from './modules/engines/spectral/settings';
 import {
   createInstrumentFolder,
   moveInstrumentToFolder,
@@ -329,6 +333,7 @@ export default function App() {
   const active = project.comparison.active;
   const instrumentSound = project.comparison[active];
   const fourier = isFourierSound(instrumentSound);
+  const evolvingSound = spectralSettings(instrumentSound);
   // Fourier-only UI computations are inert when the independent editor is shown.
   const sound = fourier ? instrumentSound : mathematicalPreset('sine');
   useEffect(() => {
@@ -1521,6 +1526,20 @@ export default function App() {
                         );
                       })
                     )}
+                    {evolvingSound && (
+                      <SpectralFrameEditor
+                        settings={evolvingSound}
+                        onChange={(settings, field) => {
+                          const next = createSpectralSound(settings);
+                          if (instrumentSound.acoustics)
+                            next.acoustics = structuredClone(instrumentSound.acoustics);
+                          change(
+                            (p) => ({ ...p, comparison: { ...p.comparison, [active]: next } }),
+                            `spectral:${field}`,
+                          );
+                        }}
+                      />
+                    )}
                     {!instrumentSound.unavailable && (
                       <button
                         className="text-button"
@@ -1529,7 +1548,22 @@ export default function App() {
                             ...p,
                             comparison: {
                               ...p.comparison,
-                              [active]: createEngineSound(instrumentSound.engine.id),
+                              [active]: evolvingSound
+                                ? {
+                                    ...instrumentSound,
+                                    engine: {
+                                      ...instrumentSound.engine,
+                                      settings: {
+                                        ...evolvingSound,
+                                        ...Object.fromEntries(
+                                          Object.entries(spectralControls).map(
+                                            ([name, control]) => [name, control.defaultValue],
+                                          ),
+                                        ),
+                                      },
+                                    },
+                                  }
+                                : createEngineSound(instrumentSound.engine.id),
                             },
                           }))
                         }
