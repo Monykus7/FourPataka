@@ -1,22 +1,18 @@
-import { createFourierVoice } from '../modules/foundation/fourierVoice';
-import type { FourierSound } from '../modules/foundation/fourier';
+import { createVoice } from './voice';
+import { engineRelease, type InstrumentSound } from '../core/engineSound';
 import type { WavReview } from '../core/wavReview';
 
-export async function renderWavReconstruction(review: WavReview, sound: FourierSound) {
-  const { fit, timing, sampleRate, samples } = review;
-  if (!fit || !timing) throw new Error('Analyze a pitched note before previewing it.');
+export async function renderWavReconstruction(review: WavReview, sound: InstrumentSound) {
+  const { fit, evolving, timing, sampleRate, samples } = review;
+  const gate = evolving?.gate ?? fit?.gate;
+  const frequency = evolving?.settings.referenceHz ?? fit?.frequency;
+  if (gate === undefined || frequency === undefined || !timing)
+    throw new Error('Analyze a recording before previewing it.');
   const frames = Math.ceil(
-    Math.max(samples.length, (timing.onset + fit.gate + sound.release) * sampleRate),
+    Math.max(samples.length, (timing.onset + gate + engineRelease(sound)) * sampleRate),
   );
   const context = new OfflineAudioContext(1, frames, sampleRate);
-  const voice = createFourierVoice(
-    context,
-    context.destination,
-    sound,
-    fit.frequency,
-    timing.onset,
-    fit.gate,
-  );
+  const voice = createVoice(context, context.destination, sound, frequency, timing.onset, gate);
   try {
     return (await context.startRendering()).getChannelData(0);
   } finally {

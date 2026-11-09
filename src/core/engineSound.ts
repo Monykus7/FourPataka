@@ -1,6 +1,7 @@
 import { validateAcoustics, type InstrumentAcoustics } from '../modules';
 import { engineModules } from '../modules/assembly';
 import { validateFourierSound, validateEngineData, type FourierSound } from '../modules';
+import { SPECTRAL_ENGINE_ID, type SpectralSettings } from '../modules/engines/spectral/settings';
 
 export interface EngineSound {
   acoustics?: InstrumentAcoustics;
@@ -85,4 +86,23 @@ export function createEngineSound(id: string): EngineSound {
       settings: definition.defaults(),
     },
   };
+}
+
+export function createSpectralSound(settings: SpectralSettings): EngineSound {
+  const engine = engineModules.get(SPECTRAL_ENGINE_ID);
+  engine.validateSettings(settings);
+  return {
+    engine: {
+      id: engine.id,
+      apiVersion: engine.apiVersion,
+      dataVersion: engine.dataVersion,
+      settings: structuredClone(settings),
+    },
+  };
+}
+
+export function spectralSettings(sound: InstrumentSound): SpectralSettings | undefined {
+  return !isFourierSound(sound) && !sound.unavailable && sound.engine.id === SPECTRAL_ENGINE_ID
+    ? (sound.engine.settings as SpectralSettings)
+    : undefined;
 }

@@ -1,6 +1,7 @@
 import { decodeWav, wavSample, WAV_IMPORT_LIMITS } from './wavImport';
 import { measureNote, readCrop, type WavAnalysisOptions, type WavEnvelope } from './wavNote';
 import { fitWavNote, type WavFit } from './wavFit';
+import { fitWavSpectrum, type WavSpectralFit } from './wavSpectral';
 
 export interface WavReviewRequest {
   file: File;
@@ -19,6 +20,7 @@ export interface WavReview {
   samples: Float32Array;
   timing?: WavEnvelope;
   fit?: WavFit;
+  evolving?: WavSpectralFit;
   error?: string;
   warnings: string[];
 }
@@ -50,7 +52,7 @@ export async function reviewWav(
   if (file.size > WAV_IMPORT_LIMITS.bytes) throw new Error('Choose a WAV file up to 32 MiB.');
   progress('Reading WAV…');
   const wav = decodeWav(await file.arrayBuffer());
-  progress('Measuring timing and fitting harmonics…');
+  progress('Measuring timing and fitting the selected model…');
   const { samples, offset, clipped, cancellation } = readCrop(wav, options);
   const frames = wav.channels[0].length;
   const warnings: string[] = [];
@@ -70,7 +72,9 @@ export async function reviewWav(
   };
   try {
     result.timing = measureNote(samples, wav.sampleRate, options);
-    result.fit = fitWavNote(samples, wav.sampleRate, result.timing, options);
+    if (options.model === 'evolving')
+      result.evolving = fitWavSpectrum(samples, wav.sampleRate, result.timing, options);
+    else result.fit = fitWavNote(samples, wav.sampleRate, result.timing, options);
   } catch (error) {
     result.error = (error as Error).message;
   }
