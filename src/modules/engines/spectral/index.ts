@@ -1,14 +1,14 @@
-import { MODULE_API_VERSION } from '../../foundation/contracts';
-import { defineEngine } from '../../foundation/engines';
 import {
+  MODULE_API_VERSION,
+  defineEngine,
   defaultSpectralSettings,
   spectralControls,
   SPECTRAL_ENGINE_ID,
   SPECTRAL_TONES,
   validateSpectralSettings,
   type SpectralSettings,
-} from './settings';
-import { createSpectralVoice } from './voice';
+  createSpectralVoice,
+} from '../../index';
 
 export const spectralEngine = defineEngine<SpectralSettings>({
   id: SPECTRAL_ENGINE_ID,

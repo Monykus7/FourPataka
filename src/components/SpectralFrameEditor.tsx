@@ -3,7 +3,7 @@ import {
   SPECTRAL_NOISE_BANDS,
   type SpectralFrame,
   type SpectralSettings,
-} from '../modules/engines/spectral/settings';
+} from '../modules/foundation/spectral/settings';
 import DraftNumber from './DraftNumber';
 import './SpectralFrameEditor.css';
 

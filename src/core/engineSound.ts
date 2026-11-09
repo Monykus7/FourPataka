@@ -1,7 +1,7 @@
 import { validateAcoustics, type InstrumentAcoustics } from '../modules';
 import { engineModules } from '../modules/assembly';
 import { validateFourierSound, validateEngineData, type FourierSound } from '../modules';
-import { SPECTRAL_ENGINE_ID, type SpectralSettings } from '../modules/engines/spectral/settings';
+import { SPECTRAL_ENGINE_ID, type SpectralSettings } from '../modules/foundation/spectral/settings';
 
 export interface EngineSound {
   acoustics?: InstrumentAcoustics;

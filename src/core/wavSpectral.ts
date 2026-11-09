@@ -4,8 +4,8 @@ import {
   spectralFrame,
   type SpectralFrame,
   type SpectralSettings,
-} from '../modules/engines/spectral/settings';
-import { splitSpectralNoise } from '../modules/engines/spectral/noise';
+} from '../modules/foundation/spectral/settings';
+import { splitSpectralNoise } from '../modules/foundation/spectral/noise';
 import {
   estimatePitch,
   MAX_WAV_PITCH,
@@ -266,17 +266,19 @@ export function fitWavSpectrum(
   if (peak < 0.00015) throw new Error('No audible spectral contour found in the selected crop.');
   const scale = Math.min(1, 0.9 / peak);
   const trim = clamp(20 * Math.log10(peak * scale), -36, 0);
+  // Keep repeated library and track snapshots compact at well below the
+  // resolution of the source fit. Timing rounds to microseconds.
+  const precision = (value: number) => Math.round(value * 1e6) / 1e6 || 0;
+  const gain = scale / 10 ** (trim / 20);
   const normalize = (frame: SpectralFrame, time: number): SpectralFrame => ({
-    time,
-    tones: frame.tones.map((value) => (value * scale) / 10 ** (trim / 20)),
-    noise: frame.noise.map((value) => (value * scale) / 10 ** (trim / 20)),
+    time: precision(time),
+    tones: frame.tones.map((value) => precision(value * gain)),
+    noise: frame.noise.map((value) => precision(value * gain)),
   });
   const harmonics = tones.filter((tone) => tone.harmonic).length;
   const warnings: string[] = [];
   if (!pitch)
-    warnings.push(
-      'No stable fundamental found. Noise stays at fixed bands. Any resonances transpose from an A3 reference.',
-    );
+    warnings.push('Noise stays at fixed bands. Any resonances transpose from an A3 reference.');
   if (pitch && !options.frequency && !tones.some((tone) => tone.hz === pitch))
     warnings.push('The fundamental is weak or missing. Check the reference octave.');
   if (timing.noteOff === null)
@@ -288,7 +290,7 @@ export function fitWavSpectrum(
     settings: {
       ...defaultSpectralSettings(),
       referenceHz,
-      ratios: tones.map((tone) => tone.hz / referenceHz),
+      ratios: tones.map((tone) => precision(tone.hz / referenceHz)),
       trim,
       release,
       held: frames.slice(0, heldTimes.length).map((frame) => normalize(frame, frame.time)),

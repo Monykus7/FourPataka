@@ -46,3 +46,5 @@ export {
 export * from './foundation/features';
 
 export * from './foundation/acoustics';
+export * from './foundation/spectral/settings';
+export { createSpectralVoice } from './foundation/spectral/voice';

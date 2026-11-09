@@ -6,7 +6,7 @@ import type { WavReview, WavReviewRequest, WavWorkerMessage } from '../core/wavR
 import type { InstrumentFolder } from '../core/project';
 import { createSpectralSound, type InstrumentSound } from '../core/engineSound';
 import type { FourierSound } from '../modules/foundation/fourier';
-import { spectralControls, type SpectralSettings } from '../modules/engines/spectral/settings';
+import { spectralControls, type SpectralSettings } from '../modules/foundation/spectral/settings';
 import DraftNumber from './DraftNumber';
 import SpectralFrameEditor from './SpectralFrameEditor';
 import { WavFitPlots, WavSpectralPlot, WavWaveforms } from './WavReviewPlots';

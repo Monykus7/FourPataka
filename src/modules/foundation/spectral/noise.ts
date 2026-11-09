@@ -29,13 +29,17 @@ export function spectralNoiseBuffer(context: BaseAudioContext) {
     const split = splitSpectralNoise(context.sampleRate);
     const output = buffer.getChannelData(band);
     let power = 0;
-    for (let i = -512; i < length; i++) {
+    for (let i = 0; i < length; i++) {
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      const sample = split(seed / 2147483648 - 1)[band];
-      if (i >= 0) {
-        output[i] = sample;
-        power += sample * sample;
-      }
+      output[i] = seed / 2147483648 - 1;
+    }
+    // Prime the filter with the actual loop tail, so each repetition starts
+    // with the same history the preceding repetition ends with.
+    for (let i = length - 512; i < length; i++) split(output[i]);
+    for (let i = 0; i < length; i++) {
+      const sample = split(output[i])[band];
+      output[i] = sample;
+      power += sample * sample;
     }
     // Each lane's gain has RMS units. Independent deterministic streams avoid
     // phase cancellation where the broad residual bands overlap.

@@ -4,7 +4,7 @@ import { partialPair } from './examples/partialPair/index';
 import { createFeatureRegistry } from './index';
 import { basicTone } from './examples/basicTone/index';
 import { fourierEngine } from './engines/fourier/index';
-import { spectralEngine } from './engines/spectral';
+import { spectralEngine } from './engines/spectral/index';
 import { createEngineRegistry } from './index';
 import { mellowPluck } from './examples/mellowPluck/index';
 import { builtInPresetDefinitions } from './instruments/catalogue';

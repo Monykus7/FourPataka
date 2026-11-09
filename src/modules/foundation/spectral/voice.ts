@@ -1,5 +1,5 @@
-import type { EngineNote, EngineVoice } from '../../foundation/engines';
-import { dbToGain } from '../../foundation/fourierComponents';
+import type { EngineNote, EngineVoice } from '../engines';
+import { dbToGain } from '../fourierComponents';
 import { spectralContour, spectralValueAt, type SpectralPoint } from './contour';
 import { spectralNoiseBuffer } from './noise';
 import type { SpectralFrame, SpectralSettings } from './settings';

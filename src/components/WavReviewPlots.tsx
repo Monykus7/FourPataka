@@ -2,8 +2,8 @@ import { fittedEnvelope } from '../core/wavFit';
 import type { WavPeaks, WavReview } from '../core/wavReview';
 import { dbToGain } from '../modules/foundation/fourierComponents';
 import type { FourierSound } from '../modules/foundation/fourier';
-import { spectralContour } from '../modules/engines/spectral/contour';
-import type { SpectralSettings } from '../modules/engines/spectral/settings';
+import { spectralContour } from '../modules/foundation/spectral/contour';
+import type { SpectralSettings } from '../modules/foundation/spectral/settings';
 
 export function WavSpectralPlot({
   review,

@@ -121,7 +121,7 @@ import { PERCUSSION_PRESETS } from './core/instrumentPresets';
 import ComparisonPanel from './components/ComparisonPanel';
 import InstrumentLibrary from './components/InstrumentLibrary';
 import SpectralFrameEditor from './components/SpectralFrameEditor';
-import { spectralControls } from './modules/engines/spectral/settings';
+import { spectralControls } from './modules/foundation/spectral/settings';
 import {
   createInstrumentFolder,
   moveInstrumentToFolder,
