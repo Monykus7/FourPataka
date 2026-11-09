@@ -45,6 +45,12 @@ import { synthesisNotationWorkflow } from '../helpers/synthesisNotation';
 import { chordShellWorkflow } from '../helpers/autocomplete';
 import { createWavPreset, savedWavProject, useWavPresetInScore } from '../helpers/wavImport';
 import { decodeWav } from '../../src/core/wavImport';
+import {
+  createEvolvingPreset,
+  EVOLVING_ENGINE,
+  EVOLVING_KEY,
+  useEvolvingScore,
+} from '../helpers/wavSpectral';
 
 let app: ElectronApplication;
 let launchEnvironment: NodeJS.ProcessEnv;
@@ -62,6 +68,61 @@ test.beforeEach(async () => {
 });
 test.afterEach(async () => {
   await app?.close();
+});
+
+test('packaged evolving WAV preset retains its contour and renders time-varying partials', async () => {
+  const page = await app.firstWindow();
+  await createEvolvingPreset(page);
+  await useEvolvingScore(page);
+  const projectPath = resolve('.test-results', 'desktop', 'spectral-instrument.fourpataka.json');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [filePath] });
+  }, projectPath);
+  await page.getByRole('button', { name: 'Save project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText(
+    'Saved spectral-instrument.fourpataka.json',
+  );
+  const saved = JSON.parse(await readFile(projectPath, 'utf8'));
+  const preset = saved.instruments.find((item: { key: string }) => item.key === EVOLVING_KEY);
+  expect(preset.sound.engine.id).toBe(EVOLVING_ENGINE);
+  expect(JSON.stringify(preset)).not.toContain('.wav');
+  await page.getByRole('button', { name: 'Open project', exact: true }).click();
+  await expect(page.locator('.toast[role=status]')).toContainText('Project imported');
+  await expect
+    .poll(
+      async () =>
+        (await savedWavProject(page))?.tracks.find((track) => track.key === 'sample')?.sound,
+    )
+    .toEqual(preset.sound);
+  await page.getByRole('button', { name: 'Export WAV', exact: true }).click();
+  const panel = page.getByRole('dialog', { name: 'Export WAV' });
+  await panel.getByRole('combobox', { name: 'Channels', exact: true }).selectOption('1');
+  await panel.getByRole('button', { name: 'Render WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Render ready');
+  const wavPath = resolve('.test-results', 'desktop', 'spectral-instrument.wav');
+  await app.evaluate(({ dialog }, filePath) => {
+    dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+  }, wavPath);
+  await panel.getByRole('button', { name: 'Save WAV', exact: true }).click();
+  await expect(panel.getByRole('status')).toContainText('Saved spectral-instrument.wav');
+  const {
+    sampleRate,
+    channels: [samples],
+  } = decodeWav(Uint8Array.from(await readFile(wavPath)).buffer);
+  const amplitude = (from: number, frequency: number) => {
+    let real = 0,
+      imag = 0;
+    const length = sampleRate / 20;
+    for (let i = Math.round(from * sampleRate); i < Math.round(from * sampleRate) + length; i++) {
+      const phase = (2 * Math.PI * frequency * i) / sampleRate;
+      real += samples[i] * Math.cos(phase);
+      imag += samples[i] * Math.sin(phase);
+    }
+    return (2 * Math.hypot(real, imag)) / length;
+  };
+  expect(amplitude(0.25, 220)).toBeGreaterThan(0.08);
+  expect(amplitude(0.03, 440)).toBeGreaterThan(4 * amplitude(0.25, 440));
 });
 
 test('packaged WAV import creates a portable Fourier preset and renders its edited harmonics', async () => {
