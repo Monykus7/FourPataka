@@ -3,6 +3,7 @@ import { WAV_IMPORT_LIMITS, wavSample, type ImportedWav, type WavChannel } from 
 export type WavRegion = { start: number; end: number };
 export interface WavAnalysisOptions {
   channel: WavChannel;
+  model?: 'static' | 'evolving';
   crop?: WavRegion;
   body?: WavRegion;
   onset?: number;
@@ -131,7 +132,8 @@ export function measureNote(
     !Number.isFinite(body.end) ||
     body.start < 0 ||
     body.end > length ||
-    body.end - body.start < 0.035 ||
+    body.end <= body.start ||
+    ((options.model !== 'evolving' || options.body) && body.end - body.start < 0.035) ||
     body.end - body.start > 0.5
   )
     throw new Error('Choose a body window between 35 and 500 ms inside the crop.');
