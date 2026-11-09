@@ -87,6 +87,13 @@
   stroke: var(--secondary-ink, var(--secondary));
   stroke-width: 1.5px;
 }
+.wav-noise {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5px;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
 .wav-source-fill {
   fill: var(--text);
 }
@@ -112,6 +119,9 @@
 }
 .wav-legend span + span::before {
   background: var(--secondary-ink, var(--secondary));
+}
+.wav-legend span:nth-child(3)::before {
+  background: var(--accent);
 }
 .wav-draft {
   margin-top: 14px;

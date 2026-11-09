@@ -4,8 +4,12 @@ import { WAV_IMPORT_LIMITS, type WavChannel } from '../core/wavImport';
 import type { WavAnalysisOptions } from '../core/wavNote';
 import type { WavReview, WavReviewRequest, WavWorkerMessage } from '../core/wavReview';
 import type { InstrumentFolder } from '../core/project';
+import { createSpectralSound, type InstrumentSound } from '../core/engineSound';
 import type { FourierSound } from '../modules/foundation/fourier';
-import { WavFitPlots, WavWaveforms } from './WavReviewPlots';
+import { spectralControls, type SpectralSettings } from '../modules/engines/spectral/settings';
+import DraftNumber from './DraftNumber';
+import SpectralFrameEditor from './SpectralFrameEditor';
+import { WavFitPlots, WavSpectralPlot, WavWaveforms } from './WavReviewPlots';
 import './WavImportDialog.css';
 
 const emptyFields = {
@@ -26,41 +30,6 @@ function noteName(frequency: number) {
   return `${['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][midi % 12]}${Math.floor(midi / 12) - 1}`;
 }
 
-function DraftNumber({
-  label,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-}) {
-  return (
-    <label>
-      {label}
-      <input
-        type="number"
-        min={min}
-        max={max}
-        step="any"
-        defaultValue={Number(value.toFixed(5))}
-        onChange={(e) => {
-          const next = e.currentTarget.valueAsNumber;
-          if (Number.isFinite(next) && next >= min && next <= max) onChange(next);
-        }}
-        onBlur={(e) => {
-          if (!e.currentTarget.validity.valid || !e.currentTarget.value)
-            e.currentTarget.value = String(Number(value.toFixed(5)));
-        }}
-      />
-    </label>
-  );
-}
-
 export default function WavImportDialog({
   folders,
   keys,
@@ -71,7 +40,7 @@ export default function WavImportDialog({
   folders: InstrumentFolder[];
   keys: string[];
   monitor: number;
-  onCreate: (label: string, key: string, sound: FourierSound, folderId?: string) => void;
+  onCreate: (label: string, key: string, sound: InstrumentSound, folderId?: string) => void;
   onClose: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -82,8 +51,10 @@ export default function WavImportDialog({
   const [file, setFile] = useState<File>();
   const [fields, setFields] = useState(emptyFields);
   const [channel, setChannel] = useState<WavChannel>('mix');
+  const [model, setModel] = useState<NonNullable<WavAnalysisOptions['model']>>('static');
   const [review, setReview] = useState<WavReview>();
   const [sound, setSound] = useState<FourierSound>();
+  const [spectrum, setSpectrum] = useState<SpectralSettings>();
   const [revision, setRevision] = useState(0);
   const [dirty, setDirty] = useState(false);
   const [progress, setProgress] = useState('');
@@ -130,6 +101,7 @@ export default function WavImportDialog({
     cancelAnalysis();
     stopPreview();
     setSound(undefined);
+    setSpectrum(undefined);
     setError('');
     setAudioError('');
     if (input.size > WAV_IMPORT_LIMITS.bytes) {
@@ -159,6 +131,7 @@ export default function WavImportDialog({
         }
         setReview(data.review);
         setSound(data.review.fit?.sound);
+        setSpectrum(data.review.evolving?.settings);
         setError(data.review.error ?? '');
         setDirty(false);
         setRevision((value) => value + 1);
@@ -193,7 +166,7 @@ export default function WavImportDialog({
     while (keys.includes(next)) next = `${base}_${suffix++}`;
     setLabel(name);
     setKey(next);
-    analyze(input, { channel: 'mix' });
+    analyze(input, { channel: 'mix', model });
   };
   const reanalyze = () => {
     if (!file) return;
@@ -213,6 +186,7 @@ export default function WavImportDialog({
       : undefined;
     analyze(file, {
       channel,
+      model,
       crop,
       body:
         bodyStart !== undefined && bodyEnd !== undefined
@@ -232,6 +206,11 @@ export default function WavImportDialog({
     stopPreview();
     setSound(next);
   };
+  const editSpectrum = (next: SpectralSettings) => {
+    stopPreview();
+    setSpectrum(next);
+  };
+  const draftSound = () => (spectrum ? createSpectralSound(spectrum) : sound);
   const listen = async (kind: 'original' | 'reconstruction') => {
     if (!review || dirty || preparing) return;
     stopPreview();
@@ -242,9 +221,10 @@ export default function WavImportDialog({
       const context = audio.current ?? (audio.current = new AudioContext());
       await context.resume();
       if (request !== previewRequest.current) return;
+      const draft = draftSound();
       const rendered =
-        sound && (match || kind === 'reconstruction')
-          ? await renderWavReconstruction(review, sound)
+        draft && (match || kind === 'reconstruction')
+          ? await renderWavReconstruction(review, draft)
           : undefined;
       if (request !== previewRequest.current) return;
       const samples = kind === 'original' ? review.samples : rendered!;
@@ -280,11 +260,22 @@ export default function WavImportDialog({
     onClose();
   };
   const add = () => {
-    if (!sound || dirty) return;
+    if (dirty) return;
     try {
-      if (!sound.harmonics.some((value) => value > 0))
+      const draft = draftSound();
+      if (!draft) return;
+      if (sound && !sound.harmonics.some((value) => value > 0))
         throw new Error('Keep at least one audible harmonic.');
-      onCreate(label, key, sound, folder || undefined);
+      if (
+        spectrum &&
+        ![...spectrum.held, ...spectrum.released].some(
+          (frame) =>
+            (spectrum.tone > 0 && frame.tones.some(Boolean)) ||
+            (spectrum.noise > 0 && frame.noise.some(Boolean)),
+        )
+      )
+        throw new Error('Keep at least one audible spectral component.');
+      onCreate(label, key, draft, folder || undefined);
       close();
     } catch (failure) {
       setCreateError((failure as Error).message);
@@ -307,6 +298,7 @@ export default function WavImportDialog({
     </label>
   );
   const fit = review?.fit;
+  const evolving = review?.evolving;
   const timing = review?.timing;
   return (
     <dialog
@@ -325,6 +317,20 @@ export default function WavImportDialog({
         </button>
       </header>
       <label>
+        Reconstruction model
+        <select
+          value={model}
+          disabled={!!progress}
+          onChange={(e) => {
+            setModel(e.currentTarget.value === 'evolving' ? 'evolving' : 'static');
+            editAnalysis();
+          }}
+        >
+          <option value="static">Static harmonics (W1)</option>
+          <option value="evolving">Evolving spectrum (W2)</option>
+        </select>
+      </label>
+      <label>
         WAV recording
         <input
           type="file"
@@ -336,8 +342,8 @@ export default function WavImportDialog({
         />
       </label>
       <p className="muted">
-        Choose a recording with one isolated pitched note. Mono or stereo, up to 30 seconds and 32
-        MiB.
+        Choose a recording with one isolated {model === 'static' ? 'pitched note' : 'note or hit'}.
+        Mono or stereo, up to 30 seconds and 32 MiB.
       </p>
       {progress && (
         <div className="wav-row">
@@ -384,7 +390,13 @@ export default function WavImportDialog({
               {field('bodyStart', 'Body start (s)', timing ? seconds(timing.body.start) : 'Auto')}
               {field('bodyEnd', 'Body end (s)', timing ? seconds(timing.body.end) : 'Auto')}
               {field('noteOff', 'Note-off (s)', 'Unknown')}
-              {field('frequency', 'Reference pitch (Hz)', fit ? fit.frequency.toFixed(2) : 'Auto')}
+              {field(
+                'frequency',
+                'Reference pitch (Hz)',
+                (
+                  fit?.frequency ?? (evolving?.pitched ? evolving.settings.referenceHz : undefined)
+                )?.toFixed(2) ?? 'Auto',
+              )}
             </div>
             <button type="button" className="secondary-button" onClick={reanalyze}>
               Analyze selection
@@ -420,12 +432,24 @@ export default function WavImportDialog({
                 ` · ${Math.round(fit.periodicity * 100)}% repeatability at the estimated pitch`}
             </p>
           )}
-          {[...review.warnings, ...(fit?.warnings ?? [])].map((warning) => (
+          {evolving && (
+            <p>
+              <strong>
+                {evolving.pitched
+                  ? `${evolving.settings.referenceHz.toFixed(2)} Hz · ${noteName(evolving.settings.referenceHz)}`
+                  : 'No stable fundamental'}
+              </strong>
+              {' · '}
+              {evolving.harmonics} harmonics · {evolving.resonances} resonances · 3 noise bands
+            </p>
+          )}
+          {[...review.warnings, ...(fit?.warnings ?? evolving?.warnings ?? [])].map((warning) => (
             <p className="muted" key={warning}>
               {warning}
             </p>
           ))}
           {sound && <WavFitPlots review={review} sound={sound} />}
+          {spectrum && <WavSpectralPlot review={review} settings={spectrum} />}
           <div className="wav-row">
             <button
               type="button"
@@ -438,7 +462,7 @@ export default function WavImportDialog({
             <button
               type="button"
               className="secondary-button"
-              disabled={preparing || !sound}
+              disabled={preparing || (!sound && !spectrum)}
               onClick={() => void listen('reconstruction')}
             >
               Play reconstruction
@@ -465,67 +489,86 @@ export default function WavImportDialog({
             <span role="status">{preparing ? 'Preparing preview…' : preview}</span>
           </div>
           {audioError && <p role="alert">{audioError}</p>}
-          {sound && (
+          {(sound || spectrum) && (
             <div key={revision} className="wav-draft">
-              <div className="wav-fields">
-                <DraftNumber
-                  label="Attack (s)"
-                  value={sound.attack}
-                  min={0.005}
-                  max={2}
-                  onChange={(attack) => editSound({ ...sound, attack })}
-                />
-                <DraftNumber
-                  label="Release (s)"
-                  value={sound.release}
-                  min={0.01}
-                  max={3}
-                  onChange={(release) => editSound({ ...sound, release })}
-                />
-                <DraftNumber
-                  label="Trim (dB)"
-                  value={sound.trim}
-                  min={-36}
-                  max={0}
-                  onChange={(trim) => editSound({ ...sound, trim })}
-                />
-                {sound.percussion && (
-                  <DraftNumber
-                    label="Hit decay (s)"
-                    value={sound.percussion.decay}
-                    min={0.01}
-                    max={2}
-                    onChange={(decay) =>
-                      editSound({ ...sound, percussion: { ...sound.percussion!, decay } })
-                    }
-                  />
-                )}
-              </div>
-              <details>
-                <summary>Signed harmonic coefficients</summary>
-                <div className="wav-fields wav-partials">
-                  {sound.harmonics.map((magnitude, i) => (
+              {sound && (
+                <>
+                  <div className="wav-fields">
                     <DraftNumber
-                      key={i}
-                      label={`H${i + 1}`}
-                      min={-1}
-                      max={1}
-                      value={magnitude * sound.polarity[i]}
-                      onChange={(coefficient) =>
-                        editSound({
-                          ...sound,
-                          harmonics: sound.harmonics.map((value, h) =>
-                            h === i ? Math.abs(coefficient) : value,
-                          ),
-                          polarity: sound.polarity.map((value, h) =>
-                            h === i ? (coefficient < 0 ? -1 : 1) : value,
-                          ),
-                        })
-                      }
+                      label="Attack (s)"
+                      value={sound.attack}
+                      min={0.005}
+                      max={2}
+                      onChange={(attack) => editSound({ ...sound, attack })}
                     />
-                  ))}
-                </div>
-              </details>
+                    <DraftNumber
+                      label="Release (s)"
+                      value={sound.release}
+                      min={0.01}
+                      max={3}
+                      onChange={(release) => editSound({ ...sound, release })}
+                    />
+                    <DraftNumber
+                      label="Trim (dB)"
+                      value={sound.trim}
+                      min={-36}
+                      max={0}
+                      onChange={(trim) => editSound({ ...sound, trim })}
+                    />
+                    {sound.percussion && (
+                      <DraftNumber
+                        label="Hit decay (s)"
+                        value={sound.percussion.decay}
+                        min={0.01}
+                        max={2}
+                        onChange={(decay) =>
+                          editSound({ ...sound, percussion: { ...sound.percussion!, decay } })
+                        }
+                      />
+                    )}
+                  </div>
+                  <details>
+                    <summary>Signed harmonic coefficients</summary>
+                    <div className="wav-fields wav-partials">
+                      {sound.harmonics.map((magnitude, i) => (
+                        <DraftNumber
+                          key={i}
+                          label={`H${i + 1}`}
+                          min={-1}
+                          max={1}
+                          value={magnitude * sound.polarity[i]}
+                          onChange={(coefficient) =>
+                            editSound({
+                              ...sound,
+                              harmonics: sound.harmonics.map((value, h) =>
+                                h === i ? Math.abs(coefficient) : value,
+                              ),
+                              polarity: sound.polarity.map((value, h) =>
+                                h === i ? (coefficient < 0 ? -1 : 1) : value,
+                              ),
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </details>
+                </>
+              )}
+              {spectrum && (
+                <>
+                  <div className="wav-fields">
+                    {Object.entries(spectralControls).map(([name, control]) => (
+                      <DraftNumber
+                        key={name}
+                        {...control}
+                        value={spectrum[name as keyof typeof spectralControls]}
+                        onChange={(value) => editSpectrum({ ...spectrum, [name]: value })}
+                      />
+                    ))}
+                  </div>
+                  <SpectralFrameEditor settings={spectrum} onChange={editSpectrum} />
+                </>
+              )}
               <div className="wav-fields">
                 <label>
                   Instrument name

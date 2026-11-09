@@ -1,0 +1,24 @@
+.spectral-editor {
+  padding: 8px 0;
+}
+.spectral-editor summary {
+  cursor: pointer;
+}
+.spectral-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(125px, 100%), 1fr));
+  gap: 8px;
+  align-items: end;
+  margin: 8px 0;
+}
+.spectral-fields label {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+.spectral-fields input,
+.spectral-fields select {
+  width: 100%;
+  min-width: 0;
+  padding: 6px;
+}

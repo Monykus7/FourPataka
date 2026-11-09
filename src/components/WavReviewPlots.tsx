@@ -2,6 +2,56 @@ import { fittedEnvelope } from '../core/wavFit';
 import type { WavPeaks, WavReview } from '../core/wavReview';
 import { dbToGain } from '../modules/foundation/fourierComponents';
 import type { FourierSound } from '../modules/foundation/fourier';
+import { spectralContour } from '../modules/engines/spectral/contour';
+import type { SpectralSettings } from '../modules/engines/spectral/settings';
+
+export function WavSpectralPlot({
+  review,
+  settings,
+}: {
+  review: WavReview;
+  settings: SpectralSettings;
+}) {
+  const { evolving, timing } = review;
+  if (!evolving || !timing) return null;
+  const points = spectralContour(settings, evolving.gate, settings.release);
+  const length = Math.max(
+    review.samples.length / review.sampleRate,
+    timing.onset + points.at(-1)!.time,
+  );
+  const gain = dbToGain(settings.trim);
+  const tonal = points.map(
+    (frame) => (Math.hypot(...frame.tones) * settings.tone * gain) / Math.SQRT2,
+  );
+  const noise = points.map((frame) => Math.hypot(...frame.noise) * settings.noise * gain);
+  const max = Math.max(0.0001, ...timing.rms, ...tonal, ...noise);
+  const path = (values: number[], time: (index: number) => number) =>
+    values
+      .map((value, i) => `${i ? 'L' : 'M'}${(600 * time(i)) / length} ${73 - (70 * value) / max}`)
+      .join(' ');
+  const modelTime = (i: number) => timing.onset + points[i].time;
+  return (
+    <figure>
+      <figcaption>Evolving spectrum · amplitude over time</figcaption>
+      <svg
+        className="wav-plot"
+        viewBox="0 0 600 76"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label="Measured RMS and estimated tonal and noise envelopes"
+      >
+        <path d={path(timing.rms, (i) => timing.step * i)} className="wav-source" />
+        <path d={path(tonal, modelTime)} className="wav-model" />
+        <path d={path(noise, modelTime)} className="wav-noise" />
+      </svg>
+      <small className="wav-legend">
+        <span>Original RMS</span>
+        <span>Modeled tone</span>
+        <span>Modeled noise</span>
+      </small>
+    </figure>
+  );
+}
 
 function WavePlot({
   peaks,
