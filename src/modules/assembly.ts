@@ -4,6 +4,7 @@ import { partialPair } from './examples/partialPair/index';
 import { createFeatureRegistry } from './index';
 import { basicTone } from './examples/basicTone/index';
 import { fourierEngine } from './engines/fourier/index';
+import { spectralEngine } from './engines/spectral';
 import { createEngineRegistry } from './index';
 import { mellowPluck } from './examples/mellowPluck/index';
 import { builtInPresetDefinitions } from './instruments/catalogue';
@@ -46,7 +47,10 @@ export const factoryPreviews = instrumentModules.definitions
   .filter((d) => d.preview)
   .map((d) => ({ key: d.scoreKey, createSound: d.createSound, ...d.preview! }));
 
-export const engineModules = createEngineRegistry([fourierEngine, basicTone], [fourierEngine.id]);
+export const engineModules = createEngineRegistry(
+  [fourierEngine, spectralEngine, basicTone],
+  [fourierEngine.id, spectralEngine.id],
+);
 
 export const featureModules = createFeatureRegistry(
   [fourierLearning, sourceOutputAnalysis, partialPair],
