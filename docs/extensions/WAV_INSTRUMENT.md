@@ -1,5 +1,7 @@
 # WAV to instrument
 
+Choose **Static harmonics (W1)** for a single signed Fourier profile. To capture evolving timbre and unpitched hits, choose **Evolving spectrum (W2)**. [W2 guide](EVOLVING_SPECTRUM.md)
+
 In the Instrument Library, choose **Import WAV** and open a local recording of a single pitched note. The upper plot shows the recording and crop. The lower plot shows the crop, the detected timing markers and the shaded analysis body. Move the crop to isolate a note, then choose **Analyze selection**. For a stereo recording, try Left or Right if the mono mix loses energy.
 
 Crop start and end use seconds from the start of the file. Onset, body start/end and note-off use seconds from the start of the crop. Leave pitch blank for automatic estimation or enter a frequency in Hz. The nearest note shown is a preview reference. A score still chooses the instrument's playback pitch per note.

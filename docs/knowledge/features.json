@@ -125,7 +125,7 @@
     {
       "id": "project",
       "title": "FourPataka",
-      "summary": "FourPataka v0.44.0 is a local browser/Electron music studio with 32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, instrument acoustics, independent instrument copies, eight serial pedals including reverb, a multi-file score IDE, swing, W1 WAV-to-instrument reconstruction, frozen WAV export and source/live-output analysis. Canonical scoreText owns the song and A/B changes retain the clock. M1–M6 provide public module metadata/pedal/preset/engine/feature boundaries, schema 6 recovery, contributor tutorials and CI, GPL-3.0-only and durable contributor-preview distribution. W2 evolving spectral instruments, further notation/analysis and manual listening/device/accessibility checks remain open. Start with docs/knowledge/TASK_GUIDE.md. Release verification is in IMPLEMENTATION_STATUS.md.",
+      "summary": "FourPataka v0.45.0 is a local browser/Electron music studio with 32 signed Fourier harmonics, waveform editing, noise-hit drums, instrument acoustics, independent instrument copies, eight serial pedals, a multi-file score IDE, swing, W1 static and W2 evolving WAV reconstruction, frozen WAV export and source/live-output analysis. Canonical scoreText owns the song and A/B changes retain the clock. M1–M6 provide public module metadata/pedal/preset/engine/feature boundaries, schema 6 recovery, contributor tutorials and CI, GPL-3.0-only and durable contributor-preview distribution. Multi-note capture and manual listening/device/accessibility checks remain open. Start with docs/knowledge/TASK_GUIDE.md. Release verification is in IMPLEMENTATION_STATUS.md.",
       "paths": [
         "README.md",
         "IMPLEMENTATION_STATUS.md",
@@ -821,7 +821,7 @@
       "id": "wav-instrument-analysis",
       "parent": "sound",
       "title": "W1 WAV-to-instrument reconstruction",
-      "summary": "Instrument Library Import WAV uses a cancellable local worker for one isolated pitched note/hit. RIFF PCM8/16/24/32 or float32, mono/stereo 8–96 kHz, 32 MiB/30 s with 8 s crop. Channel, crop, onset, body, reference Hz and note-off are editable. Smoothed RMS and periodicity guide Hann body fit, one phase origin and signed H1–H32 below Nyquist. Report cancellation, clipping, octave uncertainty and body residual before level scaling. Linear attack/release and supported exponential pitched-hit decay map to the current voice. Dry original and Fourier preview use optional attenuation-only RMS match. Explicit Create owns schema 6 settings and one undo step, preserving existing tracks/A/B/editor. Compose and frozen WAV use the preset without the original recording. W2 evolving spectra and automatic noise layers remain planned.",
+      "summary": "Instrument Library Import WAV uses a cancellable local worker for one isolated pitched note/hit. RIFF PCM8/16/24/32 or float32, mono/stereo 8–96 kHz, 32 MiB/30 s with 8 s crop. Channel, crop, onset, body, reference Hz and note-off are editable. Smoothed RMS and periodicity guide Hann body fit, one phase origin and signed H1–H32 below Nyquist. Report cancellation, clipping, octave uncertainty and body residual before level scaling. Linear attack/release and supported exponential pitched-hit decay map to the current voice. Dry original and Fourier preview use optional attenuation-only RMS match. Explicit Create owns schema 6 settings and one undo step, preserving existing tracks/A/B/editor. Compose and frozen WAV use the preset without the original recording. W2 is a separate model in the same review.",
       "paths": [
         "src/core/wavImport.ts",
         "src/core/wavNote.ts",
@@ -836,6 +836,27 @@
         "BUILD_PLAN.md",
         "IMPLEMENTATION_STATUS.md",
         "docs/knowledge/DECISIONS.md"
+      ]
+    },
+    {
+      "id": "evolving-wav-spectrum",
+      "parent": "sound",
+      "title": "W2 evolving WAV spectrum and transient resynthesis",
+      "summary": "Import WAV → Evolving spectrum fits up to 24 quadrature tonal lanes selected from H1–H32 and up to three stable off-series resonances, plus three residual RMS noise bands. Short aperiodic hits work without an inferred pitch. Held seconds and normalized release frames are editable in review and Instrument. M4 spectral engine API 1/data 1 uses schema 6 owned settings, unavailable-engine recovery, persistent phase carriers, transposed ratios and fixed noise bands. Actual key-off anchors release and audio-clock edits morph without resetting transport. Shared live/WAV voice has zero alignment latency and at most 103 nodes. Original file remains transient. Multi-note/multi-sample capture and physical listening remain open.",
+      "paths": [
+        "src/core/wavSpectral.ts",
+        "src/core/wavPeaks.ts",
+        "src/core/wavReview.ts",
+        "src/modules/engines/spectral/index.ts",
+        "src/modules/foundation/spectral/settings.ts",
+        "src/modules/foundation/spectral/contour.ts",
+        "src/modules/foundation/spectral/voice.ts",
+        "src/modules/foundation/spectral/noise.ts",
+        "src/components/SpectralFrameEditor.tsx",
+        "docs/extensions/EVOLVING_SPECTRUM.md",
+        "tests/unit/wavSpectral.test.ts",
+        "tests/browser/spectral-audio.spec.ts",
+        "tests/browser/wav-spectral.spec.ts"
       ]
     }
   ]

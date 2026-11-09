@@ -555,3 +555,11 @@ M2 optional warmup metadata is an additive API1 callback, default0, evaluated in
 ## Contributor CI runtime and asynchronous test state (2026-11-05)
 
 The application Node version and each GitHub Action runtime are independent. Use official full-SHA pins for Node24 checkout/setup-node/artifact actions, retaining read-only permissions and explicit zipped artifacts. Node20 deprecation notices in run42080875444 were warnings; four actual failures came from missing/in-flight autosaves and a pre-redo snapshot. Test helpers poll expected persisted data without throwing on null/missing tracks, wait for saved redo before comparing UI-only visibility, mount the meter before short playback, and use CodeMirror full-document selection to replace virtualized text. Delay autosave to1200ms only in regression contexts to prove synchronization rather than relying on runner speed. Production400ms autosave, parser, audio, schema6 and application version remain unchanged. Keep failed browser traces just as native traces are retained.
+
+## W2 evolving spectrum voice and recording ownership
+
+<!-- features: evolving-wav-spectrum, wav-instrument-analysis, modularity-engines, playback -->
+
+Use one local worker and explicit Create with the W1 review lifecycle. W2 measures frame-local quadrature on one origin, selects up to 24 tonal lanes including stable resonances and fits three independent RMS noise bands from the residual. The data contains held seconds and normalized release offsets. It carries a reference frequency, frame values and global controls, with no sample data. Preserve schema 6 recovery with M4 API 1/data 1 and independent project copies.
+
+Use persistent quadrature carriers and an audio-clock noise cursor in the shared live/offline engine. Interpolate the two coefficients, anchor release to the actual gate, and preserve phase during edits and age-matched branch starts. Tonal ratios transpose and noise bands stay fixed in Hz. Stop and stealing retire finite source lifetimes. Keep preview gain, recorded room sound and the optional instrument chamber separate.

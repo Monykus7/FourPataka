@@ -12,7 +12,7 @@ Task → local semantic seeds → graph neighborhood → personalized PageRank �
 
 ## FourPataka
 
-FourPataka v0.44.0 is a local browser/Electron music studio with 32 signed Fourier harmonics, waveform points/drawing, noise-hit drums, instrument acoustics, independent instrument copies, eight serial pedals including reverb, a multi-file score IDE, swing, W1 WAV-to-instrument reconstruction, frozen WAV export and source/live-output analysis. Canonical scoreText owns the song and A/B changes retain the clock. M1–M6 provide public module metadata/pedal/preset/engine/feature boundaries, schema 6 recovery, contributor tutorials and CI, GPL-3.0-only and durable contributor-preview distribution. W2 evolving spectral instruments, further notation/analysis and manual listening/device/accessibility checks remain open. Start with docs/knowledge/TASK_GUIDE.md. Release verification is in IMPLEMENTATION_STATUS.md.
+FourPataka v0.45.0 is a local browser/Electron music studio with 32 signed Fourier harmonics, waveform editing, noise-hit drums, instrument acoustics, independent instrument copies, eight serial pedals, a multi-file score IDE, swing, W1 static and W2 evolving WAV reconstruction, frozen WAV export and source/live-output analysis. Canonical scoreText owns the song and A/B changes retain the clock. M1–M6 provide public module metadata/pedal/preset/engine/feature boundaries, schema 6 recovery, contributor tutorials and CI, GPL-3.0-only and durable contributor-preview distribution. Multi-note capture and manual listening/device/accessibility checks remain open. Start with docs/knowledge/TASK_GUIDE.md. Release verification is in IMPLEMENTATION_STATUS.md.
 
 ### Modular contributor program (M1–M6 implemented)
 
@@ -20,7 +20,7 @@ M1–M6 implement reviewed bundled-source modules using public imports and expli
 
 - Modular contributor program (M1–M6 implemented) / dependency group 1: [src/modules/assembly.ts](../../src/modules/assembly.ts), [src/modules/index.ts](../../src/modules/index.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L21), [definitions](../../src/modules/assembly.ts#L30), [builtInIds](../../src/modules/assembly.ts#L31), [pedalModules](../../src/modules/assembly.ts#L33), [bundledModules](../../src/modules/assembly.ts#L34), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L35), [instrumentModules](../../src/modules/assembly.ts#L41), [factoryPreviews](../../src/modules/assembly.ts#L46).
 
 #### M6 contributor readiness and supported release
 
@@ -67,7 +67,7 @@ Implemented v0.34.0: public FourierSound/validation/shape helpers, validated det
 - M3 registry-backed Fourier presets / dependency group 3: [tests/browser/preset-modules.spec.ts](../../tests/browser/preset-modules.spec.ts), [tests/helpers/presetModules.ts](../../tests/helpers/presetModules.ts)
 - M3 registry-backed Fourier presets / dependency group 4: [tests/unit/presetModules.test.ts](../../tests/unit/presetModules.test.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### M4 synthesis engines: selectable settings, recovery and shared playback
 
@@ -124,7 +124,7 @@ Library templates, applied tracks and A/B are independent Sound copies; Save nev
 - Instrument presets and source thumbnails / dependency group 4: [tests/browser/drums.spec.ts](../../tests/browser/drums.spec.ts), [tests/helpers/percussion.ts](../../tests/helpers/percussion.ts), [tests/browser/percussion.spec.ts](../../tests/browser/percussion.spec.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Instrument presets and source thumbnails / dependency group 5: [tests/browser/instrument-presets.spec.ts](../../tests/browser/instrument-presets.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Instrument library folders
 
@@ -133,7 +133,7 @@ v0.26.0 adds collapsed single-level folders with counts and an Unfiled group. Re
 - Instrument library folders / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/project.ts](../../src/core/project.ts), [src/core/localSave.ts](../../src/core/localSave.ts), [src/components/InstrumentLibrary.tsx](../../src/components/InstrumentLibrary.tsx), [src/core/instrumentFolders.ts](../../src/core/instrumentFolders.ts), [tests/unit/instrumentFolders.test.ts](../../tests/unit/instrumentFolders.test.ts)
 - Instrument library folders / dependency group 2: [tests/browser/instrument-folders.spec.ts](../../tests/browser/instrument-folders.spec.ts), [tests/helpers/instrumentLibrary.ts](../../tests/helpers/instrumentLibrary.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### 32-harmonic Fourier bank
 
@@ -154,7 +154,7 @@ v0.42.0 implements an optional host-owned algorithmic tiny chamber before destin
 - Instrument acoustics / dependency group 3: [tests/browser/acoustics-ui.spec.ts](../../tests/browser/acoustics-ui.spec.ts), [tests/helpers/acoustics.ts](../../tests/helpers/acoustics.ts)
 - Instrument acoustics / dependency group 4: [tests/browser/acoustics.spec.ts](../../tests/browser/acoustics.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Waveform drawing and control points
 
@@ -210,7 +210,7 @@ v0.41.0 registers a two-voice opposed-delay M2 chorus with one retained session-
 - Chorus pedal / dependency group 4: [tests/browser/chorus-ui.spec.ts](../../tests/browser/chorus-ui.spec.ts), [tests/helpers/chorus.ts](../../tests/helpers/chorus.ts)
 - Chorus pedal / dependency group 5: [tests/browser/chorus.spec.ts](../../tests/browser/chorus.spec.ts)
 
-Key definitions: [builtIns](../../src/modules/assembly.ts#L20), [definitions](../../src/modules/assembly.ts#L29), [builtInIds](../../src/modules/assembly.ts#L30), [pedalModules](../../src/modules/assembly.ts#L32), [bundledModules](../../src/modules/assembly.ts#L33), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L34), [instrumentModules](../../src/modules/assembly.ts#L40), [factoryPreviews](../../src/modules/assembly.ts#L45).
+Key definitions: [builtIns](../../src/modules/assembly.ts#L21), [definitions](../../src/modules/assembly.ts#L30), [builtInIds](../../src/modules/assembly.ts#L31), [pedalModules](../../src/modules/assembly.ts#L33), [bundledModules](../../src/modules/assembly.ts#L34), [LEGACY_MODULE_IDS](../../src/modules/assembly.ts#L35), [instrumentModules](../../src/modules/assembly.ts#L41), [factoryPreviews](../../src/modules/assembly.ts#L46).
 
 ##### Phaser pedal
 
@@ -231,12 +231,23 @@ Phaser and chorus are verified in v0.40/0.41; algorithmic reverb is implemented 
 
 #### W1 WAV-to-instrument reconstruction
 
-Instrument Library Import WAV uses a cancellable local worker for one isolated pitched note/hit. RIFF PCM8/16/24/32 or float32, mono/stereo 8–96 kHz, 32 MiB/30 s with 8 s crop. Channel, crop, onset, body, reference Hz and note-off are editable. Smoothed RMS and periodicity guide Hann body fit, one phase origin and signed H1–H32 below Nyquist. Report cancellation, clipping, octave uncertainty and body residual before level scaling. Linear attack/release and supported exponential pitched-hit decay map to the current voice. Dry original and Fourier preview use optional attenuation-only RMS match. Explicit Create owns schema 6 settings and one undo step, preserving existing tracks/A/B/editor. Compose and frozen WAV use the preset without the original recording. W2 evolving spectra and automatic noise layers remain planned.
+Instrument Library Import WAV uses a cancellable local worker for one isolated pitched note/hit. RIFF PCM8/16/24/32 or float32, mono/stereo 8–96 kHz, 32 MiB/30 s with 8 s crop. Channel, crop, onset, body, reference Hz and note-off are editable. Smoothed RMS and periodicity guide Hann body fit, one phase origin and signed H1–H32 below Nyquist. Report cancellation, clipping, octave uncertainty and body residual before level scaling. Linear attack/release and supported exponential pitched-hit decay map to the current voice. Dry original and Fourier preview use optional attenuation-only RMS match. Explicit Create owns schema 6 settings and one undo step, preserving existing tracks/A/B/editor. Compose and frozen WAV use the preset without the original recording. W2 is a separate model in the same review.
 
 - W1 WAV-to-instrument reconstruction / dependency group 1: [src/audio/wavReview.ts](../../src/audio/wavReview.ts), [src/core/wavReview.ts](../../src/core/wavReview.ts), [src/components/WavImportDialog.tsx](../../src/components/WavImportDialog.tsx), [tests/unit/wavImport.test.ts](../../tests/unit/wavImport.test.ts), [src/core/wavImport.ts](../../src/core/wavImport.ts), [src/core/wavNote.ts](../../src/core/wavNote.ts), [src/core/wavFit.ts](../../src/core/wavFit.ts), [src/workers/wavReview.worker.ts](../../src/workers/wavReview.worker.ts)
 - W1 WAV-to-instrument reconstruction / dependency group 2: [tests/browser/wav-import.spec.ts](../../tests/browser/wav-import.spec.ts)
 
-Key definitions: [renderWavReconstruction](../../src/audio/wavReview.ts#L5), [levels](../../src/audio/wavReview.ts#L27), [matchedGains](../../src/audio/wavReview.ts#L37), [emptyFields](../../src/components/WavImportDialog.tsx#L11), [Field](../../src/components/WavImportDialog.tsx#L20), [seconds](../../src/components/WavImportDialog.tsx#L21), [maybeNumber](../../src/components/WavImportDialog.tsx#L22), [noteName](../../src/components/WavImportDialog.tsx#L24).
+Key definitions: [renderWavReconstruction](../../src/audio/wavReview.ts#L5), [levels](../../src/audio/wavReview.ts#L23), [matchedGains](../../src/audio/wavReview.ts#L33), [emptyFields](../../src/components/WavImportDialog.tsx#L15), [Field](../../src/components/WavImportDialog.tsx#L24), [seconds](../../src/components/WavImportDialog.tsx#L25), [maybeNumber](../../src/components/WavImportDialog.tsx#L26), [noteName](../../src/components/WavImportDialog.tsx#L28).
+
+#### W2 evolving WAV spectrum and transient resynthesis
+
+Import WAV → Evolving spectrum fits up to 24 quadrature tonal lanes selected from H1–H32 and up to three stable off-series resonances, plus three residual RMS noise bands. Short aperiodic hits work without an inferred pitch. Held seconds and normalized release frames are editable in review and Instrument. M4 spectral engine API 1/data 1 uses schema 6 owned settings, unavailable-engine recovery, persistent phase carriers, transposed ratios and fixed noise bands. Actual key-off anchors release and audio-clock edits morph without resetting transport. Shared live/WAV voice has zero alignment latency and at most 103 nodes. Original file remains transient. Multi-note/multi-sample capture and physical listening remain open.
+
+- W2 evolving WAV spectrum and transient resynthesis / dependency group 1: [src/components/SpectralFrameEditor.tsx](../../src/components/SpectralFrameEditor.tsx), [src/modules/foundation/spectral/settings.ts](../../src/modules/foundation/spectral/settings.ts), [src/core/wavSpectral.ts](../../src/core/wavSpectral.ts), [src/modules/foundation/spectral/contour.ts](../../src/modules/foundation/spectral/contour.ts), [src/modules/foundation/spectral/voice.ts](../../src/modules/foundation/spectral/voice.ts), [tests/unit/wavSpectral.test.ts](../../tests/unit/wavSpectral.test.ts), [src/core/wavReview.ts](../../src/core/wavReview.ts), [src/modules/foundation/spectral/noise.ts](../../src/modules/foundation/spectral/noise.ts), [src/core/wavPeaks.ts](../../src/core/wavPeaks.ts)
+- W2 evolving WAV spectrum and transient resynthesis / dependency group 2: [src/modules/engines/spectral/index.ts](../../src/modules/engines/spectral/index.ts)
+- W2 evolving WAV spectrum and transient resynthesis / dependency group 3: [tests/browser/spectral-audio.spec.ts](../../tests/browser/spectral-audio.spec.ts)
+- W2 evolving WAV spectrum and transient resynthesis / dependency group 4: [tests/browser/wav-spectral.spec.ts](../../tests/browser/wav-spectral.spec.ts)
+
+Key definitions: [SpectralFrameEditor](../../src/components/SpectralFrameEditor.tsx#L10), [change](../../src/components/SpectralFrameEditor.tsx#L23), [Peak](../../src/core/wavPeaks.ts#L1), [wavSpectralPeaks](../../src/core/wavPeaks.ts#L5), [WavReviewRequest](../../src/core/wavReview.ts#L6), [WavPeaks](../../src/core/wavReview.ts#L11), [WavReview](../../src/core/wavReview.ts#L13), [WavWorkerMessage](../../src/core/wavReview.ts#L28).
 
 ### Composition studio
 
@@ -245,7 +256,7 @@ Score text owns composition. v0.23.0 removes the tempo/meter form: edit tempo, i
 - Composition studio / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx)
 - Composition studio / dependency group 2: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Score parsing and editor
 
@@ -265,7 +276,7 @@ Twenty contextual cards expose syntax, examples, saved keys and guarded insertio
 
 - Contextual command reference / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/components/CommandReference.tsx](../../src/components/CommandReference.tsx), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/commands.ts](../../src/core/commands.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [tests/unit/commandReference.test.ts](../../tests/unit/commandReference.test.ts), [tests/browser/command-reference.spec.ts](../../tests/browser/command-reference.spec.ts), [tests/helpers/referenceSearch.ts](../../tests/helpers/referenceSearch.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Tempo, meter and timeline
 
@@ -306,7 +317,7 @@ v0.30.0 removes automatic per-track and All score/Whole file subtabs. User-creat
 - Track operations in the named file editor / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [tests/unit/scoreWorkspace.test.ts](../../tests/unit/scoreWorkspace.test.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx)
 - Track operations in the named file editor / dependency group 2: [tests/browser/file-tabs.spec.ts](../../tests/browser/file-tabs.spec.ts), [tests/helpers/fileTabs.ts](../../tests/helpers/fileTabs.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts), [tests/helpers/scoreWorkspace.ts](../../tests/helpers/scoreWorkspace.ts), [tests/browser/score-workspace.spec.ts](../../tests/browser/score-workspace.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Variable swing timing
 
@@ -324,7 +335,7 @@ Implemented v0.28.0: named file tabs plus Files browser create/rename/delete/clo
 - Virtual song files and shared track parts / dependency group 1: [src/App.tsx](../../src/App.tsx), [src/core/parser.ts](../../src/core/parser.ts), [src/core/project.ts](../../src/core/project.ts), [src/core/scoreFiles.ts](../../src/core/scoreFiles.ts), [src/core/scoreTools.ts](../../src/core/scoreTools.ts), [src/core/scoreWorkspace.ts](../../src/core/scoreWorkspace.ts), [src/components/ScoreEditor.tsx](../../src/components/ScoreEditor.tsx), [src/components/ScoreWorkspace.tsx](../../src/components/ScoreWorkspace.tsx), [src/core/scoreTiming.ts](../../src/core/scoreTiming.ts), [src/core/scoreLexer.ts](../../src/core/scoreLexer.ts), [src/core/scoreSections.ts](../../src/core/scoreSections.ts), [tests/unit/fileCompilation.test.ts](../../tests/unit/fileCompilation.test.ts), [tests/unit/fileEditing.test.ts](../../tests/unit/fileEditing.test.ts), [tests/unit/fileLimits.test.ts](../../tests/unit/fileLimits.test.ts), [tests/unit/filePersistence.test.ts](../../tests/unit/filePersistence.test.ts), [src/components/ScoreFileTabs.tsx](../../src/components/ScoreFileTabs.tsx), [tests/unit/scoreFiles.test.ts](../../tests/unit/scoreFiles.test.ts), [src/core/commandReference.ts](../../src/core/commandReference.ts), [src/core/commands.ts](../../src/core/commands.ts)
 - Virtual song files and shared track parts / dependency group 2: [tests/browser/score-files.spec.ts](../../tests/browser/score-files.spec.ts), [tests/helpers/scoreFiles.ts](../../tests/helpers/scoreFiles.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 ### Project state and desktop studio
 
@@ -339,7 +350,7 @@ v0.39.0 implements a registered collapsed Instrument panel with separate active-
 - Source and live output analysis / dependency group 3: [tests/browser/analysis.spec.ts](../../tests/browser/analysis.spec.ts), [tests/helpers/analysis.ts](../../tests/helpers/analysis.ts)
 - Source and live output analysis / dependency group 4: [tests/browser/output-meter.spec.ts](../../tests/browser/output-meter.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 #### Independent copies, persistence and undo
 
@@ -399,7 +410,7 @@ v0.18.0 provides keyboard source-dot creation, equipment placement/patching, nam
 - Keyboard studio workflow and modal focus / dependency group 5: [tests/browser/keyboard.spec.ts](../../tests/browser/keyboard.spec.ts), [tests/helpers/keyboardWorkflow.ts](../../tests/helpers/keyboardWorkflow.ts), [tests/desktop/app.spec.ts](../../tests/desktop/app.spec.ts)
 - Keyboard studio workflow and modal focus / dependency group 6: [tests/browser/timeline.spec.ts](../../tests/browser/timeline.spec.ts)
 
-Key definitions: [ScoreWorkspace](../../src/App.tsx#L129), [WavImportDialog](../../src/App.tsx#L130), [View](../../src/App.tsx#L132), [readPreferences](../../src/App.tsx#L133), [MiniWave](../../src/App.tsx#L157), [RangeControl](../../src/App.tsx#L198), [App](../../src/App.tsx#L248), [measure](../../src/App.tsx#L315).
+Key definitions: [ScoreWorkspace](../../src/App.tsx#L133), [WavImportDialog](../../src/App.tsx#L134), [View](../../src/App.tsx#L136), [readPreferences](../../src/App.tsx#L137), [MiniWave](../../src/App.tsx#L161), [RangeControl](../../src/App.tsx#L202), [App](../../src/App.tsx#L252), [measure](../../src/App.tsx#L319).
 
 ### Maintained project knowledge
 

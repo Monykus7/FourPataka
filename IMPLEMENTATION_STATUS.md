@@ -1,6 +1,6 @@
 # FourPataka implementation status
 
-Updated: 2026-11-07. Current release: v0.44.0. Earlier milestone entries retain their historical verification results.
+Updated: 2026-11-08. Current release: v0.45.0. Earlier milestone entries retain their historical verification results.
 
 ## Milestone checkpoints
 
@@ -825,3 +825,11 @@ Instrument Library → Import WAV reviews an isolated pitched note or hit. A loc
 The review compares the original and actual dry Fourier voice, with editable coefficients and gain, RMS matching and preview Stop. Create adds one independently owned library preset with an optional folder, leaving existing track and A/B copies untouched. The saved project uses schema 6 and retains the synthesized settings alone. The recording and analysis measurements are transient.
 
 Local verification covered 332 unit tests, seven targeted browser workflows including the existing preset/acoustics regressions, and the packaged WAV import workflow. The native test saved and reopened the project, then verified the edited H2:H1 magnitude ratio in the rendered WAV. The review was inspected at wide and 390 px widths. See [W1 analysis and ownership diagrams](docs/extensions/WAV_INSTRUMENT.md). Physical listening and screen-reader checks remain open. W2 evolving spectra, automatic noise layers and broader transient modeling remain planned.
+
+## W2 evolving WAV spectrum (v0.45.0)
+
+Instrument Library → Import WAV offers **Evolving spectrum (W2)** alongside W1. W2 fits early/body/tail complex amplitudes, retains up to 24 tonal lanes including up to three resonances, and models three residual RMS noise bands. It can fit short aperiodic hits with no detected pitch. The review shows estimated tone and noise envelopes, offers dry RMS-matched preview, and permits edits to held/release frames, levels, speed and trim. The saved engine editor exposes the same frames.
+
+The bundled spectral engine uses M4 API 1/data 1 in schema 6. It owns independent library/track/A/B copies and retains the existing unavailable-version recovery path. Live and frozen WAV use the same voice. Quadrature carriers transpose at the note's frequency and maintain phase across frames, in-flight edits and age-matched branch starts. Release anchors to the actual gate. The deterministic fixed-band noise cursor follows the original note age. The original file remains in the local review only.
+
+Verification includes 338 unit tests and five targeted Chromium cases covering W1 and W2, including draft/Instrument editing, independent A/B copies, narrow review, reload and score export. The audio test measures transposition, edit/branch phase continuity, deterministic noise and finite release/Stop. Both packaged import workflows passed. The W2 workflow reopened a saved project and measured the independently decaying second harmonic in exported audio. See the [W2 guide and diagrams](docs/extensions/EVOLVING_SPECTRUM.md). Real-recording listening and assistive-device checks remain open.
